@@ -1,0 +1,32 @@
+name: Decision
+description: A choice that needs a decision record
+title: "decision: "
+labels: ["decision"]
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: What must be decided, and why now.
+    validations:
+      required: true
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Constraints
+    validations:
+      required: true
+  - type: textarea
+    id: options
+    attributes:
+      label: Options considered
+      description: Each option with evidence and sources.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Done when
+      value: "- [ ] ADR written in docs/adr and linked here\n- [ ] Affected documents updated"
+    validations:
+      required: true
