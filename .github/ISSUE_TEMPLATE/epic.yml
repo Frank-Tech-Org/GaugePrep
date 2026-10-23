@@ -1,0 +1,47 @@
+name: Epic
+description: A body of work spanning several sprints
+title: ""
+type: Epic
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: "The outcome this Epic delivers, in two or three sentences."
+    validations:
+      required: true
+  - type: textarea
+    id: background
+    attributes:
+      label: Background
+      description: "Why now, and what the team needs to know to start."
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: "In scope: the Stories and issues it groups. Out of scope: what is deliberately left out."
+      value: "In scope:
+- 
+
+Out of scope:
+- "
+    validations:
+      required: true
+  - type: textarea
+    id: success
+    attributes:
+      label: Success criteria
+      description: "Testable statements, one checkbox each."
+      value: "- [ ] "
+    validations:
+      required: true
+  - type: textarea
+    id: done
+    attributes:
+      label: Definition of Done
+      value: "- [ ] Every sub-issue is Done
+- [ ] Every success criterion above is verified on staging"
+    validations:
+      required: true

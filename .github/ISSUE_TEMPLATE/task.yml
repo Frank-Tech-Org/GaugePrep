@@ -1,0 +1,40 @@
+name: Task
+description: A defined piece of work to implement, two days or less
+title: "feat: "
+type: Task
+body:
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: "Why this is needed."
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: "What will be built or changed."
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: "Testable statements, one checkbox each."
+      value: "- [ ] "
+    validations:
+      required: true
+  - type: textarea
+    id: out-of-scope
+    attributes:
+      label: Out of scope
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: "Issues this depends on, or \"none\"."
+    validations:
+      required: true

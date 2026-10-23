@@ -1,0 +1,40 @@
+name: Story
+description: A user-facing requirement that fits in one two-week sprint
+title: "feat: "
+type: Story
+body:
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: "Who needs this and why."
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: "What will be built, as seen by the user."
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: "Testable statements, one checkbox each."
+      value: "- [ ] "
+    validations:
+      required: true
+  - type: textarea
+    id: out-of-scope
+    attributes:
+      label: Out of scope
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: "Issues this depends on, or \"none\"."
+    validations:
+      required: true
