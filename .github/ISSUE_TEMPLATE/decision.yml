@@ -1,0 +1,40 @@
+name: Decision
+description: A choice that must be made and recorded before work can continue
+title: "decision: "
+type: Decision
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: "What must be decided, and why now."
+    validations:
+      required: true
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Constraints
+    validations:
+      required: true
+  - type: textarea
+    id: options
+    attributes:
+      label: Options considered
+      description: "Each option with its evidence and sources."
+    validations:
+      required: true
+  - type: textarea
+    id: done
+    attributes:
+      label: Done when
+      value: "- [ ] The decision is recorded in an ADR in docs/adr/
+- [ ] Tickets affected by the decision are updated"
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: "Issues this depends on, or \"none\"."
+    validations:
+      required: true
