@@ -9,18 +9,19 @@ CMD=$(jq -r '.tool_input.command // empty')
 block() { echo "Blocked: $1. The owner runs this; hand it over instead." >&2; exit 2; }
 # Checks run on one flattened line, so continuations and newlines can't split a command across grep's lines.
 FLAT=$(printf '%s' "$CMD" | sed -e ':a' -e 'N' -e '$!ba' -e 's/\\\n/ /g' | tr '\n\r' '  ')
-has() { printf '%s' "$FLAT" | grep -qE "$1"; }
+# NORM drops quotes and backslashes and turns $IFS into spaces, so "gi"t, g\it and git${IFS}tag read as written.
+NORM=$(printf '%s' "$FLAT" | sed -E 's/\$\{?IFS\}?/ /g' | tr -d "\"'\\\\")
+has() { printf '%s' "$NORM" | grep -qE "$1"; }
 
-# git, then any global options (-C dir, -c k=v, --git-dir=x, -p), then the subcommand.
-GIT='\bgit([[:space:]]+(-[a-zA-Z]([[:space:]]+[^-[:space:]][^[:space:]]*)?|--[a-z-]+(=[^[:space:]]+)?))*[[:space:]]+'
 # A regex guard catches mistakes, not a determined bypass; GitHub branch protection would be the real backstop.
-# Indirect git (built or quoted subcommand, wrappers, new aliases) is refused so the checks below see real commands.
-has "${GIT}[\$\`(\"'\\\\]"                              && block "git with a computed or quoted subcommand"
+# Git rules match the subcommand anywhere after "git", so global options can't be used to hide it.
+GIT='\bgit\b.*\b'
+has '\bgit\b.*(\$|`)'                                   && block "git with a shell expansion; write the command out literally"
 has '\b(eval|xargs)\b.*\bgit\b|\b(ba|z)?sh[[:space:]]+-c\b.*\bgit\b' && block "git run indirectly"
-has "\bgit\b.*\balias\b"                                && block "creating or using a git alias"
-# Push is allowlisted: if "push" appears anywhere (quotes and backslashes removed), the entire command string must be
-# exactly git push [-u] [--force-with-lease] origin <feature|release|hotfix|chore>/<name>, on one line, run on its own.
-if printf '%s' "$FLAT" | tr -d "\"'\\\\" | grep -qE 'push'; then
+has '\bgit\b.*\b(alias|--git-dir|--work-tree|--namespace)\b' && block "git alias or repository override"
+# Push is allowlisted: if "push" appears anywhere, the entire command string must be exactly
+# git push [-u] [--force-with-lease] origin <feature|release|hotfix|chore>/<name>, on one line, run on its own.
+if printf '%s' "$NORM" | grep -qE 'push'; then
   re='^git push( -u| --set-upstream)?( --force-with-lease)? origin (feature|release|hotfix|chore)/[A-Za-z0-9._-]+$'
   [[ "$CMD" =~ $re ]] \
     || block "push must run on its own as: git push [-u] [--force-with-lease] origin feature/<n>-<slug> (or release/*, hotfix/*, chore/*)"
