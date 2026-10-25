@@ -16,9 +16,11 @@ has() { printf '%s' "$NORM" | grep -qE "$1"; }
 # A regex guard catches mistakes, not a determined bypass; GitHub branch protection would be the real backstop.
 # Git rules match the subcommand anywhere after "git", so global options can't be used to hide it.
 GIT='\bgit\b.*\b'
-has '\bgit\b.*(\$|`)'                                   && block "git with a shell expansion; write the command out literally"
+# Expansions are checked on the raw text: any $ or backtick in a command that mentions git or push is refused.
+printf '%s' "$FLAT" | tr -d "\"'\\\\" | grep -qE '\b(git|push)\b' && printf '%s' "$FLAT" | grep -qE '[$`]' \
+  && block "git with a shell expansion; write the command out literally"
 has '\b(eval|xargs)\b.*\bgit\b|\b(ba|z)?sh[[:space:]]+-c\b.*\bgit\b' && block "git run indirectly"
-has '\bgit\b.*\b(alias|--git-dir|--work-tree|--namespace)\b' && block "git alias or repository override"
+has '\bgit\b.*(\balias\b|(^|[[:space:]=])--(git-dir|work-tree|namespace)\b)' && block "git alias or repository override"
 # Push is allowlisted: if "push" appears anywhere, the entire command string must be exactly
 # git push [-u] [--force-with-lease] origin <feature|release|hotfix|chore>/<name>, on one line, run on its own.
 if printf '%s' "$NORM" | grep -qE 'push'; then
