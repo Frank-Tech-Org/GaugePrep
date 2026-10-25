@@ -3,8 +3,13 @@
 set -uo pipefail
 
 command -v jq >/dev/null 2>&1 || { echo "guard-bash: jq is required (sudo apt install -y jq)" >&2; exit 2; }
-CMD=$(jq -r '.tool_input.command // empty')
+INPUT=$(cat)
+CMD=$(printf '%s' "$INPUT" | jq -r '.tool_input.command // empty')
+CWD=$(printf '%s' "$INPUT" | jq -r '.cwd // empty')
 [ -z "$CMD" ] && exit 0
+ROOT=${CLAUDE_PROJECT_DIR:-}
+# Fingerprint of the committed .claude/scripts/push.sh; the owner updates it when the script changes.
+PUSH_SHA=e45f1949af438cd48627e0262421f9426a24b184ed8bf1ad6696681822977f10
 
 block() { echo "Blocked: $1. The owner runs this; hand it over instead." >&2; exit 2; }
 # Checks run on one flattened line, so continuations and newlines can't split a command across grep's lines.
@@ -23,11 +28,18 @@ has '\b(eval|xargs)\b.*\bgit\b|\b(ba|z)?sh[[:space:]]+-c\b.*\bgit\b' && block "g
 has '\bgit\b.*(\balias\b|(^|[[:space:]=])--(git-dir|work-tree|namespace)\b)' && block "git alias or repository override"
 # Raw git push is never allowed; agents push only through .claude/scripts/push.sh, which checks the branch in code.
 # If "push" appears anywhere, the whole command must be exactly that script call, on its own.
+re='^\.claude/scripts/push\.sh (feature|release|hotfix|chore)/[A-Za-z0-9._-]+( --force-with-lease)?$'
 if printf '%s' "$NORM" | grep -qE 'push'; then
-  re='^\.claude/scripts/push\.sh (feature|release|hotfix|chore)/[A-Za-z0-9._-]+( --force-with-lease)?$'
   [[ "$CMD" =~ $re ]] \
     || block "push only via: .claude/scripts/push.sh <feature|release|hotfix|chore>/<name> [--force-with-lease], run on its own"
+  # The script that runs must be the pinned one: run from the repo root, file unchanged.
+  [ -n "$ROOT" ] && [ "$CWD" = "$ROOT" ] || block "run push.sh from the repository root"
+  [ "$(sha256sum "$ROOT/.claude/scripts/push.sh" 2>/dev/null | cut -d' ' -f1)" = "$PUSH_SHA" ] \
+    || block "push.sh does not match its pinned fingerprint; the owner must review the change and update PUSH_SHA"
 fi
+# The guardrail files belong to the owner: no shell command may touch them (reading is done with the Read tool).
+has '\.claude/(hooks|settings|scripts/push)' && ! [[ "$CMD" =~ $re ]] \
+  && block "the guard hook, settings and push script are owner-only"
 has "${GIT}commit\b.*--amend"                           && block "amending a commit"
 has "${GIT}tag[[:space:]]+(-a|-s|-f|-d|[^-[:space:]])"  && block "creating or deleting a tag"
 has "${GIT}reset[[:space:]]+--hard"                     && block "git reset --hard discards work"

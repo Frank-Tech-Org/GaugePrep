@@ -45,7 +45,19 @@
       "Read(./**/.env.staging)",
       "Read(./**/.env.production)",
       "Read(./**/*.pem)",
-      "Read(./**/*.key)"
+      "Read(./**/*.key)",
+      "Edit(./.claude/hooks/**)",
+      "Write(./.claude/hooks/**)",
+      "MultiEdit(./.claude/hooks/**)",
+      "Edit(./.claude/scripts/push.sh)",
+      "Write(./.claude/scripts/push.sh)",
+      "MultiEdit(./.claude/scripts/push.sh)",
+      "Edit(./.claude/settings.json)",
+      "Write(./.claude/settings.json)",
+      "MultiEdit(./.claude/settings.json)",
+      "Edit(./.claude/settings.local.json)",
+      "Write(./.claude/settings.local.json)",
+      "MultiEdit(./.claude/settings.local.json)"
     ]
   },
   "hooks": {
