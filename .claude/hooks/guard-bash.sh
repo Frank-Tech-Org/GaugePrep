@@ -12,10 +12,11 @@ has() { printf '%s' "$CMD" | grep -qE "$1"; }
 GIT='\bgit[[:space:]]+(-C[[:space:]]+[^[:space:]]+[[:space:]]+)?'
 if has "${GIT}push\b"; then
   # --force-with-lease is allowed on work branches: it refuses to overwrite commits it hasn't seen.
-  has "${GIT}push\b[^;&|]*[[:space:]](-f|--force|--force-if-includes|--mirror|--all|--tags|--delete|-d)([[:space:]]|$)" && block "force, mirror, tag or delete push"
-  has "${GIT}push\b[^;&|]*[[:space:]]\+[^[:space:]]" && block "force push via +refspec"
-  has "${GIT}push\b[^;&|]*[[:space:]:+](main|develop)([[:space:]]|$)" && block "pushing straight to main or develop"
-  has "${GIT}push\b[^;&|]*[[:space:]](feature|release|hotfix|chore)/[^[:space:]]+" \
+  has "${GIT}push\b.*[[:space:]](-f|--force|--force-if-includes|--mirror|--all|--tags|--delete|-d)([[:space:]]|=|$)" && block "force, mirror, tag or delete push"
+  has "${GIT}push\b.*[[:space:]]\+[^[:space:]]" && block "force push via +refspec"
+  has "${GIT}push\b.*[\"']" && block "quoted push arguments; push with plain branch names"
+  has "${GIT}push\b.*[[:space:]:+/](main|develop)([[:space:]:]|$)" && block "pushing straight to main or develop"
+  has "${GIT}push\b.*[[:space:]](feature|release|hotfix|chore)/[^[:space:]]+" \
     || block "push names no work branch; use git push -u origin feature/<n>-<slug> (or release/*, hotfix/*)"
 fi
 has "${GIT}commit\b.*--amend"                           && block "amending a commit"
