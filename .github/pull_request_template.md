@@ -24,8 +24,7 @@ Refs #
 
 ## How it was tested
 
-- [ ] `pnpm check` passes locally
-- [ ] Manual check (describe, or write "not needed"):
+- [ ] Manual check(describe, or write "not needed"):
 
 ## Checklist
 
