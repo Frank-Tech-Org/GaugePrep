@@ -1,0 +1,6 @@
+- [Agents commit, owner merges](agents-commit-owner-merges.md) — /lm-* flow commits, pushes work branches and opens PRs; owner merges, tags, releases
+- [Ignore other repos](ignore-other-repos.md) — design from v3 docs and own expertise, never copy v1/v2 or the old board
+- [PM role and GitHub setup](pm-role-github-setup.md) — what exists on GitHub, which board is current
+- [Scope ticket work to what is asked](scope-ticket-work-to-what-is-asked.md) — foundation (M0) only; confirm scope before bulk-creating issues
+- [Keep PRs short](keep-prs-short.md) — brief, direct PR text with only what is needed
+- [Workflow redesign from friend template](workflow-redesign-from-friend-template.md) — one-ticket lifecycle, dept agents, repo memory; adapt, never copy

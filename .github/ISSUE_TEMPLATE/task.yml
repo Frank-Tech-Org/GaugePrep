@@ -38,3 +38,24 @@ body:
       description: "Issues this depends on, or \"none\"."
     validations:
       required: true
+  - type: textarea
+    id: definition-of-done
+    attributes:
+      label: Definition of Done
+      description: "Delete the items that do not apply to this ticket. Review and QA check the rest."
+      value: |
+        - [ ] Every acceptance criterion verified on staging (or on local `develop` before staging exists)
+        - [ ] Unit tests for new logic; backend changes also have integration tests on PostgreSQL 18
+        - [ ] Each new or changed endpoint has three tests: success, not found, and another learner's data refused
+        - [ ] Each new screen or flow has a Playwright test on a phone-size screen with slow-3G throttling
+        - [ ] Interface text in French and English through the message catalogues
+        - [ ] Loading, empty, error and offline states handled
+        - [ ] axe-core reports zero serious or critical violations on changed screens; keyboard-only use works
+        - [ ] Within budget: usable in under 3 s on slow 3G, route JavaScript within the CI limit, a full simulation under 15 MB
+        - [ ] OpenAPI regenerated; errors use problem details; retryable writes accept `Idempotency-Key`
+        - [ ] Migrations are expand-then-contract, with the rollback written in the PR
+        - [ ] Security review with no CRITICAL or HIGH if authentication, payments, personal data, migrations, append-only data or AI prompts changed
+        - [ ] Docs, runbook or ADR updated, or not needed
+        - [ ] Claims register updated if a learner-visible capability changed
+    validations:
+      required: true

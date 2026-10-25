@@ -478,7 +478,7 @@ linguamentor/                      private GitHub repository
 | Trigger | Steps |
 |---|---|
 | Pull request | Lint, types, Import Linter contracts, unit and integration tests with PostgreSQL 18, API contract check, frontend tests, gitleaks |
-| Merge to main | Build ARM images on GitHub's arm64 runners, push to GitHub Container Registry, deploy to staging with Kamal, publish the static PWA to Cloudflare staging |
+| Push to develop (or a manual run on `release/*` or `hotfix/*`) | Build ARM images on GitHub's arm64 runners, push to GitHub Container Registry, deploy to staging with Kamal, publish the static PWA to Cloudflare staging |
 | Version tag plus approval | Run migrations (expand-then-contract), deploy to production with Kamal (zero-downtime switch through kamal-proxy), publish the PWA |
 | Change to grader prompt, rubric or model | Grader release check workflow against the real model |
 | Nightly | Full scoring engine recovery tests, full end-to-end suite |
@@ -612,7 +612,7 @@ Prices are those published by providers in October 2026 and are tracked monthly 
 
 | Milestone | Delivers | Done when |
 |---|---|---|
-| M0 Foundations and checks | Repository, CI/CD, three environments, deploy pipeline; accent test; latency test from Douala; Notch Pay confirmation; grader release-check pipeline skeleton | Staging deploys from main; recognition provider chosen; region confirmed |
+| M0 Foundations and checks | Repository, CI/CD, three environments, deploy pipeline; accent test; latency test from Douala; Notch Pay confirmation; grader release-check pipeline skeleton | Staging deploys from develop; recognition provider chosen; region confirmed |
 | M1 Accounts and content | Sign-up, consents, goals; content bank with review workflow, versions and audio pipeline | A reviewer publishes an item with audio; a learner signs up and sets a goal |
 | M2 Listening and reading | Practice for both papers; scoring engine v0; diagnostic | A learner receives a predicted 699-scale range from the diagnostic |
 | M3 Writing | Rule checks, grader, anchors, release checks, feedback | The grader passes every release check |
