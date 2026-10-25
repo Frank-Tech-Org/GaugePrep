@@ -32,7 +32,7 @@ Save the work on `#$blocked`'s branch so the tree is clean:
 ```
 git add <this ticket's paths>
 git commit -m "wip(<area>): <what is done so far>" -m "Refs #$blocked" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
-git push -u origin <the feature branch>
+.claude/scripts/push.sh <the feature branch>
 ```
 Then the next step depends on where `#$blocker` is:
 - Ready: `/lm-start $blocker`

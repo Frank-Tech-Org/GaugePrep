@@ -105,7 +105,7 @@ Run at the end of a sprint, or sooner when a ticket is worth shipping on its own
    ```bash
    git switch develop && git pull
    git switch -c release/0.2.0
-   git push -u origin release/0.2.0
+   .claude/scripts/push.sh release/0.2.0
    ```
 4. Run the staging deploy workflow on `release/0.2.0` for regression QA. Small fixes are committed on the release branch.
 5. The release manager opens a PR from `release/0.2.0` into `main` using the release PR template. The owner merges it with a **merge commit**, not a squash.

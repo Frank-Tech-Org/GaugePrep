@@ -55,7 +55,7 @@ Commit in logical steps as the work goes, never with `--amend`. Stage only this 
 ```
 git add <paths>
 git commit -m "<type>(<area>): <subject>" -m "Refs #$ARGUMENTS" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
-git push -u origin feature/$ARGUMENTS-<short-slug>
+.claude/scripts/push.sh feature/$ARGUMENTS-<short-slug>
 gh pr create --base develop --title "<type>(<area>): <subject>" --body-file <body file in the scratchpad>
 ```
 The PR body is a trimmed `.github/pull_request_template.md`: summary, `Refs #$ARGUMENTS`, what changed, the criteria and DoD checklist, and risks only when they're real. It ends with `🤖 Generated with [Claude Code](https://claude.com/claude-code)`.

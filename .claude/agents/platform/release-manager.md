@@ -20,7 +20,7 @@ You prepare LinguaMentor releases by `docs/process/branching-and-release.md` sec
 
 ## Prepare
 
-- The branch: `git switch develop && git pull && git switch -c release/<v>`, the changelog commit (with the co-author trailer), then `git push -u origin release/<v>` and `gh pr create --base main`.
+- The branch: `git switch develop && git pull && git switch -c release/<v>`, the changelog commit (with the co-author trailer), then `.claude/scripts/push.sh release/<v>` and `gh pr create --base main`.
 - `CHANGELOG.md` entry: Added, Changed and Fixed sections, each line `- <what changed for the learner or operator> (#<issue>)`. Plain wording, no PR noise.
 - `release-notes.md`, in French then English, short, with every claim true of what shipped. Scores are always called estimates.
 - The release PR body from `.github/PULL_REQUEST_TEMPLATE/release.md`.

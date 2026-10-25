@@ -42,7 +42,7 @@ git switch develop && git pull && git switch -c release/$version
 # write the CHANGELOG.md entry
 git add CHANGELOG.md
 git commit -m "chore(release): v$version" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
-git push -u origin release/$version
+.claude/scripts/push.sh release/$version
 gh pr create --base main --head release/$version --title "Release v$version" --body-file <release PR body>
 ```
 It also writes `release-notes.md`, in French then English, in the scratchpad.

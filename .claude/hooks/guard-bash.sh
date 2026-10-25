@@ -21,12 +21,12 @@ printf '%s' "$FLAT" | tr -d "\"'\\\\" | grep -qE '\b(git|push)\b' && printf '%s'
   && block "git with a shell expansion; write the command out literally"
 has '\b(eval|xargs)\b.*\bgit\b|\b(ba|z)?sh[[:space:]]+-c\b.*\bgit\b' && block "git run indirectly"
 has '\bgit\b.*(\balias\b|(^|[[:space:]=])--(git-dir|work-tree|namespace)\b)' && block "git alias or repository override"
-# Push is allowlisted: if "push" appears anywhere, the entire command string must be exactly
-# git push [-u] [--force-with-lease] origin <feature|release|hotfix|chore>/<name>, on one line, run on its own.
+# Raw git push is never allowed; agents push only through .claude/scripts/push.sh, which checks the branch in code.
+# If "push" appears anywhere, the whole command must be exactly that script call, on its own.
 if printf '%s' "$NORM" | grep -qE 'push'; then
-  re='^git push( -u| --set-upstream)?( --force-with-lease)? origin (feature|release|hotfix|chore)/[A-Za-z0-9._-]+$'
+  re='^\.claude/scripts/push\.sh (feature|release|hotfix|chore)/[A-Za-z0-9._-]+( --force-with-lease)?$'
   [[ "$CMD" =~ $re ]] \
-    || block "push must run on its own as: git push [-u] [--force-with-lease] origin feature/<n>-<slug> (or release/*, hotfix/*, chore/*)"
+    || block "push only via: .claude/scripts/push.sh <feature|release|hotfix|chore>/<name> [--force-with-lease], run on its own"
 fi
 has "${GIT}commit\b.*--amend"                           && block "amending a commit"
 has "${GIT}tag[[:space:]]+(-a|-s|-f|-d|[^-[:space:]])"  && block "creating or deleting a tag"
