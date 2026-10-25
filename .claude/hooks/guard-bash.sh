@@ -10,14 +10,13 @@ block() { echo "Blocked: $1. The owner runs this; hand it over instead." >&2; ex
 has() { printf '%s' "$CMD" | grep -qE "$1"; }
 
 GIT='\bgit[[:space:]]+(-C[[:space:]]+[^[:space:]]+[[:space:]]+)?'
-if has "${GIT}push\b"; then
-  # --force-with-lease is allowed on work branches: it refuses to overwrite commits it hasn't seen.
-  has "${GIT}push\b.*[[:space:]](-f|--force|--force-if-includes|--mirror|--all|--tags|--delete|-d)([[:space:]]|=|$)" && block "force, mirror, tag or delete push"
-  has "${GIT}push\b.*[[:space:]]\+[^[:space:]]" && block "force push via +refspec"
-  has "${GIT}push\b.*[\"']" && block "quoted push arguments; push with plain branch names"
-  has "${GIT}push\b.*[[:space:]:+/](main|develop)([[:space:]:]|$)" && block "pushing straight to main or develop"
-  has "${GIT}push\b.*[[:space:]](feature|release|hotfix|chore)/[^[:space:]]+" \
-    || block "push names no work branch; use git push -u origin feature/<n>-<slug> (or release/*, hotfix/*)"
+# Push is allowlisted, not blocklisted: strip every exact allowed form, then refuse if any push remains.
+# Allowed: git push [-u] [--force-with-lease] origin <feature|release|hotfix|chore>/<name>, ending the command or segment.
+if printf '%s' "$CMD" | grep -qE '\bpush\b'; then
+  ALLOWED='(^|[;&|[:space:]])git push( -u| --set-upstream)?( --force-with-lease)? origin (feature|release|hotfix|chore)/[A-Za-z0-9._-]+[[:space:]]*(&&|;|\|\||$)'
+  REST=$(printf '%s' "$CMD" | sed -E ":a; s#${ALLOWED}#\1 \5#; ta")
+  printf '%s' "$REST" | grep -qE '\bpush\b' \
+    && block "push allows only: git push [-u] [--force-with-lease] origin feature/<n>-<slug> (or release/*, hotfix/*, chore/*)"
 fi
 has "${GIT}commit\b.*--amend"                           && block "amending a commit"
 has "${GIT}tag[[:space:]]+(-a|-s|-f|-d|[^-[:space:]])"  && block "creating or deleting a tag"
