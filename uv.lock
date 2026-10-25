@@ -1,0 +1,43 @@
+version = 1
+revision = 3
+requires-python = "==3.14.*"
+
+[manifest]
+members = [
+    "examcore",
+    "linguamentor",
+    "linguamentor-backend",
+    "linguamentor-voice",
+]
+
+[[package]]
+name = "examcore"
+version = "0.0.0"
+source = { editable = "packages/examcore" }
+
+[[package]]
+name = "linguamentor"
+version = "0.0.0"
+source = { virtual = "." }
+dependencies = [
+    { name = "examcore" },
+    { name = "linguamentor-backend" },
+    { name = "linguamentor-voice" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "examcore", editable = "packages/examcore" },
+    { name = "linguamentor-backend", virtual = "backend" },
+    { name = "linguamentor-voice", virtual = "voice" },
+]
+
+[[package]]
+name = "linguamentor-backend"
+version = "0.0.0"
+source = { virtual = "backend" }
+
+[[package]]
+name = "linguamentor-voice"
+version = "0.0.0"
+source = { virtual = "voice" }
