@@ -10,13 +10,16 @@ block() { echo "Blocked: $1. The owner runs this; hand it over instead." >&2; ex
 has() { printf '%s' "$CMD" | grep -qE "$1"; }
 
 GIT='\bgit[[:space:]]+(-C[[:space:]]+[^[:space:]]+[[:space:]]+)?'
-# Push is allowlisted, not blocklisted: strip every exact allowed form, then refuse if any push remains.
-# Allowed: git push [-u] [--force-with-lease] origin <feature|release|hotfix|chore>/<name>, ending the command or segment.
-if printf '%s' "$CMD" | grep -qE '\bpush\b'; then
-  ALLOWED='(^|[;&|[:space:]])git push( -u| --set-upstream)?( --force-with-lease)? origin (feature|release|hotfix|chore)/[A-Za-z0-9._-]+[[:space:]]*(&&|;|\|\||$)'
-  REST=$(printf '%s' "$CMD" | sed -E ":a; s#${ALLOWED}#\1 \5#; ta")
-  printf '%s' "$REST" | grep -qE '\bpush\b' \
-    && block "push allows only: git push [-u] [--force-with-lease] origin feature/<n>-<slug> (or release/*, hotfix/*, chore/*)"
+# A regex guard catches mistakes, not a determined bypass; GitHub branch protection would be the real backstop.
+# Indirect git (built subcommand, eval, sh -c, xargs, new aliases) is refused so the checks below see real commands.
+has "${GIT}[\$\`(]"                                     && block "git with a computed subcommand"
+has '\b(eval|xargs)\b.*\bgit\b|\b(ba|z)?sh[[:space:]]+-c\b.*\bgit\b' && block "git run indirectly"
+has "${GIT}config\b.*\balias\b"                         && block "creating a git alias"
+# Push is allowlisted: if "push" appears anywhere (quotes and backslashes removed), the whole command must be exactly
+# git push [-u] [--force-with-lease] origin <feature|release|hotfix|chore>/<name>, run on its own.
+if printf '%s' "$CMD" | tr -d "\"'\\\\" | grep -qE 'push'; then
+  printf '%s' "$CMD" | grep -qxE 'git push( -u| --set-upstream)?( --force-with-lease)? origin (feature|release|hotfix|chore)/[A-Za-z0-9._-]+' \
+    || block "push must run on its own as: git push [-u] [--force-with-lease] origin feature/<n>-<slug> (or release/*, hotfix/*, chore/*)"
 fi
 has "${GIT}commit\b.*--amend"                           && block "amending a commit"
 has "${GIT}tag[[:space:]]+(-a|-s|-f|-d|[^-[:space:]])"  && block "creating or deleting a tag"
