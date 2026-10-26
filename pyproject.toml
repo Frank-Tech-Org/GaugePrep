@@ -34,7 +34,7 @@ select = ["E", "F", "I", "B", "UP"]
 [tool.mypy]
 python_version = "3.14"
 strict = true
-files = ["packages/examcore/src", "backend"]
+files = ["packages/examcore/src", "backend", "voice"]
 explicit_package_bases = true
 mypy_path = ["packages/examcore/src"]
 
