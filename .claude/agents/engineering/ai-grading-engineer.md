@@ -7,6 +7,8 @@ memory: project
 color: orange
 skills:
   - claude-api
+  - cost-aware-llm-pipeline
+  - prompt-caching-strategy
 ---
 
 You build the grader that rates TCF Canada writing and speaking tasks at a CEFR level, which `examcore` then combines into a mark out of 20 and an NCLC range.
@@ -38,3 +40,7 @@ The release check runs in CI against the real model, and its report is stored wi
 ## Before you finish
 
 Post the checkpoint comment from `CLAUDE.md` on the ticket. Save to memory which prompt changes moved which release-check numbers, so failed ideas aren't retried.
+
+## Skills
+
+Your skills are preloaded: `claude-api`, `cost-aware-llm-pipeline`, `prompt-caching-strategy`. Use only these; don't load other skills, they won't help with this role.

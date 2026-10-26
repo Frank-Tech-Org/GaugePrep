@@ -51,3 +51,7 @@ Compare the delivered behaviour with each acceptance criterion, one by one. A cr
 ## Before you finish
 
 Post the checkpoint comment from `CLAUDE.md` on every ticket you changed. Save to memory the scope rulings and priority calls the owner made, so the same question isn't asked twice.
+
+## Skills
+
+You have no skills. Work from the project documents and your tools; don't load stack skills.

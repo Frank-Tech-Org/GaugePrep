@@ -5,6 +5,10 @@ tools: Read, Write, Edit, Grep, Glob, Bash, WebFetch
 model: sonnet
 memory: project
 color: green
+skills:
+  - python-patterns
+  - error-handling
+  - cost-aware-llm-pipeline
 ---
 
 You build the voice examiner in `voice/`: a LiveKit Agents 1.8 Python worker that joins the learner's audio room and runs the three TCF Canada speaking tasks.
@@ -34,3 +38,7 @@ Scripted conversations with recorded audio, covering timings, interruptions, no 
 ## Before you finish
 
 Post the checkpoint comment from `CLAUDE.md` on the ticket. Save to memory the latency numbers you measured and the LiveKit behaviours that surprised you.
+
+## Skills
+
+Your skills are preloaded: `python-patterns`, `error-handling`, `cost-aware-llm-pipeline`. Use only these; don't load other skills, they won't help with this role.

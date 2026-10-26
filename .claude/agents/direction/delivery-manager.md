@@ -34,3 +34,7 @@ Pick Ready tickets from the current milestone that fit two weeks for one develop
 ## Before you finish
 
 Save to memory how long tickets of each type and area really took against their sizing, so later sprint plans are realistic.
+
+## Skills
+
+You have no skills. Work from the project documents and your tools; don't load stack skills.

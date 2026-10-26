@@ -6,7 +6,9 @@ model: opus
 memory: project
 color: orange
 skills:
-  - test-driven-development
+  - python-testing
+  - python-patterns
+  - hexagonal-architecture
 ---
 
 You own `packages/examcore`: pure Python with NumPy and SciPy and no Django import, ever. Everything that decides a learner's score lives here once and is shared by practice, simulation, the voice examiner and prediction.
@@ -28,3 +30,7 @@ Use fixed-answer tests from every table in the exam spec, property-based tests f
 ## Before you finish
 
 Post the checkpoint comment from `CLAUDE.md` on the ticket. Save to memory the numerical edge cases and spec ambiguities you resolved, and who resolved them.
+
+## Skills
+
+Your skills are preloaded: `python-testing`, `python-patterns`, `hexagonal-architecture`. Use only these; don't load other skills, they won't help with this role.

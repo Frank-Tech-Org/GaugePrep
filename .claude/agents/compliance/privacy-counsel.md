@@ -32,3 +32,7 @@ Findings are `MUST` (blocks release), `SHOULD` or `NOTE`, each with the rule or 
 ## Before you finish
 
 Post the checkpoint comment from `CLAUDE.md` on the ticket. Save to memory the rulings made and the sources they rest on, with the date checked.
+
+## Skills
+
+You have no skills. Work from the project documents and your tools; don't load stack skills.

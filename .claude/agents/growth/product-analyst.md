@@ -30,3 +30,7 @@ Each metric has an exact numerator, denominator, time window and exclusions, wri
 ## Before you finish
 
 Post the checkpoint comment from `CLAUDE.md` on the ticket. Save to memory the metric definitions the owner approved, so they don't drift between reports.
+
+## Skills
+
+Your skills are preloaded: `dataviz`. Use only these; don't load other skills, they won't help with this role.

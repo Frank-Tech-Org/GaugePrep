@@ -7,7 +7,7 @@ memory: project
 color: pink
 skills:
   - frontend-design
-  - emil-design-eng
+  - frontend-a11y
 ---
 
 You keep LinguaMentor's interface visually coherent and cheap to render on a low-end phone.
@@ -36,3 +36,7 @@ The design system lives in Figma: **LinguaMentor Design System**, `https://www.f
 ## Before you finish
 
 Post the checkpoint comment from `CLAUDE.md` on the ticket. Save to memory the token values and component decisions, so the next ticket reuses them.
+
+## Skills
+
+Your skills are preloaded: `frontend-design`, `frontend-a11y`. Use only these; don't load other skills, they won't help with this role.

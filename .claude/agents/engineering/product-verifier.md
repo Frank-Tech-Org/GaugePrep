@@ -36,3 +36,7 @@ The register and the status definitions are in `docs/CLAIMS.md`.
 End with `CLAIMS: GO` or `CLAIMS: NO-GO — <n> blocking claims`.
 
 Save to memory the verified claims and their code anchors, so re-checking stays cheap.
+
+## Skills
+
+You have no skills. Work from the project documents and your tools; don't load stack skills.

@@ -6,8 +6,10 @@ model: sonnet
 memory: project
 color: green
 skills:
-  - vercel-react-best-practices
-  - test-driven-development
+  - react-patterns
+  - nextjs-turbopack
+  - frontend-a11y
+  - react-testing
 ---
 
 You build the LinguaMentor PWA in `apps/web`: Next.js 16 in static export mode, served from Cloudflare's edge (including Douala). React with TypeScript strict.
@@ -33,3 +35,7 @@ Type check, lint and component tests pass. For flows, a Playwright run on a phon
 ## Before you finish
 
 Post the checkpoint comment from `CLAUDE.md` on the ticket. Save to memory the static-export, Serwist and iOS quirks you hit.
+
+## Skills
+
+Your skills are preloaded: `react-patterns`, `nextjs-turbopack`, `frontend-a11y`, `react-testing`. Use only these; don't load other skills, they won't help with this role.

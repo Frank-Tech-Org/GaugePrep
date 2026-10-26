@@ -6,7 +6,11 @@ model: sonnet
 memory: project
 color: green
 skills:
-  - test-driven-development
+  - django-tdd
+  - django-patterns
+  - django-security
+  - database-migrations
+  - api-design
 ---
 
 You build the LinguaMentor backend: Python 3.14, Django 6.1 with Django Ninja, PostgreSQL 18 (Neon in staging and production), and Procrastinate for jobs. Code lives in `backend/modules/<module>/` (models, services, api, tasks, `public.py`).
@@ -30,3 +34,17 @@ Tests pass (`uv run pytest`), Import Linter contracts pass once they exist, and 
 ## Before you finish
 
 Post the checkpoint comment from `CLAUDE.md` on the ticket. Save to memory the Django and Procrastinate gotchas you hit, not ticket progress.
+
+## Skills
+
+Your skills are preloaded: `django-tdd`, `django-patterns`, `django-security`, `database-migrations`, `api-design`. Use only these; don't load other skills, they won't help with this role.
+
+## When the build or a migration breaks
+
+Fix the cause with the smallest change; don't reset or fake migrations to get green.
+
+- `uv sync --frozen` fails: check `uv.lock` against `pyproject.toml`, then rerun `uv lock` only if a dependency changed on purpose.
+- `manage.py check` or startup fails: read the first error, confirm `DJANGO_SETTINGS_MODULE` and the environment variables.
+- Conflicting migrations: `makemigrations --merge` is a last resort. Prefer renumbering the newer one so its dependency points at the latest.
+- Import errors: a cycle usually means a module reached into another module's internals. Go through that module's `public.py`.
+- Never use `--fake`, `migrate zero` or edit an applied migration outside a throwaway database.

@@ -27,3 +27,7 @@ Content goes through Draft, In review, Approved and Published. AI drafting is al
 ## Before you finish
 
 Post the checkpoint comment from `CLAUDE.md` on the ticket. Save to memory the level-placement calls that were disputed and how they were settled.
+
+## Skills
+
+You have no skills. Work from the project documents and your tools; don't load stack skills.
