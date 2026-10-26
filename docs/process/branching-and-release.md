@@ -80,7 +80,7 @@ hotfix/<version>-<short-slug>       hotfix/0.2.1-fix-timer-drift
 
 - **Commit and PR titles** follow Conventional Commits, as commitlint enforces: `feat(api): add the health endpoint`. The squash merge keeps the PR title as the commit subject.
 - **PR body** links the ticket with `Refs #<n>`, never `Closes #<n>`. `develop` is the default branch, so `Closes` would close the issue at merge, before QA. Issues are closed at release.
-- Agents commit to the ticket's branch, push it and open the PR. Only the owner merges, pushes tags and publishes releases. Nobody pushes straight to `main` or `develop`.
+- Agents commit to the ticket's branch, push it and open the PR. `tech-lead` merges reviewed PRs into `develop`; only the owner merges into `main`, pushes tags and publishes releases. Nobody pushes straight to `main` or `develop`.
 
 ## 6. Ticket workflow
 
@@ -90,7 +90,7 @@ hotfix/<version>-<short-slug>       hotfix/0.2.1-fix-timer-drift
 4. **Pick.** `/lm-next` names the single ticket to work on: the one in flight if there is one, otherwise the highest-priority Ready ticket in the sprint whose blockers are resolved. If that ticket is blocked, it names the blocker instead.
 5. **Build.** `/lm-start <n>` checks that the slot is free, moves the ticket to In progress and creates `feature/<n>-<slug>` from an up-to-date `develop`. The owning agents implement, test, commit, push the branch and open the PR into `develop`.
 6. **Review.** `/lm-review <n>` moves the ticket to In review, and the tech lead and any specialist reviewers read the diff and post their verdict on the PR. Fixes happen on the same branch.
-7. **Merge.** The owner squash-merges once the review passes and CI is green, then deletes the branch.
+7. **Merge.** Once the review passes and CI is green, `tech-lead` runs `.claude/scripts/merge.sh <pr>`. It squash-merges into `develop` and deletes the branch, and refuses unless the base is `develop`, the branch is `feature/*` or `chore/*`, every check is green, and the latest `REVIEW: PASS` is newer than the last commit. The owner can still merge by hand.
 8. **QA.** Staging deploys from `develop`. `/lm-qa <n>` moves the ticket to In QA and checks every acceptance criterion on staging. A pass moves it to Ready to deploy and frees the slot. A fail sends it back to In progress with the defects listed; the fix goes in a new PR from `develop` that references the same ticket.
 
 Until staging exists (M0 ticket #11), QA runs against a local build of `develop`, and the QA report says so.

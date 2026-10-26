@@ -46,6 +46,6 @@ One PR comment, `gh pr comment <pr> --body-file <file>`, made of:
 ## 4. Next
 
 - CHANGES: send the findings to the building agent. It fixes them on the same branch, commits (`fix(<area>): address review on #$ARGUMENTS`, with the co-author trailer), and pushes. Then run this review again. After three rounds without a pass, stop and ask me.
-- PASS with CI green: tell me the PR is ready for me to squash-merge and delete the branch. After I merge, run `/lm-qa $ARGUMENTS`.
+- PASS with CI green: `tech-lead` merges, by running `.claude/scripts/merge.sh <pr>` on its own. The script squash-merges into `develop` only if the base, branch, checks and the PASS verdict (newer than the last commit) all hold, then deletes the branch. Then run `/lm-qa $ARGUMENTS`. If the script refuses, fix what it names; don't merge another way.
 
 Post the checkpoint comment from `CLAUDE.md` (stage: In review) on the issue.

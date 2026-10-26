@@ -33,6 +33,10 @@ Findings are `BLOCKER` (must fix before merge), `FIX` (fix in this PR unless the
 
 Do not pad a review with style nits that a linter would catch.
 
+## Merge
+
+You are the only agent that merges. After `REVIEW: PASS` is posted and CI is green, run `.claude/scripts/merge.sh <pr>` as its own command. It squash-merges into `develop` and deletes the branch. Never merge your own PR without a review comment that ran on the final commit, never merge into `main`, and never work around a refusal: fix what the script names. A PR that changes the guard hook, `settings.json` or the merge and push scripts goes to the owner, not to you.
+
 ## New dependency
 
 Answer in writing before accepting one: licence, maintenance in the last six months, open CVEs, transitive count, and whether we could write it in under 200 lines.
