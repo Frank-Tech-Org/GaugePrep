@@ -18,6 +18,9 @@ There must be exactly one, from `feature/$ARGUMENTS-*` into `develop`, or from `
 .claude/scripts/board.sh move $ARGUMENTS "In review"
 gh pr diff <pr>
 gh pr checks <pr>
+```
+If `gh pr diff` or `gh pr checks` fails (the classic-projects GraphQL error), use the REST calls: `gh api repos/LinguaMentor/linguamentor-v3/pulls/<pr>/files --paginate` for the diff and `gh api repos/LinguaMentor/linguamentor-v3/commits/<sha>/check-runs` for the checks.
+```
 gh issue view $ARGUMENTS
 ```
 
@@ -41,11 +44,12 @@ One PR comment, `gh pr comment <pr> --body-file <file>`, made of:
 - The verdict per reviewer, one line each.
 - The blockers and fixes as `file:line`, the issue and the fix.
 - Unmet acceptance criteria.
-- The final line: `REVIEW: PASS` or `REVIEW: CHANGES`.
+- The final line, alone on its line, with the PR's head commit: `REVIEW: PASS <full head sha>` or `REVIEW: CHANGES <full head sha>`. Get the sha with `gh api repos/LinguaMentor/linguamentor-v3/pulls/<pr> --jq .head.sha`. A new commit makes an earlier verdict stale, so review again.
 
 ## 4. Next
 
 - CHANGES: send the findings to the building agent. It fixes them on the same branch, commits (`fix(<area>): address review on #$ARGUMENTS`), and pushes. Then run this review again. After three rounds without a pass, stop and ask me.
-- PASS with CI green: `tech-lead` merges, by running `.claude/scripts/merge.sh <pr>` on its own. The script squash-merges into `develop` only if the base, branch, checks and the PASS verdict (newer than the last commit) all hold, then deletes the branch. Then run `/lm-qa $ARGUMENTS`. If the script refuses, fix what it names; don't merge another way.
+- PASS on a hotfix into `main`, or on any PR that changes the guard hook, settings, CI workflows or the push and merge scripts: tell the owner it is ready to merge. `tech-lead` does not merge these.
+- PASS with CI green on any other PR into `develop`: `tech-lead` merges, by running `.claude/scripts/merge.sh <pr>` on its own. The script squash-merges into `develop` only if the base, branch, checks and the PASS verdict (newer than the last commit) all hold, then deletes the branch. Then run `/lm-qa $ARGUMENTS`. If the script refuses, fix what it names; don't merge another way.
 
 Post the checkpoint comment from `CLAUDE.md` (stage: In review) on the issue.

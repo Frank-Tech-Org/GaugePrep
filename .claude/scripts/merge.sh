@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # The only way an agent merges, and only the tech-lead runs it. It squash-merges a reviewed work-branch PR into develop.
 #   .claude/scripts/merge.sh <pr-number>
-# Releases, tags and anything into main stay with the owner.
+# Releases, tags and anything into main stay with the owner. The review verdict is the last line of a PR comment:
+#   REVIEW: PASS <full head sha>      or      REVIEW: CHANGES <full head sha>
 set -euo pipefail
 
 pr=${1:-}
@@ -11,6 +12,8 @@ repo=LinguaMentor/linguamentor-v3
   || { echo "merge.sh: origin is not the LinguaMentor repository" >&2; exit 2; }
 
 fail() { echo "merge.sh: refused, $1" >&2; exit 1; }
+# gh --paginate prints one JSON array per page; slurp and join them so no page is skipped.
+all() { gh api --paginate "$1" | jq -s 'map(if type == "array" then . else [.] end) | add // []'; }
 
 info=$(gh api "repos/$repo/pulls/$pr")
 field() { printf '%s' "$info" | jq -r "$1"; }
@@ -29,20 +32,31 @@ for _ in 1 2 3 4 5; do
   sleep 2; info=$(gh api "repos/$repo/pulls/$pr")
 done
 [ "$(field .mergeable)" = true ] || fail "PR #$pr has conflicts or its mergeability is unknown"
+[ "$(field .head.sha)" = "$sha" ] || fail "the branch moved while checking; run again"
 
-# Every check on the head commit must have passed. With no checks at all (before CI exists) it merges, and says so.
-runs=$(gh api "repos/$repo/commits/$sha/check-runs" --jq '.check_runs')
+# Guardrail, CI and settings files belong to the owner.
+owner_files=$(all "repos/$repo/pulls/$pr/files?per_page=100" | jq -r '[.[].filename | select(test("^\\.claude/(hooks/|settings|scripts/(push|merge)\\.sh)|^\\.github/workflows/"))] | join(", ")')
+[ -z "$owner_files" ] || fail "it changes owner-only files ($owner_files); the owner merges this one"
+
+# CI fails closed: at least one check must exist on the head commit and all must have passed.
+runs=$(all "repos/$repo/commits/$sha/check-runs?per_page=100" | jq '[.[] | .check_runs[]?]')
+statuses=$(gh api "repos/$repo/commits/$sha/status")
+[ "$(printf '%s' "$runs" | jq length)" -gt 0 ] || [ "$(printf '%s' "$statuses" | jq '.statuses | length')" -gt 0 ] \
+  || fail "no CI checks exist on this commit; the owner merges until CI is in place"
 bad=$(printf '%s' "$runs" | jq -r '[.[] | select(.status != "completed" or (.conclusion | IN("success","neutral","skipped") | not)) | .name] | join(", ")')
 [ -z "$bad" ] || fail "checks not green: $bad"
-if [ "$(printf '%s' "$runs" | jq length)" = 0 ]; then echo "merge.sh: note, no CI checks exist on this commit"; fi
+if [ "$(printf '%s' "$statuses" | jq '.statuses | length')" -gt 0 ]; then
+  [ "$(printf '%s' "$statuses" | jq -r .state)" = success ] || fail "commit statuses are not all success"
+fi
 
-# The latest review verdict must be PASS and must come after the last commit.
-verdict=$(gh api "repos/$repo/issues/$pr/comments" --paginate --jq '[.[] | select(.body | test("REVIEW: (PASS|CHANGES)")) | {t: .created_at, v: (.body | capture("REVIEW: (?<v>PASS|CHANGES)").v)}] | last // empty | "\(.v) \(.t)"')
-[ -n "$verdict" ] || fail "no 'REVIEW: PASS' comment from /lm-review"
-[ "${verdict%% *}" = PASS ] || fail "the latest review verdict is CHANGES"
-committed=$(gh api "repos/$repo/commits/$sha" --jq .commit.committer.date)
-[[ "${verdict#* }" > "$committed" ]] || fail "the PASS verdict is older than the last commit; review again"
+# The newest verdict must be PASS for this exact commit. A verdict is the final line of a comment, nothing quoted.
+verdict=$(all "repos/$repo/issues/$pr/comments?per_page=100" | jq -r '
+  [.[] | {t: .created_at, last: (.body | rtrimstr("\n") | split("\n") | last // "" | gsub("\\s+$"; ""))}
+       | select(.last | test("^REVIEW: (PASS|CHANGES) [0-9a-f]{40}$"))]
+  | sort_by(.t) | last // empty | .last')
+[ -n "$verdict" ] || fail "no review verdict comment; run /lm-review"
+[ "$verdict" = "REVIEW: PASS $sha" ] || fail "the latest verdict is '$verdict', not a PASS for $sha; review again"
 
-# Pinned to the reviewed sha, so a push after the review cannot slip in.
+# Merge exactly the reviewed commit; GitHub rejects it if the branch moved since.
 gh api -X PUT "repos/$repo/pulls/$pr/merge" -f merge_method=squash -f sha="$sha" --jq .message
 gh api -X DELETE "repos/$repo/git/refs/heads/$head" >/dev/null && echo "merge.sh: merged #$pr and deleted $head"

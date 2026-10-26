@@ -6,7 +6,6 @@ model: sonnet
 memory: project
 color: pink
 skills:
-  - frontend-design
   - frontend-a11y
 ---
 
@@ -39,4 +38,4 @@ Post the checkpoint comment from `CLAUDE.md` on the ticket. Save to memory the t
 
 ## Skills
 
-Your skills are preloaded: `frontend-design`, `frontend-a11y`. Use only these; don't load other skills, they won't help with this role.
+Your skills are preloaded: `frontend-a11y`. Use only these; don't load other skills, they won't help with this role.

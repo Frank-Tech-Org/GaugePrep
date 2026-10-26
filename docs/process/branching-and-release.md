@@ -46,8 +46,9 @@ A blocked ticket goes back to **Ready** with the `blocked` label and a GitHub "b
 | Branch | Purpose | Merged into it by | Deployed to |
 |---|---|---|---|
 | `main` | Production. Every commit on it is a tagged release. | Owner, via PR from `release/*` or `hotfix/*` | Production (on tag) |
-| `develop` | Integration branch and the repository default. Always holds only QA-passed work, plus at most the one ticket in QA. | Owner, via squash-merged PR from `feature/*` | Staging (on push) |
+| `develop` | Integration branch and the repository default. Always holds only QA-passed work, plus at most the one ticket in QA. | `tech-lead` (the owner for PRs that touch the guard hook, settings, CI workflows or the push and merge scripts), via squash-merged PR from `feature/*` or `chore/*` | Staging (on push) |
 | `feature/<n>-<slug>` | One ticket of any type except a production hotfix | — | — |
+| `chore/<slug>` | Repository and workflow housekeeping that has no ticket of its own | — | — |
 | `release/<version>` | The release being regression-tested | Owner | Staging (manual run) |
 | `hotfix/<version>-<slug>` | Urgent production fix, branched from `main` | — | Staging (manual run) |
 
@@ -144,7 +145,7 @@ For an urgent production bug: a Bug ticket with priority Urgent and the `hotfix`
 | `main` | PR required, CI green, no direct pushes, only `release/*` and `hotfix/*` PRs |
 | `develop` | PR required, CI green, squash merge only |
 
-GitHub doesn't enforce these on the free plan for a private organisation repository: the API returns 403. Until the plan changes they're a convention. The agents' guard hook blocks agents from pushing straight to `main` or `develop`, force-pushing, merging, tagging and publishing releases, but it doesn't stop a person.
+GitHub doesn't enforce these on the free plan for a private organisation repository: the API returns 403. Until the plan changes they're a convention. The agents' guard hook blocks agents from pushing straight to `main` or `develop`, force-pushing, `gh pr merge`, tagging and publishing releases, but it doesn't stop a person. The only merge path for agents is `.claude/scripts/merge.sh`, which `tech-lead` runs. It is a regex-level guard, not a hard barrier: it does not block the same call made with `gh api`, so it relies on the agents' instructions until the owner tightens the hook.
 
 ## 10. Checklists
 
