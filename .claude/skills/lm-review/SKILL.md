@@ -26,6 +26,7 @@ gh issue view $ARGUMENTS
 Run these on the diff. Paste the ticket's acceptance criteria into each prompt.
 - Always `tech-lead`.
 - The reviewers for the ticket's Area, from the table in `CLAUDE.md`.
+- The code reviewers in `.claude/agents/review/` for what the diff touches: `python-reviewer` for `.py`, `django-reviewer` for backend modules and endpoints, `database-reviewer` for migrations and SQL, `typescript-reviewer` for `.ts`/`.tsx`, `react-reviewer` for `.tsx` components, and `silent-failure-hunter` for grading, scoring, payment or error-handling code.
 - `security-engineer` if the diff touches authentication, sessions, billing or payments, `identity`, migrations, append-only tables, AI prompts, the internal API or infrastructure exposure.
 - `privacy-counsel` if it changes what personal data is collected, kept, logged or sent to a provider or to analytics.
 - `ux-designer` and `ui-designer` if it changes what a learner sees.

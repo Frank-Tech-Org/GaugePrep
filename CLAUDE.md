@@ -66,6 +66,11 @@ Agents live in `.claude/agents/<department>/`. Each keeps its memory in `.claude
 | Content | `exam-content-author`, `technical-writer` |
 | Compliance | `privacy-counsel` |
 | Growth | `product-analyst`, `copywriter-seo` |
+| Review (code) | `python-reviewer`, `django-reviewer`, `database-reviewer`, `typescript-reviewer`, `react-reviewer`, `silent-failure-hunter` |
+
+The review agents are read-only specialists. `tech-lead` calls them in `/lm-review` by what the diff touches: Python, Django, migrations or SQL, TypeScript, React, and any code that handles errors, grades, scores or payments (`silent-failure-hunter`). Security review is `security-engineer`.
+
+**Skills and rules.** Each agent preloads only the skills its role needs (the `skills:` list in its file) and is told not to load others. Stack rules for Python and the web are in `.claude/rules/`, and the `/lm-*` commands are skills named `lm-*` in `.claude/skills/`.
 
 **Routing by the issue's Area field** (used by `/lm-start`):
 
