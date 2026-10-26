@@ -9,11 +9,13 @@ Exam preparation platform for TCF Canada first: a Next.js PWA, a Django modular 
 
 ## Rules that always apply
 
-- **One ticket at a time.** The work slot covers In progress, In review and In QA, and holds at most one ticket. Never start a second ticket while one is in it; see the process doc §1 for blocking and hotfixes.
+- **Parallel tickets, never overlapping.** At most 2 tickets are in flight (In progress, In review, In QA), 3 once CI runs on every PR. Each has its own branch and git worktree, and two run together only if their Areas or paths differ and neither blocks the other. `/pm` picks the set; `/lm-start` refuses an overlap. See the process doc §1 for blocking and hotfixes.
+- **Brief.** Reviews, comments, reports and checkpoints are short: verdict first, at most 10 lines, findings as `file:line — problem — fix`, no recap, no praise.
 - **Agents commit and open PRs; `tech-lead` merges into `develop`; the owner releases.** Inside a `/lm-*` command, agents commit to the ticket's own branch, push it and open the PR. After `/lm-review` posts `REVIEW: PASS` and CI is green, only `tech-lead` merges, by running `.claude/scripts/merge.sh <pr>` on its own, which squash-merges into `develop` and refuses anything else. Only the owner merges into `main`, pushes tags and publishes releases. The guard hook blocks `gh pr merge`, `gh release create`, tags, `--amend`, force pushes and direct pushes to `main` or `develop`. Agents never run `git push`. They push with `.claude/scripts/push.sh <work-branch> [--force-with-lease]`, run as its own command, which checks the branch and pushes it to the branch of the same name. Any other command containing the word "push", commit messages included, is refused. Git commands must be written out literally: no `$`, backticks, `$(...)` or heredocs, so commit messages go in plain `-m "..."` strings.
 - **Commits** follow Conventional Commits, `<type>(<area>): <subject>`, with one commit per logical step. Never add a `Co-Authored-By` trailer, a "Generated with Claude Code" line or any similar tool signature to a commit message, PR body, issue, comment or file; the owner doesn't want any of it anywhere.
 - **GitHub admin is fine.** Moving board items, editing labels and fields, and posting issue or PR comments through `gh` are allowed. Before a bulk write (more than five issues), state the scope and confirm it.
-- **Only `product-owner` creates issues.** Any other agent that finds work (a failed QA check, a budget breach, a false claim, a missing blocker) writes a draft with a title, type, suggested area and priority, context, and steps or evidence, then hands it to `product-owner`. `product-owner` creates it in Ideas, or adds it to an existing ticket if it's a duplicate. Creating more than five at once needs the owner's go-ahead.
+- **Only `pm` writes tickets.** Any other agent that finds work (a failed QA check, a budget breach, a false claim, a missing blocker) writes a draft with a title, type, suggested area and priority, context, and steps or evidence, then hands it to `pm`. `pm` creates it in Ideas, or adds it to an existing ticket if it's a duplicate. Creating or editing more than five at once needs the owner's go-ahead.
+- **Every ticket has acceptance criteria and a Definition of Done.** Criteria say what the user sees; the DoD says how we know it is finished well (tests, accessibility, budgets, migrations, security, docs), each item measurable.
 - **Tickets stand alone.** An issue body never points at the PRD, the architecture doc, ADR numbers or exam-spec sections. Inline the facts the reader needs.
 - **PR text is short.** One or two sentences of summary, `Refs #<n>`, what changed, and only the checklist items that matter. Titles follow Conventional Commits.
 - **Write plainly.** Code comments: one or two lines saying why. Longer reasoning goes in the PR or an ADR.
@@ -32,25 +34,16 @@ Exam preparation platform for TCF Canada first: a Next.js PWA, a Django modular 
 
 | Command | Stage | What it does |
 |---|---|---|
-| `/lm-brief` | daily | Where we are, what shipped, what's blocked, decisions waiting, what to do today |
-| `/lm-report` | weekly | Velocity, milestone forecast, defect clusters, decisions, next week |
-| `/lm-decide` | any | Walk the open decisions in `docs/DECISIONS.md`, record the owner's answers, unblock tickets |
-| `/lm-board [column]` | any | Summarise the board or one column and say what matters next |
-| `/lm-triage` | Ideas → Backlog | Classify untriaged tickets, flag duplicates, accept them into the backlog |
-| `/lm-refine <n>` | Backlog → Ready | Write acceptance criteria and dependencies, then move to Ready |
-| `/lm-plan-sprint [sprint]` | Ready | Fill the sprint in dependency order |
-| `/lm-next` | Ready | Name the single ticket to work on next |
-| `/lm-start <n>` | → In progress | Take the slot, branch, route to the owning agents, build and test |
-| `/lm-block <n> <blocker>` | In progress → Ready | Record a blocker and hand the slot to it |
+| `/pm [triage \| refine <n\|all> \| plan \| block <n> <b> \| decide \| resume [n] \| report]` | any | The project manager. Bare: asks `tech-lead`, says what is done and what to start next, in order. The arguments triage Ideas, write ACs and DoD, plan the sprint, record blockers, resolve owner decisions, resume from checkpoints |
+| `/lm-start <n>` | → In progress | Check limit and overlap, own worktree and branch, route to the owning agents, build and test |
 | `/lm-review <n>` | → In review | Review the PR diff and post the verdict |
 | `/lm-qa <n>` | → In QA | Verify on staging; pass to Ready to deploy or fail back |
 | `/lm-release <version>` | Ready to deploy → Done | Full release gate, release branch and PR, notes, then close tickets after the owner tags |
 | `/lm-verify-claims [surface]` | before release | Check every public claim against code and tests; refresh `docs/CLAIMS.md` |
 | `/lm-perf-audit [target]` | before release | Measure against the performance budgets; open a ticket per breach |
 | `/lm-hotfix <n>` | interrupt | Production fix from `main` |
-| `/lm-resume [n]` | any | Rebuild context after `/clear`, a crash or a new day |
 
-Board helper used by the commands: `.claude/scripts/board.sh` (list, wip, info, move, block, unblock).
+Board helper used by the commands: `.claude/scripts/board.sh` (list, wip, info, move, block, unblock, set, type, sprint).
 
 ## Team
 
@@ -58,7 +51,7 @@ Agents live in `.claude/agents/<department>/`. Each keeps its memory in `.claude
 
 | Department | Agents |
 |---|---|
-| Direction | `product-owner`, `tech-lead`, `delivery-manager` |
+| Direction | `pm`, `tech-lead` |
 | Engineering | `backend-django`, `frontend-nextjs`, `examcore-scoring`, `ai-grading-engineer`, `voice-engineer`, `qa-engineer` |
 | Design | `ux-designer`, `ui-designer` |
 | Engineering (quality) | `performance-engineer`, `product-verifier` |
@@ -81,17 +74,17 @@ The review agents are read-only specialists. `tech-lead` calls them in `/lm-revi
 | examcore | `examcore-scoring` | `tech-lead`, `qa-engineer` |
 | grading | `ai-grading-engineer` | `examcore-scoring`, `security-engineer` |
 | voice | `voice-engineer` | `tech-lead`, `qa-engineer` |
-| content | `exam-content-author` | `product-owner` |
+| content | `exam-content-author` | `pm` |
 | payments | `backend-django` | `security-engineer`, `tech-lead` |
 | infra | `devops-sre` | `security-engineer` |
-| compliance | `privacy-counsel` | `product-owner` |
+| compliance | `privacy-counsel` | `pm` |
 | docs | `technical-writer` | the owner of the documented area |
 
-Decision tickets go to `tech-lead` (technical) or `product-owner` (product) and produce an ADR. Anything touching authentication, payments, personal data, migrations or append-only tables also gets `security-engineer` review.
+Decision tickets go to `tech-lead` (technical) or `pm` (product) and produce an ADR. Anything touching authentication, payments, personal data, migrations or append-only tables also gets `security-engineer` review.
 
 ## Definition of Done
 
-The lists live in the issue templates' "Definition of Done" field (`.github/ISSUE_TEMPLATE/task.yml`, `story.yml`, `chore.yml`, `bug.yml`). `/lm-refine` keeps the items that apply and deletes the rest, so every ticket carries its own list. `/lm-review` and `/lm-qa` tick them, and an unticked item is a fail.
+The lists live in the issue templates' "Definition of Done" field (`.github/ISSUE_TEMPLATE/task.yml`, `story.yml`, `chore.yml`, `bug.yml`). `/pm refine` keeps the items that apply, deletes the rest and writes the list into the ticket body beside the acceptance criteria, so every ticket carries its own. `/lm-review` and `/lm-qa` tick them, and an unticked item is a fail.
 
 The items are measurable on purpose:
 - each endpoint has success, not-found and other-learner-refused tests
@@ -102,7 +95,7 @@ Don't soften them into "handled" or "considered".
 
 ## Decisions
 
-Anything that needs the owner goes in `docs/DECISIONS.md` as a numbered entry with options, a recommendation and the cost of delay. `/lm-brief` surfaces it and `/lm-decide` resolves it. These always need the owner:
+Anything that needs the owner goes in `docs/DECISIONS.md` as a numbered entry with options, a recommendation and the cost of delay. `/pm` surfaces it and `/pm decide` resolves it. These always need the owner:
 - scoring or grading formula changes
 - a new paid service or dependency
 - destructive migrations
@@ -113,7 +106,7 @@ Anything that needs the owner goes in `docs/DECISIONS.md` as a numbered entry wi
 
 ## Checkpoint comment
 
-Every command that changes a ticket ends by posting this on the issue. It is how `/lm-resume` picks up with no other context, so write it for a reader who knows nothing.
+Every command that changes a ticket ends by posting this on the issue. It is how `/pm resume` picks up with no other context, so write it for a reader who knows nothing. One line per field.
 
 ```text
 **Checkpoint** · <stage> · <agent> · <YYYY-MM-DD>

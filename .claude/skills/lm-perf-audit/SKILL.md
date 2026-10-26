@@ -16,4 +16,4 @@ Say plainly which budgets can't be measured yet, because the surface or the envi
 
 Require the table (surface · budget · before · after · guard) and the final `PERF: PASS` or `PERF: FAIL` line.
 
-For each exceeded budget, draft a Bug ticket for `product-owner`. Don't fix inside the audit unless the fix is one line and the owner of that area agrees. Otherwise the fix goes through its own ticket.
+For each exceeded budget, draft a Bug ticket for `pm`. Don't fix inside the audit unless the fix is one line and the owner of that area agrees. Otherwise the fix goes through its own ticket.

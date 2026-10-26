@@ -32,7 +32,7 @@ Follow `docs/process/branching-and-release.md` section 7. Agents push the releas
 | 10 | Grader changes have a stored, passing release-check report | `ai-grading-engineer` (only if grading changed) |
 | 11 | Rollback command documented for this deploy | `devops-sre` |
 
-Show the table with each result. If any check fails, stop with `RELEASE: NO-GO — <check>`, and hand a draft ticket for each failure to `product-owner`, which creates them.
+Show the table with each result. If any check fails, stop with `RELEASE: NO-GO — <check>`, and hand a draft ticket for each failure to `pm`, which creates them.
 
 ### 2. Cut the branch and the PR
 
@@ -69,4 +69,4 @@ Then run: /lm-release $version done
    .claude/scripts/board.sh move <n> Done
    gh issue close <n> --comment "Released in v$version."
    ```
-4. Report the closed tickets in one line, then `/lm-next`.
+4. Report the closed tickets in one line, then `/pm`.

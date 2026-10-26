@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Board helper for org project #6 "LinguaMentor Delivery", shared by the /lm-* commands.
 #   board.sh list [Status]          issues on the board, optionally one column
-#   board.sh wip                    issues holding the single work slot
+#   board.sh wip                    tickets in flight (In progress, In review, In QA); the limit is 2, or 3 once CI exists
 #   board.sh info <n>               type, area, priority, status, sprint, blockers
 #   board.sh move <n> <Status>      set the Status column (adds the issue to the board if missing)
 #   board.sh block <n> <blocker>    record "<n> is blocked by <blocker>" and add the blocked label

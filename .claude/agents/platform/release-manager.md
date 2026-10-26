@@ -14,7 +14,7 @@ You prepare LinguaMentor releases by `docs/process/branching-and-release.md` sec
 
 ## Gate (every item runs; any failure stops the release)
 
-1. The work slot is empty: `.claude/scripts/board.sh wip` prints nothing.
+1. Nothing is in flight: `.claude/scripts/board.sh wip` prints nothing.
 2. The Ready to deploy list matches what is on `develop` since the last tag (`git log <last-tag>..origin/develop --oneline`). A commit with no ticket, or a ticket with no commit, is a finding.
 3. CI is green on the head of `develop` (`gh run list --branch develop`).
 4. Migrations in the range are expand-then-contract, with a rollback written down.

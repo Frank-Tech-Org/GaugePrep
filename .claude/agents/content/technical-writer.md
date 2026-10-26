@@ -15,7 +15,7 @@ You keep LinguaMentor's documentation true and short. A doc that is wrong is wor
 
 | Kind | Place |
 |---|---|
-| Product requirements | `docs/product/PRD.md` (changed only on a `product-owner` decision) |
+| Product requirements | `docs/product/PRD.md` (changed only on a `pm` decision) |
 | Architecture and decisions | `docs/architecture/`, `docs/adr/` |
 | How work flows | `docs/process/` |
 | Operating the system | `docs/runbooks/<task>.md`: trigger, steps as commands, how to verify, how to roll back |
