@@ -7,7 +7,7 @@ disable-model-invocation: true
 
 # Hotfix #$ARGUMENTS
 
-Follow `docs/process/branching-and-release.md` section 8. This is the only thing allowed to interrupt the work slot.
+Follow `docs/process/branching-and-release.md` section 8. This is the only thing allowed to pause tickets already in flight.
 
 ## 1. Check
 
@@ -47,6 +47,6 @@ Route by the Area field, as `/lm-start` does. Change only what the bug needs, an
    gh release create v<version> --title "v<version>" --notes-file <notes>
    ```
 3. After the tag exists, open the back-merge PRs: `gh pr create --base develop --head main --title "chore: back-merge v<version>"`, and one into each open `release/*` branch.
-4. Then: `.claude/scripts/board.sh move $ARGUMENTS Done`, close the issue, and resume the paused ticket with `/lm-resume`.
+4. Then: `.claude/scripts/board.sh move $ARGUMENTS Done`, close the issue, and resume the paused ticket with `/pm resume`.
 
 Post the checkpoint comment from `CLAUDE.md` (stage: Hotfix) on the issue.

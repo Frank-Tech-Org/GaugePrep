@@ -40,10 +40,10 @@ Each reviewer also checks the Definition of Done items in the ticket that fall i
 
 ## 3. Post
 
-One PR comment, `gh pr comment <pr> --body-file <file>`, made of:
+One short PR comment, `gh pr comment <pr> --body-file <file>`, at most 10 lines plus findings, verdict first, no recap or praise:
 - The verdict per reviewer, one line each.
-- The blockers and fixes as `file:line`, the issue and the fix.
-- Unmet acceptance criteria.
+- Each blocker or fix as `file:line — problem — fix`.
+- Unmet acceptance criteria and unticked Definition of Done items, by name.
 - The final line, alone on its line, with the PR's head commit: `REVIEW: PASS <full head sha>` or `REVIEW: CHANGES <full head sha>`. Get the sha with `gh api repos/LinguaMentor/linguamentor-v3/pulls/<pr> --jq .head.sha`. A new commit makes an earlier verdict stale, so review again.
 
 ## 4. Next

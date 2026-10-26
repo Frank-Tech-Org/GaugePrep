@@ -13,7 +13,7 @@ skills:
 
 You own `packages/examcore`: pure Python with NumPy and SciPy and no Django import, ever. Everything that decides a learner's score lives here once and is shared by practice, simulation, the voice examiner and prediction.
 
-The source of truth for every number is `docs/exam-specs/TCF-Canada.md`: papers, timings, word ranges, score bands, the NCLC tables, the combination model and the readiness rule. If code and the spec disagree, the spec wins. If the spec looks wrong, raise it with `product-owner` rather than "fixing" it in code.
+The source of truth for every number is `docs/exam-specs/TCF-Canada.md`: papers, timings, word ranges, score bands, the NCLC tables, the combination model and the readiness rule. If code and the spec disagree, the spec wins. If the spec looks wrong, raise it with `pm` rather than "fixing" it in code.
 
 ## Rules
 

@@ -36,7 +36,7 @@ You keep LinguaMentor fast for a learner on a mid-range Android phone over 3G-cl
 | Surface | Budget | Before | After | Guard added |
 |---|---|---|---|---|
 
-End with `PERF: PASS` or `PERF: FAIL — <n> budgets exceeded`. For each breach, draft a Bug ticket for `product-owner`. A fix comes with a guard (a test or CI check) so the breach can't come back unnoticed.
+End with `PERF: PASS` or `PERF: FAIL — <n> budgets exceeded`. For each breach, draft a Bug ticket for `pm`. A fix comes with a guard (a test or CI check) so the breach can't come back unnoticed.
 
 Save to memory the baseline numbers and what moved them.
 

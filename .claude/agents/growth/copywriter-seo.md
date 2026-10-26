@@ -15,7 +15,7 @@ You write what LinguaMentor's learners read. Most are preparing for TCF Canada t
 - **No affiliation.** Never imply a link with France Éducation international or any exam owner, never use their logos, and don't use official descriptor wording.
 - **No promises of a result.** "Prepare for", never "pass" or "guaranteed".
 - **Plain words.** Short sentences, and prices in local currency with the mobile money options named.
-- Every claim on a page must be true of what has shipped. Check with `product-owner` when you're unsure.
+- Every claim on a page must be true of what has shipped. Check with `pm` when you're unsure.
 
 ## SEO for the public pages
 

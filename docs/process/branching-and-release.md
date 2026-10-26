@@ -2,15 +2,23 @@
 
 How a ticket moves from an idea to production, how code moves between branches, and how we ship and hotfix. The `/lm-*` commands in `.claude/skills/` follow this document; if the two disagree, this document wins and the command is fixed.
 
-## 1. The one-ticket rule
+## 1. The parallel rule
 
-Only one ticket is in flight at a time. A ticket holds the work slot from the moment it enters **In progress** until it reaches **Ready to deploy**. Nothing else starts while the slot is taken.
+Up to **two** tickets may be in flight at once (In progress, In review or In QA), **three** once CI runs on every PR (ticket #6). A ticket is in flight from **In progress** until **Ready to deploy**. The `pm` agent picks the set; `/lm-start` refuses a ticket that would exceed the limit or overlap one in flight.
 
-If the ticket in flight turns out to depend on another one, it is marked blocked by that ticket, leaves the slot, and the blocker is worked until it reaches Ready to deploy. Then the original ticket resumes.
+Two tickets may run together only when all of this holds:
 
-The only thing that may interrupt the slot is a production hotfix (section 8).
+- their Areas differ, or their "Files and paths" do not intersect;
+- neither blocks the other;
+- they do not both change a migration chain, the lockfile, the OpenAPI contract or shared config.
 
-Why: finishing one ticket before starting the next keeps `develop` releasable at all times, keeps context small enough for one session, and makes the changelog a straight list of finished tickets.
+Each ticket has its own branch and its own git worktree (`../lm-<n>`), so sessions never share a working tree.
+
+If a ticket in flight turns out to depend on another one, `/pm block <n> <blocker>` marks it blocked by that ticket and sends it back to Ready. The blocker is ordered first. A blocker counts as resolved at Ready to deploy.
+
+A production hotfix (section 8) may exceed the limit.
+
+Why: a small parallel set keeps `develop` releasable, review load bounded and context small enough for one session each, while tickets that cannot conflict no longer wait for each other.
 
 ```mermaid
 flowchart LR
@@ -30,13 +38,13 @@ Board: org project #6, "LinguaMentor Delivery".
 
 | Column | Meaning | Where the code is | Leaves when | Command |
 |---|---|---|---|---|
-| **Ideas** | Raw, untriaged ticket or suggestion | Nothing | Accepted into the backlog, or closed as duplicate or won't do | `/lm-triage` |
-| **Backlog** | Accepted: type, area, priority and milestone set, not yet refined | Nothing | Refined | `/lm-refine <n>` |
-| **Ready** | Refined: acceptance criteria and dependencies written, sized to two days or less | Nothing | Picked as the next ticket | `/lm-plan-sprint`, `/lm-next` |
-| **In progress** | Being built (holds the slot) | `feature/<n>-<slug>` | PR opened into `develop` | `/lm-start <n>` |
-| **In review** | PR open (holds the slot) | PR into `develop` | Approved and squash-merged | `/lm-review <n>` |
-| **In QA** | Merged, deployed to staging (holds the slot) | `develop`, staging | QA passes, or fails back to In progress | `/lm-qa <n>` |
-| **Ready to deploy** | Passed QA; slot is free | `develop` | Included in a tagged release | `/lm-release <version>` |
+| **Ideas** | Raw, untriaged ticket or suggestion | Nothing | Accepted into the backlog, or closed as duplicate or won't do | `/pm triage` |
+| **Backlog** | Accepted: type, area, priority and milestone set, not yet refined | Nothing | Refined | `/pm refine <n>` |
+| **Ready** | Refined: acceptance criteria, Definition of Done and dependencies written, sized to two days or less | Nothing | Picked as the next ticket | `/pm plan`, `/pm` |
+| **In progress** | Being built (in flight) | `feature/<n>-<slug>` | PR opened into `develop` | `/lm-start <n>` |
+| **In review** | PR open (in flight) | PR into `develop` | Approved and squash-merged | `/lm-review <n>` |
+| **In QA** | Merged, deployed to staging (in flight) | `develop`, staging | QA passes, or fails back to In progress | `/lm-qa <n>` |
+| **Ready to deploy** | Passed QA; no longer in flight | `develop` | Included in a tagged release | `/lm-release <version>` |
 | **Done** | Live, tagged, issue closed | `main` | — | — |
 
 A blocked ticket goes back to **Ready** with the `blocked` label and a GitHub "blocked by" link to its blocker. A blocker counts as resolved once it reaches Ready to deploy.
@@ -46,7 +54,7 @@ A blocked ticket goes back to **Ready** with the `blocked` label and a GitHub "b
 | Branch | Purpose | Merged into it by | Deployed to |
 |---|---|---|---|
 | `main` | Production. Every commit on it is a tagged release. | Owner, via PR from `release/*` or `hotfix/*` | Production (on tag) |
-| `develop` | Integration branch and the repository default. Always holds only QA-passed work, plus at most the one ticket in QA. | `tech-lead` (the owner for PRs that touch the guard hook, settings, CI workflows or the push and merge scripts), via squash-merged PR from `feature/*` or `chore/*` | Staging (on push) |
+| `develop` | Integration branch and the repository default. Always holds only QA-passed work, plus the tickets in QA. | `tech-lead` (the owner for PRs that touch the guard hook, settings, CI workflows or the push and merge scripts), via squash-merged PR from `feature/*` or `chore/*` | Staging (on push) |
 | `feature/<n>-<slug>` | One ticket of any type except a production hotfix | — | — |
 | `chore/<slug>` | Repository and workflow housekeeping that has no ticket of its own | — | — |
 | `release/<version>` | The release being regression-tested | Owner | Staging (manual run) |
@@ -56,7 +64,7 @@ Short-lived branches are deleted after merging.
 
 **Differences from a classic git-flow setup, and why:**
 
-- **Release branches are cut from `develop`, with no cherry-picking.** With one ticket in flight, `develop` never holds work that failed QA. The cherry-pick step exists to leave failed tickets out, and we don't have any to leave out.
+- **Release branches are cut from `develop`, with no cherry-picking.** A failed ticket is fixed or reverted on `develop` before the next release is cut, so `develop` holds no work that failed QA. The cherry-pick step exists to leave failed tickets out, and we don't have any to leave out.
 - **There is no `stage` branch.** Staging deploys automatically from `develop` and by a manual workflow run from `release/*` or `hotfix/*`. A disposable branch that has to be force-pushed adds a step and risk for no gain.
 
 ## 4. Versioning
@@ -85,14 +93,14 @@ hotfix/<version>-<short-slug>       hotfix/0.2.1-fix-timer-drift
 
 ## 6. Ticket workflow
 
-1. **Triage.** New tickets land in Ideas. `/lm-triage` sets type, area, priority and milestone, flags duplicates, and moves accepted tickets to Backlog. The owner closes duplicates and rejected ideas.
-2. **Refine.** `/lm-refine <n>` writes the acceptance criteria and dependencies, splits anything over two days, and moves the ticket to Ready.
-3. **Plan the sprint.** `/lm-plan-sprint` puts Ready tickets into the two-week Sprint iteration in dependency order. Sprints sit inside the product milestones (M0 to M8).
-4. **Pick.** `/lm-next` names the single ticket to work on: the one in flight if there is one, otherwise the highest-priority Ready ticket in the sprint whose blockers are resolved. If that ticket is blocked, it names the blocker instead.
-5. **Build.** `/lm-start <n>` checks that the slot is free, moves the ticket to In progress and creates `feature/<n>-<slug>` from an up-to-date `develop`. The owning agents implement, test, commit, push the branch and open the PR into `develop`.
+1. **Triage.** New tickets land in Ideas. `/pm triage` sets type, area, priority and milestone, flags duplicates, and moves accepted tickets to Backlog. The owner closes duplicates and rejected ideas.
+2. **Refine.** `/pm refine <n>` writes the acceptance criteria, the Definition of Done, the files and paths and the dependencies, splits anything over two days, and moves the ticket to Ready.
+3. **Plan the sprint.** `/pm plan` puts Ready tickets into the two-week Sprint iteration in dependency order. Sprints sit inside the product milestones (M0 to M8).
+4. **Pick.** `/pm` asks `tech-lead` for the technical read and names the set of tickets to start, up to the parallel limit: blockers first, then milestone, priority and size, and only tickets that cannot conflict.
+5. **Build.** `/lm-start <n>` checks the parallel limit and overlap, moves the ticket to In progress and creates `feature/<n>-<slug>` in its own worktree from an up-to-date `develop`. The owning agents implement, test, commit, push the branch and open the PR into `develop`.
 6. **Review.** `/lm-review <n>` moves the ticket to In review, and the tech lead and any specialist reviewers read the diff and post their verdict on the PR. Fixes happen on the same branch.
 7. **Merge.** Once the review passes and CI is green, `tech-lead` runs `.claude/scripts/merge.sh <pr>`. It squash-merges into `develop` and deletes the branch, and refuses unless the base is `develop`, the branch is `feature/*` or `chore/*`, every check is green, and the latest `REVIEW: PASS` is newer than the last commit. The owner can still merge by hand.
-8. **QA.** Staging deploys from `develop`. `/lm-qa <n>` moves the ticket to In QA and checks every acceptance criterion on staging. A pass moves it to Ready to deploy and frees the slot. A fail sends it back to In progress with the defects listed; the fix goes in a new PR from `develop` that references the same ticket.
+8. **QA.** Staging deploys from `develop`. `/lm-qa <n>` moves the ticket to In QA and checks every acceptance criterion on staging. A pass moves it to Ready to deploy. A fail sends it back to In progress with the defects listed; the fix goes in a new PR from `develop` that references the same ticket.
 
 Until staging exists (M0 ticket #11), QA runs against a local build of `develop`, and the QA report says so.
 
@@ -100,7 +108,7 @@ Until staging exists (M0 ticket #11), QA runs against a local build of `develop`
 
 Run at the end of a sprint, or sooner when a ticket is worth shipping on its own. `/lm-release <version>` drives it.
 
-1. Confirm the slot is empty (no ticket in progress, review or QA) and list the Ready to deploy tickets.
+1. Confirm nothing is in flight (no ticket in progress, review or QA) and list the Ready to deploy tickets.
 2. Run the gate: security pass, dependency audit, performance audit, claim verification and the UX check on changed screens (see `/lm-release`).
 3. The release manager cuts and pushes the release branch, and commits the changelog on it:
    ```bash
@@ -126,7 +134,7 @@ Run at the end of a sprint, or sooner when a ticket is worth shipping on its own
 
 ## 8. Hotfix workflow
 
-For an urgent production bug: a Bug ticket with priority Urgent and the `hotfix` label. It is the one thing allowed to interrupt the slot. `/lm-hotfix <n>` posts a checkpoint on the ticket in flight, then works the fix.
+For an urgent production bug: a Bug ticket with priority Urgent and the `hotfix` label. It is the one thing allowed to exceed the parallel limit. `/lm-hotfix <n>` posts a checkpoint on each ticket in flight, then works the fix.
 
 1. Branch from `main`, never from `develop`, so unreleased work cannot reach production:
    ```bash
@@ -173,10 +181,10 @@ GitHub doesn't enforce these on the free plan for a private organisation reposit
 
 ## 11. Troubleshooting
 
-**QA fails after the merge.** The ticket goes back to In progress and keeps the slot. Fix it on a new branch from `develop`. If the ticket is abandoned instead, revert its squash commit on `develop` before anything else starts, so `develop` stays releasable.
+**QA fails after the merge.** The ticket goes back to In progress and stays in flight. Fix it on a new branch from `develop`. If the ticket is abandoned instead, revert its squash commit on `develop` before anything else starts, so `develop` stays releasable.
 
 **A bad change reached `main`.** Revert it instead of rewriting history (`git revert -m 1 <merge-sha>` for a merge commit), then ship a PATCH release.
 
 **A hotfix wasn't back-merged.** Merge `main` into `develop` as soon as it's noticed. Git skips the changes that are already there.
 
-**The slot is stuck on a ticket waiting on something outside the team** (a provider, a signed form). Mark it blocked by a Chore that tracks the outside dependency. That moves it out of the slot, and the next ticket can start.
+**A ticket is stuck waiting on something outside the team** (a provider, a signed form). Mark it blocked by a Chore that tracks the outside dependency. That sends it back to Ready, and the next ticket can start.

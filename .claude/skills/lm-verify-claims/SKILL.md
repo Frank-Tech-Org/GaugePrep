@@ -16,6 +16,6 @@ Delegate to `product-verifier`. If `$ARGUMENTS` is empty, the scope is:
 
 Require the full classification table and the final `CLAIMS: GO` or `CLAIMS: NO-GO` line.
 
-List every `MOCKED` and `ABSENT` claim first, above the summary, with the surface and the exact line to remove or rewrite. For each one, draft a Bug ticket for `product-owner` with priority High and Area docs or web.
+List every `MOCKED` and `ABSENT` claim first, above the summary, with the surface and the exact line to remove or rewrite. For each one, draft a Bug ticket for `pm` with priority High and Area docs or web.
 
 If `docs/CLAIMS.md` changed, commit it on the current work branch (or on `chore/claims-<date>`) and open a PR into `develop`.
