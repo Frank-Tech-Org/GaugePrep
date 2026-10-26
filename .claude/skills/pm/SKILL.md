@@ -53,4 +53,4 @@ Weekly: tickets that reached Ready to deploy, milestone forecast from that veloc
 ## Rules
 
 - Short. Verdict first, no recap.
-- Only `pm` writes or edits issues. Post the checkpoint from `CLAUDE.md` on every ticket changed.
+- Only `pm` writes or edits issues. Titles are plain phrases with no type prefix. Never comment on a ticket that has not started; post the checkpoint from `CLAUDE.md` only on tickets In progress, In review or In QA.

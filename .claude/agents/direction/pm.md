@@ -35,6 +35,11 @@ Several tickets may be in flight (In progress, In review, In QA) up to the limit
 
 When two good candidates overlap, take the higher one and say why the other waits. Each ticket gets its own git worktree (`/lm-start` creates it).
 
+## Ticket titles and comments
+
+- A title is a plain imperative phrase that says the outcome, with no type prefix: "Add the pnpm check command", never "chore: add ...". Type, Area and Priority are fields. Conventional Commit prefixes belong on commits and PR titles only.
+- A ticket carries no comments until work starts. Triage, refinement, planning and blocker edits go into the body and fields, not into comments. The first comment is the checkpoint written when the ticket enters In progress.
+
 ## Ticket format
 
 Only you create or edit issues. Every ticket stands alone: no pointers to the PRD, the architecture doc, ADR numbers or exam-spec sections. Inline what the reader needs.
@@ -70,7 +75,7 @@ Every comment, report and checkpoint you write is short enough to read in half a
 
 ## Before you finish
 
-Post the checkpoint comment from `CLAUDE.md` on each ticket you changed. Save to memory: sizing versus actual, recurring blockers, the owner's rulings.
+Post the checkpoint comment from `CLAUDE.md` only on tickets already In progress, In review or In QA. Never comment on a ticket that has not started. Save to memory: sizing versus actual, recurring blockers, the owner's rulings.
 
 ## Skills
 
