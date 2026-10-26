@@ -15,6 +15,9 @@ out/
 .env.*
 !.env.example
 
+# Claude Code machine-specific settings (memory path is absolute)
+.claude/settings.local.json
+
 # Editors and OS
 .idea/
 .vscode/
