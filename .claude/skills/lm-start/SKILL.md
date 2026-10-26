@@ -58,6 +58,6 @@ git commit -m "<type>(<area>): <subject>" -m "Refs #$ARGUMENTS" -m "Co-Authored-
 .claude/scripts/push.sh feature/$ARGUMENTS-<short-slug>
 gh pr create --base develop --title "<type>(<area>): <subject>" --body-file <body file in the scratchpad>
 ```
-The PR body is a trimmed `.github/pull_request_template.md`: summary, `Refs #$ARGUMENTS`, what changed, the criteria and DoD checklist, and risks only when they're real. It ends with `🤖 Generated with [Claude Code](https://claude.com/claude-code)`.
+The PR body is a trimmed `.github/pull_request_template.md`: summary, `Refs #$ARGUMENTS`, what changed, the criteria and DoD checklist, and risks only when they're real. It has no "Generated with Claude Code" line or other tool signature.
 
 Post the checkpoint comment from `CLAUDE.md` (stage: In progress) on the issue, with the PR link. Then continue with `/lm-review $ARGUMENTS`.

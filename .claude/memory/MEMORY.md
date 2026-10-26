@@ -4,3 +4,4 @@
 - [Scope ticket work to what is asked](scope-ticket-work-to-what-is-asked.md) — foundation (M0) only; confirm scope before bulk-creating issues
 - [Keep PRs short](keep-prs-short.md) — brief, direct PR text with only what is needed
 - [Workflow redesign from friend template](workflow-redesign-from-friend-template.md) — one-ticket lifecycle, dept agents, repo memory; adapt, never copy
+- [No Generated-with line](no-generated-with-claude-line.md) — never add a Generated with Claude Code line anywhere in the project
