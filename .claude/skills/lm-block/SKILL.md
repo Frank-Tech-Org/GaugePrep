@@ -31,7 +31,7 @@ Post the checkpoint comment from `CLAUDE.md` on `#$blocked`: stage Blocked, with
 Save the work on `#$blocked`'s branch so the tree is clean:
 ```
 git add <this ticket's paths>
-git commit -m "wip(<area>): <what is done so far>" -m "Refs #$blocked" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit -m "wip(<area>): <what is done so far>" -m "Refs #$blocked"
 .claude/scripts/push.sh <the feature branch>
 ```
 Then the next step depends on where `#$blocker` is:

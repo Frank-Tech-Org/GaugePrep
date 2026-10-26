@@ -22,7 +22,7 @@ The ticket must be a Bug with priority Urgent and the `hotfix` label, and it mus
 
 If `wip` shows a ticket, post the checkpoint comment from `CLAUDE.md` on it: "paused for hotfix #$ARGUMENTS", with what is done and the exact next step. Leave its column as it is.
 
-Save its work first: commit the ticket's paths on its branch as `wip(<area>): ...` with `Refs #<n>` and the co-author trailer, then push that branch.
+Save its work first: commit the ticket's paths on its branch as `wip(<area>): ...` with `Refs #<n>`, then push that branch.
 
 ## 3. Branch from main
 
@@ -35,7 +35,7 @@ git switch -c hotfix/<version>-<short-slug>
 
 ## 4. Fix
 
-Route by the Area field, as `/lm-start` does. Change only what the bug needs, and add a test that fails without the fix. Commit (`fix(<area>): <subject>`, with `Refs #$ARGUMENTS` and the co-author trailer), push the hotfix branch, and open the PR into `main` (`gh pr create --base main`). Then run `/lm-review $ARGUMENTS`, with `security-engineer` included if the area is sensitive.
+Route by the Area field, as `/lm-start` does. Change only what the bug needs, and add a test that fails without the fix. Commit (`fix(<area>): <subject>`, with `Refs #$ARGUMENTS`), push the hotfix branch, and open the PR into `main` (`gh pr create --base main`). Then run `/lm-review $ARGUMENTS`, with `security-engineer` included if the area is sensitive.
 
 ## 5. QA, then hand over to the owner
 

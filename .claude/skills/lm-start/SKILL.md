@@ -54,7 +54,7 @@ Run the checks for what changed: `uv run pytest`, `pnpm check` and the Playwrigh
 Commit in logical steps as the work goes, never with `--amend`. Stage only this ticket's files: name the paths, and don't use `git add -A` when unrelated files are dirty.
 ```
 git add <paths>
-git commit -m "<type>(<area>): <subject>" -m "Refs #$ARGUMENTS" -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+git commit -m "<type>(<area>): <subject>" -m "Refs #$ARGUMENTS"
 .claude/scripts/push.sh feature/$ARGUMENTS-<short-slug>
 gh pr create --base develop --title "<type>(<area>): <subject>" --body-file <body file in the scratchpad>
 ```
