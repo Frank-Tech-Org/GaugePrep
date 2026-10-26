@@ -1,0 +1,181 @@
+# Branching, ticket lifecycle and release
+
+How a ticket moves from an idea to production, how code moves between branches, and how we ship and hotfix. The `/lm-*` commands in `.claude/skills/` follow this document; if the two disagree, this document wins and the command is fixed.
+
+## 1. The one-ticket rule
+
+Only one ticket is in flight at a time. A ticket holds the work slot from the moment it enters **In progress** until it reaches **Ready to deploy**. Nothing else starts while the slot is taken.
+
+If the ticket in flight turns out to depend on another one, it is marked blocked by that ticket, leaves the slot, and the blocker is worked until it reaches Ready to deploy. Then the original ticket resumes.
+
+The only thing that may interrupt the slot is a production hotfix (section 8).
+
+Why: finishing one ticket before starting the next keeps `develop` releasable at all times, keeps context small enough for one session, and makes the changelog a straight list of finished tickets.
+
+```mermaid
+flowchart LR
+    I[Ideas] -- triage --> B[Backlog]
+    B -- refine --> R[Ready]
+    R -- start --> P[In progress]
+    P -- PR opened --> V[In review]
+    V -- squash-merged to develop --> Q[In QA]
+    Q -- passes on staging --> D[Ready to deploy]
+    Q -- fails --> P
+    D -- release tagged on main --> X[Done]
+```
+
+## 2. Board columns
+
+Board: org project #6, "LinguaMentor Delivery".
+
+| Column | Meaning | Where the code is | Leaves when | Command |
+|---|---|---|---|---|
+| **Ideas** | Raw, untriaged ticket or suggestion | Nothing | Accepted into the backlog, or closed as duplicate or won't do | `/lm-triage` |
+| **Backlog** | Accepted: type, area, priority and milestone set, not yet refined | Nothing | Refined | `/lm-refine <n>` |
+| **Ready** | Refined: acceptance criteria and dependencies written, sized to two days or less | Nothing | Picked as the next ticket | `/lm-plan-sprint`, `/lm-next` |
+| **In progress** | Being built (holds the slot) | `feature/<n>-<slug>` | PR opened into `develop` | `/lm-start <n>` |
+| **In review** | PR open (holds the slot) | PR into `develop` | Approved and squash-merged | `/lm-review <n>` |
+| **In QA** | Merged, deployed to staging (holds the slot) | `develop`, staging | QA passes, or fails back to In progress | `/lm-qa <n>` |
+| **Ready to deploy** | Passed QA; slot is free | `develop` | Included in a tagged release | `/lm-release <version>` |
+| **Done** | Live, tagged, issue closed | `main` | — | — |
+
+A blocked ticket goes back to **Ready** with the `blocked` label and a GitHub "blocked by" link to its blocker. A blocker counts as resolved once it reaches Ready to deploy.
+
+## 3. Branches
+
+| Branch | Purpose | Merged into it by | Deployed to |
+|---|---|---|---|
+| `main` | Production. Every commit on it is a tagged release. | Owner, via PR from `release/*` or `hotfix/*` | Production (on tag) |
+| `develop` | Integration branch and the repository default. Always holds only QA-passed work, plus at most the one ticket in QA. | Owner, via squash-merged PR from `feature/*` | Staging (on push) |
+| `feature/<n>-<slug>` | One ticket of any type except a production hotfix | — | — |
+| `release/<version>` | The release being regression-tested | Owner | Staging (manual run) |
+| `hotfix/<version>-<slug>` | Urgent production fix, branched from `main` | — | Staging (manual run) |
+
+Short-lived branches are deleted after merging.
+
+**Differences from a classic git-flow setup, and why:**
+
+- **Release branches are cut from `develop`, with no cherry-picking.** With one ticket in flight, `develop` never holds work that failed QA. The cherry-pick step exists to leave failed tickets out, and we don't have any to leave out.
+- **There is no `stage` branch.** Staging deploys automatically from `develop` and by a manual workflow run from `release/*` or `hotfix/*`. A disposable branch that has to be force-pushed adds a step and risk for no gain.
+
+## 4. Versioning
+
+[Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH`, tagged on `main` with an annotated tag such as `v0.3.0`.
+
+| Bump | When | Comes from |
+|---|---|---|
+| MINOR | New capability (any release with a feature) | `release/*` |
+| PATCH | Fixes only | `hotfix/*`, or a release with only fixes |
+| MAJOR | Breaking API change (`/api/v2`) or a non-reversible migration | `release/*` |
+
+Versions stay at `0.x.y` until the PRD's release 1 goes live, which is tagged `v1.0.0`.
+
+## 5. Names, commits and PRs
+
+```
+feature/<issue>-<short-slug>        feature/7-django-skeleton
+release/<version>                   release/0.2.0
+hotfix/<version>-<short-slug>       hotfix/0.2.1-fix-timer-drift
+```
+
+- **Commit and PR titles** follow Conventional Commits, as commitlint enforces: `feat(api): add the health endpoint`. The squash merge keeps the PR title as the commit subject.
+- **PR body** links the ticket with `Refs #<n>`, never `Closes #<n>`. `develop` is the default branch, so `Closes` would close the issue at merge, before QA. Issues are closed at release.
+- Agents commit to the ticket's branch, push it and open the PR. Only the owner merges, pushes tags and publishes releases. Nobody pushes straight to `main` or `develop`.
+
+## 6. Ticket workflow
+
+1. **Triage.** New tickets land in Ideas. `/lm-triage` sets type, area, priority and milestone, flags duplicates, and moves accepted tickets to Backlog. The owner closes duplicates and rejected ideas.
+2. **Refine.** `/lm-refine <n>` writes the acceptance criteria and dependencies, splits anything over two days, and moves the ticket to Ready.
+3. **Plan the sprint.** `/lm-plan-sprint` puts Ready tickets into the two-week Sprint iteration in dependency order. Sprints sit inside the product milestones (M0 to M8).
+4. **Pick.** `/lm-next` names the single ticket to work on: the one in flight if there is one, otherwise the highest-priority Ready ticket in the sprint whose blockers are resolved. If that ticket is blocked, it names the blocker instead.
+5. **Build.** `/lm-start <n>` checks that the slot is free, moves the ticket to In progress and creates `feature/<n>-<slug>` from an up-to-date `develop`. The owning agents implement, test, commit, push the branch and open the PR into `develop`.
+6. **Review.** `/lm-review <n>` moves the ticket to In review, and the tech lead and any specialist reviewers read the diff and post their verdict on the PR. Fixes happen on the same branch.
+7. **Merge.** The owner squash-merges once the review passes and CI is green, then deletes the branch.
+8. **QA.** Staging deploys from `develop`. `/lm-qa <n>` moves the ticket to In QA and checks every acceptance criterion on staging. A pass moves it to Ready to deploy and frees the slot. A fail sends it back to In progress with the defects listed; the fix goes in a new PR from `develop` that references the same ticket.
+
+Until staging exists (M0 ticket #11), QA runs against a local build of `develop`, and the QA report says so.
+
+## 7. Release workflow
+
+Run at the end of a sprint, or sooner when a ticket is worth shipping on its own. `/lm-release <version>` drives it.
+
+1. Confirm the slot is empty (no ticket in progress, review or QA) and list the Ready to deploy tickets.
+2. Run the gate: security pass, dependency audit, performance audit, claim verification and the UX check on changed screens (see `/lm-release`).
+3. The release manager cuts and pushes the release branch, and commits the changelog on it:
+   ```bash
+   git switch develop && git pull
+   git switch -c release/0.2.0
+   .claude/scripts/push.sh release/0.2.0
+   ```
+4. Run the staging deploy workflow on `release/0.2.0` for regression QA. Small fixes are committed on the release branch.
+5. The release manager opens a PR from `release/0.2.0` into `main` using the release PR template. The owner merges it with a **merge commit**, not a squash.
+6. The owner tags and publishes:
+   ```bash
+   git switch main && git pull
+   git tag -a v0.2.0 -m "Release v0.2.0"
+   git push origin v0.2.0
+   gh release create v0.2.0 --notes-file release-notes.md
+   ```
+   The tag triggers the production deploy (M0 ticket #13).
+7. Back-merge, so fixes made on the release branch reach `develop`. The release manager opens a PR from `main` into `develop`, and the owner merges it with a merge commit:
+   ```bash
+   gh pr create --base develop --head main --title "chore: back-merge v0.2.0" --body "Back-merge after the v0.2.0 release."
+   ```
+8. `/lm-release 0.2.0 done` moves the included tickets to Done, closes their issues and deletes the release branch.
+
+## 8. Hotfix workflow
+
+For an urgent production bug: a Bug ticket with priority Urgent and the `hotfix` label. It is the one thing allowed to interrupt the slot. `/lm-hotfix <n>` posts a checkpoint on the ticket in flight, then works the fix.
+
+1. Branch from `main`, never from `develop`, so unreleased work cannot reach production:
+   ```bash
+   git switch main && git pull
+   git switch -c hotfix/0.2.1-fix-timer-drift
+   ```
+2. The agents fix, test, commit, push and open a PR into `main`. Run the staging deploy workflow on the hotfix branch and QA it there.
+3. The owner merges with a merge commit, tags `v0.2.1`, pushes the tag and creates the GitHub release.
+4. Back-merge `main` into `develop`, and into any open `release/*` branch, through PRs the release manager opens and the owner merges. Skipping this brings the bug back in the next release.
+5. Move the ticket to Done, then resume the interrupted ticket from its checkpoint.
+
+## 9. Branch protection
+
+| Branch | Target rules |
+|---|---|
+| `main` | PR required, CI green, no direct pushes, only `release/*` and `hotfix/*` PRs |
+| `develop` | PR required, CI green, squash merge only |
+
+GitHub doesn't enforce these on the free plan for a private organisation repository: the API returns 403. Until the plan changes they're a convention. The agents' guard hook blocks agents from pushing straight to `main` or `develop`, force-pushing, merging, tagging and publishing releases, but it doesn't stop a person.
+
+## 10. Checklists
+
+**Before opening a PR**
+- [ ] Branch is `feature/<n>-<slug>` from current `develop` (or `hotfix/*` from `main`)
+- [ ] PR title follows Conventional Commits; body says `Refs #<n>`
+- [ ] Tests and checks pass locally
+- [ ] Every acceptance criterion addressed, or listed as a follow-up
+- [ ] The Definition of Done items in the ticket are ticked
+
+**Cutting a release**
+- [ ] Slot empty; Ready to deploy list confirmed
+- [ ] Gate passed: security, dependencies, performance, claims, UX
+- [ ] `release/x.y.z` cut from current `develop`
+- [ ] Regression QA passed on staging
+- [ ] Merged to `main` with a merge commit, tagged, GitHub release created
+- [ ] `main` merged back into `develop`
+- [ ] Tickets moved to Done and closed; release branch deleted
+
+**Hotfix**
+- [ ] Branched from `main`; QA passed on staging
+- [ ] Tagged with a PATCH version
+- [ ] `main` merged back into `develop` and any open `release/*`
+- [ ] Interrupted ticket resumed
+
+## 11. Troubleshooting
+
+**QA fails after the merge.** The ticket goes back to In progress and keeps the slot. Fix it on a new branch from `develop`. If the ticket is abandoned instead, revert its squash commit on `develop` before anything else starts, so `develop` stays releasable.
+
+**A bad change reached `main`.** Revert it instead of rewriting history (`git revert -m 1 <merge-sha>` for a merge commit), then ship a PATCH release.
+
+**A hotfix wasn't back-merged.** Merge `main` into `develop` as soon as it's noticed. Git skips the changes that are already there.
+
+**The slot is stuck on a ticket waiting on something outside the team** (a provider, a signed form). Mark it blocked by a Chore that tracks the outside dependency. That moves it out of the slot, and the next ticket can start.

@@ -50,3 +50,16 @@ body:
 - [ ] "
     validations:
       required: true
+  - type: textarea
+    id: definition-of-done
+    attributes:
+      label: Definition of Done
+      description: "Delete the items that do not apply to this ticket. Review and QA check the rest."
+      value: |
+        - [ ] Fix verified in the environment where the bug was found
+        - [ ] Other places that use the same code checked for the same bug
+        - [ ] Each changed endpoint keeps its success, not-found and other-learner tests
+        - [ ] Security review with no CRITICAL or HIGH if authentication, payments, personal data, migrations, append-only data or AI prompts changed
+        - [ ] Claims register updated if what a learner can do changed
+    validations:
+      required: true

@@ -38,3 +38,15 @@ body:
       description: "Issues this depends on, or \"none\"."
     validations:
       required: true
+  - type: textarea
+    id: definition-of-done
+    attributes:
+      label: Definition of Done
+      description: "Delete the items that do not apply to this ticket. Review and QA check the rest."
+      value: |
+        - [ ] Every acceptance criterion verified, with the command output in the PR
+        - [ ] No secrets in the repository; new settings documented in `.env.example`
+        - [ ] Security review with no CRITICAL or HIGH if infrastructure exposure, secrets or CI permissions changed
+        - [ ] Docs, runbook or README updated, or not needed
+    validations:
+      required: true
