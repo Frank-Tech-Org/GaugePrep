@@ -30,8 +30,8 @@ The PR must be from `feature/<n>-*` or `chore/*` into `develop`, or `hotfix/*` i
 |---|---|
 | No open PR | `/lm-start`; or `/lm-qa` if a merged PR is waiting |
 | Head sha already has `REVIEW: PASS` | merge (rules in §4) |
-| CI failing | `/lm-start` (continues on the branch and fixes it); no review of red code |
-| Branch behind `develop` with conflicts | `/lm-start` (rebases) |
+| CI failing | `/lm-start` (continues on the branch and fixes it); no review of red code. A `chore/*` PR: fix it on its own branch, then rerun `/lm-review` |
+| Branch behind `develop` with conflicts | `/lm-start` (rebases). A `chore/*` PR: rebase it on its own branch, then rerun `/lm-review` |
 
 Then `board.sh move <n> "In review"`, and read the diff (`gh pr diff <pr>`, or `gh api repos/LinguaMentor/linguamentor-v3/pulls/<pr>/files --paginate` when it fails) and the checks (`gh api repos/LinguaMentor/linguamentor-v3/commits/<sha>/check-runs`). Read the ticket with `gh issue view <n>`.
 
@@ -55,6 +55,6 @@ Post one short PR comment (`gh pr comment <pr> --body-file <file>`, or REST if i
 
 - CHANGES: send the findings to the building agent, which fixes on the same branch (`fix(<area>): address review on #<n>`) and pushes. Run `/lm-review` again. After three rounds, stop and ask the owner.
 - PASS on a hotfix into `main`, or on a PR that changes the guard hook, settings, CI workflows or the push and merge scripts: tell the owner it is ready to merge.
-- PASS on any other PR into `develop` with CI green: `tech-lead` runs `.claude/scripts/merge.sh <pr>` on its own, then `/lm-qa`. While no CI exists the script refuses and the owner merges. If it refuses for another reason, fix what it names; don't merge another way.
+- PASS on any other PR into `develop` with CI green: `tech-lead` runs `.claude/scripts/merge.sh <pr>` on its own, then `/lm-qa` if it has a ticket, else `/pm`. While no CI exists the script refuses and the owner merges. If it refuses for another reason, fix what it names; don't merge another way.
 
 Post the checkpoint comment from `CLAUDE.md` (stage: In review) on the issue.
