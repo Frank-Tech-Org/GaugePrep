@@ -34,3 +34,21 @@ pnpm --version
 ```
 
 `examcore` must import without Django installed.
+
+## Checks
+
+`pnpm check` is the single command that defines "passes". Git hooks and CI run the same command. It stops at the first failure and prints `check failed: <tool>`.
+
+| Tool | What it does |
+|---|---|
+| `ruff format --check` | Python formatting |
+| `ruff check` | Python lint |
+| `mypy` | Python types (strict) |
+| `lint-imports` (Import Linter) | Module boundaries; zero contracts for now |
+| `pytest` | Python tests; exit code 5 (nothing collected) counts as a pass |
+| `prettier --check` | TypeScript and JSON formatting |
+| `eslint` | TypeScript lint (`apps/web/eslint.config.js`) |
+| `tsc --noEmit` | TypeScript types (`apps/web/tsconfig.json`) |
+| `vitest` | TypeScript tests; passes when there are none |
+
+Run one tool with `pnpm run check:<name>`, for example `pnpm run check:mypy`. Fix formatting with `uv run ruff format backend packages voice` and `pnpm exec prettier --write <file>`.

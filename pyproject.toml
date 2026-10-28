@@ -15,3 +15,32 @@ members = ["backend", "packages/examcore", "voice"]
 examcore = { workspace = true }
 linguamentor-backend = { workspace = true }
 linguamentor-voice = { workspace = true }
+
+[dependency-groups]
+dev = [
+    "import-linter>=2.15",
+    "mypy>=2.4.0",
+    "pytest>=9.1.1",
+    "ruff>=0.17.2",
+]
+
+[tool.ruff]
+target-version = "py314"
+extend-exclude = [".venv"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.mypy]
+python_version = "3.14"
+strict = true
+files = ["packages/examcore/src", "backend", "voice"]
+explicit_package_bases = true
+mypy_path = ["packages/examcore/src"]
+
+[tool.pytest.ini_options]
+testpaths = ["backend", "packages", "voice"]
+
+[tool.importlinter]
+root_packages = ["examcore"]
+include_external_packages = false
