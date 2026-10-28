@@ -9,4 +9,4 @@ PR #46 (2026-10-28) made the commands find their own ticket and hand off when a 
 
 **Why:** each refusal table looks right by itself. Loops only show up when you pair rows across commands, and the in-flight ticket is the usual case that slips through.
 
-**How to apply:** for every "Hand off to" row, check the target command's first matching row for the same state. A ticket that is already in `wip` must never be refused by the parallel limit. Every hand-off must name a slash command, not an agent. See [[merge-gate-rulings]].
+**How to apply:** for every "Hand off to" row, check the target command's first matching row for the same state. A ticket that is already in `wip` must never be refused by the parallel limit. Every hand-off must name a slash command, not an agent. Also check the order of the rows: a board-column row placed before the PR rows sent In review tickets with CHANGES to `/pm refine` (round 2 of #46). Also check that the branch-prefix filters in lm-review and `merge.sh` agree (`chore/*`). See [[merge-gate-rulings]].
