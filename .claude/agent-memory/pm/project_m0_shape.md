@@ -13,6 +13,10 @@ Non-code, owner-run tickets: #9, #14, #16, #17, #18 and #19. Whether they count 
 
 Ownership of shared files: #5 owns `.gitleaks.toml` and the commitlint config, and #6 only reads them, so #5 and #6 can run in parallel once #4 lands.
 
+#9 is split into an agent part (untrack the committed `.env`, `.env.example`, ad hoc gitleaks) and an owner part (accounts, secrets). Secret naming waits on D-3: the private repo on GitHub Free has no environments, so the default is repo secrets prefixed STAGING_/PROD_ unless the owner pays for Team. As of 2026-10-28 D-3 was still not written in docs/DECISIONS.md, and #12 (prod approval gate) hinges on the same paid-plan question.
+
+Recurring stall: a PASS PR waits days for tech-lead to run merge.sh (#45, PASS 2026-10-26, unmerged 2026-10-28). No staging exists in M0, so /lm-qa for infra chores cannot run "on staging".
+
 **Why:** this records the reasoning behind the order, so a later session doesn't re-derive it or undo it.
 
 **How to apply:** check the board before relying on this; update the sizing notes with actuals.
