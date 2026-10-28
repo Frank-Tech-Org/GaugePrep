@@ -22,7 +22,7 @@ In this order:
 2. The open PR whose branch is the current branch.
 3. The open PR whose last `REVIEW:` comment is missing or names an older head sha than the PR's current head. If several, take the oldest.
 
-The PR must be from `feature/<n>-*` into `develop`, or `hotfix/*` into `main`. The ticket is the `Refs #<n>` in its body.
+The PR must be from `feature/<n>-*` or `chore/*` into `develop`, or `hotfix/*` into `main`. The ticket is the `Refs #<n>` in its body; a `chore/*` PR may have none, and then there is no board move or ticket checkpoint.
 
 ## 2. Check the environment, hand off if it says no
 

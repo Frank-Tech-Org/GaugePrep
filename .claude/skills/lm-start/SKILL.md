@@ -31,9 +31,9 @@ Run `board.sh info <n>` and `gh issue view <n> --comments`. Stop at the first fa
 | Finding | Hand off to |
 |---|---|
 | Nothing in Ready | `/pm refine` if Backlog has tickets, else `/pm triage` |
-| Ticket is not in Ready or In progress, or has no acceptance criteria or Definition of Done | `/pm refine #<n>` |
+| Ticket is not in Ready, In progress or In review, or has no acceptance criteria or Definition of Done | `/pm refine #<n>` |
 | Parallel limit reached (2, or 3 once CI exists) and this ticket is not already in `wip`; a hotfix is exempt | `/lm-review` or `/lm-qa` for the ticket nearest the end |
-| Overlaps a ticket in `wip` (same Area and intersecting paths, a blocking link, or a shared migration chain, lockfile, OpenAPI contract or config) | the next non-overlapping ticket from `pm`, else wait |
+| Overlaps another ticket in `wip` (same Area and intersecting paths, a blocking link, or a shared migration chain, lockfile, OpenAPI contract or config) | the next non-overlapping ticket from `pm`, else wait |
 | A blocker is not at Ready to deploy or Done | `/lm-start #<blocker>`, or `/pm` if the blocker is not ready |
 | Ticket has an open PR that is green with no CHANGES verdict on its head | `/lm-review` |
 | Ticket has an open PR with red CI, conflicts or a `REVIEW: CHANGES` verdict | continue here on its branch: fix, commit, push, then `/lm-review` |
