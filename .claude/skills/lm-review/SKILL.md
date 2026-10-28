@@ -20,7 +20,7 @@ No number is needed; `#n` only overrides the choice below.
 In this order:
 1. `#n` in the arguments (ticket or PR number).
 2. The open PR whose branch is the current branch.
-3. The open PR whose last `REVIEW:` comment is missing or names an older head sha than the PR's current head. If several, take the one furthest along in `pm`'s ordering.
+3. The open PR whose last `REVIEW:` comment is missing or names an older head sha than the PR's current head. If several, take the oldest.
 
 The PR must be from `feature/<n>-*` into `develop`, or `hotfix/*` into `main`. The ticket is the `Refs #<n>` in its body.
 
@@ -30,8 +30,8 @@ The PR must be from `feature/<n>-*` into `develop`, or `hotfix/*` into `main`. T
 |---|---|
 | No open PR | `/lm-start`; or `/lm-qa` if a merged PR is waiting |
 | Head sha already has `REVIEW: PASS` | merge (rules in §4) |
-| CI failing | the building agent fixes it; no review of red code |
-| Branch behind `develop` with conflicts | the building agent rebases |
+| CI failing | `/lm-start` (continues on the branch and fixes it); no review of red code |
+| Branch behind `develop` with conflicts | `/lm-start` (rebases) |
 
 Then `board.sh move <n> "In review"`, and read the diff (`gh pr diff <pr>`, or `gh api repos/LinguaMentor/linguamentor-v3/pulls/<pr>/files --paginate` when it fails) and the checks (`gh api repos/LinguaMentor/linguamentor-v3/commits/<sha>/check-runs`). Read the ticket with `gh issue view <n>`.
 
