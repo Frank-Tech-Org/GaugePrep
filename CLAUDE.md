@@ -35,14 +35,16 @@ Exam preparation platform for TCF Canada first: a Next.js PWA, a Django modular 
 
 | Command | Stage | What it does |
 |---|---|---|
-| `/pm [triage \| refine <n\|all> \| plan \| block <n> <b> \| decide \| resume [n] \| report]` | any | The project manager. Bare: asks `tech-lead`, says what is done and what to start next, in order. The arguments triage Ideas, write ACs and DoD, plan the sprint, record blockers, resolve owner decisions, resume from checkpoints |
-| `/lm-start <n>` | → In progress | Check limit and overlap, own worktree and branch, route to the owning agents, build and test |
-| `/lm-review <n>` | → In review | Review the PR diff and post the verdict |
-| `/lm-qa <n>` | → In QA | Verify on staging; pass to Ready to deploy or fail back |
+| `/pm [triage \| refine [all] \| plan \| block <blocker> \| decide \| resume \| report]` | any | The project manager. Bare: asks `tech-lead`, says what is done and what to start next, in order. The arguments triage Ideas, write ACs and DoD, plan the sprint, record blockers, resolve owner decisions, resume from checkpoints |
+| `/lm-start` | → In progress | Check limit and overlap, own worktree and branch, route to the owning agents, build and test |
+| `/lm-review` | → In review | Review the PR diff and post the verdict |
+| `/lm-qa` | → In QA | Verify on staging; pass to Ready to deploy or fail back |
 | `/lm-release <version>` | Ready to deploy → Done | Full release gate, release branch and PR, notes, then close tickets after the owner tags |
 | `/lm-verify-claims [surface]` | before release | Check every public claim against code and tests; refresh `docs/CLAIMS.md` |
 | `/lm-perf-audit [target]` | before release | Measure against the performance budgets; open a ticket per breach |
-| `/lm-hotfix <n>` | interrupt | Production fix from `main` |
+| `/lm-hotfix` | interrupt | Production fix from `main` |
+
+**Commands take no ticket number.** Each reads the board, the current branch or worktree, open PRs and the last checkpoint, works out its target, checks the environment allows it (parallel limit, overlap, blockers, CI, a verdict for the current head), and either proceeds or names the command to run instead. `#n` is an optional override only. Every command ends by naming the next command. `/lm-release` takes a version because a version is not a ticket.
 
 Board helper used by the commands: `.claude/scripts/board.sh` (list, wip, info, move, block, unblock, set, type, sprint).
 

@@ -1,30 +1,41 @@
 ---
 name: lm-review
-description: Review the open PR for a LinguaMentor ticket. Move it to In review, run the tech lead and the specialist reviewers on the real diff, post the verdict on the PR, and route fixes back to the builder.
-argument-hint: <issue-number>
+description: Review the right open LinguaMentor PR. Works out which PR from the current branch and the board, checks it is reviewable, runs the tech lead and specialist reviewers on the real diff, posts the verdict, and hands off to the next command.
+argument-hint: "[#n to override]"
 disable-model-invocation: true
 ---
 
-# Review #$ARGUMENTS
+# Review: $ARGUMENTS
+
+No number is needed; `#n` only overrides the choice below.
+
+## State now
+
+!`.claude/scripts/board.sh wip || true`
+!`git branch --show-current`
+!`gh api "repos/LinguaMentor/linguamentor-v3/pulls?state=open" --jq '.[] | "#\(.number) \(.head.ref) -> \(.base.ref) \(.head.sha)"' || true`
 
 ## 1. Find the PR
 
-```
-gh pr list --state open --search "Refs #$ARGUMENTS in:body" --json number,title,headRefName,baseRefName
-```
-There must be exactly one, from `feature/$ARGUMENTS-*` into `develop`, or from `hotfix/*` into `main`. Otherwise say what's wrong and stop.
+In this order:
+1. `#n` in the arguments (ticket or PR number).
+2. The open PR whose branch is the current branch.
+3. The open PR whose last `REVIEW:` comment is missing or names an older head sha than the PR's current head. If several, take the one furthest along in `pm`'s ordering.
 
-```
-.claude/scripts/board.sh move $ARGUMENTS "In review"
-gh pr diff <pr>
-gh pr checks <pr>
-```
-If `gh pr diff` or `gh pr checks` fails (the classic-projects GraphQL error), use the REST calls: `gh api repos/LinguaMentor/linguamentor-v3/pulls/<pr>/files --paginate` for the diff and `gh api repos/LinguaMentor/linguamentor-v3/commits/<sha>/check-runs` for the checks.
-```
-gh issue view $ARGUMENTS
-```
+The PR must be from `feature/<n>-*` into `develop`, or `hotfix/*` into `main`. The ticket is the `Refs #<n>` in its body.
 
-## 2. Review
+## 2. Check the environment, hand off if it says no
+
+| Finding | Hand off to |
+|---|---|
+| No open PR | `/lm-start`; or `/lm-qa` if a merged PR is waiting |
+| Head sha already has `REVIEW: PASS` | merge (rules in §4) |
+| CI failing | the building agent fixes it; no review of red code |
+| Branch behind `develop` with conflicts | the building agent rebases |
+
+Then `board.sh move <n> "In review"`, and read the diff (`gh pr diff <pr>`, or `gh api repos/LinguaMentor/linguamentor-v3/pulls/<pr>/files --paginate` when it fails) and the checks (`gh api repos/LinguaMentor/linguamentor-v3/commits/<sha>/check-runs`). Read the ticket with `gh issue view <n>`.
+
+## 3. Review
 
 Run these on the diff. Paste the ticket's acceptance criteria into each prompt.
 - Always `tech-lead`.
@@ -36,20 +47,14 @@ Run these on the diff. Paste the ticket's acceptance criteria into each prompt.
 - `performance-engineer` if it touches a learner page's bundle, media, a hot query or the grading or voice path.
 - `product-verifier` if it changes learner-facing claims or copy.
 
-Each reviewer also checks the Definition of Done items in the ticket that fall in its area.
+Each reviewer also checks the Definition of Done items in its area.
 
-## 3. Post
-
-One short PR comment, `gh pr comment <pr> --body-file <file>`, at most 10 lines plus findings, verdict first, no recap or praise:
-- The verdict per reviewer, one line each.
-- Each blocker or fix as `file:line — problem — fix`.
-- Unmet acceptance criteria and unticked Definition of Done items, by name.
-- The final line, alone on its line, with the PR's head commit: `REVIEW: PASS <full head sha>` or `REVIEW: CHANGES <full head sha>`. Get the sha with `gh api repos/LinguaMentor/linguamentor-v3/pulls/<pr> --jq .head.sha`. A new commit makes an earlier verdict stale, so review again.
+Post one short PR comment (`gh pr comment <pr> --body-file <file>`, or REST if it fails), at most 10 lines plus findings, verdict first, no recap or praise: a verdict per reviewer, each fix as `file:line — problem — fix`, unmet criteria and unticked DoD items by name. The last line, alone: `REVIEW: PASS <full head sha>` or `REVIEW: CHANGES <full head sha>` (sha from `gh api repos/LinguaMentor/linguamentor-v3/pulls/<pr> --jq .head.sha`). A new commit makes it stale.
 
 ## 4. Next
 
-- CHANGES: send the findings to the building agent. It fixes them on the same branch, commits (`fix(<area>): address review on #$ARGUMENTS`), and pushes. Then run this review again. After three rounds without a pass, stop and ask me.
-- PASS on a hotfix into `main`, or on any PR that changes the guard hook, settings, CI workflows or the push and merge scripts: tell the owner it is ready to merge. `tech-lead` does not merge these.
-- PASS with CI green on any other PR into `develop`: `tech-lead` merges, by running `.claude/scripts/merge.sh <pr>` on its own. The script squash-merges into `develop` only if the base, branch, checks and the PASS verdict (newer than the last commit) all hold, then deletes the branch. Then run `/lm-qa $ARGUMENTS`. If the script refuses, fix what it names; don't merge another way.
+- CHANGES: send the findings to the building agent, which fixes on the same branch (`fix(<area>): address review on #<n>`) and pushes. Run `/lm-review` again. After three rounds, stop and ask the owner.
+- PASS on a hotfix into `main`, or on a PR that changes the guard hook, settings, CI workflows or the push and merge scripts: tell the owner it is ready to merge.
+- PASS on any other PR into `develop` with CI green: `tech-lead` runs `.claude/scripts/merge.sh <pr>` on its own, then `/lm-qa`. While no CI exists the script refuses and the owner merges. If it refuses for another reason, fix what it names; don't merge another way.
 
 Post the checkpoint comment from `CLAUDE.md` (stage: In review) on the issue.

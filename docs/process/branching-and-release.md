@@ -14,7 +14,7 @@ Two tickets may run together only when all of this holds:
 
 Each ticket has its own branch and its own git worktree (`../lm-<n>`), so sessions never share a working tree.
 
-If a ticket in flight turns out to depend on another one, `/pm block <n> <blocker>` marks it blocked by that ticket and sends it back to Ready. The blocker is ordered first. A blocker counts as resolved at Ready to deploy.
+If a ticket in flight turns out to depend on another one, `/pm block <blocker>` marks the ticket on the current branch as blocked by it and sends it back to Ready. The blocker is ordered first. A blocker counts as resolved at Ready to deploy.
 
 A production hotfix (section 8) may exceed the limit.
 
@@ -39,11 +39,11 @@ Board: org project #6, "LinguaMentor Delivery".
 | Column | Meaning | Where the code is | Leaves when | Command |
 |---|---|---|---|---|
 | **Ideas** | Raw, untriaged ticket or suggestion | Nothing | Accepted into the backlog, or closed as duplicate or won't do | `/pm triage` |
-| **Backlog** | Accepted: type, area, priority and milestone set, not yet refined | Nothing | Refined | `/pm refine <n>` |
+| **Backlog** | Accepted: type, area, priority and milestone set, not yet refined | Nothing | Refined | `/pm refine` |
 | **Ready** | Refined: acceptance criteria, Definition of Done and dependencies written, sized to two days or less | Nothing | Picked as the next ticket | `/pm plan`, `/pm` |
-| **In progress** | Being built (in flight) | `feature/<n>-<slug>` | PR opened into `develop` | `/lm-start <n>` |
-| **In review** | PR open (in flight) | PR into `develop` | Approved and squash-merged | `/lm-review <n>` |
-| **In QA** | Merged, deployed to staging (in flight) | `develop`, staging | QA passes, or fails back to In progress | `/lm-qa <n>` |
+| **In progress** | Being built (in flight) | `feature/<n>-<slug>` | PR opened into `develop` | `/lm-start` |
+| **In review** | PR open (in flight) | PR into `develop` | Approved and squash-merged | `/lm-review` |
+| **In QA** | Merged, deployed to staging (in flight) | `develop`, staging | QA passes, or fails back to In progress | `/lm-qa` |
 | **Ready to deploy** | Passed QA; no longer in flight | `develop` | Included in a tagged release | `/lm-release <version>` |
 | **Done** | Live, tagged, issue closed | `main` | — | — |
 
@@ -93,14 +93,16 @@ hotfix/<version>-<short-slug>       hotfix/0.2.1-fix-timer-drift
 
 ## 6. Ticket workflow
 
+Commands take no ticket number. Each works out its target from the board, the current branch or worktree, open PRs and the last checkpoint, checks that the environment allows the step, and otherwise names the command to run instead. `#n` overrides the choice.
+
 1. **Triage.** New tickets land in Ideas. `/pm triage` sets type, area, priority and milestone, flags duplicates, and moves accepted tickets to Backlog. The owner closes duplicates and rejected ideas.
-2. **Refine.** `/pm refine <n>` writes the acceptance criteria, the Definition of Done, the files and paths and the dependencies, splits anything over two days, and moves the ticket to Ready.
+2. **Refine.** `/pm refine` writes the acceptance criteria, the Definition of Done, the files and paths and the dependencies, splits anything over two days, and moves the ticket to Ready.
 3. **Plan the sprint.** `/pm plan` puts Ready tickets into the two-week Sprint iteration in dependency order. Sprints sit inside the product milestones (M0 to M8).
 4. **Pick.** `/pm` asks `tech-lead` for the technical read and names the set of tickets to start, up to the parallel limit: blockers first, then milestone, priority and size, and only tickets that cannot conflict.
-5. **Build.** `/lm-start <n>` checks the parallel limit and overlap, moves the ticket to In progress and creates `feature/<n>-<slug>` in its own worktree from an up-to-date `develop`. The owning agents implement, test, commit, push the branch and open the PR into `develop`.
-6. **Review.** `/lm-review <n>` moves the ticket to In review, and the tech lead and any specialist reviewers read the diff and post their verdict on the PR. Fixes happen on the same branch.
+5. **Build.** `/lm-start` checks the parallel limit and overlap, moves the ticket to In progress and creates `feature/<n>-<slug>` in its own worktree from an up-to-date `develop`. The owning agents implement, test, commit, push the branch and open the PR into `develop`.
+6. **Review.** `/lm-review` moves the ticket to In review, and the tech lead and any specialist reviewers read the diff and post their verdict on the PR. Fixes happen on the same branch.
 7. **Merge.** Once the review passes and CI is green, `tech-lead` runs `.claude/scripts/merge.sh <pr>`. It squash-merges into `develop` and deletes the branch, and refuses unless the base is `develop`, the branch is `feature/*` or `chore/*`, every check is green, and the latest `REVIEW: PASS` is newer than the last commit. The owner can still merge by hand.
-8. **QA.** Staging deploys from `develop`. `/lm-qa <n>` moves the ticket to In QA and checks every acceptance criterion on staging. A pass moves it to Ready to deploy. A fail sends it back to In progress with the defects listed; the fix goes in a new PR from `develop` that references the same ticket.
+8. **QA.** Staging deploys from `develop`. `/lm-qa` moves the ticket to In QA and checks every acceptance criterion on staging. A pass moves it to Ready to deploy. A fail sends it back to In progress with the defects listed; the fix goes in a new PR from `develop` that references the same ticket.
 
 Until staging exists (M0 ticket #11), QA runs against a local build of `develop`, and the QA report says so.
 
@@ -134,7 +136,7 @@ Run at the end of a sprint, or sooner when a ticket is worth shipping on its own
 
 ## 8. Hotfix workflow
 
-For an urgent production bug: a Bug ticket with priority Urgent and the `hotfix` label. It is the one thing allowed to exceed the parallel limit. `/lm-hotfix <n>` posts a checkpoint on each ticket in flight, then works the fix.
+For an urgent production bug: a Bug ticket with priority Urgent and the `hotfix` label. It is the one thing allowed to exceed the parallel limit. `/lm-hotfix` posts a checkpoint on each ticket in flight, then works the fix.
 
 1. Branch from `main`, never from `develop`, so unreleased work cannot reach production:
    ```bash
