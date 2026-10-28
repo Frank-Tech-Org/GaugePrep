@@ -6,7 +6,14 @@ Settled architecture choices become ADRs in `docs/adr/`. This file is for open q
 
 ## Open
 
-_None._
+### D-2: Do owner-run tickets (accounts, recordings, vendor requests) count against the in-flight limit?
+- Raised: 2026-10-26 by pm on #9, #14, #16, #17, #18, #19
+- Context: Six M0 tickets involve no code. They are mostly waiting: #14 recruits speakers and #18 waits up to 3 weeks for MTN. If they count against the limit of 2 in flight, they hold back #4, #5 and #6 for weeks.
+- Options: A, they count; the long-lead requests start late · B, tickets with no repository code (no Files and paths except `.env.example`) run outside the limit, still one at a time per owner
+- Recommendation: B, because the limit protects review load and `develop`, and these tickets touch neither.
+- Cost of delay: #14 and #18 have 3-week lead times. Each week they wait pushes the speech-provider choice (#15) and phone sign-up back a week.
+- Reversible: yes
+- Blocks: #14, #18 starting now
 
 <!-- Template:
 ### D-<n>: <question>

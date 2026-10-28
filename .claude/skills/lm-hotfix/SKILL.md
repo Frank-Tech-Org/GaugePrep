@@ -1,52 +1,56 @@
 ---
 name: lm-hotfix
-description: Fix an urgent LinguaMentor production bug from main. Pause the ticket in flight with a checkpoint, branch hotfix/* from main, fix and test, and hand the owner the PR, tag and back-merge steps.
-argument-hint: <issue-number>
+description: Fix an urgent LinguaMentor production bug from main. Finds the Urgent hotfix Bug on the board, pauses the tickets in flight with a checkpoint, branches hotfix/* from main, fixes and tests, and hands the owner the PR, tag and back-merge steps.
+argument-hint: "[#n to override]"
 disable-model-invocation: true
 ---
 
-# Hotfix #$ARGUMENTS
+# Hotfix: $ARGUMENTS
 
-Follow `docs/process/branching-and-release.md` section 8. This is the only thing allowed to pause tickets already in flight.
+Follow `docs/process/branching-and-release.md` section 8. This is the only thing allowed to pause tickets already in flight. No number is needed; `#n` only overrides the choice below.
 
-## 1. Check
+## State now
 
-```
-.claude/scripts/board.sh info $ARGUMENTS
-.claude/scripts/board.sh wip
-git describe --tags --abbrev=0 origin/main
-```
-The ticket must be a Bug with priority Urgent and the `hotfix` label, and it must affect something already tagged on `main`. If not, it's a normal ticket: say so and stop.
+!`.claude/scripts/board.sh list || true`
+!`.claude/scripts/board.sh wip || true`
+!`git describe --tags --abbrev=0 origin/main || true`
+!`git branch --show-current`
 
-## 2. Pause the ticket in flight
+## 1. Find the bug and check it
 
-If `wip` shows a ticket, post the checkpoint comment from `CLAUDE.md` on it: "paused for hotfix #$ARGUMENTS", with what is done and the exact next step. Leave its column as it is.
+1. `#n` in the arguments.
+2. The current branch is `hotfix/*`: its ticket, continue it.
+3. Otherwise the Bug with priority Urgent and the `hotfix` label on the board.
 
-Save its work first: commit the ticket's paths on its branch as `wip(<area>): ...` with `Refs #<n>`, then push that branch.
+| Finding | Hand off to |
+|---|---|
+| No such Bug, or no tag exists on `main` yet | nothing to hotfix: stop. A bug in untagged code is a normal ticket: `/pm`, then `/lm-start` |
+| The bug is not in something already tagged on `main` | same: a normal ticket |
+| A hotfix PR is already open | `/lm-review` |
+
+## 2. Pause the tickets in flight
+
+For each ticket in `wip`, post the checkpoint comment from `CLAUDE.md`: "paused for hotfix #<n>", with what is done and the exact next step. Leave its column. Save its work first: commit its paths on its branch as `wip(<area>): ...` with `Refs #<n>`, then push that branch with `.claude/scripts/push.sh <branch>`.
 
 ## 3. Branch from main
 
-Next version: the last tag with PATCH + 1.
+Next version is the last tag with PATCH + 1.
 ```
-.claude/scripts/board.sh move $ARGUMENTS "In progress"
-git switch main && git pull
+.claude/scripts/board.sh move <n> "In progress"
+git switch main
+git pull
 git switch -c hotfix/<version>-<short-slug>
 ```
 
 ## 4. Fix
 
-Route by the Area field, as `/lm-start` does. Change only what the bug needs, and add a test that fails without the fix. Commit (`fix(<area>): <subject>`, with `Refs #$ARGUMENTS`), push the hotfix branch, and open the PR into `main` (`gh pr create --base main`). Then run `/lm-review $ARGUMENTS`, with `security-engineer` included if the area is sensitive.
+Route by the Area field, as `/lm-start` does. Change only what the bug needs, and add a test that fails without the fix. Commit (`fix(<area>): <subject>`, `Refs #<n>`), push the hotfix branch with `push.sh`, open the PR into `main` through `gh api`. Next: `/lm-review`, with `security-engineer` if the area is sensitive.
 
 ## 5. QA, then hand over to the owner
 
-1. Once the staging deploy has run on the hotfix branch, `qa-engineer` verifies the fix there.
-2. Then tell me:
-   ```
-   Merge the hotfix PR with a merge commit, then:
-   git switch main && git pull && git tag -a v<version> -m "Hotfix v<version>" && git push origin v<version>
-   gh release create v<version> --title "v<version>" --notes-file <notes>
-   ```
-3. After the tag exists, open the back-merge PRs: `gh pr create --base develop --head main --title "chore: back-merge v<version>"`, and one into each open `release/*` branch.
-4. Then: `.claude/scripts/board.sh move $ARGUMENTS Done`, close the issue, and resume the paused ticket with `/pm resume`.
+1. After the staging deploy of the hotfix branch, `qa-engineer` verifies the fix there.
+2. Tell the owner: merge the hotfix PR with a merge commit, tag `v<version>` on `main`, push the tag, publish the release with notes.
+3. After the tag exists, open the back-merge PRs into `develop` and into each open `release/*`.
+4. Then `board.sh move <n> Done`, close the issue, and resume the paused tickets with `/pm resume`.
 
 Post the checkpoint comment from `CLAUDE.md` (stage: Hotfix) on the issue.

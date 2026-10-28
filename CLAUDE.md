@@ -16,6 +16,7 @@ Exam preparation platform for TCF Canada first: a Next.js PWA, a Django modular 
 - **GitHub admin is fine.** Moving board items, editing labels and fields, and posting issue or PR comments through `gh` are allowed. Before a bulk write (more than five issues), state the scope and confirm it.
 - **Only `pm` writes tickets.** Any other agent that finds work (a failed QA check, a budget breach, a false claim, a missing blocker) writes a draft with a title, type, suggested area and priority, context, and steps or evidence, then hands it to `pm`. `pm` creates it in Ideas, or adds it to an existing ticket if it's a duplicate. Creating or editing more than five at once needs the owner's go-ahead.
 - **Every ticket has acceptance criteria and a Definition of Done.** Criteria say what the user sees; the DoD says how we know it is finished well (tests, accessibility, budgets, migrations, security, docs), each item measurable.
+- **Ticket titles have no type prefix, and tickets that have not started have no comments.** The Type field says chore or decision; Conventional Commit prefixes are for commits and PR titles. Checkpoint comments start when work starts.
 - **Tickets stand alone.** An issue body never points at the PRD, the architecture doc, ADR numbers or exam-spec sections. Inline the facts the reader needs.
 - **PR text is short.** One or two sentences of summary, `Refs #<n>`, what changed, and only the checklist items that matter. Titles follow Conventional Commits.
 - **Write plainly.** Code comments: one or two lines saying why. Longer reasoning goes in the PR or an ADR.
@@ -34,14 +35,16 @@ Exam preparation platform for TCF Canada first: a Next.js PWA, a Django modular 
 
 | Command | Stage | What it does |
 |---|---|---|
-| `/pm [triage \| refine <n\|all> \| plan \| block <n> <b> \| decide \| resume [n] \| report]` | any | The project manager. Bare: asks `tech-lead`, says what is done and what to start next, in order. The arguments triage Ideas, write ACs and DoD, plan the sprint, record blockers, resolve owner decisions, resume from checkpoints |
-| `/lm-start <n>` | → In progress | Check limit and overlap, own worktree and branch, route to the owning agents, build and test |
-| `/lm-review <n>` | → In review | Review the PR diff and post the verdict |
-| `/lm-qa <n>` | → In QA | Verify on staging; pass to Ready to deploy or fail back |
+| `/pm [triage \| refine [all] \| plan \| block <blocker> \| decide \| resume \| report]` | any | The project manager. Bare: asks `tech-lead`, says what is done and what to start next, in order. The arguments triage Ideas, write ACs and DoD, plan the sprint, record blockers, resolve owner decisions, resume from checkpoints |
+| `/lm-start` | → In progress | Check limit and overlap, own worktree and branch, route to the owning agents, build and test |
+| `/lm-review` | → In review | Review the PR diff and post the verdict |
+| `/lm-qa` | → In QA | Verify on staging; pass to Ready to deploy or fail back |
 | `/lm-release <version>` | Ready to deploy → Done | Full release gate, release branch and PR, notes, then close tickets after the owner tags |
 | `/lm-verify-claims [surface]` | before release | Check every public claim against code and tests; refresh `docs/CLAIMS.md` |
 | `/lm-perf-audit [target]` | before release | Measure against the performance budgets; open a ticket per breach |
-| `/lm-hotfix <n>` | interrupt | Production fix from `main` |
+| `/lm-hotfix` | interrupt | Production fix from `main` |
+
+**Commands take no ticket number.** Each reads the board, the current branch or worktree, open PRs and the last checkpoint, works out its target, checks the environment allows it (parallel limit, overlap, blockers, CI, a verdict for the current head), and either proceeds or names the command to run instead. `#n` is an optional override only. Every command ends by naming the next command. `/lm-release` takes a version because a version is not a ticket.
 
 Board helper used by the commands: `.claude/scripts/board.sh` (list, wip, info, move, block, unblock, set, type, sprint).
 

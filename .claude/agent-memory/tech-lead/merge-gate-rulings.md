@@ -12,7 +12,7 @@ Rulings from the PR #43 review (2026-10-26). PR #43 added merge.sh and the guard
 - merge.sh is a guardrail file. It belongs in the settings deny lists and in the guard's path rule, with a pinned fingerprint like `PUSH_SHA`.
 - Blocking `gh pr merge` alone is not enough. `gh api -X PUT .../pulls/N/merge` and ref, tag or release writes through `gh api` bypass it.
 - `gh api --paginate --jq` applies the filter per page. Any "last verdict" logic must slurp all pages first.
-- When there are no CI checks, merge.sh fails open. That is acceptable only until `.github/workflows/` exists.
+- When there are no CI checks, merge.sh fails open. That is acceptable only until `.github/workflows/` exists. Checked 2026-10-28: merge.sh now fails closed (no checks means the owner merges) and binds the verdict to the head sha. The process doc §6 step 7 still says "newer than the last commit".
 
 **Why:** there is no GitHub branch protection (free private org plan), so the guard and merge.sh are the only gates.
 

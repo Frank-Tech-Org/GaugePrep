@@ -1,36 +1,45 @@
 ---
 name: lm-qa
-description: QA a merged LinguaMentor ticket on staging (or a local build of develop until staging exists). Pass moves it to Ready to deploy and frees its place in the parallel set; fail sends it back to In progress with defects.
-argument-hint: <issue-number>
+description: QA the right merged LinguaMentor ticket on staging (or a local build of develop until staging exists). Works out which ticket from the board and merged PRs, checks it is ready, then passes it to Ready to deploy or fails it back with defects.
+argument-hint: "[#n to override]"
 disable-model-invocation: true
 ---
 
-# QA #$ARGUMENTS
+# QA: $ARGUMENTS
 
-## 1. Check it's merged
+No number is needed; `#n` only overrides the choice below.
 
-```
-gh pr list --state merged --search "Refs #$ARGUMENTS in:body" --json number,title,mergedAt,baseRefName,mergeCommit
-```
-The PR must be merged into `develop`. If not, say so and stop.
+## State now
 
-```
-.claude/scripts/board.sh move $ARGUMENTS "In QA"
-gh issue view $ARGUMENTS
-```
+!`.claude/scripts/board.sh wip || true`
+!`gh api "repos/LinguaMentor/linguamentor-v3/pulls?state=closed&base=develop&per_page=10" --jq '.[] | select(.merged_at) | "#\(.number) \(.title) \(.merge_commit_sha)"' || true`
 
-## 2. Pick the target
+## 1. Find the ticket
 
-- If staging exists: confirm the last staging deploy (`gh run list --branch develop`) includes the merge commit. If the deploy hasn't finished, wait.
-- If staging doesn't exist yet: `git switch develop && git pull`, then run the app or tests locally. The report must say "local develop at <sha>, not staging".
+1. `#n` in the arguments.
+2. A ticket In QA.
+3. Otherwise the ticket of the most recently merged PR into `develop` whose ticket is In review (the ticket is the `Refs #<n>` in the PR body).
 
-## 3. Verify
+## 2. Check the environment, hand off if it says no
 
-Delegate to `qa-engineer`, with the acceptance criteria, the PR diff summary and the target. It returns the criterion table and a `QA: PASS` or `QA: FAIL` verdict.
+| Finding | Hand off to |
+|---|---|
+| No merged PR waiting for QA | `/lm-review` if a PR is open, else `/pm` |
+| Its PR is open, not merged | `/lm-review` |
+| Staging exists but the last deploy of `develop` doesn't include the merge commit | wait for the deploy, then rerun |
 
-## 4. Move
+Then `board.sh move <n> "In QA"` and read `gh issue view <n>`.
 
-- **PASS:** run `.claude/scripts/board.sh move $ARGUMENTS "Ready to deploy"`. Finish with `/pm`.
-- **FAIL:** run `.claude/scripts/board.sh move $ARGUMENTS "In progress"` and post the defects on the issue. The fix goes on a new branch from `develop` (`feature/$ARGUMENTS-<slug>-fix`), which the agents commit, push and open a new PR for, saying `Refs #$ARGUMENTS`. Continue with `/lm-start $ARGUMENTS`.
+## 3. Pick the target
+
+- Staging exists: use it (`gh run list --branch develop` shows the deploy).
+- Otherwise: switch to `develop`, pull, and run the app or tests locally. The report says "local develop at <sha>, not staging".
+
+## 4. Verify and move
+
+Delegate to `qa-engineer` with the acceptance criteria, the DoD, the PR diff summary and the target. It returns the criterion table and `QA: PASS` or `QA: FAIL`.
+
+- **PASS:** `board.sh move <n> "Ready to deploy"`; this frees the ticket's place in the parallel set. Next: `/pm`.
+- **FAIL:** `board.sh move <n> "In progress"`, post the defects on the issue. The fix goes on a new branch from `develop` (`feature/<n>-<slug>-fix`) with a new PR saying `Refs #<n>`. Next: `/lm-start`.
 
 Post the QA report and the checkpoint comment from `CLAUDE.md` (stage: In QA) on the issue.
