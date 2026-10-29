@@ -41,15 +41,22 @@ Walk the open entries in `docs/DECISIONS.md` one at a time: question, options, r
 
 The weekly delivery report, posted by `product-manager` as one entry in the Notion database "Weekly demos" (data source `collection://b059f097-50cf-4c20-92d6-ce8d8d55a766`). The day before the Friday demo; any day on request. If an entry for this week exists, update it instead.
 
-- **Properties:** Week ("Week of <Monday date>"), Demo date (that Friday), Status `Ready for demo`, Milestone (the current one), Delivered and Remaining (ticket counts in that milestone), Security, Performance, Needs you (one line), Links (the board).
-- **Body, in plain words for a non-technical owner:**
-  1. A table per open milestone: Released (Done), On staging (Ready to deploy), In progress (in flight), Not started (Ideas, Backlog, Ready), and a forecast date from the tickets reaching Ready to deploy per week over the last three weeks ("not enough data yet" before two weeks).
-  2. **Delivered this week:** each ticket as what a learner or the owner can now do, with its PR link and a staging link to try it if one exists. Infrastructure work is grouped as one line: "Foundations".
-  3. **Still to deliver:** the remaining tickets in order, with In progress first, and any risk to the forecast.
-  4. **Security** and **Performance:** one line each from `security-engineer` and `performance-engineer` (open High or Critical findings; budgets held or breached with the ticket). "Not measured yet" until the tools exist.
-  5. **Needs you:** decisions, merges and owner tasks.
+The owner reads it for product progress only. It speaks of features a learner can use, never of tickets, issue or PR numbers, merges, branches, columns or agents. Decisions stay in `docs/DECISIONS.md`; one waiting on the owner appears only as a risk to the launch date.
 
-Reply with the Notion link and three lines: delivered, remaining, needs the owner.
+The unit is the 13 key features of release 1, the functional requirements in `docs/product/PRD.md` §8.1 to §8.13. A feature counts as delivered once a learner (or the owner, for internal tools) can use all of it on staging or in production; part of a feature is reported as "Partly usable" with what works.
+
+- **Properties:** Week ("Week of <Monday date>"), Demo date (that Friday), Status `Ready for demo`, Features delivered, Features to deliver, Security, Performance, Try it (the staging link once staging exists).
+- **Body, in plain words:**
+  1. A callout: "Release 1: N of 13 key features delivered", one sentence on the week, and the launch forecast from features delivered per week over the last three ("forecast once two weeks of feature delivery are measured" before that).
+  2. **Delivered this week:** each feature as what a learner can now do, and how to try it on a phone. Groundwork with nothing to use is one line.
+  3. **Key features of release 1:** one row per feature: Delivered, Partly usable, Being built or Not started, and what works today.
+  4. **Next week:** the features or parts expected, in learner terms.
+  5. **Launch readiness:** the six release 1 launch conditions in PRD §13.2, each with its measured state.
+  6. **Performance:** measured numbers against the targets (page load on 3G under 3 s, writing results under 30 s, speaking under 60 s, examiner reply under 2.5 s, simulation under 15 MB), from `performance-engineer`.
+  7. **Security:** serious issues open (target zero) and the date of the last attack test on staging, from `security-engineer`.
+  8. **Risks to the launch date:** only what moves it, including a decision waiting on the owner, named in one line.
+
+Reply with the Notion link and one line: features delivered against features to deliver.
 
 ## Rules
 
