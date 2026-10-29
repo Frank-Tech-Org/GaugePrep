@@ -43,12 +43,12 @@ The weekly delivery report, posted by `product-manager` as one entry in the Noti
 
 The owner reads it for product progress only. It speaks of features a learner can use, never of tickets, issue or PR numbers, merges, branches, columns or agents. Decisions stay in `docs/DECISIONS.md`; one waiting on the owner appears only as a risk to the launch date.
 
-The unit is the 13 key features of release 1, the functional requirements in `docs/product/PRD.md` §8.1 to §8.13. A feature counts as delivered once a learner (or the owner, for internal tools) can use all of it on staging or in production; part of a feature is reported as "Partly usable" with what works.
+The unit is the 13 key features of release 1, the functional requirements in `docs/product/PRD.md` §8.1 to §8.13. A feature counts as delivered once a learner (or the owner, for internal tools) can use all of it on staging or in production, at every screen size; part of a feature is reported as "Partly usable" with what works.
 
 - **Properties:** Week ("Week of <Monday date>"), Demo date (that Friday), Status `Ready for demo`, Features delivered, Features to deliver, Security, Performance, Try it (the staging link once staging exists).
 - **Body, in plain words:**
   1. A callout: "Release 1: N of 13 key features delivered", one sentence on the week, and the launch forecast from features delivered per week over the last three ("forecast once two weeks of feature delivery are measured" before that).
-  2. **Delivered this week:** each feature as what a learner can now do, and how to try it on a phone. Groundwork with nothing to use is one line.
+  2. **Delivered this week:** each feature as what a learner can now do, and how to try it on staging, on a phone or a computer. Groundwork with nothing to use is one line.
   3. **Key features of release 1:** one row per feature: Delivered, Partly usable, Being built or Not started, and what works today.
   4. **Next week:** the features or parts expected, in learner terms.
   5. **Launch readiness:** the six release 1 launch conditions in PRD §13.2, each with its measured state.
