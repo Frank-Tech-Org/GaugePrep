@@ -1,7 +1,7 @@
 ---
 name: lm-release
-description: Release LinguaMentor. With "check", run only the release gate (security, performance budgets, public claims) on staging. With a version, merge the changelog into develop, open the promotion PR develop → stage, run the gate and regression on staging, then open the release PR stage → main. With "<version> done", after the owner has merged, tagged and published, move the released tickets to Done.
-argument-hint: <version> [done] | check
+description: Release LinguaMentor. With "check", run only the release gate (security, performance budgets, public claims) on staging. With no argument or a version, merge the changelog into develop, open the promotion PR develop → stage, run the gate and regression on staging, then open the release PR stage → main. With "<version> done", after the owner has merged, tagged and published, move the released tickets to Done.
+argument-hint: "[version] [done] | check"
 arguments: [version, phase]
 disable-model-invocation: true
 ---
@@ -16,6 +16,10 @@ Follow `docs/process/branching-and-release.md` section 7. `platform-engineer` is
 !`.claude/scripts/board.sh list "In QA" || true`
 !`git fetch -q origin develop stage main && git log --oneline origin/stage..origin/develop | head -30 || true`
 !`gh api "repos/LinguaMentor/linguamentor-v3/pulls?state=open" --jq '.[] | select(.base.ref=="stage" or .base.ref=="main") | "#\(.number) \(.head.ref) -> \(.base.ref)"' || true`
+
+## Version
+
+No version given: take the last tag (`git describe --tags --abbrev=0 origin/main`, or `v0.0.0` if none) and bump MINOR if any Ready to deploy ticket is a Story or Task that adds a capability, else PATCH. Say the version and why in one line, and use it below as `$version`. Nothing Ready to deploy: stop and name `/pm`.
 
 ## Check (version is "check")
 

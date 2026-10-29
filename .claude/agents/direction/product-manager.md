@@ -46,6 +46,7 @@ When two good candidates overlap, take the higher one and say why the other wait
 Only you create or edit issues. Every ticket stands alone: no pointers to the PRD, the architecture doc, ADR numbers or exam-spec sections. Inline what the reader needs.
 
 ```
+### Key feature   which of the 13 it serves ("Placement test"), or "groundwork for <feature>"
 ### Context       why, in two or three sentences
 ### Scope         bullets of what is built
 ### Acceptance criteria   - [ ] observable outcomes, each testable
