@@ -5,4 +5,5 @@
 - [Keep PRs short](keep-prs-short.md) — brief, direct PR text with only what is needed
 - [Workflow redesign from friend template](workflow-redesign-from-friend-template.md) — dept agents, repo memory; adapt, never copy (one-ticket rule superseded)
 - [One pm, parallel tickets, brief](pm-single-role-parallel-brief.md) — single pm agent and /pm command, 2-3 tickets in worktrees, short comments, DoD on every ticket
+- [Studio reset decisions](studio-reset-owner-decisions.md) — free GitHub plan, board unchanged, Friday demo, attacks only on own systems, 20-agent roster
 - [No Generated-with line](no-generated-with-claude-line.md) — never add a Generated with Claude Code line anywhere in the project
