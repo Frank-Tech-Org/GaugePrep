@@ -8,3 +8,4 @@
 - [Studio reset decisions](studio-reset-owner-decisions.md) — free GitHub plan, board unchanged, Friday demo, attacks only on own systems, 17-agent roster, free tools only
 - [No Generated-with line](no-generated-with-claude-line.md) — never add a Generated with Claude Code line anywhere in the project
 - [Setup: one PR, the plan, free tools](setup-one-pr-and-priorities.md) — one branch/PR per setup effort, deliver what was approved, no paid tools, robustness first
+- [Notion weekly demos](notion-weekly-demos.md) — where the CTO posts the weekly report and demo notes

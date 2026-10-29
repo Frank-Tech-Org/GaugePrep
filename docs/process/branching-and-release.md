@@ -161,6 +161,14 @@ GitHub doesn't enforce these on the free plan for a private organisation reposit
 - A write-access account can still change `main`. A workflow on every push to `main` alerts the owner when the commit did not come from a release PR. The production deploy runs only from a tag, and the workflow checks that the owner pushed it, so a bad change on `main` cannot reach users.
 - Agents use a separate free bot account. The owner's account is the only one used for `main`, tags and releases.
 
+Setting up the agent account (an existing free account that is already an organisation member):
+
+1. In the organisation's People page its role is **Member**, not Owner. The organisation's base permission is **Read** or **No permission**. In the repo's Settings → Collaborators and teams it has **Write**.
+2. In the organisation's Settings → Personal access tokens, fine-grained tokens are allowed (approval required is fine).
+3. Signed in as that account, create a fine-grained token: resource owner `LinguaMentor`, only `linguamentor-v3`, 90 days. Read and write: Contents, Pull requests, Issues. Read: Metadata, Actions, Commit statuses, Checks. Organisation permission Projects: read and write.
+4. Approve the token request as organisation owner if GitHub asks.
+5. On the machine running the agents: `gh auth login --with-token` (paste the token), then `gh auth setup-git` and `gh auth status`. The owner returns to their own account with `gh auth switch` before merging into `main`, tagging or releasing.
+
 Files that control these limits (`.claude/hooks/`, `.claude/settings*`, `.claude/scripts/push.sh` and `merge.sh`, `.github/workflows/`) change only by the owner's hand, and `merge.sh` refuses a PR that touches them.
 
 ## Weekly demo and scorecards
@@ -170,7 +178,7 @@ Every Friday the owner sees the app on their phone, the board movement for the w
 - **Security:** findings opened and closed this week from the CI scans and the weekly staging scan, with any open High or Critical named.
 - **Performance:** each PRD budget against the latest Lighthouse and k6 figures, with any breach and its ticket.
 
-`product-manager` assembles the notes; `security-engineer` and `performance-engineer` supply the scorecards.
+`product-manager` assembles the notes; `security-engineer` and `performance-engineer` supply the scorecards. The CTO posts them on Thursday as one entry in the Notion database **Weekly demos** (under the private page **LinguaMentor Studio**): week, demo date, status (Draft, Ready for demo, Reviewed), both scorecards, what needs the owner, and links to the PRs, the board and staging.
 
 ## 10. Checklists
 
