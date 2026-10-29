@@ -165,7 +165,7 @@ Setting up the agent account (an existing free account that is already an organi
 
 1. In the organisation's People page its role is **Member**, not Owner. The organisation's base permission is **Read** or **No permission**. In the repo's Settings → Collaborators and teams it has **Write**.
 2. In the organisation's Settings → Personal access tokens, fine-grained tokens are allowed (approval required is fine).
-3. Signed in as that account, create a fine-grained token: resource owner `LinguaMentor`, only `linguamentor-v3`, 90 days. Read and write: Contents, Pull requests, Issues. Read: Metadata, Actions, Commit statuses, Checks. Organisation permission Projects: read and write.
+3. Signed in as that account, create a fine-grained token: resource owner `LinguaMentor`, only `linguamentor-v3`, 90 days. Read and write: Contents, Pull requests, Issues. Read: Metadata, Actions, Commit statuses (fine-grained tokens can't have Checks, so tools read CI from Actions runs). Leave Workflows out, so the account can't push workflow changes. Organisation permission Projects: read and write.
 4. Approve the token request as organisation owner if GitHub asks.
 5. On the machine running the agents: `gh auth login --with-token` (paste the token), then `gh auth setup-git` and `gh auth status`. The owner returns to their own account with `gh auth switch` before merging into `main`, tagging or releasing.
 

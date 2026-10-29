@@ -61,7 +61,7 @@ Commit in logical steps, never `--amend`, staging only this ticket's paths: `git
 
 ## 4. Review
 
-`board.sh move <n> "In review"`. Read the diff (`gh pr diff <pr>`, or `gh api .../pulls/<pr>/files --paginate`), the checks and the ticket. Run, with the criteria in each prompt:
+`board.sh move <n> "In review"`. Read the diff (`gh pr diff <pr>`, or `gh api .../pulls/<pr>/files --paginate`), the CI runs (`gh run list --commit <head sha>`; the agent token can't read check runs) and the ticket. Run, with the criteria in each prompt:
 - always `code-reviewer`, once;
 - the reviewers for the ticket's Area from `CLAUDE.md`;
 - `security-engineer` for authentication, sessions, payments, `identity`, migrations, append-only tables, AI prompts, the internal API or infrastructure exposure;
