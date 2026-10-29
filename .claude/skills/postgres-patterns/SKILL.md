@@ -7,7 +7,7 @@ metadata:
 
 # PostgreSQL Patterns
 
-Quick reference for PostgreSQL best practices. For detailed guidance, use the `database-reviewer` agent.
+Quick reference for PostgreSQL best practices. For detailed guidance, use the `code-reviewer` agent.
 
 ## When to Activate
 
@@ -139,7 +139,7 @@ SELECT pg_reload_conf();
 
 ## Related
 
-- Agent: `database-reviewer` - Full database review workflow
+- Agent: `code-reviewer` - Full review workflow
 - Skill: `clickhouse-io` - ClickHouse analytics patterns
 - Skill: `backend-patterns` - API and backend patterns
 

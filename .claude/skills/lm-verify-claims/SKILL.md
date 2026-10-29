@@ -7,7 +7,7 @@ disable-model-invocation: true
 
 # Claim check: $ARGUMENTS
 
-Delegate to `product-verifier`. If `$ARGUMENTS` is empty, the scope is:
+Delegate to `qa-engineer`. If `$ARGUMENTS` is empty, the scope is:
 - the public pages under `apps/web` (landing, pricing, accuracy page, help)
 - onboarding and notification copy in the message catalogues
 - `README.md`

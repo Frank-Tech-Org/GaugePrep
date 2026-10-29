@@ -40,12 +40,12 @@ Then `board.sh move <n> "In review"`, and read the diff (`gh pr diff <pr>`, or `
 Run these on the diff. Paste the ticket's acceptance criteria into each prompt.
 - Always `tech-lead`.
 - The reviewers for the ticket's Area, from the table in `CLAUDE.md`.
-- The code reviewers in `.claude/agents/review/` for what the diff touches: `python-reviewer` for `.py`, `django-reviewer` for backend modules and endpoints, `database-reviewer` for migrations and SQL, `typescript-reviewer` for `.ts`/`.tsx`, `react-reviewer` for `.tsx` components, and `silent-failure-hunter` for grading, scoring, payment or error-handling code.
+- `code-reviewer`, once, for any code in the diff. It covers Python, Django, SQL and migrations, TypeScript, React and silent failures.
 - `security-engineer` if the diff touches authentication, sessions, billing or payments, `identity`, migrations, append-only tables, AI prompts, the internal API or infrastructure exposure.
 - `privacy-counsel` if it changes what personal data is collected, kept, logged or sent to a provider or to analytics.
-- `ux-designer` and `ui-designer` if it changes what a learner sees.
+- `product-designer` if it changes what a learner sees.
 - `performance-engineer` if it touches a learner page's bundle, media, a hot query or the grading or voice path.
-- `product-verifier` if it changes learner-facing claims or copy.
+- `qa-engineer` for the claims check if it changes learner-facing claims or copy.
 
 Each reviewer also checks the Definition of Done items in its area.
 

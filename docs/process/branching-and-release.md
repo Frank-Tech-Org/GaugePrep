@@ -111,7 +111,7 @@ Until staging exists (M0 ticket #11), QA runs against a local build of `develop`
 Run at the end of a sprint, or sooner when a ticket is worth shipping on its own. `/lm-release <version>` drives it.
 
 1. Confirm nothing is in flight (no ticket in progress, review or QA) and list the Ready to deploy tickets.
-2. Run the gate: security pass, dependency audit, performance audit, claim verification and the UX check on changed screens (see `/lm-release`).
+2. Run the gate: security pass and the pre-release attack test on staging, dependency audit, performance audit with a load run, claim verification and the UX check on changed screens (see `/lm-release`).
 3. The release manager cuts and pushes the release branch, and commits the changelog on it:
    ```bash
    git switch develop && git pull
@@ -155,7 +155,22 @@ For an urgent production bug: a Bug ticket with priority Urgent and the `hotfix`
 | `main` | PR required, CI green, no direct pushes, only `release/*` and `hotfix/*` PRs |
 | `develop` | PR required, CI green, squash merge only |
 
-GitHub doesn't enforce these on the free plan for a private organisation repository: the API returns 403. Until the plan changes they're a convention. The agents' guard hook blocks agents from pushing straight to `main` or `develop`, force-pushing, `gh pr merge`, tagging and publishing releases, but it doesn't stop a person. The only merge path for agents is `.claude/scripts/merge.sh`, which `tech-lead` runs. It is a regex-level guard, not a hard barrier: it does not block the same call made with `gh api`, so it relies on the agents' instructions until the owner tightens the hook.
+GitHub doesn't enforce these on the free plan for a private organisation repository: the API returns 403, and we stay on the free plan. The protection is built from parts:
+
+- Agents are held by the deny list in `.claude/settings.json` and the guard hook: no raw push, `gh pr merge`, tag, release, `--amend` or `reset --hard`. They push only with `.claude/scripts/push.sh`, and `tech-lead` merges only with `.claude/scripts/merge.sh`.
+- A write-access account can still change `main`. A workflow on every push to `main` alerts the owner when the commit did not come from a release PR. The production deploy runs only from a tag, and the workflow checks that the owner pushed it, so a bad change on `main` cannot reach users.
+- Agents use a separate free bot account. The owner's account is the only one used for `main`, tags and releases.
+
+Files that control these limits (`.claude/hooks/`, `.claude/settings*`, `.claude/scripts/push.sh` and `merge.sh`, `.github/workflows/`) change only by the owner's hand, and `merge.sh` refuses a PR that touches them.
+
+## Weekly demo and scorecards
+
+Every Friday the owner sees the app on their phone, the board movement for the week, and two scorecards:
+
+- **Security:** findings opened and closed this week from the CI scans and the weekly staging scan, with any open High or Critical named.
+- **Performance:** each PRD budget against the latest Lighthouse and k6 figures, with any breach and its ticket.
+
+`pm` assembles the notes; `security-engineer` and `performance-engineer` supply the scorecards.
 
 ## 10. Checklists
 

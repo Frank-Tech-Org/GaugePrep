@@ -54,17 +54,17 @@ Agents live in `.claude/agents/<department>/`. Each keeps its memory in `.claude
 
 | Department | Agents |
 |---|---|
-| Direction | `pm`, `tech-lead` |
+| Direction | `pm`, `business-analyst`, `tech-lead` |
 | Engineering | `backend-django`, `frontend-nextjs`, `examcore-scoring`, `ai-grading-engineer`, `voice-engineer`, `qa-engineer` |
-| Design | `ux-designer`, `ui-designer` |
-| Engineering (quality) | `performance-engineer`, `product-verifier` |
+| Design | `product-designer`, `brand-designer` |
+| Quality | `qa-engineer`, `performance-engineer`, `security-engineer` |
 | Platform | `devops-sre`, `security-engineer`, `release-manager` |
 | Content | `exam-content-author`, `technical-writer` |
 | Compliance | `privacy-counsel` |
-| Growth | `product-analyst`, `copywriter-seo` |
-| Review (code) | `python-reviewer`, `django-reviewer`, `database-reviewer`, `typescript-reviewer`, `react-reviewer`, `silent-failure-hunter` |
+| Growth | `content-marketer` |
+| Review (code) | `code-reviewer` |
 
-The review agents are read-only specialists. `tech-lead` calls them in `/lm-review` by what the diff touches: Python, Django, migrations or SQL, TypeScript, React, and any code that handles errors, grades, scores or payments (`silent-failure-hunter`). Security review is `security-engineer`.
+`code-reviewer` is read-only and reviews every diff once, covering Python, Django, SQL, TypeScript, React and silent failures. Security review and attack testing are `security-engineer`; attacks run only against staging or a local copy, never production or third parties.
 
 **Skills and rules.** Each agent preloads only the skills its role needs (the `skills:` list in its file) and is told not to load others. Stack rules for Python and the web are in `.claude/rules/`, and the `/lm-*` commands are skills named `lm-*` in `.claude/skills/`.
 
@@ -72,18 +72,26 @@ The review agents are read-only specialists. `tech-lead` calls them in `/lm-revi
 
 | Area | Builds | Reviews |
 |---|---|---|
-| web | `frontend-nextjs` (after `ux-designer` if there is no spec) | `tech-lead`, `qa-engineer` |
+| web | `frontend-nextjs` (after `product-designer` if there is no spec) | `tech-lead`, `qa-engineer` |
 | api | `backend-django` | `tech-lead`, `qa-engineer` |
 | examcore | `examcore-scoring` | `tech-lead`, `qa-engineer` |
 | grading | `ai-grading-engineer` | `examcore-scoring`, `security-engineer` |
 | voice | `voice-engineer` | `tech-lead`, `qa-engineer` |
-| content | `exam-content-author` | `pm` |
+| content | `exam-content-author` for exam items; `content-marketer` for public pages, blog and campaigns; `brand-designer` for brand and visuals | `pm` |
 | payments | `backend-django` | `security-engineer`, `tech-lead` |
 | infra | `devops-sre` | `security-engineer` |
 | compliance | `privacy-counsel` | `pm` |
 | docs | `technical-writer` | the owner of the documented area |
 
 Decision tickets go to `tech-lead` (technical) or `pm` (product) and produce an ADR. Anything touching authentication, payments, personal data, migrations or append-only tables also gets `security-engineer` review.
+
+## Quality gates
+
+- **Security.** CI runs Semgrep, Gitleaks, `pip-audit`, `pnpm audit` and Trivy on every PR; HIGH or CRITICAL blocks the merge. `security-engineer` runs ZAP and Nuclei on staging weekly and an AI pentest (Shannon) before each release, within the owner's cost cap. Targets are only systems we own: staging or a local copy, never production or third parties. A finding closes only when the same attack fails.
+- **Performance.** `performance-engineer` holds the PRD budgets with Lighthouse on slow 3G in CI and a weekly k6 run on staging. A breach is a Bug ticket, and a fix ships with a guard.
+- **Weekly demo, Friday.** The owner sees the app on their phone, the board movement, and two scorecards: security findings and performance budgets.
+- **Design approval.** `brand-designer` and `product-designer` show the owner two or three options (a Figma file or a comparison page); only the approved one enters the repo. Logos and tokens live in the repo as SVG and token files.
+- **Sources.** Imported agents, skills and rules are listed with source and licence in `.claude/SOURCES.md`.
 
 ## Definition of Done
 

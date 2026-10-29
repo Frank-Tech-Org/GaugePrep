@@ -53,7 +53,7 @@ Work only inside `../lm-<n>`. If the worktree exists, continue in it.
 Route by the Area field, using the table in `CLAUDE.md`. Each agent's prompt carries the full ticket text, the acceptance criteria and the latest checkpoint, because agents don't see this conversation.
 
 - Decision tickets go to `tech-lead` or `pm`, and the output is an ADR in `docs/adr/` plus the index row.
-- Work that needs a screen spec goes to `ux-designer` first.
+- Work that needs a screen spec goes to `product-designer` first.
 - A missing dependency found mid-work: stop and run `/pm block <blocker>` instead of working around it.
 
 ## 5. Verify
