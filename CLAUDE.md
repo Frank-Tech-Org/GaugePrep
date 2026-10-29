@@ -11,7 +11,7 @@ Exam preparation platform for TCF Canada first: a Next.js PWA, a Django modular 
 
 - **Parallel tickets, never overlapping.** At most 2 tickets are in flight (In progress, In review, In QA), 3 once CI runs on every PR. Each has its own branch and git worktree, and two run together only if their Areas or paths differ and neither blocks the other. `/pm` picks the set; `/lm-next` refuses an overlap. Owner-run tickets with no repository code (accounts, recordings, vendor requests) run outside the limit, one at a time. See the process doc §1 for blocking and hotfixes.
 - **Brief.** Reviews, comments, reports and checkpoints are short: verdict first, at most 10 lines, findings as `file:line — problem — fix`, no recap, no praise.
-- **Agents commit and open PRs; the CTO merges into `develop`; the owner releases.** Inside a `/lm-*` command, agents commit to the ticket's own branch, push it and open the PR. After the review step of `/lm-next` posts `REVIEW: PASS` and CI is green, only the CTO merges, by running `.claude/scripts/merge.sh <pr>`, which squash-merges into `develop` and refuses anything else. Only the owner merges into `main`, pushes tags and publishes releases. Agents push only with `.claude/scripts/push.sh <work-branch> [--force-with-lease]`, which pushes to the branch of the same name. The guard hook and the deny rules in `.claude/settings.json` block raw `git push`, `gh pr merge`, merges and ref, tag or release writes through `gh api`, tags, releases, `--amend`, `reset --hard`, writes to owner-only files and reads of secret files.
+- **Agents commit and open PRs; `/lm-next` merges into `develop`; the owner releases.** Inside a `/lm-*` command, agents commit to the ticket's own branch, push it and open the PR. After the review step of `/lm-next` posts `REVIEW: PASS` and CI is green, the merge step of `/lm-next` is the only merge, by running `.claude/scripts/merge.sh <pr>`, which squash-merges into `develop` and refuses anything else. Only the owner merges into `main`, pushes tags and publishes releases. Agents push only with `.claude/scripts/push.sh <work-branch> [--force-with-lease]`, which pushes to the branch of the same name. The guard hook and the deny rules in `.claude/settings.json` block raw `git push`, `gh pr merge`, merges and ref, tag or release writes through `gh api`, tags, releases, `--amend`, `reset --hard`, writes to owner-only files and reads of secret files.
 - **One branch and one PR per setup effort.** Changes to the team, commands, hooks or process go on one `chore/*` branch and one PR until that effort is finished; later fixes are new commits on it, never a new PR.
 - **Commits** follow Conventional Commits, `<type>(<area>): <subject>`, with one commit per logical step. Never add a `Co-Authored-By` trailer, a "Generated with Claude Code" line or any similar tool signature to a commit message, PR body, issue, comment or file; the owner doesn't want any of it anywhere.
 - **GitHub admin is fine.** Moving board items, editing labels and fields, and posting issue or PR comments through `gh` are allowed. Before a bulk write (more than five issues), state the scope and confirm it.
@@ -36,7 +36,7 @@ Exam preparation platform for TCF Canada first: a Next.js PWA, a Django modular 
 
 | Command | Stage | What it does |
 |---|---|---|
-| `/pm [plan \| decide \| report]` | planning | Bare: takes the CTO's technical read, says what is done, what to start next and what needs the owner. `plan` sorts Ideas, writes acceptance criteria and the DoD, fills the sprint. `decide` resolves owner decisions. `report` posts the weekly delivery report to Notion |
+| `/pm [plan \| decide \| report]` | planning | Bare: takes the `cto` agent's technical read, says what is done, what to start next and what needs the owner. `plan` sorts Ideas, writes acceptance criteria and the DoD, fills the sprint. `decide` resolves owner decisions. `report` posts the weekly delivery report to Notion |
 | `/lm-next [block <blocker>]` | Ready → Ready to deploy | Moves the ticket nearest done one step: build, fix, review, merge or QA, resuming from its checkpoint; starts the next ticket when there is room; records a blocker |
 | `/lm-release <version> \| check` | Ready to deploy → Done | `check`: the release gate alone (security, performance budgets, public claims). With a version: gate, release branch and PR, notes, then close tickets after the owner tags |
 | `/lm-hotfix` | interrupt | Production fix from `main` |
@@ -47,18 +47,18 @@ Board helper used by the commands: `.claude/scripts/board.sh` (list, wip, info, 
 
 ## Team
 
-The CTO is the main Claude Code session, not an agent file, and 17 agents live in `.claude/agents/<department>/`.
+18 agents live in `.claude/agents/<department>/`. No session is special: whichever session or scheduled job runs a command runs the team through it, and gets technical judgment from the `cto` agent.
 
 | Department | Agents |
 |---|---|
-| Direction | the CTO, `product-manager`, `business-analyst` |
+| Direction | `cto`, `product-manager`, `business-analyst` |
 | Engineering | `backend-engineer`, `frontend-engineer`, `scoring-engineer`, `platform-engineer`, `ai-engineer`, `voice-engineer` |
 | Quality | `qa-engineer`, `performance-engineer`, `security-engineer`, `code-reviewer` |
 | Design | `brand-designer`, `product-designer` |
 | Content and growth | `exam-content-lead`, `content-marketer` |
 | Compliance | `privacy-compliance` |
 
-**The CTO** owns the architecture, ADRs (`docs/adr/`, with the index row in the same change), `docs/process/` and `.claude/`. It writes the technical read `/pm` passes to `product-manager` (what is really done, hidden dependencies, the paths each candidate touches, splits, risks; under 15 lines), decides technical Decision tickets, and merges with `merge.sh`. Before accepting a new dependency it records the licence, maintenance in the last six months, open CVEs, transitive count, and whether we could write it in under 200 lines.
+**`cto`** owns the architecture, ADRs, `docs/process/` and `.claude/`, writes the technical read `/pm` passes to `product-manager`, decides technical Decision tickets and checks every new dependency; see `.claude/agents/direction/cto.md`.
 
 `code-reviewer` is read-only and reviews every diff once, covering the architecture invariants, Python, Django, SQL, TypeScript, React, silent failures and changes to `.claude/`. Security review and attack testing are `security-engineer`; attacks run only against staging or a local copy, never production or third parties.
 
@@ -77,9 +77,9 @@ The CTO is the main Claude Code session, not an agent file, and 17 agents live i
 | payments | `backend-engineer` | `security-engineer`, `code-reviewer` |
 | infra | `platform-engineer` (also releases and runbooks) | `security-engineer` |
 | compliance | `privacy-compliance` | `product-manager` |
-| docs | the agent that owns the documented area; the CTO for process docs and ADRs | `code-reviewer` |
+| docs | the agent that owns the documented area; `cto` for process docs and ADRs | `code-reviewer` |
 
-Decision tickets go to the CTO (technical) or `product-manager` (product) and produce an ADR. Anything touching authentication, payments, personal data, migrations or append-only tables also gets `security-engineer` review.
+Decision tickets go to `cto` (technical) or `product-manager` (product) and produce an ADR. Anything touching authentication, payments, personal data, migrations or append-only tables also gets `security-engineer` review.
 
 ## Quality gates
 
@@ -127,5 +127,5 @@ Needs the owner: <decision or action, or "nothing">
 ## Lessons and memory
 
 - Agents keep no memory files. A lesson worth keeping (a recurring defect, a ruling, a provider quirk) becomes a one-line edit to the agent's own file or to `.claude/rules/`, in the same PR as the work, so it is reviewed and nothing piles up.
-- The CTO's memory is `.claude/memory/`: one index, `MEMORY.md`, and a file per standing fact, updated in place, never duplicated. Memory changes go in the commit with the work they came from. It is selected by `autoMemoryDirectory` in `.claude/settings.local.json`, which needs an absolute path, so each machine sets its own:
+- The project memory is `.claude/memory/`, read by `cto` and by the session running the commands: one index, `MEMORY.md`, and a file per standing fact, updated in place, never duplicated. Memory changes go in the commit with the work they came from. It is selected by `autoMemoryDirectory` in `.claude/settings.local.json`, which needs an absolute path, so each machine sets its own:
   `{ "autoMemoryDirectory": "/absolute/path/to/linguamentor-v3/.claude/memory" }`

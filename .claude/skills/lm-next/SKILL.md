@@ -25,7 +25,7 @@ First match wins:
 2. A hotfix in flight: stop and name `/lm-hotfix`.
 3. The current branch or worktree is `feature/<n>-*`: that ticket.
 4. The ticket in flight nearest the end: In QA, then In review, then In progress. An open `chore/*` PR with no verdict on its head counts as In review, with no ticket.
-5. Fewer tickets in flight than the limit (2, or 3 once CI runs on every PR; `owner-task` tickets don't count): ask `product-manager`, with your technical read (see `/pm`), for the next non-overlapping ticket in Ready. An `owner-task` ticket is handed to the owner, not built.
+5. Fewer tickets in flight than the limit (2, or 3 once CI runs on every PR; `owner-task` tickets don't count): ask `product-manager`, with the `cto` agent's technical read, for the next non-overlapping ticket in Ready. An `owner-task` ticket is handed to the owner, not built.
 6. Nothing to do: name `/pm`.
 
 ## 2. Pick the step
@@ -53,7 +53,7 @@ git fetch origin develop
 git worktree add ../lm-<n> -b feature/<n>-<short-slug> origin/develop
 ```
 
-Route by the Area field with the table in `CLAUDE.md`. Each agent's prompt carries the full ticket, its criteria and DoD, the last checkpoint and, for a fix, the review findings or failing checks, because agents don't see this conversation. A screen with no spec goes to `product-designer` first. Decision tickets go to the CTO (technical) or `product-manager` (product) and produce an ADR in `docs/adr/` with its index row. A missing dependency found mid-work is a Block (§7), never a workaround.
+Route by the Area field with the table in `CLAUDE.md`. Each agent's prompt carries the full ticket, its criteria and DoD, the last checkpoint and, for a fix, the review findings or failing checks, because agents don't see this conversation. A screen with no spec goes to `product-designer` first. Decision tickets go to the `cto` agent (technical) or `product-manager` (product) and produce an ADR in `docs/adr/` with its index row. An agent that stops on an architecture question or wants a new dependency gets the `cto` agent's answer in its next prompt. A missing dependency found mid-work is a Block (§7), never a workaround.
 
 Run the checks for what changed (`uv run pytest`, `pnpm check`, Playwright, whichever exist) and paste the result lines. Go through the DoD and name anything unmet. Never push red.
 
@@ -75,7 +75,7 @@ Each checks the DoD items in its area. Post one PR comment, at most 10 lines plu
 ## 5. Merge
 
 - A hotfix into `main`, or a PR touching the guard hook, settings, workflows, `push.sh` or `merge.sh`: tell the owner it is ready to merge.
-- Otherwise the CTO runs `.claude/scripts/merge.sh <pr>`. While no CI exists it refuses and the owner merges. Any other refusal: fix what it names; never merge another way.
+- Otherwise run `.claude/scripts/merge.sh <pr>`. While no CI exists it refuses and the owner merges. Any other refusal: fix what it names; never merge another way.
 
 ## 6. QA
 

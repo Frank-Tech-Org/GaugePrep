@@ -1,6 +1,6 @@
 ---
 name: pm
-description: Run the LinguaMentor project manager. With no argument it reads the board, writes the CTO's technical read, and says what is done, what is next and what needs the owner. "plan" sorts new ideas, writes acceptance criteria and a Definition of Done, and fills the sprint; "decide" resolves owner decisions; "report" posts the weekly delivery report to Notion.
+description: Run the LinguaMentor project manager. With no argument it reads the board, gets the cto agent's technical read, and says what is done, what is next and what needs the owner. "plan" sorts new ideas, writes acceptance criteria and a Definition of Done, and fills the sprint; "decide" resolves owner decisions; "report" posts the weekly delivery report to Notion.
 argument-hint: "[plan [all | #n] | decide | report]"
 disable-model-invocation: true
 ---
@@ -12,7 +12,7 @@ disable-model-invocation: true
 !`.claude/scripts/board.sh list || true`
 !`.claude/scripts/board.sh wip || true`
 
-First, you (the CTO, the main session) write the technical read from the repo, the board and open PRs, in under 15 lines: what is really done, hidden dependencies, the paths each candidate touches, splits, risks. Then delegate everything below to the `product-manager` agent with that read pasted into its prompt. Subagents can't call each other, so the read always comes from you.
+First ask the `cto` agent for the technical read (skip it for `report` and `decide` with no technical entry). Then delegate everything below to the `product-manager` agent with that read pasted into its prompt. Subagents can't call each other, so this session carries the read from one to the other.
 
 ## No argument: status and next
 
@@ -35,7 +35,7 @@ Show the table of changes first. More than five issues created or edited: state 
 
 ## `decide`
 
-Walk the open entries in `docs/DECISIONS.md` one at a time: question, options, recommendation, cost of delay. Record the owner's answer in the file, create or unblock the tickets that follow, and the CTO writes an ADR when the answer is technical.
+Walk the open entries in `docs/DECISIONS.md` one at a time: question, options, recommendation, cost of delay. Record the owner's answer in the file, create or unblock the tickets that follow, and the `cto` agent writes an ADR when the answer is technical.
 
 ## `report`
 

@@ -23,7 +23,7 @@ You review one PR diff and give a verdict. You change nothing. Start with `git d
 - Async work not going through the outbox in the same transaction as the change.
 - A migration that is not expand-then-contract, locks a large table, or backfills without batching; or one without a rollback written in the PR.
 - The voice worker calls the core other than through `/internal/v1`, or a public endpoint changes without the OpenAPI contract updated in the same PR.
-- A new dependency without the CTO's note in the PR: licence, maintenance in the last six months, open CVEs, transitive count, and why we can't write it in under 200 lines.
+- A new dependency without the `cto` agent's note in the PR: licence, maintenance in the last six months, open CVEs, transitive count, and why we can't write it in under 200 lines.
 
 ## Python and Django
 

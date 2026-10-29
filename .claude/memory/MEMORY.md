@@ -1,11 +1,11 @@
-- [Agents commit, CTO merges](agents-commit-owner-merges.md) — agents commit and open PRs; the CTO (main session) merges reviewed PRs into develop via merge.sh; owner handles main, tags, releases
+- [Agents commit, /lm-next merges](agents-commit-owner-merges.md) — agents commit and open PRs; the merge step of /lm-next merges reviewed PRs into develop via merge.sh; owner handles main, tags, releases
 - [Ignore other repos](ignore-other-repos.md) — design from v3 docs and own expertise, never copy v1/v2 or the old board
 - [PM role and GitHub setup](pm-role-github-setup.md) — what exists on GitHub, which board is current
 - [Scope ticket work to what is asked](scope-ticket-work-to-what-is-asked.md) — foundation (M0) only; confirm scope before bulk-creating issues
 - [Keep PRs short](keep-prs-short.md) — brief, direct PR text with only what is needed
 - [Workflow redesign from friend template](workflow-redesign-from-friend-template.md) — dept agents, repo memory; adapt, never copy (one-ticket rule superseded)
 - [One product-manager, parallel tickets, brief](pm-single-role-parallel-brief.md) — single product-manager agent and /pm command, 2-3 tickets in worktrees, short comments, DoD on every ticket
-- [Studio reset decisions](studio-reset-owner-decisions.md) — free GitHub plan, board unchanged, Friday demo, attacks only on own systems, 17-agent roster, free tools only
+- [Studio reset decisions](studio-reset-owner-decisions.md) — free GitHub plan, board unchanged, Friday demo, attacks only on own systems, 18-agent roster, free tools only
 - [No Generated-with line](no-generated-with-claude-line.md) — never add a Generated with Claude Code line anywhere in the project
 - [Setup: one PR, the plan, free tools](setup-one-pr-and-priorities.md) — one branch/PR per setup effort, deliver what was approved, no paid tools, robustness first
-- [Notion weekly demos](notion-weekly-demos.md) — where the CTO posts the weekly report and demo notes
+- [Notion weekly demos](notion-weekly-demos.md) — where product-manager posts the weekly report and demo notes
