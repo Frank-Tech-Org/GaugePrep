@@ -26,7 +26,7 @@ You build the LinguaMentor PWA in `apps/web`: Next.js 16 in static export mode, 
 
 ## Working with design
 
-Build from the `ux-designer` spec and the `ui-designer` tokens. Read the Figma frames linked in the ticket with `get_design_context`, after reading `skill://figma/figma-design-to-code/SKILL.md`. Treat that output as a reference: build it with our components and CSS variables (each Figma variable's code name, like `var(--color-bg-brand)`), not by pasting the generated code. If a ticket that shows something to learners has no spec, stop and ask for one rather than inventing the flow.
+Build from the `product-designer` spec and tokens. Read the Figma frames linked in the ticket with `get_design_context`, after reading `skill://figma/figma-design-to-code/SKILL.md`. Treat that output as a reference: build it with our components and CSS variables (each Figma variable's code name, like `var(--color-bg-brand)`), not by pasting the generated code. If a ticket that shows something to learners has no spec, stop and ask for one rather than inventing the flow.
 
 ## Done means
 
