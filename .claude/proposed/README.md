@@ -1,23 +1,19 @@
 # Owner-apply files
 
-Agents cannot edit the hook, `settings.json` or the workflows (that is the point), so these wait here for you to copy. Run in your own terminal, from the repo root, after the reset PR is merged:
+Agents cannot edit the hook, `settings.json`, the push and merge scripts or the workflows (that is the point), so changes to them wait here for you to copy. Run in your own terminal, from the repo root:
 
 ```bash
 cp .claude/proposed/guard-bash.sh .claude/hooks/guard-bash.sh
-cp .claude/proposed/settings.json .claude/settings.json
-mkdir -p .github/workflows
-cp .claude/proposed/main-alarm.yml .github/workflows/main-alarm.yml
-chmod +x .claude/hooks/guard-bash.sh
-sudo apt install -y jq
+sed -i '2s/only the tech-lead runs it/only the CTO (the main Claude Code session) runs it/' .claude/scripts/merge.sh
+git diff .claude/hooks .claude/scripts
 ```
 
-Then commit them on a branch of your own and merge. Check with `git diff` first; the old `PUSH_SHA` pin in the hook goes away because the new guard does not pin a script hash.
+Then tell Claude it is done; it commits them on the setup branch and this folder is removed.
 
-| File | What it does |
+| Change | What it does |
 |---|---|
-| `guard-bash.sh` | Reads each command as real words, so a commit message that says "push" or a script with `$` passes, while a raw push, tag, `--amend`, `reset --hard`, `gh pr merge`, release, `rm -rf /` and secret-file reads are blocked |
-| `settings.json` | Same allow list as today, plus deny rules for `git push`, `gh pr merge` and `gh release`, so the block holds even if the hook is skipped |
-| `main-alarm.yml` | Opens an issue when a commit lands on `main` outside a release or hotfix PR |
+| `guard-bash.sh` | Also blocks merges, ref, tag and release writes through `gh api` (REST and GraphQL), any command that changes a hook, settings, `push.sh`, `merge.sh` or a workflow, and checks secret-file reads per command, so `git ls-files .env \| head` is no longer a false alarm |
+| `merge.sh` line 2 | The comment names the CTO instead of the removed tech-lead role |
 
 ## Bot account (10 minutes, free)
 
