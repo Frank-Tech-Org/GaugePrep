@@ -20,3 +20,4 @@
 | [ADR-016](ADR-016-sentry-and-grafana-cloud-for-observability.md) | Sentry and Grafana Cloud for observability | Accepted |
 | [ADR-017](ADR-017-opus-with-aac-fallback-for-audio.md) | Opus with AAC fallback for audio | Accepted |
 | [ADR-018](ADR-018-twilio-for-sms-verification-codes-behind-an-sms-provider-int.md) | Twilio for SMS verification codes behind an SMS provider interface | Accepted |
+| [ADR-019](ADR-019-dev-staging-and-production-from-develop-stage-and-main.md) | Dev, staging and production from develop, stage and main | Accepted |

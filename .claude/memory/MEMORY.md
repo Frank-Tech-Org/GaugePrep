@@ -9,3 +9,4 @@
 - [No Generated-with line](no-generated-with-claude-line.md) — never add a Generated with Claude Code line anywhere in the project
 - [Setup: one PR, the plan, free tools](setup-one-pr-and-priorities.md) — one branch/PR per setup effort, deliver what was approved, no paid tools, robustness first
 - [Notion weekly demos](notion-weekly-demos.md) — weekly report in Notion: key features delivered vs to deliver, no tickets or process
+- [Branches and environments](branches-and-environments.md) — develop→dev, stage→staging, main→production; owner merges promotions; responsive mobile-first, not mobile-only
