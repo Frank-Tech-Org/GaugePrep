@@ -39,10 +39,10 @@ Exam preparation platform for TCF Canada first: a responsive, mobile-first web a
 |---|---|---|
 | `/pm [plan \| decide \| report]` | planning | Bare: takes the `cto` agent's technical read, says what is done, what to start next and what needs the owner. `plan` sorts Ideas, writes acceptance criteria and the DoD, fills the sprint. `decide` resolves owner decisions. `report` posts the weekly delivery report to Notion |
 | `/lm-next [block <blocker>]` | Ready → Ready to deploy | Moves the ticket nearest done one step: build, fix, review, merge or QA, resuming from its checkpoint; starts the next ticket when there is room; records a blocker |
-| `/lm-release <version> \| check` | Ready to deploy → Done | `check`: the release gate alone (security, performance budgets, public claims). With a version: changelog, promotion PR `develop` → `stage`, gate and regression on staging, release PR `stage` → `main`, notes, then close tickets after the owner tags |
+| `/lm-release [version] \| check` | Ready to deploy → Done | Due when a key feature is complete, at sprint end for fixes, and once M0 is complete; `/pm` says when. `check`: the release gate alone (security, performance budgets, public claims). Otherwise, with the version worked out from the last tag: changelog, promotion PR `develop` → `stage`, gate and regression on staging, release PR `stage` → `main`, notes, then close tickets after the owner tags |
 | `/lm-hotfix` | interrupt | Production fix from `main` |
 
-**Commands take no ticket number.** Each reads the board, the current branch or worktree, open PRs and the last checkpoint, works out its target, checks the environment allows it (parallel limit, overlap, blockers, CI, a verdict for the current head), and either proceeds or names the command to run instead. `#n` is an optional override only. Every command ends by naming the next command. `/lm-release` takes a version because a version is not a ticket.
+**Commands take no ticket number.** Each reads the board, the current branch or worktree, open PRs and the last checkpoint, works out its target, checks the environment allows it (parallel limit, overlap, blockers, CI, a verdict for the current head), and either proceeds or names the command to run instead. `#n` is an optional override only. Every command ends by naming the next command. `/lm-release` works out the next version from the last tag; a version given overrides it.
 
 Board helper used by the commands: `.claude/scripts/board.sh` (list, wip, info, move, block, unblock, set, type, sprint).
 

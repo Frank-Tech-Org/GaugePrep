@@ -20,7 +20,8 @@ Reply in under 15 lines:
 1. **Done** since last time (tickets that reached Ready to deploy or Done, merged PRs).
 2. **In flight**: each ticket, its column, anything stuck.
 3. **Next**: the tickets to start now, up to the parallel limit, in order, one line of why each, by the ordering and overlap rules in the `product-manager` agent.
-4. **Needs the owner**: open entries in `docs/DECISIONS.md`, owner-only PRs, `owner-task` tickets, anything waiting on money or access.
+4. **Release due**, only when the rule in `docs/process/branching-and-release.md` section 7 holds: the key feature completed, or the end of the sprint, and the command `/lm-release`.
+5. **Needs the owner**: open entries in `docs/DECISIONS.md`, owner-only PRs, `owner-task` tickets, anything waiting on money or access.
 
 End with `/lm-next`, or `/pm plan` when Ready is empty.
 

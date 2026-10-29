@@ -44,7 +44,7 @@ Board: org project #6, "LinguaMentor Delivery".
 | **In progress** | Being built (in flight) | `feature/<n>-<slug>` | PR opened into `develop` | `/lm-next` |
 | **In review** | PR open (in flight) | PR into `develop` | Approved and squash-merged | `/lm-next` |
 | **In QA** | Merged, deployed to dev (in flight) | `develop`, dev | QA passes, or fails back to In progress | `/lm-next` |
-| **Ready to deploy** | Passed QA; no longer in flight | `develop`, then `stage` and staging once promoted | Included in a tagged release | `/lm-release <version>` |
+| **Ready to deploy** | Passed QA; no longer in flight | `develop`, then `stage` and staging once promoted | Included in a tagged release | `/lm-release` |
 | **Done** | Live, tagged, issue closed | `main` | — | — |
 
 A blocked ticket goes back to **Ready** with the `blocked` label and a GitHub "blocked by" link to its blocker. A blocker counts as resolved once it reaches Ready to deploy.
@@ -115,7 +115,17 @@ Until dev exists (M0 ticket #11), QA runs against a local build of `develop`, an
 
 ## 7. Release workflow
 
-Run at the end of a sprint, or sooner when a ticket is worth shipping on its own. `/lm-release <version>` drives it; `/lm-release check` runs the gate alone. The release manager (`platform-engineer`, run by `/lm-release`) prepares every step; the owner presses the two buttons: promote to staging and ship to production.
+**When to release.** A release is due when any of these holds, and `/pm` says so:
+
+- a key feature of release 1 is complete: every ticket that serves it is Ready to deploy (MINOR);
+- the end of a sprint, with fixes Ready to deploy and no feature complete (PATCH);
+- M0 is complete: the first release, `v0.1.0`, proves the pipeline end to end before any feature ships.
+
+A hotfix never waits (section 8). Ready to deploy tickets that belong to an unfinished feature ship with the next release; a screen a learner could reach half-built stays unlinked until its feature is complete.
+
+**Which version.** The last tag plus one: MINOR if any released ticket is a Story or Task that adds a capability, else PATCH (section 4). `/lm-release` works it out; a version given by the owner overrides it.
+
+`/lm-release` drives it; `/lm-release check` runs the gate alone. The release manager (`platform-engineer`, run by `/lm-release`) prepares every step; the owner presses the two buttons: promote to staging and ship to production.
 
 1. Confirm no ticket is In QA, so `develop` holds only QA-passed work, and list the Ready to deploy tickets. Tickets in progress or review may continue; they are not on `develop` yet.
 2. The release manager commits the `CHANGELOG.md` entry on `chore/release-<version>`, and `/lm-next` merges it into `develop` like any reviewed PR.
