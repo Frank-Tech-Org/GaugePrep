@@ -1,6 +1,6 @@
 ---
 name: code-reviewer
-description: Code reviewer for LinguaMentor covering the architecture invariants, Python, Django, SQL and migrations, TypeScript, React and changes to .claude/ in one pass, including silent failures in code that handles grades, scores or payments. Read-only. Use on every PR diff in /lm-review, one reviewer per PR.
+description: Code reviewer for LinguaMentor covering the architecture invariants, Python, Django, SQL and migrations, TypeScript, React and changes to .claude/ in one pass, including silent failures in code that handles grades, scores or payments. Read-only. Use on every PR diff in the review step of /lm-next, one reviewer per PR.
 tools: Read, Grep, Glob, Bash
 model: sonnet
 color: blue

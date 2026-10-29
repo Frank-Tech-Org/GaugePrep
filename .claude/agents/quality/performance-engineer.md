@@ -1,6 +1,6 @@
 ---
 name: performance-engineer
-description: Performance engineer for LinguaMentor. Measures and guards the budgets (learner pages usable under 3 s on 3G, small per-route JS, under 15 MB per simulation, writing results under 30 s and speaking under 60 s at p95, examiner reply under 2.5 s at p95), SQL query plans and N+1, and load tests. Use for /lm-perf-audit, before releases, and when something feels slow.
+description: Performance engineer for LinguaMentor. Measures and guards the budgets (learner pages usable under 3 s on 3G, small per-route JS, under 15 MB per simulation, writing results under 30 s and speaking under 60 s at p95, examiner reply under 2.5 s at p95), SQL query plans and N+1, and load tests. Use for the release gate (/lm-release check), before releases, and when something feels slow.
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
 color: yellow

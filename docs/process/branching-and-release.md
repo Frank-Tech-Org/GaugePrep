@@ -4,7 +4,7 @@ How a ticket moves from an idea to production, how code moves between branches, 
 
 ## 1. The parallel rule
 
-Up to **two** tickets may be in flight at once (In progress, In review or In QA), **three** once CI runs on every PR (ticket #6). A ticket is in flight from **In progress** until **Ready to deploy**. The `product-manager` agent picks the set; `/lm-start` refuses a ticket that would exceed the limit or overlap one in flight.
+Up to **two** tickets may be in flight at once (In progress, In review or In QA), **three** once CI runs on every PR (ticket #6). A ticket is in flight from **In progress** until **Ready to deploy**. The `product-manager` agent picks the set; `/lm-next` refuses a ticket that would exceed the limit or overlap one in flight.
 
 Two tickets may run together only when all of this holds:
 
@@ -14,7 +14,7 @@ Two tickets may run together only when all of this holds:
 
 Each ticket has its own branch and its own git worktree (`../lm-<n>`), so sessions never share a working tree.
 
-If a ticket in flight turns out to depend on another one, `/pm block <blocker>` marks the ticket on the current branch as blocked by it and sends it back to Ready. The blocker is ordered first. A blocker counts as resolved at Ready to deploy.
+If a ticket in flight turns out to depend on another one, `/lm-next block <blocker>` marks the ticket on the current branch as blocked by it and sends it back to Ready. The blocker is ordered first. A blocker counts as resolved at Ready to deploy.
 
 A production hotfix (section 8) may exceed the limit. So may an owner-run ticket with no repository code (an account, a recording, a vendor request), labelled `owner-task`: it runs outside the limit, one at a time, and needs no branch or worktree.
 
@@ -38,12 +38,12 @@ Board: org project #6, "LinguaMentor Delivery".
 
 | Column | Meaning | Where the code is | Leaves when | Command |
 |---|---|---|---|---|
-| **Ideas** | Raw, untriaged ticket or suggestion | Nothing | Accepted into the backlog, or closed as duplicate or won't do | `/pm triage` |
-| **Backlog** | Accepted: type, area, priority and milestone set, not yet refined | Nothing | Refined | `/pm refine` |
-| **Ready** | Refined: acceptance criteria, Definition of Done and dependencies written, sized to two days or less | Nothing | Picked as the next ticket | `/pm plan`, `/pm` |
-| **In progress** | Being built (in flight) | `feature/<n>-<slug>` | PR opened into `develop` | `/lm-start` |
-| **In review** | PR open (in flight) | PR into `develop` | Approved and squash-merged | `/lm-review` |
-| **In QA** | Merged, deployed to staging (in flight) | `develop`, staging | QA passes, or fails back to In progress | `/lm-qa` |
+| **Ideas** | Raw, untriaged ticket or suggestion | Nothing | Accepted into the backlog, or closed as duplicate or won't do | `/pm plan` |
+| **Backlog** | Accepted: type, area, priority and milestone set, not yet refined | Nothing | Refined | `/pm plan` |
+| **Ready** | Refined: acceptance criteria, Definition of Done and dependencies written, sized to two days or less | Nothing | Picked as the next ticket | `/pm`, `/lm-next` |
+| **In progress** | Being built (in flight) | `feature/<n>-<slug>` | PR opened into `develop` | `/lm-next` |
+| **In review** | PR open (in flight) | PR into `develop` | Approved and squash-merged | `/lm-next` |
+| **In QA** | Merged, deployed to staging (in flight) | `develop`, staging | QA passes, or fails back to In progress | `/lm-next` |
 | **Ready to deploy** | Passed QA; no longer in flight | `develop` | Included in a tagged release | `/lm-release <version>` |
 | **Done** | Live, tagged, issue closed | `main` | — | — |
 
@@ -93,22 +93,22 @@ hotfix/<version>-<short-slug>       hotfix/0.2.1-fix-timer-drift
 
 ## 6. Ticket workflow
 
-Commands take no ticket number. Each works out its target from the board, the current branch or worktree, open PRs and the last checkpoint, checks that the environment allows the step, and otherwise names the command to run instead. `#n` overrides the choice.
+In a normal week the owner runs two commands: `/pm` to plan and `/lm-next` to move work. Commands take no ticket number. Each works out its target from the board, the current branch or worktree, open PRs and the last checkpoint, checks that the environment allows the step, and otherwise names the command to run instead. `#n` overrides the choice.
 
-1. **Triage.** New tickets land in Ideas. `/pm triage` sets type, area, priority and milestone, flags duplicates, and moves accepted tickets to Backlog. The owner closes duplicates and rejected ideas.
-2. **Refine.** `/pm refine` writes the acceptance criteria, the Definition of Done, the files and paths and the dependencies, splits anything over two days, and moves the ticket to Ready.
-3. **Plan the sprint.** `/pm plan` puts Ready tickets into the two-week Sprint iteration in dependency order. Sprints sit inside the product milestones (M0 to M8).
+1. **Triage.** New tickets land in Ideas. `/pm plan` sets type, area, priority and milestone, flags duplicates, and moves accepted tickets to Backlog. The owner closes duplicates and rejected ideas.
+2. **Refine.** The same `/pm plan` pass writes the acceptance criteria, the Definition of Done, the files and paths and the dependencies, splits anything over two days, and moves the ticket to Ready.
+3. **Plan the sprint.** It then puts Ready tickets into the two-week Sprint iteration in dependency order. Sprints sit inside the product milestones (M0 to M8).
 4. **Pick.** The CTO writes the technical read, and `/pm` hands it to `product-manager`, which names the set of tickets to start, up to the parallel limit: blockers first, then milestone, priority and size, and only tickets that cannot conflict.
-5. **Build.** `/lm-start` checks the parallel limit and overlap, moves the ticket to In progress and creates `feature/<n>-<slug>` in its own worktree from an up-to-date `develop`. The owning agents implement, test, commit, push the branch and open the PR into `develop`.
-6. **Review.** `/lm-review` moves the ticket to In review, and `code-reviewer` and any specialist reviewers read the diff and post their verdict on the PR. Fixes happen on the same branch.
+5. **Build.** `/lm-next` checks the parallel limit and overlap, moves the ticket to In progress and creates `feature/<n>-<slug>` in its own worktree from an up-to-date `develop`. The owning agents implement, test, commit, push the branch and open the PR into `develop`.
+6. **Review.** Its next run moves the ticket to In review, and `code-reviewer` and any specialist reviewers read the diff and post their verdict on the PR. Fixes happen on the same branch.
 7. **Merge.** Once the review passes and CI is green, the CTO runs `.claude/scripts/merge.sh <pr>`. It squash-merges into `develop` and deletes the branch, and refuses unless the base is `develop`, the branch is `feature/*` or `chore/*`, every check is green, and the latest `REVIEW: PASS` names the PR's head sha. The owner can still merge by hand.
-8. **QA.** Staging deploys from `develop`. `/lm-qa` moves the ticket to In QA and checks every acceptance criterion on staging. A pass moves it to Ready to deploy. A fail sends it back to In progress with the defects listed; the fix goes in a new PR from `develop` that references the same ticket.
+8. **QA.** Staging deploys from `develop`. After the merge, `/lm-next` moves the ticket to In QA and checks every acceptance criterion on staging. A pass moves it to Ready to deploy. A fail sends it back to In progress with the defects listed; the fix goes in a new PR from `develop` that references the same ticket.
 
 Until staging exists (M0 ticket #11), QA runs against a local build of `develop`, and the QA report says so.
 
 ## 7. Release workflow
 
-Run at the end of a sprint, or sooner when a ticket is worth shipping on its own. `/lm-release <version>` drives it.
+Run at the end of a sprint, or sooner when a ticket is worth shipping on its own. `/lm-release <version>` drives it; `/lm-release check` runs the gate alone.
 
 1. Confirm nothing is in flight (no ticket in progress, review or QA) and list the Ready to deploy tickets.
 2. Run the gate: security pass and the pre-release attack test on staging, dependency audit, performance audit with a load run, claim verification and the UX check on changed screens (see `/lm-release`).
@@ -178,7 +178,7 @@ Every Friday the owner sees the app on their phone, the board movement for the w
 - **Security:** findings opened and closed this week from the CI scans and the weekly staging scan, with any open High or Critical named.
 - **Performance:** each PRD budget against the latest Lighthouse and k6 figures, with any breach and its ticket.
 
-`product-manager` assembles the notes; `security-engineer` and `performance-engineer` supply the scorecards. The CTO posts them on Thursday as one entry in the Notion database **Weekly demos** (under the private page **LinguaMentor Studio**): week, demo date, status (Draft, Ready for demo, Reviewed), both scorecards, what needs the owner, and links to the PRs, the board and staging.
+`product-manager` assembles the notes; `security-engineer` and `performance-engineer` supply the scorecards. On Thursday `/pm report` has `product-manager` post one entry in the Notion database **Weekly demos** (under the private page **LinguaMentor Studio**). It leads with delivery: per milestone, tickets released, on staging, in progress and not started, with a forecast; then what was delivered this week, in plain words with links to try it, and what remains. The two scorecards and what needs the owner follow.
 
 ## 10. Checklists
 

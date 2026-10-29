@@ -1,7 +1,7 @@
 ---
 name: lm-release
-description: Release LinguaMentor. With a version, run the full release gate, cut and push release/x.y.z with the changelog, and open the release PR into main. With "<version> done", after the owner has merged, tagged and published, open the back-merge PR and move the released tickets to Done.
-argument-hint: <version> [done]
+description: Release LinguaMentor. With "check", run only the release gate (security, performance budgets, public claims). With a version, run the full release gate, cut and push release/x.y.z with the changelog, and open the release PR into main. With "<version> done", after the owner has merged, tagged and published, open the back-merge PR and move the released tickets to Done.
+argument-hint: <version> [done] | check
 arguments: [version, phase]
 disable-model-invocation: true
 ---
@@ -14,6 +14,10 @@ Follow `docs/process/branching-and-release.md` section 7. Agents push the releas
 
 !`.claude/scripts/board.sh list "Ready to deploy" || true`
 
+## Check (version is "check")
+
+Run the gate below on what changed since the last tag and stop after the table. Use it before a release, after a public-page change, or when something feels slow.
+
 ## Prepare (no phase given)
 
 ### 1. Gate: every item runs, and any failure stops the release
@@ -25,8 +29,8 @@ Follow `docs/process/branching-and-release.md` section 7. Agents push the releas
 | 3 | Security pass on `git diff <last-tag>..origin/develop`: no CRITICAL or HIGH | `security-engineer` |
 | 4 | Dependencies: `uvx pip-audit` and `pnpm audit --audit-level high`, no high or critical | `security-engineer` |
 | 4b | Attack test on staging (never production): the permanent attack tests, ZAP active scan, Nuclei and Schemathesis against the OpenAPI contract (all free), no open HIGH or CRITICAL | `security-engineer` |
-| 5 | Performance: `/lm-perf-audit` on what changed, including the k6 load run on staging, `PERF: PASS` | `performance-engineer` |
-| 6 | Claims: `/lm-verify-claims`, `CLAIMS: GO` | `qa-engineer` |
+| 5 | Performance: every budget measured on what changed since the last tag, including the k6 load run on staging; the table surface · budget · before · after · guard; budgets that can't be measured yet are named, never estimated; `PERF: PASS` | `performance-engineer` |
+| 6 | Claims: every statement on the public pages, onboarding and notification copy, `README.md`, the draft release notes and the tickets since the last tag, checked against code and tests; `MOCKED` and `ABSENT` claims listed first with the line to fix; `docs/CLAIMS.md` refreshed and committed on the work branch; `CLAIMS: GO` | `qa-engineer` |
 | 7 | UX and accessibility on every changed screen | `product-designer`, `qa-engineer` |
 | 8 | Privacy: no new personal data flow without a ruling | `privacy-compliance` (only if data flows changed) |
 | 9 | Migrations are expand-then-contract, with a rollback written down | `code-reviewer` |

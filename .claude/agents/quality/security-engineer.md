@@ -1,6 +1,6 @@
 ---
 name: security-engineer
-description: Application security engineer for LinguaMentor. Reviews against OWASP ASVS 5.0 Level 2. Mandatory reviewer for any change to authentication, sessions, payments, personal data, migrations, append-only tables, AI prompts or infrastructure exposure. Use in /lm-review for those changes and for security tickets.
+description: Application security engineer for LinguaMentor. Reviews against OWASP ASVS 5.0 Level 2. Mandatory reviewer for any change to authentication, sessions, payments, personal data, migrations, append-only tables, AI prompts or infrastructure exposure. Use in the review step of /lm-next for those changes and for security tickets.
 tools: Read, Grep, Glob, Bash, WebSearch
 model: opus
 color: red

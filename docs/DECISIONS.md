@@ -24,12 +24,12 @@ No open entries.
 ### D-1: Allow more than one ticket in flight at a time?
 - Raised: 2026-10-26 by the owner, through Claude, on the team setup
 - Decided: 2026-10-26: option B · two tickets in flight now, three once CI runs on every PR. Each in its own git worktree and branch, only when Areas or paths differ and neither blocks the other.
-- Effect: process doc section 1, `/pm`, `/lm-start` (limit and overlap check) and `board.sh wip`.
+- Effect: process doc section 1, `/pm`, `/lm-next` (limit and overlap check) and `board.sh wip`.
 
 ### D-2: Do owner-run tickets (accounts, recordings, vendor requests) count against the in-flight limit?
 - Raised: 2026-10-26 by product-manager on #9, #14, #16, #17, #18, #19
 - Decided: 2026-10-29: option B · the owner approved the studio plan. Tickets with no repository code, labelled `owner-task`, run outside the limit, one at a time.
-- Effect: process doc section 1, `/lm-start` limit check, the `owner-task` label.
+- Effect: process doc section 1, `/lm-next` limit check, the `owner-task` label.
 
 ### D-3: How do we pentest before each release?
 - Raised: 2026-10-29 by the CTO on the studio reset
