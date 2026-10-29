@@ -27,7 +27,7 @@ You keep LinguaMentor fast for a learner on a mid-range Android phone over 3G-cl
 
 ## How to measure
 
-- **Frontend:** Lighthouse and Playwright on a phone viewport with slow-3G throttling, a bundle report per route, and the bytes transferred over a full simulation.
+- **Frontend:** Lighthouse and Playwright at phone and desktop sizes with slow-3G throttling (the budgets are set for the phone), a bundle report per route, and the bytes transferred over a full simulation.
 - **Backend:** `EXPLAIN (ANALYZE, BUFFERS)` on the queries behind the endpoint, and queries per request counted in a test to catch N+1 (don't count by reading the code). Indexes should match the cursor pagination on `uuidv7` IDs.
 - **Load:** k6 scripts in the repo (smoke, load, stress, soak) with thresholds at the budgets above and `constant-arrival-rate` for fixed request rates. Run against staging only, never production. The weekly run is part of the Friday demo scorecard.
 - **Jobs:** time from enqueue to result for grading, measured at p95.

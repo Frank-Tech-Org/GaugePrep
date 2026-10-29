@@ -478,7 +478,8 @@ linguamentor/                      private GitHub repository
 | Trigger | Steps |
 |---|---|
 | Pull request | Lint, types, Import Linter contracts, unit and integration tests with PostgreSQL 18, API contract check, frontend tests, gitleaks |
-| Push to develop (or a manual run on `release/*` or `hotfix/*`) | Build ARM images on GitHub's arm64 runners, push to GitHub Container Registry, deploy to staging with Kamal, publish the static PWA to Cloudflare staging |
+| Push to develop | Build ARM images on GitHub's arm64 runners, push to GitHub Container Registry, deploy to dev with Kamal, publish the static PWA to Cloudflare dev |
+| Push to stage (or a manual run on `hotfix/*`) | The same images, deployed to staging with Kamal, and the PWA published to Cloudflare staging |
 | Version tag plus approval | Run migrations (expand-then-contract), deploy to production with Kamal (zero-downtime switch through kamal-proxy), publish the PWA |
 | Change to grader prompt, rubric or model | Grader release check workflow against the real model |
 | Nightly | Full scoring engine recovery tests, full end-to-end suite |
@@ -491,19 +492,19 @@ Servers run in Germany (Hetzner) next to the database in Frankfurt (Neon). Traff
 
 ### 14.2 Environments
 
-| Part | Local | Staging | Production |
-|---|---|---|---|
-| App, workers, scoring, voice | Docker Compose | Oracle Cloud Always Free ARM server (2 OCPU, 12 GB) | Hetzner Cloud ARM servers (app server; voice server) |
-| Database | PostgreSQL 18 in Docker | Neon Free, Frankfurt | Neon Launch, Frankfurt |
-| LiveKit | `livekit-server --dev` | LiveKit Cloud Build (free) | Self-hosted LiveKit server |
-| Object storage | Local disk via Django storage | Cloudflare R2 free tier | Cloudflare R2 |
-| CDN and DNS | None | Cloudflare free | Cloudflare free |
-| AI and speech | Local open models | Real providers, small budget | Real providers |
-| Payments | Notch Pay test keys | Notch Pay test keys | Notch Pay live keys |
-| Email | Local mail catcher | Resend free | Resend |
-| Monitoring | Console | Sentry and Grafana Cloud free | Sentry and Grafana Cloud |
+| Part | Local | Dev | Staging | Production |
+|---|---|---|---|---|
+| App, workers, scoring, voice | Docker Compose | Oracle Cloud Always Free ARM server, separate Kamal deploy | Oracle Cloud Always Free ARM server (2 OCPU, 12 GB) | Hetzner Cloud ARM servers (app server; voice server) |
+| Database | PostgreSQL 18 in Docker | Neon Free branch, Frankfurt | Neon Free, Frankfurt | Neon Launch, Frankfurt |
+| LiveKit | `livekit-server --dev` | LiveKit Cloud Build (free), shared with staging | LiveKit Cloud Build (free) | Self-hosted LiveKit server |
+| Object storage | Local disk via Django storage | Cloudflare R2 free tier, own bucket | Cloudflare R2 free tier | Cloudflare R2 |
+| CDN and DNS | None | Cloudflare free | Cloudflare free | Cloudflare free |
+| AI and speech | Local open models | Cheapest real models, small budget | Real providers, small budget | Real providers |
+| Payments | Notch Pay test keys | Notch Pay test keys | Notch Pay test keys | Notch Pay live keys |
+| Email | Local mail catcher | Resend free | Resend free | Resend |
+| Monitoring | Console | Sentry and Grafana Cloud free | Sentry and Grafana Cloud free | Sentry and Grafana Cloud |
 
-Staging is fully scripted and rebuilt from scratch in under an hour, because free tiers can change without notice (Oracle halved its free ARM allowance on 15 June 2026). Staging holds only synthetic data from seed scripts.
+Dev deploys every merge into `develop` and is where each ticket is tested. Staging deploys the `stage` branch, the release candidate, and is where the release gate and the weekly demo run. SMS in dev goes to a fake provider. Both are fully scripted and rebuilt from scratch in under an hour, because free tiers can change without notice (Oracle halved its free ARM allowance on 15 June 2026). Both hold only synthetic data from seed scripts. Branches and promotion are in `docs/process/branching-and-release.md` and ADR-019.
 
 ### 14.3 Production topology
 
@@ -545,7 +546,7 @@ Staging is fully scripted and rebuilt from scratch in under an hour, because fre
 | Scoring engine | Recovery on simulated data; comparison with an established statistics package | Pull request (small), nightly (full) |
 | Backend modules | Integration with PostgreSQL 18; idempotency of answers and webhooks; append-only enforcement; authorisation | Every pull request |
 | API | Contract check against OpenAPI | Every pull request |
-| Frontend | Component tests; Playwright end-to-end on a phone-size screen with slow 3G throttling, including interrupted and resumed simulations | Pull request (core), nightly (full) |
+| Frontend | Component tests; Playwright end-to-end at phone and desktop sizes with slow 3G throttling, including interrupted and resumed simulations | Pull request (core), nightly (full) |
 | Voice examiner | Scripted conversations with recorded audio: timings, interruptions, no volunteered information, recitation probing | Every change to voice |
 | Grader | Release check on the anchor set with the real model | Every grader change; blocks release |
 | Load | API and queue at twice expected peak; concurrent speaking sessions to size the voice server | Before launch and before infrastructure changes |
@@ -612,7 +613,7 @@ Prices are those published by providers in October 2026 and are tracked monthly 
 
 | Milestone | Delivers | Done when |
 |---|---|---|
-| M0 Foundations and checks | Repository, CI/CD, three environments, deploy pipeline; accent test; latency test from Douala; Notch Pay confirmation; grader release-check pipeline skeleton | Staging deploys from develop; recognition provider chosen; region confirmed |
+| M0 Foundations and checks | Repository, CI/CD, environments (local, dev, staging, production), deploy pipeline; accent test; latency test from Douala; Notch Pay confirmation; grader release-check pipeline skeleton | Dev deploys from develop and staging from stage; recognition provider chosen; region confirmed |
 | M1 Accounts and content | Sign-up, consents, goals; content bank with review workflow, versions and audio pipeline | A reviewer publishes an item with audio; a learner signs up and sets a goal |
 | M2 Listening and reading | Practice for both papers; scoring engine v0; diagnostic | A learner receives a predicted 699-scale range from the diagnostic |
 | M3 Writing | Rule checks, grader, anchors, release checks, feedback | The grader passes every release check |
