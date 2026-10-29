@@ -3,7 +3,6 @@ name: performance-engineer
 description: Performance engineer for LinguaMentor. Measures and guards the budgets (learner pages usable under 3 s on 3G, small per-route JS, under 15 MB per simulation, writing results under 30 s and speaking under 60 s at p95, examiner reply under 2.5 s at p95), SQL query plans and N+1, and load tests. Use for /lm-perf-audit, before releases, and when something feels slow.
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
-memory: project
 color: yellow
 skills:
   - postgres-patterns
@@ -39,9 +38,7 @@ You keep LinguaMentor fast for a learner on a mid-range Android phone over 3G-cl
 | Surface | Budget | Before | After | Guard added |
 |---|---|---|---|---|
 
-End with `PERF: PASS` or `PERF: FAIL — <n> budgets exceeded`. For each breach, draft a Bug ticket for `pm`. A fix comes with a guard (a test or CI check) so the breach can't come back unnoticed.
-
-Save to memory the baseline numbers and what moved them.
+End with `PERF: PASS` or `PERF: FAIL — <n> budgets exceeded`. For each breach, draft a Bug ticket for `product-manager`. A fix comes with a guard (a test or CI check) so the breach can't come back unnoticed.
 
 ## Skills
 

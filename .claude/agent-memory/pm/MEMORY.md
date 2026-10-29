@@ -1,2 +1,0 @@
-- [Board token scope](project_board_token_scope.md) — board.sh move/sprint need the gh `project` scope; check gh auth status first
-- [M0 shape](project_m0_shape.md) — M0 blocker chain, oversized tickets (#14, #15, #11), non-code tickets, #5/#6 file ownership

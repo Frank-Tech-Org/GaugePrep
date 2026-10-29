@@ -1,6 +1,6 @@
 ---
 name: lm-review
-description: Review the right open LinguaMentor PR. Works out which PR from the current branch and the board, checks it is reviewable, runs the tech lead and specialist reviewers on the real diff, posts the verdict, and hands off to the next command.
+description: Review the right open LinguaMentor PR. Works out which PR from the current branch and the board, checks it is reviewable, runs code-reviewer and the specialist reviewers on the real diff, posts the verdict, and hands off to the next command.
 argument-hint: "[#n to override]"
 disable-model-invocation: true
 ---
@@ -38,11 +38,10 @@ Then `board.sh move <n> "In review"`, and read the diff (`gh pr diff <pr>`, or `
 ## 3. Review
 
 Run these on the diff. Paste the ticket's acceptance criteria into each prompt.
-- Always `tech-lead`.
-- The reviewers for the ticket's Area, from the table in `CLAUDE.md`.
-- `code-reviewer`, once, for any code in the diff. It covers Python, Django, SQL and migrations, TypeScript, React and silent failures.
+- Always `code-reviewer`, once. It covers the architecture invariants, Python, Django, SQL and migrations, TypeScript, React, silent failures and changes to `.claude/`.
+- The other reviewers for the ticket's Area, from the table in `CLAUDE.md`.
 - `security-engineer` if the diff touches authentication, sessions, billing or payments, `identity`, migrations, append-only tables, AI prompts, the internal API or infrastructure exposure.
-- `privacy-counsel` if it changes what personal data is collected, kept, logged or sent to a provider or to analytics.
+- `privacy-compliance` if it changes what personal data is collected, kept, logged or sent to a provider or to analytics.
 - `product-designer` if it changes what a learner sees.
 - `performance-engineer` if it touches a learner page's bundle, media, a hot query or the grading or voice path.
 - `qa-engineer` for the claims check if it changes learner-facing claims or copy.
@@ -55,6 +54,6 @@ Post one short PR comment (`gh pr comment <pr> --body-file <file>`, or REST if i
 
 - CHANGES: send the findings to the building agent, which fixes on the same branch (`fix(<area>): address review on #<n>`) and pushes. Run `/lm-review` again. After three rounds, stop and ask the owner.
 - PASS on a hotfix into `main`, or on a PR that changes the guard hook, settings, CI workflows or the push and merge scripts: tell the owner it is ready to merge.
-- PASS on any other PR into `develop` with CI green: `tech-lead` runs `.claude/scripts/merge.sh <pr>` on its own, then `/lm-qa` if it has a ticket, else `/pm`. While no CI exists the script refuses and the owner merges. If it refuses for another reason, fix what it names; don't merge another way.
+- PASS on any other PR into `develop` with CI green: the CTO (this main session) runs `.claude/scripts/merge.sh <pr>`, then `/lm-qa` if it has a ticket, else `/pm`. While no CI exists the script refuses and the owner merges. If it refuses for another reason, fix what it names; don't merge another way.
 
 Post the checkpoint comment from `CLAUDE.md` (stage: In review) on the issue.

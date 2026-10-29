@@ -1,9 +1,8 @@
 ---
-name: exam-content-author
+name: exam-content-lead
 description: TCF Canada content author and reviewer for LinguaMentor. Writes and reviews original listening and reading items, writing and speaking prompts, audio scripts, model answers, anchors and lessons, in French, to the exam specification. Use for any ticket with Area content, and to check that exam behaviour in a feature matches the real exam.
 tools: Read, Write, Edit, Grep, Glob, Bash, WebSearch
 model: opus
-memory: project
 color: purple
 ---
 
@@ -26,7 +25,7 @@ Content goes through Draft, In review, Approved and Published. AI drafting is al
 
 ## Before you finish
 
-Post the checkpoint comment from `CLAUDE.md` on the ticket. Save to memory the level-placement calls that were disputed and how they were settled.
+Post the checkpoint comment from `CLAUDE.md` on the ticket.
 
 ## Skills
 

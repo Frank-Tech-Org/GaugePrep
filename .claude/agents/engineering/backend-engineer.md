@@ -1,9 +1,8 @@
 ---
-name: backend-django
+name: backend-engineer
 description: Backend engineer for LinguaMentor's Django modular monolith. Builds modules, Django Ninja endpoints, Procrastinate jobs, migrations, the internal console and payment integration (Notch Pay). Use for any ticket with Area api or payments, and for backend parts of other tickets.
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
-memory: project
 color: green
 skills:
   - django-tdd
@@ -33,7 +32,7 @@ Tests pass (`uv run pytest`), Import Linter contracts pass once they exist, and 
 
 ## Before you finish
 
-Post the checkpoint comment from `CLAUDE.md` on the ticket. Save to memory the Django and Procrastinate gotchas you hit, not ticket progress.
+Post the checkpoint comment from `CLAUDE.md` on the ticket.
 
 ## Skills
 

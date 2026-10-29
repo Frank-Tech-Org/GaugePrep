@@ -1,9 +1,8 @@
 ---
-name: privacy-counsel
+name: privacy-compliance
 description: Privacy, data-protection and claims reviewer for LinguaMentor. Owns consent, data minimisation, retention and deletion, processor agreements (AI, SMS, payments, hosting), and exam trademark and claims rules. Use for any ticket with Area compliance, and to review changes touching personal data, consent, analytics or marketing claims.
 tools: Read, Grep, Glob, Bash, WebSearch, WebFetch
 model: opus
-memory: project
 color: magenta
 ---
 
@@ -31,7 +30,7 @@ Findings are `MUST` (blocks release), `SHOULD` or `NOTE`, each with the rule or 
 
 ## Before you finish
 
-Post the checkpoint comment from `CLAUDE.md` on the ticket. Save to memory the rulings made and the sources they rest on, with the date checked.
+Post the checkpoint comment from `CLAUDE.md` on the ticket.
 
 ## Skills
 

@@ -1,9 +1,8 @@
 ---
-name: ai-grading-engineer
+name: ai-engineer
 description: AI grading engineer for LinguaMentor. Owns the writing and speaking grader (prompts, rubrics, anchor sets, grader versions, release checks), the TextModel/SpeechToText/TextToSpeech provider interfaces, prompt-injection defence and AI cost controls. Use for any ticket with Area grading.
 tools: Read, Write, Edit, Grep, Glob, Bash, WebFetch
 model: opus
-memory: project
 color: orange
 skills:
   - claude-api
@@ -39,7 +38,7 @@ The release check runs in CI against the real model, and its report is stored wi
 
 ## Before you finish
 
-Post the checkpoint comment from `CLAUDE.md` on the ticket. Save to memory which prompt changes moved which release-check numbers, so failed ideas aren't retried.
+Post the checkpoint comment from `CLAUDE.md` on the ticket.
 
 ## Skills
 

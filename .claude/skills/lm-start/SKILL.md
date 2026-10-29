@@ -22,7 +22,7 @@ In this order, first match wins:
 1. `#n` in the arguments.
 2. The current branch or worktree is `feature/<n>-*`: that ticket, continue it.
 3. A ticket In progress with no worktree or an unfinished checkpoint: resume it (`gh issue view <n> --comments`, continue from the last checkpoint's `Next`; don't redo `Done`).
-4. Otherwise ask `pm` for the next ticket in Ready (its ordering and overlap rules), and take the first it names.
+4. Otherwise ask `product-manager` for the next ticket in Ready (its ordering and overlap rules), and take the first it names.
 
 ## 2. Check the environment, hand off if it says no
 
@@ -32,8 +32,8 @@ Run `board.sh info <n>` and `gh issue view <n> --comments`. Stop at the first fa
 |---|---|
 | Nothing in Ready | `/pm refine` if Backlog has tickets, else `/pm triage` |
 | Ticket is not in Ready, In progress or In review, or has no acceptance criteria or Definition of Done | `/pm refine #<n>` |
-| Parallel limit reached (2, or 3 once CI exists) and this ticket is not already in `wip`; a hotfix is exempt | `/lm-review` or `/lm-qa` for the ticket nearest the end |
-| Overlaps another ticket in `wip` (same Area and intersecting paths, a blocking link, or a shared migration chain, lockfile, OpenAPI contract or config) | the next non-overlapping ticket from `pm`, else wait |
+| Parallel limit reached (2, or 3 once CI exists) and this ticket is not already in `wip`; a hotfix is exempt, and tickets labelled `owner-task` neither count nor are refused (one at a time) | `/lm-review` or `/lm-qa` for the ticket nearest the end |
+| Overlaps another ticket in `wip` (same Area and intersecting paths, a blocking link, or a shared migration chain, lockfile, OpenAPI contract or config) | the next non-overlapping ticket from `product-manager`, else wait |
 | A blocker is not at Ready to deploy or Done | `/lm-start #<blocker>`, or `/pm` if the blocker is not ready |
 | Ticket has an open PR that is green with no CHANGES verdict on its head | `/lm-review` |
 | Ticket has an open PR with red CI, conflicts or a `REVIEW: CHANGES` verdict | continue here on its branch: fix, commit, push, then `/lm-review` |
@@ -52,7 +52,7 @@ Work only inside `../lm-<n>`. If the worktree exists, continue in it.
 
 Route by the Area field, using the table in `CLAUDE.md`. Each agent's prompt carries the full ticket text, the acceptance criteria and the latest checkpoint, because agents don't see this conversation.
 
-- Decision tickets go to `tech-lead` or `pm`, and the output is an ADR in `docs/adr/` plus the index row.
+- Decision tickets go to the CTO (this main session, technical) or `product-manager` (product), and the output is an ADR in `docs/adr/` plus the index row.
 - Work that needs a screen spec goes to `product-designer` first.
 - A missing dependency found mid-work: stop and run `/pm block <blocker>` instead of working around it.
 

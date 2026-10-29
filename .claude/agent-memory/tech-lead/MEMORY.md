@@ -1,5 +1,0 @@
-- [Merge gate rulings](merge-gate-rulings.md) — PASS bound to sha, owner-only files refused, merge.sh pinned, gh api merge bypass, per-page jq
-- [Guard hook review workarounds](guard-hook-review-workarounds.md) — words that trip the guard; use Read, scratchpad scripts, -F body=@file
-- [Check scope gaps](check-scope-gaps.md) — recurring: tool configs omit a workspace member (voice); plant errors in each to verify
-- [Command hand-off loops](command-handoff-loops.md) — recurring: pair hand-off rows across /lm-* commands; in-flight ticket vs limit
-- [Agent skill resolution](agent-skill-resolution.md) — recurring: agent skills resolving only from ~/.claude or missing; vendor or enable plugin

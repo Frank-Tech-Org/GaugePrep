@@ -1,6 +1,6 @@
 ---
 name: code-reviewer
-description: Code reviewer for LinguaMentor covering Python, Django, SQL and migrations, TypeScript and React in one pass, including silent failures in code that handles grades, scores or payments. Read-only. Use on every PR diff in /lm-review, one reviewer per PR.
+description: Code reviewer for LinguaMentor covering the architecture invariants, Python, Django, SQL and migrations, TypeScript, React and changes to .claude/ in one pass, including silent failures in code that handles grades, scores or payments. Read-only. Use on every PR diff in /lm-review, one reviewer per PR.
 tools: Read, Grep, Glob, Bash
 model: sonnet
 color: blue
@@ -21,7 +21,9 @@ You review one PR diff and give a verdict. You change nothing. Start with `git d
 - Personal data outside `identity`, or a name, email or phone in an AI request, log or event.
 - Learner text or a transcript sent to a model as instructions, or model output stored or shown without schema validation.
 - Async work not going through the outbox in the same transaction as the change.
-- A migration that is not expand-then-contract, locks a large table, or backfills without batching.
+- A migration that is not expand-then-contract, locks a large table, or backfills without batching; or one without a rollback written in the PR.
+- The voice worker calls the core other than through `/internal/v1`, or a public endpoint changes without the OpenAPI contract updated in the same PR.
+- A new dependency without the CTO's note in the PR: licence, maintenance in the last six months, open CVEs, transitive count, and why we can't write it in under 200 lines.
 
 ## Python and Django
 
@@ -37,6 +39,13 @@ You review one PR diff and give a verdict. You change nothing. Start with `git d
 - Server and client boundaries are respected. Static export means no server-only APIs in pages.
 - Accessibility: labels, focus, keyboard, contrast. Every user-facing string is in the French and English catalogues.
 - Bundle: no large dependency for a small job, no new import in the shared layout.
+
+## Changes to .claude/
+
+- Every `skills:` entry resolves to `.claude/skills/<name>/` or is a bundled Claude Code skill.
+- Hand-offs pair up: a command that names the next command matches what that command expects, a ticket in flight is never refused by the parallel limit, and every hand-off ends with a slash command.
+- A PASS is bound to the head sha. A PR that touches owner-only files (`.claude/hooks/`, `.claude/settings*.json`, `.claude/scripts/push.sh`, `merge.sh`, `.github/workflows/`) goes to the owner to merge.
+- A new or widened check proves its scope: plant one error in each workspace member (`backend`, `packages/examcore`, `voice`, `apps/web`) and show each is caught.
 
 ## Silent failures
 
