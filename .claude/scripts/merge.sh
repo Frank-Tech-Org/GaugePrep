@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# The only way an agent merges, and only the tech-lead runs it. It squash-merges a reviewed work-branch PR into develop.
+# The only way an agent merges, and only the CTO (the main Claude Code session) runs it. It squash-merges a reviewed work-branch PR into develop.
 #   .claude/scripts/merge.sh <pr-number>
 # Releases, tags and anything into main stay with the owner. The review verdict is the last line of a PR comment:
 #   REVIEW: PASS <full head sha>      or      REVIEW: CHANGES <full head sha>
