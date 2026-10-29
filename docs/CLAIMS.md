@@ -1,6 +1,6 @@
 # Claims register
 
-Every statement that tells a learner or the public what LinguaMentor does is listed here with its evidence. This covers the landing, pricing, accuracy and help pages, onboarding, release notes, the README and app-store text. Only `product-verifier` sets a claim to `VERIFIED`. `/lm-verify-claims` refreshes the register before every release.
+Every statement that tells a learner or the public what LinguaMentor does is listed here with its evidence. This covers the landing, pricing, accuracy and help pages, onboarding, release notes, the README and app-store text. Only `qa-engineer` sets a claim to `VERIFIED`. `/lm-verify-claims` refreshes the register before every release.
 
 | Status | Meaning | May appear publicly |
 |---|---|---|

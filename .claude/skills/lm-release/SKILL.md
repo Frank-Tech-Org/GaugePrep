@@ -24,9 +24,10 @@ Follow `docs/process/branching-and-release.md` section 7. Agents push the releas
 | 2 | CI green on the head of `develop` | `release-manager` |
 | 3 | Security pass on `git diff <last-tag>..origin/develop`: no CRITICAL or HIGH | `security-engineer` |
 | 4 | Dependencies: `uvx pip-audit` and `pnpm audit --audit-level high`, no high or critical | `security-engineer` |
-| 5 | Performance: `/lm-perf-audit` on what changed, `PERF: PASS` | `performance-engineer` |
-| 6 | Claims: `/lm-verify-claims`, `CLAIMS: GO` | `product-verifier` |
-| 7 | UX and accessibility on every changed screen | `ux-designer`, `qa-engineer` |
+| 4b | Attack test on staging (never production): the permanent attack tests plus one Shannon run within the owner's cost cap, no open HIGH or CRITICAL | `security-engineer` |
+| 5 | Performance: `/lm-perf-audit` on what changed, including the k6 load run on staging, `PERF: PASS` | `performance-engineer` |
+| 6 | Claims: `/lm-verify-claims`, `CLAIMS: GO` | `qa-engineer` |
+| 7 | UX and accessibility on every changed screen | `product-designer`, `qa-engineer` |
 | 8 | Privacy: no new personal data flow without a ruling | `privacy-counsel` (only if data flows changed) |
 | 9 | Migrations are expand-then-contract, with a rollback written down | `tech-lead` |
 | 10 | Grader changes have a stored, passing release-check report | `ai-grading-engineer` (only if grading changed) |

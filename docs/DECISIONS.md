@@ -15,6 +15,15 @@ Settled architecture choices become ADRs in `docs/adr/`. This file is for open q
 - Reversible: yes
 - Blocks: #14, #18 starting now
 
+### D-3: What is the spending cap for the AI pentest before each release?
+- Raised: 2026-10-29 by tech-lead on the studio reset
+- Context: Shannon is an AI tool that attacks our staging app the way a hacker would, and reports only attacks it proved. It uses paid Anthropic API calls, roughly $50 for one full run on a small app, and takes one to a few hours. It never touches production.
+- Options: A, $75 hard cap per run, one run before each release · B, $150 per run, plus a run after any change to login, payments or grading · C, no AI pentest until launch, free scanners only
+- Recommendation: A, with the cap set as a spending limit in the Anthropic console so it cannot be exceeded; the first run's real cost is reported before any raise.
+- Cost of delay: none until the first release candidate.
+- Reversible: yes
+- Blocks: nothing now
+
 <!-- Template:
 ### D-<n>: <question>
 - Raised: <YYYY-MM-DD> by <agent> on #<issue>
