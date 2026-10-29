@@ -24,9 +24,9 @@ Follow `docs/process/branching-and-release.md` section 8. This is the only thing
 
 | Finding | Hand off to |
 |---|---|
-| No such Bug, or no tag exists on `main` yet | nothing to hotfix: stop. A bug in untagged code is a normal ticket: `/pm`, then `/lm-start` |
+| No such Bug, or no tag exists on `main` yet | nothing to hotfix: stop. A bug in untagged code is a normal ticket: `/pm`, then `/lm-next` |
 | The bug is not in something already tagged on `main` | same: a normal ticket |
-| A hotfix PR is already open | `/lm-review` |
+| A hotfix PR is already open | `/lm-next #<n>` (review) |
 
 ## 2. Pause the tickets in flight
 
@@ -44,13 +44,13 @@ git switch -c hotfix/<version>-<short-slug>
 
 ## 4. Fix
 
-Route by the Area field, as `/lm-start` does. Change only what the bug needs, and add a test that fails without the fix. Commit (`fix(<area>): <subject>`, `Refs #<n>`), push the hotfix branch with `push.sh`, open the PR into `main` through `gh api`. Next: `/lm-review`, with `security-engineer` if the area is sensitive.
+Route by the Area field, as `/lm-next` does. Change only what the bug needs, and add a test that fails without the fix. Commit (`fix(<area>): <subject>`, `Refs #<n>`), push the hotfix branch with `push.sh`, open the PR into `main` through `gh api`. Next: `/lm-next #<n>` to review it, with `security-engineer` if the area is sensitive.
 
 ## 5. QA, then hand over to the owner
 
 1. After the staging deploy of the hotfix branch, `qa-engineer` verifies the fix there.
 2. Tell the owner: merge the hotfix PR with a merge commit, tag `v<version>` on `main`, push the tag, publish the release with notes.
 3. After the tag exists, open the back-merge PRs into `develop` and into each open `release/*`.
-4. Then `board.sh move <n> Done`, close the issue, and resume the paused tickets with `/pm resume`.
+4. Then `board.sh move <n> Done`, close the issue, and resume the paused tickets with `/lm-next`.
 
 Post the checkpoint comment from `CLAUDE.md` (stage: Hotfix) on the issue.

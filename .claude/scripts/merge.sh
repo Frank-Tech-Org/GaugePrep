@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# The only way an agent merges, and only the tech-lead runs it. It squash-merges a reviewed work-branch PR into develop.
+# The only way an agent merges, and only the CTO (the main Claude Code session) runs it. It squash-merges a reviewed work-branch PR into develop.
 #   .claude/scripts/merge.sh <pr-number>
 # Releases, tags and anything into main stay with the owner. The review verdict is the last line of a PR comment:
 #   REVIEW: PASS <full head sha>      or      REVIEW: CHANGES <full head sha>
@@ -39,7 +39,8 @@ owner_files=$(all "repos/$repo/pulls/$pr/files?per_page=100" | jq -r '[.[].filen
 [ -z "$owner_files" ] || fail "it changes owner-only files ($owner_files); the owner merges this one"
 
 # CI fails closed: at least one check must exist on the head commit and all must have passed.
-runs=$(all "repos/$repo/commits/$sha/check-runs?per_page=100" | jq '[.[] | .check_runs[]?]')
+# Workflow runs, not check runs: the agent's fine-grained token cannot be given the Checks permission.
+runs=$(all "repos/$repo/actions/runs?head_sha=$sha&per_page=100" | jq '[.[] | .workflow_runs[]?]')
 statuses=$(gh api "repos/$repo/commits/$sha/status")
 [ "$(printf '%s' "$runs" | jq length)" -gt 0 ] || [ "$(printf '%s' "$statuses" | jq '.statuses | length')" -gt 0 ] \
   || fail "no CI checks exist on this commit; the owner merges until CI is in place"
@@ -54,7 +55,7 @@ verdict=$(all "repos/$repo/issues/$pr/comments?per_page=100" | jq -r '
   [.[] | {t: .created_at, last: (.body | rtrimstr("\n") | split("\n") | last // "" | gsub("\\s+$"; ""))}
        | select(.last | test("^REVIEW: (PASS|CHANGES) [0-9a-f]{40}$"))]
   | sort_by(.t) | last // empty | .last')
-[ -n "$verdict" ] || fail "no review verdict comment; run /lm-review"
+[ -n "$verdict" ] || fail "no review verdict comment; run /lm-next"
 [ "$verdict" = "REVIEW: PASS $sha" ] || fail "the latest verdict is '$verdict', not a PASS for $sha; review again"
 
 # Merge exactly the reviewed commit; GitHub rejects it if the branch moved since.

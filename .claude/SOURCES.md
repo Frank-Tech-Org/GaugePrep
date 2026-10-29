@@ -27,6 +27,6 @@ Imported agents, skills and rules, with where they came from and under what lice
 
 | Tool | Licence | Rule |
 |---|---|---|
-| Shannon (AI pentest) | AGPL-3.0 | Run as an external tool against staging before a release, within the owner's cost cap. Its code is never copied into this repo. |
-| OWASP ZAP, Nuclei | Apache-2.0, MIT | Run weekly against staging from CI. |
+| OWASP ZAP, Nuclei | Apache-2.0, MIT | Run weekly against staging, and in the pre-release pentest. |
+| Schemathesis, sqlmap, ffuf | MIT, GPL-2.0, MIT | Run by `security-engineer` in the pre-release pentest, against staging or a local copy only. |
 | Playwright Test Agents | Apache-2.0 | `npx playwright init-agents --loop=claude` overwrites `.mcp.json`; back it up first. |

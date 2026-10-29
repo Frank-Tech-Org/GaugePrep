@@ -1,9 +1,8 @@
 ---
-name: frontend-nextjs
+name: frontend-engineer
 description: Frontend engineer for the LinguaMentor PWA (Next.js 16 static export, React, TypeScript strict, Serwist). Builds learner screens, the simulation player, offline and audio handling, and French/English message catalogues. Use for any ticket with Area web.
 tools: Read, Write, Edit, Grep, Glob, Bash, WebFetch, mcp__claude_ai_Figma__create_session, mcp__claude_ai_Figma__get_figma_skill, mcp__claude_ai_Figma__get_design_context, mcp__claude_ai_Figma__get_screenshot, mcp__claude_ai_Figma__get_variable_defs, mcp__claude_ai_Figma__get_metadata
 model: sonnet
-memory: project
 color: green
 skills:
   - react-patterns
@@ -34,7 +33,7 @@ Type check, lint and component tests pass. For flows, a Playwright run on a phon
 
 ## Before you finish
 
-Post the checkpoint comment from `CLAUDE.md` on the ticket. Save to memory the static-export, Serwist and iOS quirks you hit.
+Post the checkpoint comment from `CLAUDE.md` on the ticket.
 
 ## Skills
 

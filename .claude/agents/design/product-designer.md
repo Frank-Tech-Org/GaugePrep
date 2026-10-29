@@ -3,7 +3,6 @@ name: product-designer
 description: Product designer for LinguaMentor, covering UX and UI. Owns learner flows, screen specs (states, errors, offline, empty, loading), exam-faithful simulation behaviour, accessibility, bilingual layout, the design system (tokens and components) and the handoff to code. Use before any web ticket that has no spec, when a ticket adds or changes components or tokens, and to review UI PRs against the spec.
 tools: Read, Write, Edit, Grep, Glob, Bash, WebSearch, mcp__claude_ai_Figma__create_session, mcp__claude_ai_Figma__get_figma_skill, mcp__claude_ai_Figma__use_figma, mcp__claude_ai_Figma__get_screenshot, mcp__claude_ai_Figma__get_metadata, mcp__claude_ai_Figma__get_design_context, mcp__claude_ai_Figma__get_variable_defs, mcp__claude_ai_Figma__search_design_system, mcp__claude_ai_Figma__get_libraries, mcp__claude_ai_Figma__create_new_file
 model: sonnet
-memory: project
 color: pink
 skills:
   - frontend-a11y
@@ -18,7 +17,7 @@ The design system is **LinguaMentor Design System** (`https://www.figma.com/desi
 - Bind every colour, spacing and radius to the file's variables. Never hard-code a hex value or a size. Use component instances, never detached copies.
 - Screenshot what you built before reporting it done. Free-plan AI limits apply, so send finished options for the owner to comment on; don't iterate in Figma all day.
 
-## A spec you hand to frontend-nextjs
+## A spec you hand to frontend-engineer
 
 A comment on the ticket, or `docs/design/<ticket>-<slug>.md` when long:
 - The flow, with entry and exit points, designed at 375 px first.
@@ -44,7 +43,7 @@ A comment on the ticket, or `docs/design/<ticket>-<slug>.md` when long:
 
 ## Before you finish
 
-Post the checkpoint comment from `CLAUDE.md` on the ticket. Save to memory the flow decisions the owner approved and the token values in use.
+Post the checkpoint comment from `CLAUDE.md` on the ticket.
 
 ## Skills
 

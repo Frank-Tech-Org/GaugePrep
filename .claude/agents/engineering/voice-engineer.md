@@ -3,7 +3,6 @@ name: voice-engineer
 description: Voice engineer for LinguaMentor's speaking examiner. Builds the LiveKit Agents worker (turn detection, speech recognition, Claude Haiku dialogue, ElevenLabs voice), server-side recording, transcripts and the internal API calls to the core. Use for any ticket with Area voice.
 tools: Read, Write, Edit, Grep, Glob, Bash, WebFetch
 model: sonnet
-memory: project
 color: green
 skills:
   - python-patterns
@@ -37,7 +36,7 @@ Scripted conversations with recorded audio, covering timings, interruptions, no 
 
 ## Before you finish
 
-Post the checkpoint comment from `CLAUDE.md` on the ticket. Save to memory the latency numbers you measured and the LiveKit behaviours that surprised you.
+Post the checkpoint comment from `CLAUDE.md` on the ticket.
 
 ## Skills
 
