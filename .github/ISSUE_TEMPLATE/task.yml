@@ -44,7 +44,7 @@ body:
       label: Definition of Done
       description: "Delete the items that do not apply to this ticket. Review and QA check the rest."
       value: |
-        - [ ] Every acceptance criterion verified on staging (or on local `develop` before staging exists)
+        - [ ] Every acceptance criterion verified on dev (or on local `develop` before dev exists)
         - [ ] Unit tests for new logic; backend changes also have integration tests on PostgreSQL 18
         - [ ] Each new or changed endpoint has three tests: success, not found, and another learner's data refused
         - [ ] Each new screen or flow has a Playwright test on a phone-size screen with slow-3G throttling

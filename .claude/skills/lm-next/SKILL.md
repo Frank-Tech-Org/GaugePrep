@@ -79,7 +79,7 @@ Each checks the DoD items in its area. Post one PR comment, at most 10 lines plu
 
 ## 6. QA
 
-Skip if the merged PR has no ticket. `board.sh move <n> "In QA"`. The target is staging once the deploy of `develop` includes the merge commit (`gh run list --branch develop`; if not yet, wait and rerun), otherwise a local build of `develop`, reported as "local develop at <sha>, not staging". `qa-engineer` gets the criteria, the DoD, the diff summary and the target, and returns the criterion table and `QA: PASS` or `QA: FAIL`.
+Skip if the merged PR has no ticket. `board.sh move <n> "In QA"`. The target is dev once the deploy of `develop` includes the merge commit (`gh run list --branch develop`; if not yet, wait and rerun), otherwise a local build of `develop`, reported as "local develop at <sha>, not dev". `qa-engineer` gets the criteria, the DoD, the diff summary and the target, and returns the criterion table and `QA: PASS` or `QA: FAIL`.
 - PASS: `board.sh move <n> "Ready to deploy"`. This frees its place.
 - FAIL: `board.sh move <n> "In progress"` and post the defects; the fix goes on `feature/<n>-<slug>-fix` from `develop` with a new PR saying `Refs #<n>`.
 

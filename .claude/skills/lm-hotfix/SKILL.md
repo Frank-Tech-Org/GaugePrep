@@ -48,9 +48,9 @@ Route by the Area field, as `/lm-next` does. Change only what the bug needs, and
 
 ## 5. QA, then hand over to the owner
 
-1. After the staging deploy of the hotfix branch, `qa-engineer` verifies the fix there.
+1. Run the staging deploy workflow on the hotfix branch; `qa-engineer` verifies the fix on staging. Staging returns to `stage` at the back-merge.
 2. Tell the owner: merge the hotfix PR with a merge commit, tag `v<version>` on `main`, push the tag, publish the release with notes.
-3. After the tag exists, open the back-merge PRs into `develop` and into each open `release/*`.
+3. After the tag exists, open the back-merge PRs through `gh api`: `main` into `stage` first, then `main` into `develop`. Tell the owner to merge both with merge commits. Staging redeploys from `stage` after the first.
 4. Then `board.sh move <n> Done`, close the issue, and resume the paused tickets with `/lm-next`.
 
 Post the checkpoint comment from `CLAUDE.md` (stage: Hotfix) on the issue.
