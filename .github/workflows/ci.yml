@@ -32,7 +32,7 @@ jobs:
           HEAD: ${{ github.event.pull_request.head.sha }}
         run: |
           # Separate assignment so a failing git diff stops the step instead of skipping the checks.
-          diff=$(git diff --name-only "$BASE...$HEAD")
+          diff=$(git diff --name-only --no-renames "$BASE...$HEAD")
           other=$(printf '%s\n' "$diff" | grep -Ev '^(docs/|\.claude/(agents|skills|rules|memory)/|.*\.md$)' || true)
           if [ -n "$other" ]; then code=true; else code=false; fi
           echo "code=$code" >> "$GITHUB_OUTPUT"
@@ -121,8 +121,12 @@ jobs:
           BASE: ${{ github.event.pull_request.base.sha }}
           HEAD: ${{ github.event.pull_request.head.sha }}
         run: |
-          args=(git --redact --verbose --log-opts="$BASE..$HEAD")
-          if git show "$BASE:.gitleaks.toml" > "$RUNNER_TEMP/gl.toml" 2>/dev/null; then args+=(--config "$RUNNER_TEMP/gl.toml"); fi
+          # gitleaks:allow comments and the checkout's own .gitleaksignore would let a PR skip its own secret.
+          args=(git --redact --verbose --ignore-gitleaks-allow --log-opts="$BASE..$HEAD")
+          rm -f .gitleaksignore
+          # Always pass a config from the base, so the PR's own ./.gitleaks.toml is never loaded.
+          git show "$BASE:.gitleaks.toml" > "$RUNNER_TEMP/gl.toml" 2>/dev/null || printf '[extend]\nuseDefault = true\n' > "$RUNNER_TEMP/gl.toml"
+          args+=(--config "$RUNNER_TEMP/gl.toml")
           git show "$BASE:.gitleaksignore" > "$RUNNER_TEMP/gl.ignore" 2>/dev/null || : > "$RUNNER_TEMP/gl.ignore"
           args+=(--gitleaks-ignore-path "$RUNNER_TEMP/gl.ignore")
           "$RUNNER_TEMP/gitleaks-bin/gitleaks" "${args[@]}"
