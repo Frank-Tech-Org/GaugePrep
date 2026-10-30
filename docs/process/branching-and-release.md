@@ -12,7 +12,7 @@ Two tickets may run together only when all of this holds:
 - neither blocks the other;
 - they do not both change a migration chain, the lockfile, the OpenAPI contract or shared config.
 
-Each ticket has its own branch. The ticket being built is checked out in the owner's checkout, so the owner sees the changes in the editor and can work on them too; any other ticket in flight uses its own git worktree (`../lm-<n>`), so two tickets never share a working tree.
+Each ticket has its own branch. The ticket being built is checked out in the owner's checkout, so the owner sees the changes in the editor and can work on them too; any other ticket in flight uses its own git worktree (`../lm-<n>`), so two tickets never share a working tree. The `lm-next` skill has the switching rules (clean tree only, back to `develop` after the merge).
 
 If a ticket in flight turns out to depend on another one, `/lm-next block <blocker>` marks the ticket on the current branch as blocked by it and sends it back to Ready. The blocker is ordered first. A blocker counts as resolved at Ready to deploy.
 
@@ -66,7 +66,7 @@ Short-lived branches are deleted after merging. Promotions use merge commits, ne
 
 | Environment | Runs | For | Data and keys |
 |---|---|---|---|
-| Local | Each ticket's worktree, Docker Compose | Building and the checks before a PR | Seed data, local open models, test keys |
+| Local | The owner's checkout or a ticket's worktree, Docker Compose | Building and the checks before a PR | Seed data, local open models, test keys |
 | CI | Every PR, thrown away after | Tests and security scans | None |
 | Dev | `develop`, Oracle Always Free server, own Neon branch | QA of each ticket | Synthetic seed data; fake SMS, self-hosted open models for AI and speech, test payment keys |
 | Staging | `stage`, the same Oracle server as a separate deploy, own Neon branch | Release gate (attack tests, load test, 3G checks), regression and the Friday demo | Synthetic seed data; free or test-mode providers, self-hosted open models for AI and speech, no paid service |

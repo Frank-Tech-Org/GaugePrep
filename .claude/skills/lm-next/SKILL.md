@@ -37,7 +37,7 @@ First match wins:
 | `block` in the arguments | Block (§7) |
 | No acceptance criteria or Definition of Done | stop, name `/pm plan #<n>` |
 | A blocker not yet at Ready to deploy or Done | Block (§7) with that blocker |
-| Uncommitted changes that aren't this ticket's | stop, ask the owner |
+| Uncommitted changes that aren't this ticket's (the owner's edits on this ticket's branch are this ticket's) | stop, ask the owner |
 | No PR yet | Build (§3) |
 | Open PR with red CI, conflicts, or `REVIEW: CHANGES` on its head | Fix (§3, on its branch) |
 | Open PR, CI green or absent, no verdict on its head | Review (§4) |
@@ -54,7 +54,7 @@ New ticket: claim it and create the branch from the ticket, so the branch and th
 gh issue develop <n> -R LinguaMentor/linguamentor-v3 --base develop --name feature/<n>-<short-slug>
 git fetch origin feature/<n>-<short-slug>
 ```
-Build and fix in the owner's checkout, so the owner sees the work in the editor: `git switch feature/<n>-<short-slug>` there. It switches only from a clean tree; uncommitted changes there mean stop and ask the owner. If it already holds another ticket that is In progress, or the branch is already in a worktree, work in `../lm-<n>` instead (`git worktree add ../lm-<n> feature/<n>-<short-slug>`, or the existing one). Edits the owner makes on the ticket's branch are part of the ticket: read them before continuing and never discard them. After the merge, the owner's checkout returns to `develop` and pulls.
+**Where to work.** Build and fix in the owner's checkout, so the owner sees the work in the editor: `git switch <branch>` there. Switch only from a clean tree; otherwise stop and ask the owner. If the checkout holds another ticket in flight, or the branch is already in a worktree, work in `../lm-<n>` instead (`git worktree add ../lm-<n> <branch>`, or the existing one). The owner's edits on the ticket's branch, committed or not, are part of the ticket: read them before continuing, commit them with the ticket and never discard them.
 
 Route by the Area field with the table in `CLAUDE.md`. Each agent's prompt carries the full ticket, its criteria and DoD, the last checkpoint and, for a fix, the review findings or failing checks, because agents don't see this conversation. A screen with no spec goes to `product-designer` first. Decision tickets go to the `cto` agent (technical) or `product-manager` (product) and produce an ADR in `docs/adr/` with its index row. An agent that stops on an architecture question or wants a new dependency gets the `cto` agent's answer in its next prompt. A missing dependency found mid-work is a Block (§7), never a workaround.
 
@@ -81,11 +81,13 @@ Each checks the DoD items in its area. Post one PR comment, at most 10 lines plu
 - No approval from `KefouegFrank` on the head sha (`gh api repos/LinguaMentor/linguamentor-v3/pulls/<pr>/reviews`): stop and tell the owner `Approve PR #<pr>: <PR title>` with the PR link and one line on what it does for the learner, then rerun `/lm-next`. Checkpoint: "Needs the owner: approve PR #<pr>".
 - Otherwise run `.claude/scripts/merge.sh <pr>`. While no CI exists it refuses and the owner merges. Any other refusal: fix what it names; never merge another way.
 
+Once the PR is merged, by the script or the owner: if the owner's checkout is on its branch, switch it to `develop` and pull (clean tree only, otherwise stop and ask the owner); if the branch had a worktree, remove it.
+
 ## 6. QA
 
 Skip if the merged PR has no ticket. `board.sh move <n> "In QA"`. The target is dev once the deploy of `develop` includes the merge commit (`gh run list --branch develop`; if not yet, wait and rerun), otherwise a local build of `develop`, reported as "local develop at <sha>, not dev". `qa-engineer` gets the criteria, the DoD, the diff summary and the target, and returns the criterion table and `QA: PASS` or `QA: FAIL`.
 - PASS: `board.sh move <n> "Ready to deploy"`. This frees its place.
-- FAIL: `board.sh move <n> "In progress"` and post the defects; reopen the issue if its merge closed it; the fix goes on `feature/<n>-<slug>-fix`, created from the ticket with `gh issue develop` as in §3, with a new PR saying `Refs #<n>`.
+- FAIL: `board.sh move <n> "In progress"` and post the defects; reopen the issue if its merge closed it; the fix goes on `feature/<n>-<slug>-fix`, created from the ticket with `gh issue develop` and checked out as in §3 (Where to work), with a new PR saying `Refs #<n>`.
 
 Post the QA report. Checkpoint stage: In QA.
 
