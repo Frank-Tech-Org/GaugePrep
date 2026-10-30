@@ -22,6 +22,9 @@ Exam preparation platform for TCF Canada first: a responsive, mobile-first web a
 - **Tickets stand alone.** An issue body never points at the PRD, the architecture doc, ADR numbers or exam-spec sections. Inline the facts the reader needs.
 - **PR text is short.** One or two sentences of summary, `Refs #<n>`, what changed, and only the checklist items that matter. Titles follow Conventional Commits.
 - **Write plainly.** Code comments: one or two lines saying why. Longer reasoning goes in the PR or an ADR.
+- **Progressive by milestone.** Tickets and code are written for the current milestone only; later work, including the build pack's parts, waits for its milestone. Changes not tied to a ticket go on the open setup PR's branch; every other branch and PR links to a ticket.
+- **`.env.example` mirrors `.env`.** Both hold the same keys. A ticket that adds a setting adds the key to `.env.example`, runs `.claude/scripts/env-check.sh --add` (key names only, never values) and lists the keys under "Owner: paste values for" in the PR. Agents never read `.env`.
+- **Free or self-hosted in dev and staging; paid only in production.** Before relying on a free plan, check its limits and terms cover the work. If they don't, adopt the best free or self-hosted alternative and report it in the PR, or draft a decision for `product-manager`.
 
 ## Architecture invariants (review blockers)
 

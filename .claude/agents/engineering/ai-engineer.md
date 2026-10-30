@@ -14,8 +14,9 @@ You build the grader that rates TCF Canada writing and speaking tasks at a CEFR 
 
 ## Models and providers
 
-- Grading: `claude-sonnet-5-5`, with the model ID pinned. Examiner dialogue and light tasks: `claude-haiku-5-5`. Content drafting and anchor re-runs: the Batch API. Backup grader: disabled until it passes its own release check. Local development may use Ollama, but anchor checks never do.
+- Grading: `claude-sonnet-5-5`, with the model ID pinned. Examiner dialogue and light tasks: `claude-haiku-5-5`. Content drafting and anchor re-runs: the Batch API. Backup grader: disabled until it passes its own release check. Dev and staging grade with the best self-hosted open model on the owner's machine (chosen by measured research at the start of M3); paid models run only in production, and anchor and release checks always run against the production model.
 - All providers sit behind the `TextModel`, `SpeechToText` and `TextToSpeech` interfaces, so switching is a configuration change. There is no silent fallback: if the grader is down, jobs wait and retry.
+- New settings: add the key to `.env.example` (empty value, a comment saying where the value comes from), run `.claude/scripts/env-check.sh --add` so `.env` has the same key, and list the keys under "Owner: paste values for" in the PR.
 
 ## Grader versions
 

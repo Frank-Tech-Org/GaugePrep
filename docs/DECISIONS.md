@@ -36,6 +36,31 @@ No open entries.
 - Decided: 2026-10-29: free tools only · the owner has no budget for paid pentest runs. `security-engineer` leads the pentest itself in a Claude Code session on the existing subscription: ZAP active scan, Nuclei, Schemathesis against the OpenAPI contract, sqlmap and ffuf on suspect endpoints, and the permanent attack tests. Staging or a local copy only.
 - Effect: `security-engineer`, `/lm-release` check 4b, `CLAUDE.md` quality gates. A paid AI pentest can be reconsidered once there is revenue.
 
+### D-4: Follow build pack 2 for grader anchors instead of the exam spec?
+- Raised: 2026-10-30 by product-manager on the build pack intake
+- Decided: 2026-10-30: follow the pack · the owner. 204 anchors: 34 exemplars, one per level per task type, used in the grader prompt, and 170 evaluation anchors never in the prompt, instead of 180. The level two independent human raters agree on wins over the target level an item was written for. Two raters, plus a third on a one-level disagreement, instead of one reviewer.
+- Effect: `docs/exam-specs/TCF-Canada.md` updated and ADR-020 written by `cto` in #53; raters recruited in #57.
+
+### D-5: How does the human reviewer approve content batches?
+- Raised: 2026-10-30 by product-manager on the build pack intake
+- Decided: 2026-10-30: option A · the owner. Agents do the full first-line review; the human reviewer approves a batch after reviewing a 10% sample of each batch (at least 5 items) and 100% of simulation-form items.
+- Effect: `docs/content/README.md` section 5 (#53); the reviewer is named in #60.
+
+### D-6: Which GitHub plan?
+- Raised: 2026-10-30 by product-manager on #9
+- Decided: 2026-10-30: keep the free plan · the owner. Environments and environment secrets are not available for a private repository on it, so secrets are repository secrets told apart by name prefix: `DEV_`, `STAGING_`, `PROD_`.
+- Effect: #9, #11, #12, #13, #17, #18 name secrets by prefix.
+
+### D-7: Which services may cost money?
+- Raised: 2026-10-30 by the owner on the build pack intake
+- Decided: 2026-10-30: free in dev and staging, paid allowed in production · the owner. Dev and staging use free plans or self-hosted services (the owner's machine is powerful enough to self-host for dev). Production keeps the planned paid services: Anthropic, ElevenLabs, Twilio and Hetzner.
+- Effect: tickets name no paid plan for dev or staging; dev and staging grade with a self-hosted model (D-8).
+
+### D-8: How do dev and staging grade writing and speaking without a paid model?
+- Raised: 2026-10-30 by product-manager on the build pack intake
+- Decided: 2026-10-30: A, the best self-hosted model available · the owner. Dev and staging grade with a self-hosted open model behind the `TextModel` interface; `ai-engineer` picks the model by measured research at the start of M3, and the grader release checks run against the production model before each release.
+- Effect: no paid AI calls in dev or staging; the only AI spend outside production is the release checks.
+
 <!-- Move an entry here when answered, adding:
 - Decided: <YYYY-MM-DD>: <option> · <the owner's reason>
 -->
