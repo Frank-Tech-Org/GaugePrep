@@ -14,3 +14,4 @@
 - [GitHub accounts](github-accounts-owner-and-agents.md) — KefouegFrank owner/approver, frankkefoueg agents with a fine-grained token, its 403s
 - [.env.example mirrors .env](env-example-mirrors-env.md) — same keys in both, added by the ticket that needs them; owner pastes values
 - [Branches and environments](branches-and-environments.md) — develop→dev, stage→staging, main→production; owner merges promotions; responsive mobile-first, not mobile-only
+- [Ticket-linked branches, no PR for ticket-only work](ticket-linked-branches-and-no-pr-docs.md) — create branches from the ticket so branch and PR show in its Development panel; no branch or PR when nothing is written to the repo

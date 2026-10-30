@@ -75,6 +75,7 @@ Then run: /lm-release $version done
 2. Delegate to `product-manager`, for each released ticket:
    ```
    .claude/scripts/board.sh move <n> Done
-   gh issue close <n> --comment "Released in v$version."
+   gh issue comment <n> --body "Released in v$version."
+   gh issue close <n>    # skip if its merge already closed it
    ```
 3. Report the closed tickets in one line, then `/pm`.

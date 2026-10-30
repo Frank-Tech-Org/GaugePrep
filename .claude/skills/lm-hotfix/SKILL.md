@@ -37,9 +37,9 @@ For each ticket in `wip`, post the checkpoint comment from `CLAUDE.md`: "paused 
 Next version is the last tag with PATCH + 1.
 ```
 .claude/scripts/board.sh move <n> "In progress"
-git switch main
-git pull
-git switch -c hotfix/<version>-<short-slug>
+gh issue develop <n> -R LinguaMentor/linguamentor-v3 --base main --name hotfix/<version>-<short-slug>
+git fetch origin hotfix/<version>-<short-slug>
+git switch hotfix/<version>-<short-slug>
 ```
 
 ## 4. Fix
@@ -51,6 +51,6 @@ Route by the Area field, as `/lm-next` does. Change only what the bug needs, and
 1. Run the staging deploy workflow on the hotfix branch; `qa-engineer` verifies the fix on staging. Staging returns to `stage` at the back-merge.
 2. Tell the owner: merge the hotfix PR with a merge commit, tag `v<version>` on `main`, push the tag, publish the release with notes.
 3. After the tag exists, open the back-merge PRs through `gh api`: `main` into `stage` first, then `main` into `develop`. Tell the owner to merge both with merge commits. Staging redeploys from `stage` after the first.
-4. Then `board.sh move <n> Done`, close the issue, and resume the paused tickets with `/lm-next`.
+4. Then `board.sh move <n> Done`, close the issue (a PR into `main` doesn't close it, since `main` isn't the default branch), and resume the paused tickets with `/lm-next`.
 
 Post the checkpoint comment from `CLAUDE.md` (stage: Hotfix) on the issue.

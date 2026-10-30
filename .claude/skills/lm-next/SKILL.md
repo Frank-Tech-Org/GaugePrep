@@ -46,11 +46,14 @@ First match wins:
 
 ## 3. Build or fix
 
-New ticket: claim it and work only inside its worktree (continue in it if it exists):
+A ticket that changes no repository file (an owner task, research, a decision recorded only on the ticket) gets no branch and no PR: the agent works on the ticket and posts its result there. A Decision ticket that writes an ADR changes a file, so it gets both.
+
+New ticket: claim it and work only inside its worktree (continue in it if it exists). Create the branch from the ticket, so the branch and the PR opened from it show in the ticket's Development panel:
 ```
 .claude/scripts/board.sh move <n> "In progress"
-git fetch origin develop
-git worktree add ../lm-<n> -b feature/<n>-<short-slug> origin/develop
+gh issue develop <n> -R LinguaMentor/linguamentor-v3 --base develop --name feature/<n>-<short-slug>
+git fetch origin feature/<n>-<short-slug>
+git worktree add ../lm-<n> feature/<n>-<short-slug>
 ```
 
 Route by the Area field with the table in `CLAUDE.md`. Each agent's prompt carries the full ticket, its criteria and DoD, the last checkpoint and, for a fix, the review findings or failing checks, because agents don't see this conversation. A screen with no spec goes to `product-designer` first. Decision tickets go to the `cto` agent (technical) or `product-manager` (product) and produce an ADR in `docs/adr/` with its index row. An agent that stops on an architecture question or wants a new dependency gets the `cto` agent's answer in its next prompt. A missing dependency found mid-work is a Block (§7), never a workaround.
@@ -82,7 +85,7 @@ Each checks the DoD items in its area. Post one PR comment, at most 10 lines plu
 
 Skip if the merged PR has no ticket. `board.sh move <n> "In QA"`. The target is dev once the deploy of `develop` includes the merge commit (`gh run list --branch develop`; if not yet, wait and rerun), otherwise a local build of `develop`, reported as "local develop at <sha>, not dev". `qa-engineer` gets the criteria, the DoD, the diff summary and the target, and returns the criterion table and `QA: PASS` or `QA: FAIL`.
 - PASS: `board.sh move <n> "Ready to deploy"`. This frees its place.
-- FAIL: `board.sh move <n> "In progress"` and post the defects; the fix goes on `feature/<n>-<slug>-fix` from `develop` with a new PR saying `Refs #<n>`.
+- FAIL: `board.sh move <n> "In progress"` and post the defects; reopen the issue if its merge closed it; the fix goes on `feature/<n>-<slug>-fix`, created from the ticket with `gh issue develop` as in §3, with a new PR saying `Refs #<n>`.
 
 Post the QA report. Checkpoint stage: In QA.
 
