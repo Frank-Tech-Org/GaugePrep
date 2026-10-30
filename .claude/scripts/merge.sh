@@ -46,7 +46,8 @@ runs=$(all "repos/$repo/actions/runs?head_sha=$sha&per_page=100" | jq '[.[] | .w
 statuses=$(gh api "repos/$repo/commits/$sha/status")
 [ "$(printf '%s' "$runs" | jq length)" -gt 0 ] || [ "$(printf '%s' "$statuses" | jq '.statuses | length')" -gt 0 ] \
   || fail "no CI checks exist on this commit; the owner merges until CI is in place"
-bad=$(printf '%s' "$runs" | jq -r '[.[] | select(.status != "completed" or (.conclusion | IN("success","neutral","skipped") | not)) | .name] | join(", ")')
+# A run cancelled because a newer run of the same workflow superseded it is not a failure: only the newest run of each workflow counts.
+bad=$(printf '%s' "$runs" | jq -r 'group_by(.workflow_id) | map(max_by(.run_number)) | [.[] | select(.status != "completed" or (.conclusion | IN("success","neutral","skipped") | not)) | .name] | join(", ")')
 [ -z "$bad" ] || fail "checks not green: $bad"
 if [ "$(printf '%s' "$statuses" | jq '.statuses | length')" -gt 0 ]; then
   [ "$(printf '%s' "$statuses" | jq -r .state)" = success ] || fail "commit statuses are not all success"
@@ -73,4 +74,11 @@ msg=(-f commit_title="$(field .title) (#$pr)")
 
 # Merge exactly the reviewed commit; GitHub rejects it if the branch moved since.
 gh api -X PUT "repos/$repo/pulls/$pr/merge" -f merge_method=squash -f sha="$sha" "${msg[@]}" --jq .message
-gh api -X DELETE "repos/$repo/git/refs/heads/$head" >/dev/null && echo "merge.sh: merged #$pr and deleted $head"
+# The repository may delete merged branches itself; after a failed delete, only a 404 for the branch confirms it is gone.
+if ! gh api -X DELETE "repos/$repo/git/refs/heads/$head" >/dev/null 2>&1; then
+  err=$(gh api "repos/$repo/branches/$head" 2>&1 >/dev/null) \
+    && { echo "merge.sh: merged #$pr but could not delete $head" >&2; exit 1; }
+  [[ "$err" == *"HTTP 404"* ]] \
+    || { echo "merge.sh: merged #$pr; deletion of $head not confirmed: $err" >&2; exit 1; }
+fi
+echo "merge.sh: merged #$pr; $head is deleted"
