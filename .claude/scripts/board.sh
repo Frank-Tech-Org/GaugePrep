@@ -99,13 +99,13 @@ issue_id() {
 }
 
 set_field() {
-  local n=$1 field=$2 value=$3 fid oid
+  local n=$1 field=$2 value=$3 fid oid pages
   # The agents' token can't list org issue fields, so the field and its options are read from issues that use it.
-  read -r fid oid < <(gh api graphql -f query='{ repository(owner: "LinguaMentor", name: "linguamentor-v3") {
-      issues(first: 100, states: [OPEN, CLOSED]) { nodes { issueFieldValues(first: 10) { nodes {
-        ... on IssueFieldSingleSelectValue { field { ... on IssueFieldSingleSelect { id name options { id name } } } } } } } } } }' \
-    | jq -r --arg f "$field" --arg v "$value" '[.data.repository.issues.nodes[].issueFieldValues.nodes[].field
-        | select(. and .name == $f)] | first // empty | "\(.id) \(.options[] | select(.name == $v) | .id)"') || true
+  pages=$(gh api graphql --paginate -f query='query($endCursor: String) { repository(owner: "LinguaMentor", name: "linguamentor-v3") {
+      issues(first: 100, after: $endCursor, states: [OPEN, CLOSED]) { pageInfo { hasNextPage endCursor } nodes { issueFieldValues(first: 10) { nodes {
+        ... on IssueFieldSingleSelectValue { field { ... on IssueFieldSingleSelect { id name options { id name } } } } } } } } } }')
+  read -r fid oid < <(jq -rs --arg f "$field" --arg v "$value" '[.[].data.repository.issues.nodes[].issueFieldValues.nodes[].field
+        | select(. and .name == $f)] | first // empty | "\(.id) \(.options[] | select(.name == $v) | .id)"' <<<"$pages") || true
   [ -n "${oid:-}" ] || { echo "No $field option named '$value' (or no issue uses $field yet)" >&2; exit 1; }
   gh api graphql -f i="$(issue_id "$n")" -f f="$fid" -f o="$oid" -f query='mutation($i: ID!, $f: ID!, $o: ID!) {
     setIssueFieldValue(input: { issueId: $i, issueFields: [{ fieldId: $f, singleSelectOptionId: $o }] }) { clientMutationId } }' >/dev/null
@@ -115,8 +115,8 @@ set_field() {
 set_type() {
   local n=$1 type=$2 got
   # REST takes the type by name; the agents' token can't list org issue types through GraphQL.
-  got=$(gh api -X PATCH "repos/$REPO/issues/$n" -f type="$type" --jq '.type.name // empty' 2>/dev/null) || true
-  [ "$got" = "$type" ] || { echo "No issue type named '$type'" >&2; exit 1; }
+  got=$(gh api -X PATCH "repos/$REPO/issues/$n" -f type="$type" --jq '.type.name // empty' 2>&1) || true
+  [ "$got" = "$type" ] || { echo "Could not set #$n to type '$type' (unknown type, or: $got)" >&2; exit 1; }
   echo "#$n type: $type"
 }
 

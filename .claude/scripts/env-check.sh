@@ -5,9 +5,9 @@
 # Exits 1 while .env lacks a key that .env.example has.
 set -euo pipefail
 
-cd "$(git rev-parse --show-toplevel)"
-EXAMPLE=.env.example
-LOCAL=.env
+# .env.example comes from this checkout; .env lives only in the main checkout, which ticket worktrees share.
+EXAMPLE="$(git rev-parse --show-toplevel)/.env.example"
+LOCAL="$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/.env"
 
 [ -f "$EXAMPLE" ] || { echo "No $EXAMPLE in the repository root" >&2; exit 2; }
 [ "${1:-}" = "--add" ] && [ ! -f "$LOCAL" ] && touch "$LOCAL" && chmod 600 "$LOCAL"
