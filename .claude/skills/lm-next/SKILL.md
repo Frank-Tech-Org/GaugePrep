@@ -60,11 +60,11 @@ Route by the Area field with the table in `CLAUDE.md`. Each agent's prompt carri
 
 Run the checks for what changed (`uv run pytest`, `pnpm check`, Playwright, whichever exist) and paste the result lines. Go through the DoD and name anything unmet. Never push red.
 
-Commit in logical steps, never `--amend`, staging only this ticket's paths: `git commit -m "<type>(<area>): <subject>" -m "Refs #<n>"`, then `.claude/scripts/push.sh <branch>`. A fix commit is `fix(<area>): address review on #<n>`. Open the PR into `develop` with `gh api` (`gh pr create` fails on the classic-projects error); the body is a trimmed `.github/pull_request_template.md`: summary, `Refs #<n>`, what changed, the criteria and DoD checklist. After every later commit on the branch (a fix, or files the owner installs from `.claude/proposed/`), rewrite the body so it describes the diff at the new head: no staged paths or owner steps that are done, no claims the diff does not make true. Checkpoint stage: In progress.
+Commit in logical steps, never `--amend`, staging only this ticket's paths: `git commit -m "<type>(<area>): <subject>" -m "Refs #<n>"`, then `.claude/scripts/push.sh <branch>`. A fix commit is `fix(<area>): address review on #<n>`. Open the PR into `develop` with `gh api` (`gh pr create` fails on the classic-projects error); the body is a trimmed `.github/pull_request_template.md`: summary, `Refs #<n>`, what changed, the criteria and DoD checklist. After every later commit on the branch, including files the owner installs, rewrite the body to match the diff at the new head. Checkpoint stage: In progress.
 
 ## 4. Review
 
-`board.sh move <n> "In review"`. Read the diff (`gh pr diff <pr>`, or `gh api .../pulls/<pr>/files --paginate`), the PR body, the CI runs (`gh run list --commit <head sha>`; the agent token can't read check runs) and the ticket. Run, with the criteria in each prompt:
+`board.sh move <n> "In review"`. If the head has commits the PR body does not describe, rewrite the body first (§3). Read the diff (`gh pr diff <pr>`, or `gh api .../pulls/<pr>/files --paginate`), the PR body, the CI runs (`gh run list --commit <head sha>`; the agent token can't read check runs) and the ticket. Run, with the criteria in each prompt:
 - always `code-reviewer`, once;
 - the reviewers for the ticket's Area from `CLAUDE.md`;
 - `security-engineer` for authentication, sessions, payments, `identity`, migrations, append-only tables, AI prompts, the internal API or infrastructure exposure;
