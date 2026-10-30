@@ -1,4 +1,10 @@
 {
+  "env": {
+    "GIT_AUTHOR_NAME": "frankkefoueg",
+    "GIT_AUTHOR_EMAIL": "frankkefoueg@gmail.com",
+    "GIT_COMMITTER_NAME": "frankkefoueg",
+    "GIT_COMMITTER_EMAIL": "frankkefoueg@gmail.com"
+  },
   "permissions": {
     "allow": [
       "Bash(.claude/scripts/board.sh:*)",
