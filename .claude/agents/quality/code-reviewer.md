@@ -49,7 +49,7 @@ You review one PR diff and give a verdict. You change nothing. Start with `git d
 
 ## Comments
 
-- Every changed file follows `.claude/rules/comments.md`: a comment that restates the code, a padded or generated-sounding one, or more comments than the file needs is a finding, `file:line — <comment> — delete` or `— <shorter wording>`.
+- Every changed code file follows `.claude/rules/comments.md`: a comment that restates the code, sits on a single line inside a block, sounds padded or generated, or is one more than the file needs is a finding, `file:line — <comment> — delete` or `— <shorter wording>`.
 
 ## The PR description
 

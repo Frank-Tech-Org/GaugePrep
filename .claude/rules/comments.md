@@ -1,19 +1,23 @@
 # Code comments
 
-Applies to every file an agent writes: code, tests, settings, YAML, Dockerfiles, scripts.
+Applies to code files: source, tests, settings, scripts, Dockerfiles, Compose and CI YAML. Docs (`*.md`) are not covered.
 
 - Comment only what the code can't say: a non-obvious reason, a constraint, a trap. Never restate the code, a name or a type.
-- One line, two at most. Few per file; most functions need none.
-- Docstrings only when they add something the name and signature don't. No module docstring unless the file's purpose isn't obvious from its path.
+- Place a comment at a file's entry or above a complete block (a function, class, settings group, service), never scattered line by line.
+- One line, two at most. Few per file; most blocks need none.
+- Docstrings only when they add something the name and signature don't.
 - Write like a developer leaving a note for a teammate: plain and terse. No "This function...", no "ensures that...", no padded or generated-sounding phrasing.
 - Why a dependency or design was chosen goes in the PR or an ADR, not the file.
 
 ```python
-# Bad: restates the code
-# Set the connect timeout to the timeout value
-options["connect_timeout"] = connect_timeout
+# Bad: restates the code, one note per line
+def parse_database_url(url: str) -> dict[str, Any]:
+    parts = urlsplit(url)  # split the URL
+    name = parts.path.lstrip("/")  # get the database name
 
-# Good: says what the code can't
-# Short, so a down database answers 503 instead of hanging the request.
-options["connect_timeout"] = connect_timeout
+# Good: one note above the block, saying what the code can't
+# Errors never echo the URL: it holds the password.
+def parse_database_url(url: str) -> dict[str, Any]:
+    parts = urlsplit(url)
+    name = parts.path.lstrip("/")
 ```
