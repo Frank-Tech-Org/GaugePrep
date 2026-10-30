@@ -6,7 +6,14 @@ Settled architecture choices become ADRs in `docs/adr/`. This file is for open q
 
 ## Open
 
-No open entries.
+### D-8: How do dev and staging grade writing and speaking without a paid model?
+- Raised: 2026-10-30 by product-manager on the build pack intake
+- Context: dev and staging must use free plans or self-hosted services (D-7), and the Anthropic API has no free plan. Grading in dev and staging still has to behave like production, and the grader release checks must run against the production model.
+- Options: A, a self-hosted open model on the owner's machine for dev and staging behind the `TextModel` interface, with the grader release checks run against the production model before each release (small paid spend at release time only) · B, a small prepaid Anthropic budget for staging, a paid spend outside production · C, a stub grader in dev and staging, with real grading tested only at release, so grading bugs surface late.
+- Recommendation: A, because it keeps dev and staging free while grading stays realistic, and the only paid calls are the release checks the production model must pass anyway.
+- Cost of delay: nothing is blocked today (#20 uses a stub grader); writing grading work in M3 needs the answer before it starts.
+- Reversible: yes
+- Blocks: none yet
 
 <!-- Template:
 ### D-<n>: <question>
@@ -35,6 +42,26 @@ No open entries.
 - Raised: 2026-10-29 by the CTO on the studio reset
 - Decided: 2026-10-29: free tools only · the owner has no budget for paid pentest runs. `security-engineer` leads the pentest itself in a Claude Code session on the existing subscription: ZAP active scan, Nuclei, Schemathesis against the OpenAPI contract, sqlmap and ffuf on suspect endpoints, and the permanent attack tests. Staging or a local copy only.
 - Effect: `security-engineer`, `/lm-release` check 4b, `CLAUDE.md` quality gates. A paid AI pentest can be reconsidered once there is revenue.
+
+### D-4: Follow build pack 2 for grader anchors instead of the exam spec?
+- Raised: 2026-10-30 by product-manager on the build pack intake
+- Decided: 2026-10-30: follow the pack · the owner. 204 anchors: 34 exemplars, one per level per task type, used in the grader prompt, and 170 evaluation anchors never in the prompt, instead of 180. The level two independent human raters agree on wins over the target level an item was written for. Two raters, plus a third on a one-level disagreement, instead of one reviewer.
+- Effect: `docs/exam-specs/TCF-Canada.md` updated and ADR-020 written by `cto` in #53; raters recruited in #57.
+
+### D-5: How does the human reviewer approve content batches?
+- Raised: 2026-10-30 by product-manager on the build pack intake
+- Decided: 2026-10-30: option A · the owner. Agents do the full first-line review; the human reviewer approves a batch after reviewing a 10% sample of each batch (at least 5 items) and 100% of simulation-form items.
+- Effect: `docs/content/README.md` section 5 (#53); the reviewer is named in #60.
+
+### D-6: Which GitHub plan?
+- Raised: 2026-10-30 by product-manager on #9
+- Decided: 2026-10-30: keep the free plan · the owner. Environments and environment secrets are not available for a private repository on it, so secrets are repository secrets told apart by name prefix: `DEV_`, `STAGING_`, `PROD_`.
+- Effect: #9, #11, #12, #13, #17, #18 name secrets by prefix.
+
+### D-7: Which services may cost money?
+- Raised: 2026-10-30 by the owner on the build pack intake
+- Decided: 2026-10-30: free in dev and staging, paid allowed in production · the owner. Dev and staging use free plans or self-hosted services (the owner's machine is powerful enough to self-host for dev). Production keeps the planned paid services: Anthropic, ElevenLabs, Twilio and Hetzner.
+- Effect: tickets name no paid plan for dev or staging; how dev and staging grade without a free Anthropic plan is open as D-8.
 
 <!-- Move an entry here when answered, adding:
 - Decided: <YYYY-MM-DD>: <option> · <the owner's reason>
