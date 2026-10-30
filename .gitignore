@@ -21,4 +21,5 @@ out/
 # Editors and OS
 .idea/
 .vscode/
+*.code-workspace
 .DS_Store
