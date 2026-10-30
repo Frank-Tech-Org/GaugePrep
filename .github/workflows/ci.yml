@@ -4,6 +4,7 @@ name: ci
 on:
   pull_request:
     branches: [develop, stage, main]
+    types: [opened, synchronize, reopened, edited]
 
 permissions:
   contents: read
@@ -24,13 +25,15 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      # Code checks are skipped only when every changed file is documentation or agent configuration.
+      # Code checks are skipped only when every changed file is documentation or agent prompts, skills, rules or memory (not hooks or scripts).
       - id: filter
         env:
           BASE: ${{ github.event.pull_request.base.sha }}
           HEAD: ${{ github.event.pull_request.head.sha }}
         run: |
-          other=$(git diff --name-only "$BASE...$HEAD" | grep -Ev '^(docs/|\.claude/|.*\.md$)' || true)
+          # Separate assignment so a failing git diff stops the step instead of skipping the checks.
+          diff=$(git diff --name-only "$BASE...$HEAD")
+          other=$(printf '%s\n' "$diff" | grep -Ev '^(docs/|\.claude/(agents|skills|rules|memory)/|.*\.md$)' || true)
           if [ -n "$other" ]; then code=true; else code=false; fi
           echo "code=$code" >> "$GITHUB_OUTPUT"
           echo "code checks: $code"
@@ -89,7 +92,8 @@ jobs:
         run: |
           re='^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-z0-9._/-]+\))?!?: .+'
           if ! [[ "$PR_TITLE" =~ $re ]]; then
-            echo "::error::PR title must be <type>(<scope>): <subject>; types: feat fix docs style refactor perf test build ci chore revert. Got: $PR_TITLE"
+            echo "::error::PR title must be <type>(<scope>): <subject>; types: feat fix docs style refactor perf test build ci chore revert."
+            printf 'Got: %s\n' "$PR_TITLE"
             exit 1
           fi
 
@@ -111,12 +115,14 @@ jobs:
           echo "${GITLEAKS_SHA256}  $RUNNER_TEMP/gitleaks.tgz" | sha256sum --check -
           mkdir "$RUNNER_TEMP/gitleaks-bin"
           tar -xzf "$RUNNER_TEMP/gitleaks.tgz" -C "$RUNNER_TEMP/gitleaks-bin" gitleaks
-      # Scans the commits this PR adds; uses .gitleaks.toml when present.
+      # Scans the commits this PR adds. Config and ignore list come from the base commit, so a PR cannot switch off its own scan.
       - name: Scan the pull request commits
         env:
           BASE: ${{ github.event.pull_request.base.sha }}
           HEAD: ${{ github.event.pull_request.head.sha }}
         run: |
           args=(git --redact --verbose --log-opts="$BASE..$HEAD")
-          if [ -f .gitleaks.toml ]; then args+=(--config .gitleaks.toml); fi
+          if git show "$BASE:.gitleaks.toml" > "$RUNNER_TEMP/gl.toml" 2>/dev/null; then args+=(--config "$RUNNER_TEMP/gl.toml"); fi
+          git show "$BASE:.gitleaksignore" > "$RUNNER_TEMP/gl.ignore" 2>/dev/null || : > "$RUNNER_TEMP/gl.ignore"
+          args+=(--gitleaks-ignore-path "$RUNNER_TEMP/gl.ignore")
           "$RUNNER_TEMP/gitleaks-bin/gitleaks" "${args[@]}"
