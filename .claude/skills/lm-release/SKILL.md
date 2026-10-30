@@ -31,7 +31,7 @@ Resume from where the release stands: an open promotion PR means step 2 is waiti
 
 ### 1. Changelog
 
-Nothing may be In QA, so `develop` holds only QA-passed work. `platform-engineer` checks that the Ready to deploy list matches `git log <last-tag>..origin/develop` (a commit without a ticket, or a ticket without a commit, stops the release) and that CI is green on the head of `develop`. It writes the `CHANGELOG.md` entry on `chore/release-$version` (Added, Changed, Fixed; one line per ticket), pushes it with `push.sh` and opens the PR into `develop`. Review and merge it with `/lm-next`.
+Nothing may be In QA, so `develop` holds only QA-passed work. `platform-engineer` checks that the Ready to deploy list matches `git log <last-tag>..origin/develop` (a commit without a ticket, or a ticket without a commit, stops the release) and that CI is green on the head of `develop`. A ticket whose commits are on `develop` but which is back In progress after a failed QA stops the release: ask the owner whether to wait for its fix or revert its squash commits (`git log --grep "#<n>"`, newest first) on `chore/revert-<n>`, merged with `/lm-next`, and send the ticket back to Ready. Never cherry-pick a subset into `stage`. It writes the `CHANGELOG.md` entry on `chore/release-$version` (Added, Changed, Fixed; one line per ticket), pushes it with `push.sh` and opens the PR into `develop`. Review and merge it with `/lm-next`.
 
 ### 2. Promote to staging
 
@@ -60,7 +60,7 @@ Show the table with each result. If any check fails, stop with `RELEASE: NO-GO â
 
 ### 4. Release PR and hand-over
 
-`platform-engineer` opens the release PR through `gh api`: base `main`, head `stage`, title `Release v$version`, body from the release PR template. `content-marketer` writes `release-notes.md`, in French then English, in the scratchpad. Tell the owner:
+`platform-engineer` opens the release PR through `gh api`: base `main`, head `stage`, title `Release v$version`, body from the release PR template. `content-marketer` writes `release-notes.md`, in French then English, in the scratchpad, starting from GitHub's generated notes (`gh api repos/LinguaMentor/linguamentor-v3/releases/generate-notes -f tag_name=v$version -f target_commitish=stage -f previous_tag_name=<last tag> --jq .body`; it creates nothing) and rewriting them in learner terms with no ticket numbers. Tell the owner:
 
 ```
 Merge the release PR (stage â†’ main) with a merge commit, not a squash, then:

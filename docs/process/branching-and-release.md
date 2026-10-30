@@ -96,6 +96,7 @@ hotfix/<version>-<short-slug>       hotfix/0.2.1-fix-timer-drift
 
 - **Commit and PR titles** follow Conventional Commits, as commitlint enforces: `feat(api): add the health endpoint`. The squash merge keeps the PR title as the commit subject.
 - **PR body** links the ticket with `Refs #<n>`, never `Closes #<n>`. `develop` is the default branch, so `Closes` would close the issue at merge, before QA. Issues are closed at release.
+- **Traceability.** `merge.sh` writes the PR body's `Refs #<n>` lines into the squash commit, so `git log --grep "#<n>"` finds every change of a ticket, including its fix PRs.
 - Agents commit to the ticket's branch, push it and open the PR. The merge step of `/lm-next` merges reviewed PRs into `develop`; only the owner merges into `stage` and `main`, pushes tags and publishes releases. Nobody pushes straight to `main`, `stage` or `develop`.
 
 ## 6. Ticket workflow
@@ -108,7 +109,7 @@ In a normal week the owner runs two commands: `/pm` to plan and `/lm-next` to mo
 4. **Pick.** The `cto` agent writes the technical read, and `/pm` hands it to `product-manager`, which names the set of tickets to start, up to the parallel limit: blockers first, then milestone, priority and size, and only tickets that cannot conflict.
 5. **Build.** `/lm-next` checks the parallel limit and overlap, moves the ticket to In progress and creates `feature/<n>-<slug>` in its own worktree from an up-to-date `develop`. The owning agents implement, test, commit, push the branch and open the PR into `develop`.
 6. **Review.** Its next run moves the ticket to In review, and `code-reviewer` and any specialist reviewers read the diff and post their verdict on the PR. Fixes happen on the same branch.
-7. **Merge.** Once the review passes and CI is green, `/lm-next` runs `.claude/scripts/merge.sh <pr>`. It squash-merges into `develop` and deletes the branch, and refuses unless the base is `develop`, the branch is `feature/*` or `chore/*`, every check is green, and the latest `REVIEW: PASS` names the PR's head sha. The owner can still merge by hand.
+7. **Merge.** Once the review passes and CI is green, `/lm-next` asks the owner to approve the PR on GitHub. The approval is a sign-off, not a second review: the agents have already reviewed and tested it. The next `/lm-next` runs `.claude/scripts/merge.sh <pr>`. It squash-merges into `develop` and deletes the branch, and refuses unless the base is `develop`, the branch is `feature/*` or `chore/*`, every check is green, the latest `REVIEW: PASS` names the PR's head sha, and the owner's latest approval is for that same sha. A push after the approval makes it stale. The owner can still merge by hand.
 8. **QA.** Dev deploys from `develop`. After the merge, `/lm-next` moves the ticket to In QA and checks every acceptance criterion on dev. A pass moves it to Ready to deploy. A fail sends it back to In progress with the defects listed; the fix goes in a new PR from `develop` that references the same ticket.
 
 Until dev exists (M0 ticket #11), QA runs against a local build of `develop`, and the QA report says so.
@@ -127,11 +128,11 @@ A hotfix never waits (section 8). Ready to deploy tickets that belong to an unfi
 
 `/lm-release` drives it; `/lm-release check` runs the gate alone. The release manager (`platform-engineer`, run by `/lm-release`) prepares every step; the owner presses the two buttons: promote to staging and ship to production.
 
-1. Confirm no ticket is In QA, so `develop` holds only QA-passed work, and list the Ready to deploy tickets. Tickets in progress or review may continue; they are not on `develop` yet.
+1. Confirm no ticket is In QA, so `develop` holds only QA-passed work, and list the Ready to deploy tickets. Tickets in progress or review may continue; they are not on `develop` yet. A ticket that failed QA has code on `develop` but is back In progress: wait for its fix, or revert its squash commits (`git log --grep "#<n>"`) on a `chore/revert-<n>` PR before promoting. The ticket returns to Ready, and its work comes back in a new PR. Never cherry-pick a subset of `develop` into `stage`: migrations and the generated API client depend on the commits before them.
 2. The release manager commits the `CHANGELOG.md` entry on `chore/release-<version>`, and `/lm-next` merges it into `develop` like any reviewed PR.
 3. The release manager opens the promotion PR from `develop` into `stage`. The owner merges it with a **merge commit**. Staging deploys.
 4. On staging, run the gate (security pass and attack test, dependency audit, performance audit with the load run, claim verification, UX check on changed screens) and `qa-engineer`'s regression. A failure is fixed by a ticket on `develop`, then promoted again from step 3.
-5. The release manager opens the release PR from `stage` into `main` using the release PR template. The owner merges it with a **merge commit**.
+5. The release manager opens the release PR from `stage` into `main` using the release PR template. `content-marketer` writes the French and English release notes, starting from GitHub's generated notes (`gh api repos/LinguaMentor/linguamentor-v3/releases/generate-notes -f tag_name=v<version> -f target_commitish=stage -f previous_tag_name=<last tag>`, which creates nothing) and rewriting them in learner terms. The owner merges the release PR with a **merge commit**.
 6. The owner tags and publishes:
    ```bash
    git switch main && git pull
@@ -162,13 +163,13 @@ For an urgent production bug: a Bug ticket with priority Urgent and the `hotfix`
 |---|---|
 | `main` | PR required, CI green, no direct pushes, only PRs from `stage` and `hotfix/*` |
 | `stage` | PR required, CI green, no direct pushes, only PRs from `develop` and `main` |
-| `develop` | PR required, CI green, squash merge only (merge commit for a back-merge from `main`) |
+| `develop` | PR required, CI green, owner's approval, squash merge only (merge commit for a back-merge from `main`) |
 
 GitHub doesn't enforce these on the free plan for a private organisation repository: the API returns 403, and we stay on the free plan. The protection is built from parts:
 
 - Agents are held by the deny list in `.claude/settings.json` and the guard hook: no raw push, `gh pr merge`, tag, release, `--amend` or `reset --hard`. They push only with `.claude/scripts/push.sh`, and `/lm-next` merges only with `.claude/scripts/merge.sh`.
 - A write-access account can still change `main` or `stage`. A workflow on every push to either alerts the owner when the commit did not come from an allowed PR. The production deploy runs only from a tag, and the workflow checks that the owner pushed it, so a bad change on `main` cannot reach users.
-- Agents use a separate free bot account. The owner's account is the only one used for `stage`, `main`, tags and releases.
+- Agents use a separate free bot account. The owner's account is the only one used for `stage`, `main`, tags and releases. GitHub won't let the account that opened a PR approve it, so the owner's approval on a `develop` PR is always a different person's, and `merge.sh` checks it.
 
 Setting up the agent account (an existing free account that is already an organisation member):
 
@@ -199,7 +200,7 @@ On Thursday `/pm report` has `product-manager` post one entry in the Notion data
 - [ ] The Definition of Done items in the ticket are ticked
 
 **Cutting a release**
-- [ ] Nothing In QA; Ready to deploy list confirmed
+- [ ] Nothing In QA; Ready to deploy list confirmed; any failed-QA ticket on `develop` fixed or reverted
 - [ ] Changelog merged into `develop`; `develop` promoted to `stage` with a merge commit
 - [ ] Gate passed on staging: security, dependencies, performance, claims, UX; regression QA passed
 - [ ] `stage` merged to `main` with a merge commit, tagged, GitHub release created
@@ -213,7 +214,11 @@ On Thursday `/pm report` has `product-manager` post one entry in the Notion data
 
 ## 11. Troubleshooting
 
-**QA fails after the merge.** The ticket goes back to In progress and stays in flight. Fix it on a new branch from `develop`. If the ticket is abandoned instead, revert its squash commit on `develop` before the next promotion, so `develop` stays releasable.
+**QA fails after the merge.** The ticket goes back to In progress and stays in flight. Fix it on a new branch from `develop`, with `Refs #<n>` in the PR. If the ticket is abandoned, or a release can't wait for the fix, revert its squash commits on `develop` before the next promotion (section 7, step 1), so `develop` stays releasable.
+
+**One ticket, several PRs.** Normal: a fix PR or a split ticket. Each squash commit carries `Refs #<n>`, so `git log --grep "#<n>"` lists them all; a revert takes all of them, newest first.
+
+**Reverts keep happening.** If tickets are often held back at release, ship unfinished work behind a feature switch that is off on staging and production, instead of reverting. Until then, a screen a learner could reach half-built stays unlinked (section 7).
 
 **A defect found on staging.** Never fix it on `stage`. Fix it on `develop` through a ticket, then promote again.
 
