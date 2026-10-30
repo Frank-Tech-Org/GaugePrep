@@ -28,10 +28,10 @@ Agents cannot create or push tags: the guard hook and the deny rules in `.claude
 ## Consequences
 
 - One step from tag to production; a bad release is undone by a new tag or a hotfix, not by refusing an approval.
-- `PROD_` secrets are repository secrets, readable by any workflow run in the repository. Only the owner edits workflows and only the owner merges into `main`, so this holds while the owner is the sole human with write access.
-- A tag pushed on a non-`main` commit runs that commit's copy of the workflow, which could lack the checks. The owner-only tag rule is what stops this on the free plan.
+- `PROD_` secrets are repository secrets, readable by any workflow run in the repository. Two accounts have write access: the owner's and the agents' `frankkefoueg`, through its fine-grained token. The GitHub-side control today is that this token has no Workflows permission, so GitHub rejects any push from it that adds or changes `.github/workflows/`; only the owner changes workflows.
+- The commit-on-`main` check guards against the owner's mistakes, such as tagging the wrong commit. It does not stop someone who can edit workflows: a tag on a branch commit runs that commit's copy of the workflow, which could drop the checks. The protection there is the missing Workflows permission above.
 - Confirmation: the production workflow's first job holds the three checks, and a test run with a non-owner actor or an off-`main` commit fails before deploying.
-- Reconsider when a second person gets write access, the repository moves to Team or Pro, or the repository becomes public: then use a `production` environment with environment secrets and a required reviewer.
+- Reconsider when the agents' token gains Workflows permission, anyone else gets write access, the repository moves to Team or Pro, or the repository becomes public: then move production secrets to a gated `production` environment with a required reviewer (paid plan) or another secret store.
 
 ## Sources
 

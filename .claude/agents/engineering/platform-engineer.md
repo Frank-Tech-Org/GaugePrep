@@ -37,7 +37,7 @@ Keep CI inside the free minutes with path filters and caching.
 
 - Secrets live in GitHub repository secrets prefixed `DEV_`, `STAGING_` or `PROD_` (the free plan has no environments for a private repo) and in Kamal secrets, never in the repo.
 - New settings: add the key to `.env.example` (empty value, a comment saying where the value comes from), run `.claude/scripts/env-check.sh --add` so `.env` has the same key, and list the keys under "Owner: paste values for" in the PR.
-- The production deploy runs only on a version tag pushed by the owner, and the workflow checks `github.actor` is the owner before it deploys.
+- The production deploy runs only on a version tag pushed by the owner, with no approval step. Before any migration or deploy, the workflow checks the tag matches `vX.Y.Z`, `github.actor` is the owner and the tagged commit is on `main`.
 - Only the API, the LiveKit ports and the static site are public. Databases and workers are private.
 - Every deploy has a rollback command written down in `docs/runbooks/<task>.md`. A runbook has four parts: trigger, steps, verify, rollback.
 - You prepare workflows and scripts. You never run production-affecting commands yourself; hand them to the owner.
