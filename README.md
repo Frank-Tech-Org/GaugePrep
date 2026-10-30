@@ -35,6 +35,33 @@ pnpm --version
 
 `examcore` must import without Django installed.
 
+## Run locally
+
+Needs Docker with Compose. Starts PostgreSQL 18 and the backend (it migrates, then serves on port 8000):
+
+```sh
+docker compose up -d --build
+curl -i http://localhost:8000/api/v1/health      # 200 {"status": "ok", "database": "ok"}
+curl http://localhost:8000/api/v1/openapi.json   # the OpenAPI document
+docker compose down                              # add -v to drop the database volume
+```
+
+To run Django on your machine against the compose database instead:
+
+```sh
+docker compose up -d db
+uv run python backend/manage.py migrate
+uv run python backend/manage.py runserver
+```
+
+Unset settings use safe local defaults (see `.env.example`). Hosted settings (`dev`, `staging`, `production`) refuse to start without `DJANGO_SECRET_KEY`, `DJANGO_ALLOWED_HOSTS` and `DATABASE_URL`. A down database answers 503 within 2 seconds.
+
+Regenerate the committed OpenAPI file after changing the API (a test fails when it is stale):
+
+```sh
+uv run python backend/manage.py export_openapi_schema --api config.api.api --indent 2 --output backend/openapi.json
+```
+
 ## Checks
 
 `pnpm check` is the single command that defines "passes". Git hooks and CI run the same command, and CI runs nothing else for checks except the pull request title check (Conventional Commits) and gitleaks. It stops at the first failure and prints `check failed: <tool>`.
@@ -45,7 +72,7 @@ pnpm --version
 | `ruff check` | Python lint |
 | `mypy` | Python types (strict) |
 | `lint-imports` (Import Linter) | Module boundaries; zero contracts for now |
-| `pytest` | Python tests; exit code 5 (nothing collected) counts as a pass |
+| `pytest` | Python tests; collecting none fails. Database tests skip with a reason when PostgreSQL is unreachable, and fail when `CI=true` |
 | `prettier --check` | TypeScript and JSON formatting |
 | `eslint` | TypeScript lint (`apps/web/eslint.config.js`) |
 | `tsc --noEmit` | TypeScript types (`apps/web/tsconfig.json`) |
