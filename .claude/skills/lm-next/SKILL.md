@@ -48,13 +48,13 @@ First match wins:
 
 A ticket that changes no repository file (an owner task, research, a decision recorded only on the ticket) gets no branch and no PR: the agent works on the ticket and posts its result there. A Decision ticket that writes an ADR changes a file, so it gets both.
 
-New ticket: claim it and work only inside its worktree (continue in it if it exists). Create the branch from the ticket, so the branch and the PR opened from it show in the ticket's Development panel:
+New ticket: claim it and create the branch from the ticket, so the branch and the PR opened from it show in the ticket's Development panel:
 ```
 .claude/scripts/board.sh move <n> "In progress"
 gh issue develop <n> -R LinguaMentor/linguamentor-v3 --base develop --name feature/<n>-<short-slug>
 git fetch origin feature/<n>-<short-slug>
-git worktree add ../lm-<n> feature/<n>-<short-slug>
 ```
+Build and fix in the owner's checkout, so the owner sees the work in the editor: `git switch feature/<n>-<short-slug>` there. It switches only from a clean tree; uncommitted changes there mean stop and ask the owner. If it already holds another ticket that is In progress, or the branch is already in a worktree, work in `../lm-<n>` instead (`git worktree add ../lm-<n> feature/<n>-<short-slug>`, or the existing one). Edits the owner makes on the ticket's branch are part of the ticket: read them before continuing and never discard them. After the merge, the owner's checkout returns to `develop` and pulls.
 
 Route by the Area field with the table in `CLAUDE.md`. Each agent's prompt carries the full ticket, its criteria and DoD, the last checkpoint and, for a fix, the review findings or failing checks, because agents don't see this conversation. A screen with no spec goes to `product-designer` first. Decision tickets go to the `cto` agent (technical) or `product-manager` (product) and produce an ADR in `docs/adr/` with its index row. An agent that stops on an architecture question or wants a new dependency gets the `cto` agent's answer in its next prompt. A missing dependency found mid-work is a Block (§7), never a workaround.
 
