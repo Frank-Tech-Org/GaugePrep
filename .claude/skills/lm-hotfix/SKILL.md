@@ -37,9 +37,9 @@ For each ticket in `wip`, post the checkpoint comment from `CLAUDE.md`: "paused 
 Next version is the last tag with PATCH + 1.
 ```
 .claude/scripts/board.sh move <n> "In progress"
-git switch main
-git pull
-git switch -c hotfix/<version>-<short-slug>
+gh issue develop <n> -R LinguaMentor/linguamentor-v3 --base main --name hotfix/<version>-<short-slug>
+git fetch origin hotfix/<version>-<short-slug>
+git switch hotfix/<version>-<short-slug>
 ```
 
 ## 4. Fix

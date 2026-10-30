@@ -95,7 +95,8 @@ hotfix/<version>-<short-slug>       hotfix/0.2.1-fix-timer-drift
 ```
 
 - **Commit and PR titles** follow Conventional Commits, as commitlint enforces: `feat(api): add the health endpoint`. The squash merge keeps the PR title as the commit subject.
-- **PR body** links the ticket with `Refs #<n>`, never `Closes #<n>`. `develop` is the default branch, so `Closes` would close the issue at merge, before QA. Issues are closed at release.
+- **Linking.** The ticket's branch is created from the ticket (`gh issue develop <n> --name feature/<n>-<slug>`), so the branch and its PR show in the ticket's Development panel. The PR body also says `Refs #<n>`, never `Closes #<n>`. A PR linked this way closes the issue when it merges into `develop`, the default branch, so the board's Status, not open or closed, says where a ticket is. A failed QA reopens it, and the release posts "Released in" on every shipped ticket.
+- **No repository change, no PR.** A ticket that writes nothing into the repository (an owner task, research, a decision recorded only on the ticket) has no branch and no PR; its result goes on the ticket.
 - **Traceability.** `merge.sh` writes the PR body's `Refs #<n>` lines into the squash commit, so `git log --grep "#<n>"` finds every change of a ticket, including its fix PRs.
 - Agents commit to the ticket's branch, push it and open the PR. The merge step of `/lm-next` merges reviewed PRs into `develop`; only the owner merges into `stage` and `main`, pushes tags and publishes releases. Nobody pushes straight to `main`, `stage` or `develop`.
 
@@ -107,7 +108,7 @@ In a normal week the owner runs two commands: `/pm` to plan and `/lm-next` to mo
 2. **Refine.** The same `/pm plan` pass writes the acceptance criteria, the Definition of Done, the files and paths and the dependencies, splits anything over two days, and moves the ticket to Ready.
 3. **Plan the sprint.** It then puts Ready tickets into the two-week Sprint iteration in dependency order. Sprints sit inside the product milestones (M0 to M8).
 4. **Pick.** The `cto` agent writes the technical read, and `/pm` hands it to `product-manager`, which names the set of tickets to start, up to the parallel limit: blockers first, then milestone, priority and size, and only tickets that cannot conflict.
-5. **Build.** `/lm-next` checks the parallel limit and overlap, moves the ticket to In progress and creates `feature/<n>-<slug>` in its own worktree from an up-to-date `develop`. The owning agents implement, test, commit, push the branch and open the PR into `develop`.
+5. **Build.** `/lm-next` checks the parallel limit and overlap, moves the ticket to In progress and creates `feature/<n>-<slug>` from the ticket, off an up-to-date `develop`, in its own worktree. The owning agents implement, test, commit, push the branch and open the PR into `develop`.
 6. **Review.** Its next run moves the ticket to In review, and `code-reviewer` and any specialist reviewers read the diff and post their verdict on the PR. Fixes happen on the same branch.
 7. **Merge.** Once the review passes and CI is green, `/lm-next` asks the owner to approve the PR on GitHub. The approval is a sign-off, not a second review: the agents have already reviewed and tested it. The next `/lm-next` runs `.claude/scripts/merge.sh <pr>`. It squash-merges into `develop` and deletes the branch, and refuses unless the base is `develop`, the branch is `feature/*` or `chore/*`, every check is green, the latest `REVIEW: PASS` names the PR's head sha, and the owner's latest approval is for that same sha. A push after the approval makes it stale. The owner can still merge by hand.
 8. **QA.** Dev deploys from `develop`. After the merge, `/lm-next` moves the ticket to In QA and checks every acceptance criterion on dev. A pass moves it to Ready to deploy. A fail sends it back to In progress with the defects listed; the fix goes in a new PR from `develop` that references the same ticket.
@@ -193,7 +194,7 @@ On Thursday `/pm report` has `product-manager` post one entry in the Notion data
 ## 10. Checklists
 
 **Before opening a PR**
-- [ ] Branch is `feature/<n>-<slug>` from current `develop` (or `hotfix/*` from `main`)
+- [ ] Branch is `feature/<n>-<slug>` created from the ticket off current `develop` (or `hotfix/*` off `main`), so it shows in the ticket's Development panel
 - [ ] PR title follows Conventional Commits; body says `Refs #<n>`
 - [ ] Tests and checks pass locally
 - [ ] Every acceptance criterion addressed, or listed as a follow-up
