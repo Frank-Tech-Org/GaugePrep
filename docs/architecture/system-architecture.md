@@ -440,7 +440,7 @@ The chained pipeline is used instead of a speech-to-speech model because grading
 - Passwords hashed with Argon2 (Django's Argon2 hasher); sessions rotate on sign-in; "sign out of all devices" deletes all sessions.
 - Database roles: the application role cannot UPDATE or DELETE append-only tables; migrations use a separate role; only identity reads personal data.
 - Network: databases, workers, scoring and voice workers are not exposed to the internet; only the API, the LiveKit server ports and the static site are public.
-- Secrets in GitHub environments and Kamal secrets; distinct keys per environment.
+- Secrets in GitHub repository secrets prefixed `DEV_`, `STAGING_` or `PROD_` (the free plan has no environments for a private repository) and Kamal secrets; distinct keys per environment.
 - Edge: security headers and a strict content security policy for the static app; rate limits on authentication.
 - LiveKit tokens valid for one room and a short time.
 - Recordings and attestations in private buckets, reachable only through short-lived signed URLs.
@@ -480,7 +480,7 @@ linguamentor/                      private GitHub repository
 | Pull request | Lint, types, Import Linter contracts, unit and integration tests with PostgreSQL 18, API contract check, frontend tests, gitleaks |
 | Push to develop | Build ARM images on GitHub's arm64 runners, push to GitHub Container Registry, deploy to dev with Kamal, publish the static PWA to Cloudflare dev |
 | Push to stage (or a manual run on `hotfix/*`) | The same images, deployed to staging with Kamal, and the PWA published to Cloudflare staging |
-| Version tag plus approval | Run migrations (expand-then-contract), deploy to production with Kamal (zero-downtime switch through kamal-proxy), publish the PWA |
+| Version tag pushed by the owner on a commit on main, no approval step (ADR-020) | Check the tag format, the owner as actor and the commit on main, then run migrations (expand-then-contract), deploy to production with Kamal (zero-downtime switch through kamal-proxy), publish the PWA |
 | Change to grader prompt, rubric or model | Grader release check workflow against the real model |
 | Nightly | Full scoring engine recovery tests, full end-to-end suite |
 
