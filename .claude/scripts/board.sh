@@ -100,23 +100,23 @@ issue_id() {
 
 set_field() {
   local n=$1 field=$2 value=$3 fid oid
-  read -r fid oid < <(gh api graphql -f query='{ organization(login: "LinguaMentor") {
-      issueFields(first: 20) { nodes { ... on IssueFieldSingleSelect { id name options { id name } } } } } }' \
-    | jq -r --arg f "$field" --arg v "$value" '.data.organization.issueFields.nodes[]
-        | select(.name == $f) | "\(.id) \(.options[] | select(.name == $v) | .id)"') || true
-  [ -n "${oid:-}" ] || { echo "No $field option named '$value'" >&2; exit 1; }
+  # The agents' token can't list org issue fields, so the field and its options are read from issues that use it.
+  read -r fid oid < <(gh api graphql -f query='{ repository(owner: "LinguaMentor", name: "linguamentor-v3") {
+      issues(first: 100, states: [OPEN, CLOSED]) { nodes { issueFieldValues(first: 10) { nodes {
+        ... on IssueFieldSingleSelectValue { field { ... on IssueFieldSingleSelect { id name options { id name } } } } } } } } } }' \
+    | jq -r --arg f "$field" --arg v "$value" '[.data.repository.issues.nodes[].issueFieldValues.nodes[].field
+        | select(. and .name == $f)] | first // empty | "\(.id) \(.options[] | select(.name == $v) | .id)"') || true
+  [ -n "${oid:-}" ] || { echo "No $field option named '$value' (or no issue uses $field yet)" >&2; exit 1; }
   gh api graphql -f i="$(issue_id "$n")" -f f="$fid" -f o="$oid" -f query='mutation($i: ID!, $f: ID!, $o: ID!) {
     setIssueFieldValue(input: { issueId: $i, issueFields: [{ fieldId: $f, singleSelectOptionId: $o }] }) { clientMutationId } }' >/dev/null
   echo "#$n $field: $value"
 }
 
 set_type() {
-  local n=$1 type=$2 tid
-  tid=$(gh api graphql -f query='{ organization(login: "LinguaMentor") { issueTypes(first: 20) { nodes { id name } } } }' \
-    | jq -r --arg t "$type" '.data.organization.issueTypes.nodes[] | select(.name == $t) | .id')
-  [ -n "$tid" ] || { echo "No issue type named '$type'" >&2; exit 1; }
-  gh api graphql -f i="$(issue_id "$n")" -f t="$tid" -f query='mutation($i: ID!, $t: ID!) {
-    updateIssueIssueType(input: { issueId: $i, issueTypeId: $t }) { clientMutationId } }' >/dev/null
+  local n=$1 type=$2 got
+  # REST takes the type by name; the agents' token can't list org issue types through GraphQL.
+  got=$(gh api -X PATCH "repos/$REPO/issues/$n" -f type="$type" --jq '.type.name // empty' 2>/dev/null) || true
+  [ "$got" = "$type" ] || { echo "No issue type named '$type'" >&2; exit 1; }
   echo "#$n type: $type"
 }
 
