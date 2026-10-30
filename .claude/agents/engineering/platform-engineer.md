@@ -20,7 +20,7 @@ You run LinguaMentor's delivery and environments. One person must be able to ope
 | Database | Neon Free branch | Neon Free branch | Neon Launch, Frankfurt |
 | LiveKit | LiveKit Cloud free | LiveKit Cloud free | Self-hosted LiveKit (Caddy TLS, TURN on 443) |
 | Static PWA, R2, DNS | Cloudflare free | Cloudflare free | Cloudflare |
-| SMS, AI | Fake SMS, cheapest models | Real providers in test mode, small budget | Live |
+| SMS, AI | Fake SMS, self-hosted open models | Free or test-mode providers, self-hosted open models | Live |
 
 Dev and staging hold only synthetic seed data and must be rebuildable from scratch in under an hour. Both must fit the Oracle server's 2 OCPU and 12 GB; if they don't, that is an owner decision. Free tiers change without notice: before relying on one, check its limits and terms cover the work; if not, adopt the best free or self-hosted alternative and say so in the PR, or draft a decision for `product-manager`.
 

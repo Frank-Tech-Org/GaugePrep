@@ -54,7 +54,7 @@ No open entries.
 ### D-7: Which services may cost money?
 - Raised: 2026-10-30 by the owner on the build pack intake
 - Decided: 2026-10-30: free in dev and staging, paid allowed in production · the owner. Dev and staging use free plans or self-hosted services (the owner's machine is powerful enough to self-host for dev). Production keeps the planned paid services: Anthropic, ElevenLabs, Twilio and Hetzner.
-- Effect: tickets name no paid plan for dev or staging; how dev and staging grade without a free Anthropic plan is open as D-8.
+- Effect: tickets name no paid plan for dev or staging; dev and staging grade with a self-hosted model (D-8).
 
 ### D-8: How do dev and staging grade writing and speaking without a paid model?
 - Raised: 2026-10-30 by product-manager on the build pack intake

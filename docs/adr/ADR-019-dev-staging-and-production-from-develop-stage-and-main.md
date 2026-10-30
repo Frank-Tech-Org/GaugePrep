@@ -15,7 +15,7 @@ Each long-lived branch has its own environment, and code only moves forward:
 - `stage` deploys to **staging**. The owner promotes `develop` into it with a merge commit; the release gate, regression and the weekly demo run there.
 - `main` deploys to **production** on a version tag. The owner merges `stage` into it with a merge commit.
 
-Dev and staging share the Oracle Always Free server as two Kamal deploys, each with its own Neon branch and R2 bucket. Dev uses a fake SMS provider and the cheapest AI models. `release/*` branches are dropped. A defect found on staging is fixed on `develop` and promoted again. Only a hotfix starts on `main`, and it is merged back into `stage`, then `develop`.
+Dev and staging share the Oracle Always Free server as two Kamal deploys, each with its own Neon branch and R2 bucket. Dev and staging use only free or self-hosted services: a fake SMS provider and self-hosted open models for AI and speech (owner decisions D-7 and D-8, 2026-10-30); paid providers run only in production. `release/*` branches are dropped. A defect found on staging is fixed on `develop` and promoted again. Only a hotfix starts on `main`, and it is merged back into `stage`, then `develop`.
 
 ## Alternatives considered
 

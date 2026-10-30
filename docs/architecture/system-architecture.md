@@ -499,7 +499,7 @@ Servers run in Germany (Hetzner) next to the database in Frankfurt (Neon). Traff
 | LiveKit | `livekit-server --dev` | LiveKit Cloud Build (free), shared with staging | LiveKit Cloud Build (free) | Self-hosted LiveKit server |
 | Object storage | Local disk via Django storage | Cloudflare R2 free tier, own bucket | Cloudflare R2 free tier | Cloudflare R2 |
 | CDN and DNS | None | Cloudflare free | Cloudflare free | Cloudflare free |
-| AI and speech | Local open models | Cheapest real models, small budget | Real providers, small budget | Real providers |
+| AI and speech | Local open models | Self-hosted open models | Self-hosted open models | Real providers |
 | Payments | Notch Pay test keys | Notch Pay test keys | Notch Pay test keys | Notch Pay live keys |
 | Email | Local mail catcher | Resend free | Resend free | Resend |
 | Monitoring | Console | Sentry and Grafana Cloud free | Sentry and Grafana Cloud free | Sentry and Grafana Cloud |
