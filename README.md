@@ -37,7 +37,7 @@ pnpm --version
 
 ## Checks
 
-`pnpm check` is the single command that defines "passes". Git hooks and CI run the same command. It stops at the first failure and prints `check failed: <tool>`.
+`pnpm check` is the single command that defines "passes". Git hooks and CI run the same command, and CI runs nothing else for checks except the pull request title check (Conventional Commits) and gitleaks. It stops at the first failure and prints `check failed: <tool>`.
 
 | Tool | What it does |
 |---|---|
