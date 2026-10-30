@@ -12,6 +12,6 @@ The LinguaMentor org has two people. `KefouegFrank` is the owner: admin, approve
 
 As of 2026-10-30 that token gets 403 on org issue types, org issue fields and repo Actions secrets. Issue type can still be set with a REST PATCH on the issue, and field values through IDs read from an issue.
 
-The owner keeps both accounts logged in to `gh` on this machine and keeps the local git identity as `kefouegFrank`; on 2026-10-30 they declined logging the owner out and setting an agent git identity. Don't raise either again.
+The owner keeps both accounts logged in to `gh` on this machine and keeps their global git identity as `kefouegFrank`; on 2026-10-30 they declined logging the owner out. Don't raise it again. Later that day they chose that agents commit as `frankkefoueg`, set only for Claude sessions through the `env` block in `.claude/settings.json`, because commits under the owner's identity on an agent PR made GitHub add a `Co-authored-by` line at squash merge.
 
 **How to apply:** never switch to the owner's account. Work through the 403s rather than asking for broader rights, unless a read-only permission saves the owner a manual step. See [[agents-commit-owner-merges]].
