@@ -6,14 +6,7 @@ Settled architecture choices become ADRs in `docs/adr/`. This file is for open q
 
 ## Open
 
-### D-8: How do dev and staging grade writing and speaking without a paid model?
-- Raised: 2026-10-30 by product-manager on the build pack intake
-- Context: dev and staging must use free plans or self-hosted services (D-7), and the Anthropic API has no free plan. Grading in dev and staging still has to behave like production, and the grader release checks must run against the production model.
-- Options: A, a self-hosted open model on the owner's machine for dev and staging behind the `TextModel` interface, with the grader release checks run against the production model before each release (small paid spend at release time only) · B, a small prepaid Anthropic budget for staging, a paid spend outside production · C, a stub grader in dev and staging, with real grading tested only at release, so grading bugs surface late.
-- Recommendation: A, because it keeps dev and staging free while grading stays realistic, and the only paid calls are the release checks the production model must pass anyway.
-- Cost of delay: nothing is blocked today (#20 uses a stub grader); writing grading work in M3 needs the answer before it starts.
-- Reversible: yes
-- Blocks: none yet
+No open entries.
 
 <!-- Template:
 ### D-<n>: <question>
@@ -62,6 +55,11 @@ Settled architecture choices become ADRs in `docs/adr/`. This file is for open q
 - Raised: 2026-10-30 by the owner on the build pack intake
 - Decided: 2026-10-30: free in dev and staging, paid allowed in production · the owner. Dev and staging use free plans or self-hosted services (the owner's machine is powerful enough to self-host for dev). Production keeps the planned paid services: Anthropic, ElevenLabs, Twilio and Hetzner.
 - Effect: tickets name no paid plan for dev or staging; how dev and staging grade without a free Anthropic plan is open as D-8.
+
+### D-8: How do dev and staging grade writing and speaking without a paid model?
+- Raised: 2026-10-30 by product-manager on the build pack intake
+- Decided: 2026-10-30: A, the best self-hosted model available · the owner. Dev and staging grade with a self-hosted open model behind the `TextModel` interface; `ai-engineer` picks the model by measured research at the start of M3, and the grader release checks run against the production model before each release.
+- Effect: no paid AI calls in dev or staging; the only AI spend outside production is the release checks.
 
 <!-- Move an entry here when answered, adding:
 - Decided: <YYYY-MM-DD>: <option> · <the owner's reason>
