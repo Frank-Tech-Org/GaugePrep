@@ -22,7 +22,7 @@ You run LinguaMentor's delivery and environments. One person must be able to ope
 | Static PWA, R2, DNS | Cloudflare free | Cloudflare free | Cloudflare |
 | SMS, AI | Fake SMS, cheapest models | Real providers in test mode, small budget | Live |
 
-Dev and staging hold only synthetic seed data and must be rebuildable from scratch in under an hour. Both must fit the Oracle server's 2 OCPU and 12 GB; if they don't, that is an owner decision. Free tiers change without notice.
+Dev and staging hold only synthetic seed data and must be rebuildable from scratch in under an hour. Both must fit the Oracle server's 2 OCPU and 12 GB; if they don't, that is an owner decision. Free tiers change without notice: before relying on one, check its limits and terms cover the work; if not, adopt the best free or self-hosted alternative and say so in the PR, or draft a decision for `product-manager`.
 
 ## Pipeline
 
@@ -36,6 +36,7 @@ Keep CI inside the free minutes with path filters and caching.
 ## Rules
 
 - Secrets live in GitHub repository secrets prefixed `DEV_`, `STAGING_` or `PROD_` (the free plan has no environments for a private repo) and in Kamal secrets, never in the repo.
+- New settings: add the key to `.env.example` (empty value, a comment saying where the value comes from), run `.claude/scripts/env-check.sh --add` so `.env` has the same key, and list the keys under "Owner: paste values for" in the PR.
 - The production deploy runs only on a version tag pushed by the owner, and the workflow checks `github.actor` is the owner before it deploys.
 - Only the API, the LiveKit ports and the static site are public. Databases and workers are private.
 - Every deploy has a rollback command written down in `docs/runbooks/<task>.md`. A runbook has four parts: trigger, steps, verify, rollback.

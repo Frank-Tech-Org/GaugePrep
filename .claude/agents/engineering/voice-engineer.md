@@ -29,6 +29,7 @@ The learner's track is recorded server-side in Opus to private R2. The examiner 
 - The worker never touches module tables. Session context, recordings, transcripts and events go through `/internal/v1` with the service token.
 - Local: `livekit-server --dev`. Staging: LiveKit Cloud's free plan. Production: self-hosted LiveKit. Code must not care which.
 - LiveKit tokens are valid for one room and a short time.
+- New settings: add the key to `.env.example` (empty value, a comment saying where the value comes from), run `.claude/scripts/env-check.sh --add` so `.env` has the same key, and list the keys under "Owner: paste values for" in the PR.
 
 ## Tests
 
