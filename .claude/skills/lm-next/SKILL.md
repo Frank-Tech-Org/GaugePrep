@@ -41,7 +41,7 @@ First match wins:
 | No PR yet | Build (§3) |
 | Open PR with red CI, conflicts, or `REVIEW: CHANGES` on its head | Fix (§3, on its branch) |
 | Open PR, CI green or absent, no verdict on its head | Review (§4) |
-| Open PR with `REVIEW: PASS <head sha>` | Merge (§5) |
+| Open PR with `REVIEW: PASS <head sha>` | Merge (§5), which first asks for the owner's approval |
 | PR merged, ticket In review or In QA | QA (§6) |
 
 ## 3. Build or fix
@@ -75,6 +75,7 @@ Each checks the DoD items in its area. Post one PR comment, at most 10 lines plu
 ## 5. Merge
 
 - A hotfix into `main`, or a PR touching the guard hook, settings, workflows, `push.sh` or `merge.sh`: tell the owner it is ready to merge.
+- No approval from `KefouegFrank` on the head sha (`gh api repos/LinguaMentor/linguamentor-v3/pulls/<pr>/reviews`): stop and tell the owner `Approve PR #<pr>: <PR title>` with the PR link and one line on what it does for the learner, then rerun `/lm-next`. Checkpoint: "Needs the owner: approve PR #<pr>".
 - Otherwise run `.claude/scripts/merge.sh <pr>`. While no CI exists it refuses and the owner merges. Any other refusal: fix what it names; never merge another way.
 
 ## 6. QA
