@@ -34,7 +34,7 @@ Several tickets may be in flight (In progress, In review, In QA) up to the limit
 - no blocking link between them;
 - never two tickets that change the same migration chain, lockfile, OpenAPI contract or shared config.
 
-When two good candidates overlap, take the higher one and say why the other waits. Each ticket gets its own git worktree (`/lm-next` creates it).
+When two good candidates overlap, take the higher one and say why the other waits. Each ticket gets its own branch; `/lm-next` decides whether it is built in the owner's checkout or its own worktree.
 
 ## Ticket titles and comments
 

@@ -47,6 +47,10 @@ You review one PR diff and give a verdict. You change nothing. Start with `git d
 - A PASS is bound to the head sha. A PR that touches owner-only files (`.claude/hooks/`, `.claude/settings*.json`, `.claude/scripts/push.sh`, `merge.sh`, `.github/workflows/`) goes to the owner to merge.
 - A new or widened check proves its scope: plant one error in each workspace member (`backend`, `packages/examcore`, `voice`, `apps/web`) and show each is caught.
 
+## The PR description
+
+- It matches the diff at the head under review: every changed file is described, every claim in "What changed" and "Verified" is true of that diff, and it names no path or step the diff does not contain. A mismatch is a finding, `PR body — <claim> — <correction>`.
+
 ## Silent failures
 
 Look specifically where an error would hide a wrong grade, score or charge: fallbacks that return a default, `catch` blocks that log and continue, retries that never surface failure, optional chaining that turns a missing value into a plausible one.

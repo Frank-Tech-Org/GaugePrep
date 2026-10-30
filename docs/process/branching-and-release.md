@@ -12,7 +12,7 @@ Two tickets may run together only when all of this holds:
 - neither blocks the other;
 - they do not both change a migration chain, the lockfile, the OpenAPI contract or shared config.
 
-Each ticket has its own branch and its own git worktree (`../lm-<n>`), so sessions never share a working tree.
+Each ticket has its own branch. The ticket being built is checked out in the owner's checkout, so the owner sees the changes in the editor and can work on them too; any other ticket in flight uses its own git worktree (`../lm-<n>`), so two tickets never share a working tree. The `lm-next` skill has the switching rules (clean tree only, back to `develop` after the merge).
 
 If a ticket in flight turns out to depend on another one, `/lm-next block <blocker>` marks the ticket on the current branch as blocked by it and sends it back to Ready. The blocker is ordered first. A blocker counts as resolved at Ready to deploy.
 
@@ -66,7 +66,7 @@ Short-lived branches are deleted after merging. Promotions use merge commits, ne
 
 | Environment | Runs | For | Data and keys |
 |---|---|---|---|
-| Local | Each ticket's worktree, Docker Compose | Building and the checks before a PR | Seed data, local open models, test keys |
+| Local | The owner's checkout or a ticket's worktree, Docker Compose | Building and the checks before a PR | Seed data, local open models, test keys |
 | CI | Every PR, thrown away after | Tests and security scans | None |
 | Dev | `develop`, Oracle Always Free server, own Neon branch | QA of each ticket | Synthetic seed data; fake SMS, self-hosted open models for AI and speech, test payment keys |
 | Staging | `stage`, the same Oracle server as a separate deploy, own Neon branch | Release gate (attack tests, load test, 3G checks), regression and the Friday demo | Synthetic seed data; free or test-mode providers, self-hosted open models for AI and speech, no paid service |
@@ -108,7 +108,7 @@ In a normal week the owner runs two commands: `/pm` to plan and `/lm-next` to mo
 2. **Refine.** The same `/pm plan` pass writes the acceptance criteria, the Definition of Done, the files and paths and the dependencies, splits anything over two days, and moves the ticket to Ready.
 3. **Plan the sprint.** It then puts Ready tickets into the two-week Sprint iteration in dependency order. Sprints sit inside the product milestones (M0 to M8).
 4. **Pick.** The `cto` agent writes the technical read, and `/pm` hands it to `product-manager`, which names the set of tickets to start, up to the parallel limit: blockers first, then milestone, priority and size, and only tickets that cannot conflict.
-5. **Build.** `/lm-next` checks the parallel limit and overlap, moves the ticket to In progress and creates `feature/<n>-<slug>` from the ticket, off an up-to-date `develop`, in its own worktree. The owning agents implement, test, commit, push the branch and open the PR into `develop`.
+5. **Build.** `/lm-next` checks the parallel limit and overlap, moves the ticket to In progress and creates `feature/<n>-<slug>` from the ticket, off an up-to-date `develop`, in the owner's checkout (or its own worktree when that holds another ticket in flight). The owning agents implement, test, commit, push the branch and open the PR into `develop`.
 6. **Review.** Its next run moves the ticket to In review, and `code-reviewer` and any specialist reviewers read the diff and post their verdict on the PR. Fixes happen on the same branch.
 7. **Merge.** Once the review passes and CI is green, `/lm-next` asks the owner to approve the PR on GitHub. The approval is a sign-off, not a second review: the agents have already reviewed and tested it. The next `/lm-next` runs `.claude/scripts/merge.sh <pr>`. It squash-merges into `develop` and deletes the branch, and refuses unless the base is `develop`, the branch is `feature/*` or `chore/*`, every check is green, the latest `REVIEW: PASS` names the PR's head sha, and the owner's latest approval is for that same sha. A push after the approval makes it stale. The owner can still merge by hand.
 8. **QA.** Dev deploys from `develop`. After the merge, `/lm-next` moves the ticket to In QA and checks every acceptance criterion on dev. A pass moves it to Ready to deploy. A fail sends it back to In progress with the defects listed and reopens the issue if its merge closed it; the fix goes on `feature/<n>-<slug>-fix`, created from the ticket with `gh issue develop`, in a new PR that references the same ticket.
