@@ -74,9 +74,11 @@ msg=(-f commit_title="$(field .title) (#$pr)")
 
 # Merge exactly the reviewed commit; GitHub rejects it if the branch moved since.
 gh api -X PUT "repos/$repo/pulls/$pr/merge" -f merge_method=squash -f sha="$sha" "${msg[@]}" --jq .message
-# The repository may delete merged branches itself; only a branch that still exists after a failed delete is an error.
-if ! gh api -X DELETE "repos/$repo/git/refs/heads/$head" >/dev/null 2>&1 \
-  && gh api "repos/$repo/branches/$head" >/dev/null 2>&1; then
-  echo "merge.sh: merged #$pr but could not delete $head" >&2; exit 1
+# The repository may delete merged branches itself; after a failed delete, only a 404 for the branch confirms it is gone.
+if ! gh api -X DELETE "repos/$repo/git/refs/heads/$head" >/dev/null 2>&1; then
+  err=$(gh api "repos/$repo/branches/$head" 2>&1 >/dev/null) \
+    && { echo "merge.sh: merged #$pr but could not delete $head" >&2; exit 1; }
+  [[ "$err" == *"HTTP 404"* ]] \
+    || { echo "merge.sh: merged #$pr; deletion of $head not confirmed: $err" >&2; exit 1; }
 fi
 echo "merge.sh: merged #$pr; $head is deleted"
