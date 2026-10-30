@@ -3,11 +3,13 @@
 #   .claude/scripts/merge.sh <pr-number>
 # Releases, tags and anything into main stay with the owner. The review verdict is the last line of a PR comment:
 #   REVIEW: PASS <full head sha>      or      REVIEW: CHANGES <full head sha>
+# The owner's GitHub approval of that same commit is required too.
 set -euo pipefail
 
 pr=${1:-}
 [ $# -eq 1 ] && [[ "$pr" =~ ^[0-9]+$ ]] || { echo "merge.sh: usage: merge.sh <pr-number>" >&2; exit 2; }
 repo=LinguaMentor/linguamentor-v3
+owner=KefouegFrank
 [ "$(git remote get-url origin)" = "https://github.com/$repo.git" ] \
   || { echo "merge.sh: origin is not the LinguaMentor repository" >&2; exit 2; }
 
@@ -58,6 +60,17 @@ verdict=$(all "repos/$repo/issues/$pr/comments?per_page=100" | jq -r '
 [ -n "$verdict" ] || fail "no review verdict comment; run /lm-next"
 [ "$verdict" = "REVIEW: PASS $sha" ] || fail "the latest verdict is '$verdict', not a PASS for $sha; review again"
 
+# The owner's latest decisive review must approve this exact commit; a later push makes it stale.
+approval=$(all "repos/$repo/pulls/$pr/reviews?per_page=100" | jq -r --arg o "$owner" '
+  [.[] | select(.user.login == $o and (.state | IN("APPROVED", "CHANGES_REQUESTED", "DISMISSED")))]
+  | sort_by(.submitted_at) | last // empty | "\(.state) \(.commit_id)"')
+[ "$approval" = "APPROVED $sha" ] || fail "the owner has not approved $sha; ask them to approve PR #$pr"
+
+# The squash commit carries the PR body's ticket refs, so `git log --grep "#<n>"` finds every change of a ticket.
+refs=$(field .body | grep -oE 'Refs #[0-9]+' | sort -u || true)
+msg=(-f commit_title="$(field .title) (#$pr)")
+[ -z "$refs" ] || msg+=(-f commit_message="$refs")
+
 # Merge exactly the reviewed commit; GitHub rejects it if the branch moved since.
-gh api -X PUT "repos/$repo/pulls/$pr/merge" -f merge_method=squash -f sha="$sha" --jq .message
+gh api -X PUT "repos/$repo/pulls/$pr/merge" -f merge_method=squash -f sha="$sha" "${msg[@]}" --jq .message
 gh api -X DELETE "repos/$repo/git/refs/heads/$head" >/dev/null && echo "merge.sh: merged #$pr and deleted $head"
