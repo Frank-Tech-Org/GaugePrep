@@ -95,4 +95,4 @@ The blocker is a `#number`, or free text that `product-manager` drafts as a tick
 
 ## End
 
-Post the checkpoint comment from `CLAUDE.md` on the ticket, then name the next command: `/lm-next` again, or `/pm` when nothing is left to move.
+Post the checkpoint comment from `CLAUDE.md` on the ticket, naming roles, not commands. Then, in the reply to the owner only, name the next command: `/lm-next` again, or `/pm` when nothing is left to move.

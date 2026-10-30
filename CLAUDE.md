@@ -19,7 +19,7 @@ Exam preparation platform for TCF Canada first: a responsive, mobile-first web a
 - **Only `product-manager` writes tickets.** Any other agent that finds work (a failed QA check, a budget breach, a false claim, a missing blocker) writes a draft with a title, type, suggested area and priority, context, and steps or evidence, then hands it to `product-manager`. `product-manager` creates it in Ideas, or adds it to an existing ticket if it's a duplicate. Creating or editing more than five at once needs the owner's go-ahead.
 - **Every ticket has acceptance criteria and a Definition of Done.** Criteria say what the user sees; the DoD says how we know it is finished well (tests, accessibility, budgets, migrations, security, docs), each item measurable.
 - **Ticket titles have no type prefix, and tickets that have not started have no comments.** The Type field says chore or decision; Conventional Commit prefixes are for commits and PR titles. Checkpoint comments start when work starts.
-- **Tickets stand alone.** An issue body never points at the PRD, the architecture doc, ADR numbers or exam-spec sections. Inline the facts the reader needs.
+- **Tickets stand alone.** An issue body never points at the PRD, the architecture doc, ADR numbers or exam-spec sections. Inline the facts the reader needs. Ticket and PR text (bodies, comments, checkpoints) never names a slash command; it says which role does the next step and what it is, like "qa-engineer checks each criterion on dev".
 - **PR text is short.** One or two sentences of summary, `Refs #<n>`, what changed, and only the checklist items that matter. Titles follow Conventional Commits.
 - **Write plainly.** Code comments: one or two lines saying why. Longer reasoning goes in the PR or an ADR.
 - **Progressive by milestone.** Tickets and code are written for the current milestone only; later work, including the build pack's parts, waits for its milestone. Changes not tied to a ticket go on the open setup PR's branch; every other branch and PR links to a ticket.
@@ -124,7 +124,7 @@ Every command that changes a ticket ends by posting this on the issue. It is how
 Branch: <branch or "none">
 Done: <what is finished, with file paths>
 Verified: <commands that passed, or "nothing yet">
-Next: <the exact next step>
+Next: <the role and the exact next step, never a slash command>
 Needs the owner: <decision or action, or "nothing">
 ```
 
