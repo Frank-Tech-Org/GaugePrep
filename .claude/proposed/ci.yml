@@ -194,13 +194,13 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      # Audit a rebuilt copy: the lockfile (top-level fields allowlisted) plus fresh package.json and workspace files, so no PR setting, hook or .npmrc is read.
+      # Audit a rebuilt copy: the lockfile (parsed with yq, top-level fields allowlisted) plus fresh package.json and workspace files, so no PR setting, hook or .npmrc is read.
       - name: Rebuild a clean audit directory
         run: |
           set -euo pipefail
           d="$RUNNER_TEMP/audit"
           mkdir "$d"
-          tr '\r' '\n' < pnpm-lock.yaml | awk '/^[A-Za-z]/{keep = ($0 ~ /^(lockfileVersion|settings|importers|packages|snapshots):/)} keep' > "$d/pnpm-lock.yaml"
+          yq '{"lockfileVersion": .lockfileVersion, "settings": .settings, "importers": .importers, "packages": .packages, "snapshots": .snapshots}' pnpm-lock.yaml > "$d/pnpm-lock.yaml"
           printf 'packages:\n' > "$d/pnpm-workspace.yaml"
           git ls-files -z '*package.json' | while IFS= read -r -d '' f; do
             dir=$(dirname "$f")
@@ -240,8 +240,8 @@ jobs:
             rm -f "$f"
             git show "$BASE:$f" > "$f" 2>/dev/null || rm -f "$f"
           done
-          # Inline ignore markers would hide findings: drop comment-only lines, cut trailing markers so the line is still scanned. git grep exits 1 on no match, absorbed by || true.
-          { git grep -lzE '(trivy|tfsec):ignore' || true; } | xargs -0 -r sed -i -E -e '/^[[:space:]]*(#|\/\/)[[:space:]]*(trivy|tfsec):ignore/d' -e 's/[[:space:]]*(#|\/\/)[[:space:]]*(trivy|tfsec):ignore.*$//'
+          # Rewrite the markers so Trivy no longer reads them as ignores. git grep exits 1 on no match, absorbed by || true.
+          { git grep -lzE '(trivy|tfsec):' || true; } | xargs -0 -r sed -i -E 's/(trivy|tfsec):/\1-/g'
       # The Apache-2.0 binary, not aquasecurity/trivy-action.
       - name: Install Trivy
         run: |
