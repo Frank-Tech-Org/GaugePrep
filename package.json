@@ -10,6 +10,7 @@
     "@commitlint/cli": "^21.2.4",
     "@commitlint/config-conventional": "^21.2.4",
     "@eslint/js": "^10.0.1",
+    "@vitest/coverage-v8": "5.0.5",
     "eslint": "^10.13.0",
     "husky": "^9.1.7",
     "lint-staged": "^17.6.0",
@@ -31,7 +32,7 @@
     "check:prettier": "prettier --check \"apps/**/*.{ts,tsx,js,json}\" package.json || { echo \"check failed: prettier\" >&2; exit 1; }",
     "check:eslint": "eslint --config apps/web/eslint.config.js apps/web || { echo \"check failed: eslint\" >&2; exit 1; }",
     "check:tsc": "tsc --noEmit -p apps/web || { echo \"check failed: tsc\" >&2; exit 1; }",
-    "check:vitest": "vitest run --config apps/web/vitest.config.ts --passWithNoTests || { echo \"check failed: vitest\" >&2; exit 1; }"
+    "check:vitest": "vitest run --coverage --config apps/web/vitest.config.ts --passWithNoTests || { echo \"check failed: vitest\" >&2; exit 1; }"
   },
   "lint-staged": {
     "*.py": [
