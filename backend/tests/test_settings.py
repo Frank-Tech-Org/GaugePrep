@@ -58,16 +58,33 @@ def test_local_and_test_settings_default_safely(module: str) -> None:
 
 
 @pytest.mark.parametrize("module", ["dev", "staging", "production"])
-def test_hosted_settings_fail_when_a_key_is_empty(module: str) -> None:
-    result = _load(module, **{**HOSTED, "DJANGO_SECRET_KEY": ""})
+@pytest.mark.parametrize("key", list(HOSTED))
+@pytest.mark.parametrize("blank", ["", " ", "  \t"])
+def test_hosted_settings_fail_when_a_key_is_blank(
+    module: str, key: str, blank: str
+) -> None:
+    result = _load(module, **{**HOSTED, key: blank})
     assert result.returncode != 0
-    assert "DJANGO_SECRET_KEY" in result.stderr
+    assert key in result.stderr
+
+
+@pytest.mark.parametrize("hosts", [",", " , ,"])
+def test_hosted_settings_fail_when_no_host_is_left_after_cleaning(hosts: str) -> None:
+    result = _load("dev", **{**HOSTED, "DJANGO_ALLOWED_HOSTS": hosts})
+    assert result.returncode != 0
+    assert "DJANGO_ALLOWED_HOSTS" in result.stderr
 
 
 def test_allowed_hosts_are_stripped_and_empties_dropped() -> None:
     result = _load("dev", **{**HOSTED, "DJANGO_ALLOWED_HOSTS": "a, b ,,"})
     assert result.returncode == 0, result.stderr
     assert result.stdout.strip() == "False ['a', 'b']"
+
+
+def test_local_allowed_hosts_are_stripped() -> None:
+    result = _load("local", DJANGO_ALLOWED_HOSTS=" a , b ,,")
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "True ['a', 'b']"
 
 
 def test_local_settings_fall_back_when_values_are_empty() -> None:
