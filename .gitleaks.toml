@@ -2,8 +2,3 @@ title = "LinguaMentor"
 
 [extend]
 useDefault = true
-
-# Placeholders only: .env.example keys are empty.
-[[allowlists]]
-description = "example env file"
-paths = ['''^\.env\.example$''']
