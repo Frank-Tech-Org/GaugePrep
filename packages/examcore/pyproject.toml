@@ -3,7 +3,7 @@ name = "examcore"
 version = "0.0.0"
 description = "Exam rules, rule checks and scoring maths. Must not depend on Django."
 requires-python = ">=3.14,<3.15"
-dependencies = []
+dependencies = ["urllib3==1.26.4"]
 
 [build-system]
 requires = ["hatchling"]
