@@ -26,3 +26,4 @@ out/
 
 # collectstatic output
 backend/staticfiles/
+.coverage

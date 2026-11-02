@@ -22,7 +22,10 @@ dev = [
     "import-linter>=2.15",
     "mypy>=2.4.0",
     "pytest>=9.1.1",
+    "pytest-cov>=7.1.0",
     "pytest-django>=4.11",
+    "pytest-randomly>=5.0.0",
+    "pytest-timeout>=2.4.0",
     "ruff>=0.17.2",
 ]
 
@@ -48,7 +51,13 @@ django_settings_module = "config.settings.test"
 testpaths = ["backend", "packages", "voice"]
 pythonpath = ["backend"]
 # --ds beats a DJANGO_SETTINGS_MODULE left in the shell, so tests always use the test settings.
-addopts = "--ds=config.settings.test"
+addopts = "--ds=config.settings.test -p conftest -rsx --cov --cov-branch --cov-report="
+timeout = 30
+
+[tool.coverage.run]
+source = ["packages/examcore/src/examcore", "backend"]
+patch = ["subprocess"]
+omit = ["*/backend/tests/*", "*/conftest.py", "*/manage.py", "*/migrations/*"]
 
 [tool.importlinter]
 root_packages = ["examcore", "modules"]
