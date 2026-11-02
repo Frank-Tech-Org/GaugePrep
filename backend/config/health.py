@@ -41,3 +41,4 @@ def health(request: HttpRequest) -> Status[Health] | HttpResponse:
         "Database unavailable",
         "The service cannot reach its database right now.",
     )
+# second
