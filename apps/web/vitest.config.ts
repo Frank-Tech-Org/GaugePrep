@@ -11,7 +11,6 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       include: ["src/**"],
-      // tsc placeholder with no logic; the Next.js scaffold ticket deletes it and this exclude.
       exclude: ["src/index.ts"],
       thresholds: { branches: 80 },
     },
