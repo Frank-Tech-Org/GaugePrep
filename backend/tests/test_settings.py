@@ -4,6 +4,8 @@ import sys
 from pathlib import Path
 
 import pytest
+from django.core.management import call_command
+from pytest_django import Settings
 
 BACKEND = Path(__file__).resolve().parent.parent
 
@@ -116,3 +118,66 @@ def test_entry_points_refuse_a_missing_settings_module(
     )
     assert result.returncode != 0
     assert "DJANGO_SETTINGS_MODULE" in result.stderr
+
+
+@pytest.mark.parametrize("hosts", [",", " , ", " , ,"])
+def test_local_settings_fall_back_when_hosts_split_to_nothing(hosts: str) -> None:
+    result = _load("local", DJANGO_ALLOWED_HOSTS=hosts)
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "True ['localhost', '127.0.0.1']"
+
+
+@pytest.mark.parametrize("hosts", [",", " , "])
+def test_local_server_answers_health_on_localhost_with_a_blank_host_list(
+    hosts: str,
+) -> None:
+    code = (
+        "import django; django.setup();"
+        "from django.test import Client;"
+        "print(Client(HTTP_HOST='localhost').get('/api/v1/health').status_code)"
+    )
+    clean = {k: v for k, v in os.environ.items() if not k.startswith("DJANGO_")}
+    clean.update(
+        DJANGO_SETTINGS_MODULE="config.settings.local", DJANGO_ALLOWED_HOSTS=hosts
+    )
+    result = subprocess.run(
+        [sys.executable, "-c", code],
+        cwd=BACKEND,
+        env=clean,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip().splitlines()[-1] in {"200", "503"}
+
+
+def test_static_root_is_git_ignored_inside_the_backend(
+    settings: Settings,
+) -> None:
+    assert Path(settings.STATIC_ROOT) == BACKEND / "staticfiles"
+    env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
+    inside = subprocess.run(
+        ["git", "rev-parse", "--is-inside-work-tree"],
+        cwd=BACKEND,
+        env=env,
+        capture_output=True,
+        check=False,
+    )
+    if inside.returncode != 0:
+        pytest.skip("not a git checkout")
+    ignored = subprocess.run(
+        ["git", "check-ignore", "-q", str(Path(settings.STATIC_ROOT) / "x")],
+        cwd=BACKEND,
+        env=env,
+        check=False,
+    )
+    assert ignored.returncode == 0
+
+
+def test_collectstatic_writes_the_swagger_assets(
+    settings: Settings, tmp_path: Path
+) -> None:
+    settings.STATIC_ROOT = tmp_path
+    call_command("collectstatic", interactive=False, verbosity=0)
+    assert list(tmp_path.glob("ninja/swagger-ui*"))

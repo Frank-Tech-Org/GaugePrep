@@ -23,3 +23,6 @@ out/
 .vscode/
 *.code-workspace
 .DS_Store
+
+# collectstatic output
+backend/staticfiles/
