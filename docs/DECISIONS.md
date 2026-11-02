@@ -61,6 +61,11 @@ No open entries.
 - Decided: 2026-10-30: A, the best self-hosted model available · the owner. Dev and staging grade with a self-hosted open model behind the `TextModel` interface; `ai-engineer` picks the model by measured research at the start of M3, and the grader release checks run against the production model before each release.
 - Effect: no paid AI calls in dev or staging; the only AI spend outside production is the release checks.
 
+### D-9: Keep Husky for the Git hooks?
+- Raised: 2026-11-02 by cto on #5
+- Decided: 2026-11-02: keep Husky · the owner. The dependency check found no release since 2024-11-18 and a replacement of about 50 lines (`core.hooksPath` plus `sh -e` hooks); Husky is MIT, advisory-free, runs no install scripts and the ticket names it.
+- Effect: #5 keeps `husky`; swapping it out later is a small follow-up.
+
 <!-- Move an entry here when answered, adding:
 - Decided: <YYYY-MM-DD>: <option> · <the owner's reason>
 -->
