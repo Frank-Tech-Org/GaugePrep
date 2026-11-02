@@ -241,7 +241,7 @@ jobs:
             git show "$BASE:$f" > "$f" 2>/dev/null || rm -f "$f"
           done
           # Rewrite the markers so Trivy no longer reads them as ignores. git grep exits 1 on no match, absorbed by || true.
-          { git grep -lzE '(trivy|tfsec):' || true; } | xargs -0 -r sed -i -E 's/(trivy|tfsec):/\1-/g'
+          { git grep -lzE '(trivy|tfsec):(ignore|exp)' || true; } | xargs -0 -r sed -i -E 's/(trivy|tfsec):(ignore|exp)/\1-\2/g'
       # The Apache-2.0 binary, not aquasecurity/trivy-action.
       - name: Install Trivy
         run: |
