@@ -6,7 +6,9 @@ export function noSkipsReporter(): Reporter {
     onTestRunEnd(modules) {
       const tests = modules.flatMap((m) => [...m.children.allTests()]);
       const skipped = tests.filter((t) => t.result().state === "skipped");
-      const xfail = tests.filter((t) => t.options.fails === true);
+      const xfail = tests.filter(
+        (t) => t.options.fails === true && t.result().state !== "skipped",
+      );
       const report = (label: string, found: typeof tests) => {
         if (found.length === 0) return;
         const names = found.map((t) => t.fullName).join("\n  ");
