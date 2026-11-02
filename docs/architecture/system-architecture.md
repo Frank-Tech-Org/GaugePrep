@@ -477,12 +477,14 @@ linguamentor/                      private GitHub repository
 
 | Trigger | Steps |
 |---|---|
-| Pull request | Lint, types, Import Linter contracts, unit and integration tests with PostgreSQL 18, API contract check, frontend tests, gitleaks |
+| Pull request | One `gate` job (changed paths, PR title, gitleaks); then, unless the PR is docs only, `pnpm check`: lint, types, Import Linter contracts, unit and integration tests with PostgreSQL 18, API contract check, frontend tests, coverage floors and 90% on changed lines; plus the smoke end-to-end set when `apps/` or `backend/` changed (ADR-021) |
+| Promotion PR, `develop` into `stage` | The pull request checks, plus the full end-to-end suite, mutmut on `examcore` and scoring code, and the full scoring engine recovery tests (ADR-021) |
 | Push to develop | Build ARM images on GitHub's arm64 runners, push to GitHub Container Registry, deploy to dev with Kamal, publish the static PWA to Cloudflare dev |
 | Push to stage (or a manual run on `hotfix/*`) | The same images, deployed to staging with Kamal, and the PWA published to Cloudflare staging |
 | Version tag pushed by the owner on a commit on main, no approval step (ADR-020) | Check the tag format, the owner as actor and the commit on main, then run migrations (expand-then-contract), deploy to production with Kamal (zero-downtime switch through kamal-proxy), publish the PWA |
 | Change to grader prompt, rubric or model | Grader release check workflow against the real model |
-| Nightly | Full scoring engine recovery tests, full end-to-end suite |
+
+No scheduled runs: the free plan's 2,000 Actions minutes a month go to pull requests and the promotion PR; the budget and its arithmetic are in ADR-021.
 
 ## 14. Environments and infrastructure
 
@@ -540,17 +542,28 @@ Dev deploys every merge into `develop` and is where each ticket is tested. Stagi
 
 ## 15. Testing strategy
 
+The strategy, the minutes budget and when each layer starts are in ADR-021.
+
 | Layer | Tests | When |
 |---|---|---|
-| examcore | Unit, property-based and fixed-answer tests from every table of the exam specification | Every pull request |
-| Scoring engine | Recovery on simulated data; comparison with an established statistics package | Pull request (small), nightly (full) |
-| Backend modules | Integration with PostgreSQL 18; idempotency of answers and webhooks; append-only enforcement; authorisation | Every pull request |
-| API | Contract check against OpenAPI | Every pull request |
-| Frontend | Component tests; Playwright end-to-end at phone and desktop sizes with slow 3G throttling, including interrupted and resumed simulations | Pull request (core), nightly (full) |
+| examcore | pytest fixed-answer tests from every table of the exam specification; Hypothesis property tests; mutmut, mutation score at least 80% | Every pull request with code; mutmut on the promotion PR |
+| Scoring engine | Recovery on simulated data; comparison with an established statistics package; mutmut, at least 80% | Pull request (small set), promotion PR (full, and mutmut) |
+| Backend modules | pytest-django against PostgreSQL 18, never SQLite; idempotency of answers and webhooks; append-only enforcement; authorisation; every endpoint has success, not-found and other-learner-refused tests | Every pull request with code |
+| API | Schemathesis in-process against `backend/openapi.json`: documented statuses, no 5xx on bad input, schema-valid responses | Every pull request with code |
+| Frontend | Vitest and React Testing Library | Every pull request with code |
+| End to end | Playwright with slow 3G throttling and axe-core (zero serious or critical violations). Smoke: about 5 happy paths at 375 px. Full: 375 px and 1440 px, all flows, a server error, offline, session expiry, another learner's URL refused, interrupted and resumed simulations | Smoke on pull requests touching `apps/` or `backend/`; full on the promotion PR |
 | Voice examiner | Scripted conversations with recorded audio: timings, interruptions, no volunteered information, recitation probing | Every change to voice |
 | Grader | Release check on the anchor set with the real model | Every grader change; blocks release |
 | Load | API and queue at twice expected peak; concurrent speaking sessions to size the voice server | Before launch and before infrastructure changes |
 | Security | ASVS Level 2 review; dependency and secret scanning | Before launch; continuous |
+
+Rules for every automated layer:
+
+- Branch coverage floors: `examcore` 95%, backend 85%, web 80%, and 90% on the lines a PR changes (diff-cover). Floors live in config and only go up.
+- Under CI no test may be skipped or xfail; tests run in random order with the seed printed; every test has a timeout (pytest 30 s, Vitest 10 s, Playwright 60 s unless the test sets its own with a reason).
+- No retries for unit or integration tests. Playwright retries 0 on PRs and 1 on the promotion PR, where a pass on retry still fails the run.
+- Branch protection is unavailable on the free private plan: `merge.sh` refusing a PR without a green run on its head commit is the gate.
+- Hypothesis and axe-core are MPL-2.0, accepted as dev-only: used in tests, never shipped to learners.
 
 ## 16. Observability and operations
 
@@ -678,6 +691,9 @@ Content production (items, prompts, lessons, anchors) runs in parallel from M1 u
 | ADR-016 | Sentry and Grafana Cloud for observability |
 | ADR-017 | Opus with AAC fallback for audio |
 | ADR-018 | Twilio for SMS verification codes behind an SMS provider interface |
+| ADR-019 | Dev, staging and production from develop, stage and main |
+| ADR-020 | Production deploys on the owner's tag, without an approval gate |
+| ADR-021 | Test strategy and CI minutes budget |
 
 ## Appendix C: Glossary
 
