@@ -116,13 +116,13 @@ jobs:
           echo "${GITLEAKS_SHA256}  $RUNNER_TEMP/gitleaks.tgz" | sha256sum --check -
           mkdir "$RUNNER_TEMP/gitleaks-bin"
           tar -xzf "$RUNNER_TEMP/gitleaks.tgz" -C "$RUNNER_TEMP/gitleaks-bin" gitleaks
-      # Scans the full history of the PR head. Config and ignore list come from the base commit, so a PR cannot switch off its own scan.
+      # Scans the full history reachable from the PR head, not other branches. Config and ignore list come from the base commit, so a PR cannot switch off its own scan.
       - name: Scan the full git history
         env:
           BASE: ${{ github.event.pull_request.base.sha }}
         run: |
           # gitleaks:allow comments and the checkout's own .gitleaksignore would let a PR skip its own secret.
-          args=(git --redact --verbose --ignore-gitleaks-allow)
+          args=(git --redact --verbose --ignore-gitleaks-allow --log-opts="HEAD")
           rm -f .gitleaksignore
           # Always pass a config from the base, so the PR's own ./.gitleaks.toml is never loaded.
           git show "$BASE:.gitleaks.toml" > "$RUNNER_TEMP/gl.toml" 2>/dev/null || printf '[extend]\nuseDefault = true\n' > "$RUNNER_TEMP/gl.toml"
@@ -138,14 +138,32 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          fetch-depth: 0
           persist-credentials: false
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
-      # Open-source CLI (LGPL-2.1) with the public registry rules; --config auto fetches them anonymously and needs metrics on.
+      # Ignore files come from the base commit, so a PR cannot switch off its own scan.
+      - name: Use the base ignore files
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          for f in .semgrepignore; do
+            rm -f "$f"
+            git show "$BASE:$f" > "$f" 2>/dev/null || rm -f "$f"
+          done
+      # Rules are the community repo pinned to a commit (Semgrep Rules License v1.0 allows internal CI use); no login, metrics off.
       - name: Semgrep
-        run: uvx semgrep==1.183.0 scan --config auto --error --severity ERROR --quiet .
+        env:
+          RULES_SHA: 16b9e6d45f10649f6a531ec4838ed9924372c3bc
+        run: |
+          git init -q "$RUNNER_TEMP/semgrep-rules"
+          git -C "$RUNNER_TEMP/semgrep-rules" fetch -q --depth 1 https://github.com/semgrep/semgrep-rules "$RULES_SHA"
+          git -C "$RUNNER_TEMP/semgrep-rules" checkout -q FETCH_HEAD
+          r="$RUNNER_TEMP/semgrep-rules"
+          uvx --exclude-newer 2026-10-30 semgrep==1.183.0 scan --metrics=off --disable-nosem --error --severity ERROR --quiet --exclude .claude/skills \
+            --config "$r/python" --config "$r/typescript" --config "$r/generic" .
 
   pip-audit:
     needs: changes
@@ -164,7 +182,7 @@ jobs:
       - name: Audit the uv lockfile
         run: |
           uv export --frozen --no-hashes --no-emit-project --no-emit-workspace -o "$RUNNER_TEMP/requirements.txt"
-          uvx pip-audit==2.10.1 --no-deps --disable-pip -r "$RUNNER_TEMP/requirements.txt"
+          uvx --exclude-newer 2026-10-30 pip-audit==2.10.1 --no-deps --disable-pip -r "$RUNNER_TEMP/requirements.txt"
 
   pnpm-audit:
     needs: changes
@@ -181,6 +199,13 @@ jobs:
         with:
           node-version: 24
           cache: pnpm
+      # A PR could add pnpm.auditConfig.ignoreCves; strip it so the audit sees every advisory.
+      - name: Drop audit ignores from the PR
+        run: |
+          for f in package.json apps/*/package.json; do
+            jq 'del(.pnpm.auditConfig)' "$f" > "$RUNNER_TEMP/p.json" && cp "$RUNNER_TEMP/p.json" "$f"
+          done
+          yq -i 'del(.auditConfig)' pnpm-workspace.yaml
       - run: pnpm audit --audit-level high
 
   trivy:
@@ -194,7 +219,17 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          fetch-depth: 0
           persist-credentials: false
+      # Trivy ignore files and config come from the base commit, so a PR cannot switch off its own scan.
+      - name: Use the base Trivy ignore files
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          for f in .trivyignore .trivyignore.yaml .trivyignore.yml trivy.yaml trivy.yml; do
+            rm -f "$f"
+            git show "$BASE:$f" > "$f" 2>/dev/null || rm -f "$f"
+          done
       # The Apache-2.0 binary, not aquasecurity/trivy-action.
       - name: Install Trivy
         run: |

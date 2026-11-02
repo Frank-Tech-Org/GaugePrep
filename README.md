@@ -80,11 +80,11 @@ uv run python backend/manage.py export_openapi_schema --api config.api.api --ind
 
 ### Security scans in CI
 
-Each pull request also runs these as separate checks. A HIGH or CRITICAL finding fails the check and blocks the merge. All are free and open source, with no token or account.
+Each pull request also runs these as separate checks. A HIGH or CRITICAL finding fails the check and blocks the merge (pip-audit fails on any advisory, as it has no severity filter). All are free and open source, with no token or account.
 
 | Check | What it scans |
 |---|---|
-| Semgrep | Source code, community rules (`semgrep scan --config auto --error`), ERROR findings fail |
+| Semgrep | Source code, community rules (pinned `semgrep/semgrep-rules` for Python, TypeScript and generic, metrics off), ERROR findings fail |
 | pip-audit | The `uv.lock` dependencies; it has no severity filter, so any known advisory fails |
 | pnpm audit | The `pnpm-lock.yaml` dependencies (`pnpm audit --audit-level high`) |
 | Trivy | The repository files (`trivy fs --severity HIGH,CRITICAL`) |
