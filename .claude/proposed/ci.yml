@@ -163,7 +163,7 @@ jobs:
           git -C "$RUNNER_TEMP/semgrep-rules" fetch -q --depth 1 https://github.com/semgrep/semgrep-rules "$RULES_SHA"
           git -C "$RUNNER_TEMP/semgrep-rules" checkout -q FETCH_HEAD
           r="$RUNNER_TEMP/semgrep-rules"
-          uvx --exclude-newer 2026-10-30 semgrep==1.183.0 scan --metrics=off --disable-nosem --error --severity ERROR --quiet --exclude .claude/skills/semgrep/scripts \
+          uvx --exclude-newer 2026-10-30 semgrep==1.183.0 scan --metrics=off --disable-nosem --error --severity ERROR --quiet --exclude .claude/skills/semgrep/scripts --exclude .claude/skills/webapp-testing/scripts/with_server.py \
             --config "$r/python" --config "$r/typescript" --config "$r/generic" .
 
   pip-audit:

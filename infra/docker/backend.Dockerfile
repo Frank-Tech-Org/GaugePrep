@@ -13,3 +13,5 @@ RUN uv sync --frozen --no-dev --package linguamentor-backend
 
 COPY backend backend
 WORKDIR /app/backend
+RUN useradd --system --no-create-home app
+USER app
