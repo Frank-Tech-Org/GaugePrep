@@ -77,7 +77,7 @@ uv run python backend/manage.py export_openapi_schema --api config.api.api --ind
 | `prettier --check` | TypeScript and JSON formatting |
 | `eslint` | TypeScript lint (`apps/web/eslint.config.js`) |
 | `tsc --noEmit` | TypeScript types (`apps/web/tsconfig.json`) |
-| `vitest` | TypeScript tests in random order (seed printed), 10 s timeout per test; passes when there are none. Web branch coverage (floor 80%) is not enforced yet |
+| `vitest` | TypeScript tests in random order (seed printed), 10 s timeout per test; passes when there are none. Branch coverage of `apps/web/src` (v8), floor 80%; fails below it, and an empty report passes while there is no measured code |
 
 No skips: with `CI=true` any skipped or xfail test (pytest or Vitest) fails the run and is named; locally it only warns. Floors only go up.
 
