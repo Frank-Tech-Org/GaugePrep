@@ -11,3 +11,8 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/examcore"]
+
+[tool.coverage.report]
+include = ["*/packages/examcore/*"]
+fail_under = 95
+show_missing = true

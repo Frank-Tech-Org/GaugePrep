@@ -20,16 +20,18 @@
   },
   "scripts": {
     "prepare": "husky",
-    "check": "pnpm run --silent check:ruff-format && pnpm run --silent check:ruff-lint && pnpm run --silent check:mypy && pnpm run --silent check:import-linter && pnpm run --silent check:pytest && pnpm run --silent check:prettier && pnpm run --silent check:eslint && pnpm run --silent check:tsc && pnpm run --silent check:vitest",
+    "check": "pnpm run --silent check:ruff-format && pnpm run --silent check:ruff-lint && pnpm run --silent check:mypy && pnpm run --silent check:import-linter && pnpm run --silent check:pytest && pnpm run --silent check:coverage-examcore && pnpm run --silent check:coverage-backend && pnpm run --silent check:prettier && pnpm run --silent check:eslint && pnpm run --silent check:tsc && pnpm run --silent check:vitest",
     "check:ruff-format": "uv run ruff format --check backend packages voice || { echo \"check failed: ruff-format\" >&2; exit 1; }",
     "check:ruff-lint": "uv run ruff check backend packages voice || { echo \"check failed: ruff-lint\" >&2; exit 1; }",
     "check:mypy": "uv run mypy || { echo \"check failed: mypy\" >&2; exit 1; }",
     "check:import-linter": "PYTHONPATH=backend uv run lint-imports || { echo \"check failed: import-linter\" >&2; exit 1; }",
     "check:pytest": "uv run pytest || { echo \"check failed: pytest\" >&2; exit 1; }",
+    "check:coverage-examcore": "uv run coverage report --rcfile=packages/examcore/pyproject.toml || { echo \"check failed: coverage-examcore\" >&2; exit 1; }",
+    "check:coverage-backend": "uv run coverage report --rcfile=backend/pyproject.toml || { echo \"check failed: coverage-backend\" >&2; exit 1; }",
     "check:prettier": "prettier --check \"apps/**/*.{ts,tsx,js,json}\" package.json || { echo \"check failed: prettier\" >&2; exit 1; }",
     "check:eslint": "eslint --config apps/web/eslint.config.js apps/web || { echo \"check failed: eslint\" >&2; exit 1; }",
     "check:tsc": "tsc --noEmit -p apps/web || { echo \"check failed: tsc\" >&2; exit 1; }",
-    "check:vitest": "vitest run --passWithNoTests || { echo \"check failed: vitest\" >&2; exit 1; }"
+    "check:vitest": "vitest run --config apps/web/vitest.config.ts --passWithNoTests || { echo \"check failed: vitest\" >&2; exit 1; }"
   },
   "lint-staged": {
     "*.py": [
