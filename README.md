@@ -64,7 +64,7 @@ uv run python backend/manage.py export_openapi_schema --api config.api.api --ind
 
 ## Checks
 
-`pnpm check` is the single command that defines "passes". Git hooks and CI run the same command, and CI runs nothing else for checks except the pull request title check (Conventional Commits) and gitleaks. It stops at the first failure and prints `check failed: <tool>`.
+`pnpm check` is the single command that defines "passes". Git hooks and CI run the same command, and CI adds the pull request title check (Conventional Commits) and the security scans below. It stops at the first failure and prints `check failed: <tool>`.
 
 | Tool | What it does |
 |---|---|
@@ -77,6 +77,20 @@ uv run python backend/manage.py export_openapi_schema --api config.api.api --ind
 | `eslint` | TypeScript lint (`apps/web/eslint.config.js`) |
 | `tsc --noEmit` | TypeScript types (`apps/web/tsconfig.json`) |
 | `vitest` | TypeScript tests; passes when there are none |
+
+### Security scans in CI
+
+Each pull request also runs these as separate checks. A HIGH or CRITICAL finding fails the check and blocks the merge (pip-audit fails on any advisory, as it has no severity filter). All are free and open source, with no token or account.
+
+| Check | What it scans |
+|---|---|
+| Semgrep | Source code, community rules (pinned `semgrep/semgrep-rules` for Python, TypeScript and generic, metrics off), ERROR findings fail, except two vendored dev tools that never ship: `.claude/skills/semgrep/scripts` and `.claude/skills/webapp-testing/scripts/with_server.py` |
+| pip-audit | The `uv.lock` dependencies; it has no severity filter, so any known advisory fails |
+| pnpm audit | The `pnpm-lock.yaml` dependencies, audited in a rebuilt directory with no pull request settings or hooks (`pnpm audit --audit-level high`) |
+| Trivy | The repository files (`trivy fs --severity HIGH,CRITICAL`) |
+| gitleaks | The full git history, not only the pull request's commits |
+
+Documentation-only pull requests skip pip-audit, pnpm audit and Trivy. The only secret-scan allowlist entry is the placeholder key in `api-design.md`, in `.gitleaks.toml`.
 
 ### Git hooks
 

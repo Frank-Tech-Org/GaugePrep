@@ -2,3 +2,8 @@ title = "LinguaMentor"
 
 [extend]
 useDefault = true
+
+# Placeholder sk_live_ key in an API design example, not a real secret.
+[[allowlists]]
+targetRules = ["stripe-access-token", "generic-api-key"]
+paths = ['''^\.claude/skills/system-design/references/key-concepts/api-design\.md$''']

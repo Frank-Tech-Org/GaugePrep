@@ -23,3 +23,4 @@
 | [ADR-019](ADR-019-dev-staging-and-production-from-develop-stage-and-main.md) | Dev, staging and production from develop, stage and main | Accepted |
 | [ADR-020](ADR-020-production-deploys-on-the-owners-tag-without-an-approval-gate.md) | Production deploys on the owner's tag, without an approval gate | Accepted |
 | [ADR-021](ADR-021-test-strategy-and-ci-minutes-budget.md) | Test strategy and CI minutes budget | Accepted |
+| [ADR-022](ADR-022-pr-security-scanners-scope.md) | PR security scanners catch accidents, not a deliberate bypass | Accepted |
