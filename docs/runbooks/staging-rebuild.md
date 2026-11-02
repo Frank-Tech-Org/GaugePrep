@@ -21,7 +21,12 @@ The Oracle Always Free ARM server is lost, reclaimed or changed by Oracle, or yo
 6. Point DNS for the dev and staging hostnames at the new IP in Cloudflare. Deploying the apps is a separate step (ticket #11).
 7. Note the end time and fill the table below.
 
-The script installs unattended security updates, Docker Engine from the official Docker apt repository (key fingerprint checked), a key-only deploy user in the `docker` group, key-only SSH with root login off, and ufw allowing only 22, 80 and 443. Admin login as root stops working after it runs.
+The script installs unattended security updates, Docker Engine from the official Docker apt repository (key fingerprint checked), a key-only deploy user in the `docker` group, key-only SSH with root login off, and ufw allowing only 22, 80 and 443. Admin login as root stops working after it runs. It also removes Oracle's default INPUT `REJECT icmp-host-prohibited` rule (running and saved), which would otherwise block 80 and 443, and rate-limits SSH with `ufw limit`.
+
+Security notes:
+
+- The VCN security list is the real perimeter. Docker-published ports bypass ufw, so every Kamal accessory (database, Redis, anything private) must publish on `127.0.0.1` only, never `0.0.0.0`.
+- The deploy key is root-equivalent on the host (docker group). Keep it only in the CI secrets (`DEV_` and `STAGING_`) and on the owner's machine, and never reuse it for production.
 
 | Run | Server | Start | End | Minutes |
 | --- | --- | --- | --- | --- |
@@ -32,8 +37,10 @@ The script installs unattended security updates, Docker Engine from the official
 - From your machine: `ssh -i <deploy private key> deploy@<server> docker ps` lists no error.
 - `ssh deploy@<server>` with a password or as `root` is refused.
 - On the server: `sudo ufw status` shows only 22, 80 and 443 allowed; `systemctl is-enabled unattended-upgrades` prints `enabled`.
+- From your machine: `curl -I http://<server>` gets a connection (a refused or reset connection is fine once nothing listens yet; a timeout or `icmp-host-prohibited` means the VCN list or the Oracle reject rule still blocks 80).
+- On the server: `sudo sshd -T | grep -E 'permitrootlogin|passwordauthentication'` shows both `no`.
 - Second script run prints `no changes`.
 
 ## Rollback
 
-The script only prepares a blank server, so rolling back is discarding it. To undo one change on a live server: remove `/etc/ssh/sshd_config.d/00-lm-hardening.conf` and `sudo systemctl reload ssh` (SSH hardening), or `sudo ufw disable` (firewall). If SSH locks you out, use the provider console, or delete the server and rerun from step 1.
+The script only prepares a blank server, so rolling back is discarding it. To undo one change on a live server: remove `/etc/ssh/sshd_config.d/00-lm-hardening.conf` and `sudo systemctl reload ssh` (SSH hardening), or `sudo ufw disable` (firewall). Oracle's reject rule is not restored; to bring it back, `sudo iptables -A INPUT -j REJECT --reject-with icmp-host-prohibited`. If SSH locks you out, use the provider console, or delete the server and rerun from step 1.
