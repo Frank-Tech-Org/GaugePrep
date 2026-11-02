@@ -194,21 +194,29 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      # Strip everything a PR could use to hide advisories or redirect the registry before pnpm runs; no pnpm cache step, which would run pnpmfile hooks.
-      - name: Drop audit ignores from the PR
+      # Audit a rebuilt copy: the lockfile (top-level fields allowlisted) plus fresh package.json and workspace files, so no PR setting, hook or .npmrc is read.
+      - name: Rebuild a clean audit directory
         run: |
-          for f in package.json apps/*/package.json; do
-            jq 'del(.pnpm)' "$f" > "$RUNNER_TEMP/p.json" && cp "$RUNNER_TEMP/p.json" "$f"
+          set -euo pipefail
+          d="$RUNNER_TEMP/audit"
+          mkdir "$d"
+          tr '\r' '\n' < pnpm-lock.yaml | awk '/^[A-Za-z]/{keep = ($0 ~ /^(lockfileVersion|settings|importers|packages|snapshots):/)} keep' > "$d/pnpm-lock.yaml"
+          printf 'packages:\n' > "$d/pnpm-workspace.yaml"
+          git ls-files -z '*package.json' | while IFS= read -r -d '' f; do
+            dir=$(dirname "$f")
+            mkdir -p "$d/$dir"
+            jq '{dependencies, devDependencies, optionalDependencies}' "$f" > "$d/$dir/package.json.tmp"
+            mv "$d/$dir/package.json.tmp" "$d/$dir/package.json"
+            if [ "$dir" != . ]; then printf '  - "%s"\n' "$dir" >> "$d/pnpm-workspace.yaml"; fi
           done
-          awk '/^packages:/{p=1; print; next} /^[^ \t-]/{p=0} p' pnpm-workspace.yaml > "$RUNNER_TEMP/ws.yaml"
-          cp "$RUNNER_TEMP/ws.yaml" pnpm-workspace.yaml
-          find . \( -name '.pnpmfile.*' -o -name .npmrc \) -not -path '*/node_modules/*' -delete
       # The pnpm version comes from the packageManager field in package.json.
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
-      - run: pnpm audit --ignore-pnpmfile --audit-level high --registry https://registry.npmjs.org/
+      - name: pnpm audit
+        working-directory: ${{ runner.temp }}/audit
+        run: pnpm audit --ignore-pnpmfile --audit-level high --registry https://registry.npmjs.org/
 
   trivy:
     needs: changes
@@ -232,8 +240,8 @@ jobs:
             rm -f "$f"
             git show "$BASE:$f" > "$f" 2>/dev/null || rm -f "$f"
           done
-          # Inline #trivy:ignore comments would hide findings; git grep exits 1 on no match, which the || true absorbs.
-          { git grep -lz 'trivy:ignore' || true; } | xargs -0 -r sed -i '/trivy:ignore/d'
+          # Inline ignore markers would hide findings: drop comment-only lines, cut trailing markers so the line is still scanned. git grep exits 1 on no match, absorbed by || true.
+          { git grep -lzE '(trivy|tfsec):ignore' || true; } | xargs -0 -r sed -i -E -e '/^[[:space:]]*(#|\/\/)[[:space:]]*(trivy|tfsec):ignore/d' -e 's/[[:space:]]*(#|\/\/)[[:space:]]*(trivy|tfsec):ignore.*$//'
       # The Apache-2.0 binary, not aquasecurity/trivy-action.
       - name: Install Trivy
         run: |

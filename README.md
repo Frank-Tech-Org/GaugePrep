@@ -86,7 +86,7 @@ Each pull request also runs these as separate checks. A HIGH or CRITICAL finding
 |---|---|
 | Semgrep | Source code, community rules (pinned `semgrep/semgrep-rules` for Python, TypeScript and generic, metrics off), ERROR findings fail, except two vendored dev tools that never ship: `.claude/skills/semgrep/scripts` and `.claude/skills/webapp-testing/scripts/with_server.py` |
 | pip-audit | The `uv.lock` dependencies; it has no severity filter, so any known advisory fails |
-| pnpm audit | The `pnpm-lock.yaml` dependencies (`pnpm audit --audit-level high`) |
+| pnpm audit | The `pnpm-lock.yaml` dependencies, audited in a rebuilt directory with no pull request settings or hooks (`pnpm audit --audit-level high`) |
 | Trivy | The repository files (`trivy fs --severity HIGH,CRITICAL`) |
 | gitleaks | The full git history, not only the pull request's commits |
 
