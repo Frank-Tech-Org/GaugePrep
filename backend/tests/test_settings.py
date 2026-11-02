@@ -156,10 +156,20 @@ def test_static_root_is_git_ignored_inside_the_backend(
     settings: Settings,
 ) -> None:
     assert Path(settings.STATIC_ROOT) == BACKEND / "staticfiles"
+    env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
+    inside = subprocess.run(
+        ["git", "rev-parse", "--is-inside-work-tree"],
+        cwd=BACKEND,
+        env=env,
+        capture_output=True,
+        check=False,
+    )
+    if inside.returncode != 0:
+        pytest.skip("not a git checkout")
     ignored = subprocess.run(
         ["git", "check-ignore", "-q", str(Path(settings.STATIC_ROOT) / "x")],
         cwd=BACKEND,
-        env={k: v for k, v in os.environ.items() if not k.startswith("GIT_")},
+        env=env,
         check=False,
     )
     assert ignored.returncode == 0
