@@ -72,11 +72,14 @@ uv run python backend/manage.py export_openapi_schema --api config.api.api --ind
 | `ruff check` | Python lint |
 | `mypy` | Python types (strict) |
 | `lint-imports` (Import Linter) | Module boundaries; zero contracts for now |
-| `pytest` | Python tests; collecting none fails. Database tests skip with a reason when PostgreSQL is unreachable, and fail when `CI=true` |
+| `pytest` | Python tests in random order (pytest-randomly prints the seed; replay with `--randomly-seed=N`), 30 s timeout per test; collecting none fails. Database tests skip with a reason when PostgreSQL is unreachable, and fail when `CI=true` |
+| `coverage report` | Branch coverage per package, floors set in each package pyproject.toml: `examcore` 95%, backend 85%. Fails below the floor. `voice` has no code yet and is not measured |
 | `prettier --check` | TypeScript and JSON formatting |
 | `eslint` | TypeScript lint (`apps/web/eslint.config.js`) |
 | `tsc --noEmit` | TypeScript types (`apps/web/tsconfig.json`) |
-| `vitest` | TypeScript tests; passes when there are none |
+| `vitest` | TypeScript tests in random order (seed printed), 10 s timeout per test; passes when there are none. Web branch coverage (floor 80%) is not enforced yet |
+
+No skips: with `CI=true` any skipped or xfail test (pytest or Vitest) fails the run and is named; locally it only warns. Floors only go up.
 
 ### Security scans in CI
 
