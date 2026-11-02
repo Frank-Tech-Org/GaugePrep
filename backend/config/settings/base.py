@@ -7,10 +7,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
 def required_env(key: str) -> str:
-    value = os.environ.get(key, "")
+    value = os.environ.get(key, "").strip()
     if not value:
         raise ImproperlyConfigured(f"{key} must be set in the environment")
     return value
+
+
+def split_hosts(raw: str) -> list[str]:
+    return [host.strip() for host in raw.split(",") if host.strip()]
 
 
 INSTALLED_APPS = [
@@ -34,6 +38,13 @@ USE_TZ = True
 TIME_ZONE = "UTC"
 LANGUAGE_CODE = "en"
 
-# API only for now: no templates, sessions or admin.
+# Needed for the Swagger docs page; no context processors, no sessions or admin.
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "APP_DIRS": True,
+    }
+]
+
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
