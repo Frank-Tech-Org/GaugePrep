@@ -163,7 +163,7 @@ jobs:
           git -C "$RUNNER_TEMP/semgrep-rules" fetch -q --depth 1 https://github.com/semgrep/semgrep-rules "$RULES_SHA"
           git -C "$RUNNER_TEMP/semgrep-rules" checkout -q FETCH_HEAD
           r="$RUNNER_TEMP/semgrep-rules"
-          uvx --exclude-newer 2026-10-30 semgrep==1.183.0 scan --metrics=off --disable-nosem --error --severity ERROR --quiet --exclude .claude/skills/semgrep/scripts --exclude .claude/skills/webapp-testing/scripts/with_server.py \
+          uvx --no-config --exclude-newer 2026-10-30 semgrep==1.183.0 scan --max-target-bytes 0 --metrics=off --disable-nosem --error --severity ERROR --quiet --exclude .claude/skills/semgrep/scripts --exclude .claude/skills/webapp-testing/scripts/with_server.py \
             --config "$r/python" --config "$r/typescript" --config "$r/generic" .
 
   pip-audit:
@@ -182,8 +182,8 @@ jobs:
       # pip-audit has no severity filter, so any known advisory fails this check.
       - name: Audit the uv lockfile
         run: |
-          uv export --frozen --no-hashes --no-emit-project --no-emit-workspace -o "$RUNNER_TEMP/requirements.txt"
-          uvx --exclude-newer 2026-10-30 pip-audit==2.10.1 --no-deps --disable-pip -r "$RUNNER_TEMP/requirements.txt"
+          uv export --no-config --frozen --no-hashes --no-emit-project --no-emit-workspace -o "$RUNNER_TEMP/requirements.txt"
+          uvx --no-config --exclude-newer 2026-10-30 pip-audit==2.10.1 --no-deps --disable-pip -r "$RUNNER_TEMP/requirements.txt"
 
   pnpm-audit:
     needs: changes
@@ -200,14 +200,15 @@ jobs:
         with:
           node-version: 24
           cache: pnpm
-      # A PR could add pnpm.auditConfig.ignoreCves; strip it so the audit sees every advisory.
+      # A PR could add pnpm.auditConfig.ignoreCves or an .npmrc registry; strip both and audit against npmjs.
       - name: Drop audit ignores from the PR
         run: |
           for f in package.json apps/*/package.json; do
             jq 'del(.pnpm.auditConfig)' "$f" > "$RUNNER_TEMP/p.json" && cp "$RUNNER_TEMP/p.json" "$f"
           done
           yq -i 'del(.auditConfig)' pnpm-workspace.yaml
-      - run: pnpm audit --audit-level high
+          find . -name .npmrc -not -path './node_modules/*' -delete
+          pnpm audit --audit-level high --registry https://registry.npmjs.org/
 
   trivy:
     needs: changes
