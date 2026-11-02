@@ -18,9 +18,11 @@ linguamentor-voice = { workspace = true }
 
 [dependency-groups]
 dev = [
+    "django-stubs>=5",
     "import-linter>=2.15",
     "mypy>=2.4.0",
     "pytest>=9.1.1",
+    "pytest-django>=4.11",
     "ruff>=0.17.2",
 ]
 
@@ -36,10 +38,17 @@ python_version = "3.14"
 strict = true
 files = ["packages/examcore/src", "backend", "voice"]
 explicit_package_bases = true
-mypy_path = ["packages/examcore/src"]
+mypy_path = ["packages/examcore/src", "backend"]
+plugins = ["mypy_django_plugin.main"]
+
+[tool.django-stubs]
+django_settings_module = "config.settings.test"
 
 [tool.pytest.ini_options]
 testpaths = ["backend", "packages", "voice"]
+pythonpath = ["backend"]
+# --ds beats a DJANGO_SETTINGS_MODULE left in the shell, so tests always use the test settings.
+addopts = "--ds=config.settings.test"
 
 [tool.importlinter]
 root_packages = ["examcore"]
