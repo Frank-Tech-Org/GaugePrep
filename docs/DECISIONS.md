@@ -69,3 +69,5 @@ No open entries.
 <!-- Move an entry here when answered, adding:
 - Decided: <YYYY-MM-DD>: <option> · <the owner's reason>
 -->
+
+QA 68 docs-only marker.
