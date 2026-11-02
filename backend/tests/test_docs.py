@@ -17,7 +17,8 @@ def test_docs_page_renders_when_debug_is_on() -> None:
     code = (
         "import django; django.setup();"
         "from django.test import Client;"
-        "print(Client(raise_request_exception=False).get('/api/v1/docs', HTTP_HOST='localhost').status_code)"
+        "client = Client(raise_request_exception=False);"
+        "print(client.get('/api/v1/docs', HTTP_HOST='localhost').status_code)"
     )
     env = {**os.environ, "DJANGO_SETTINGS_MODULE": "config.settings.local"}
     result = subprocess.run(

@@ -1,10 +1,10 @@
 # Dev, staging and production: no defaults, a missing value stops startup.
 
+from django.core.exceptions import ImproperlyConfigured
+
 from config.database import parse_database_url
 
 from .base import *  # noqa: F403
-from django.core.exceptions import ImproperlyConfigured
-
 from .base import required_env, split_hosts
 
 DEBUG = False
