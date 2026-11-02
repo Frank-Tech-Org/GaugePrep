@@ -159,6 +159,7 @@ def test_static_root_is_git_ignored_inside_the_backend(
     ignored = subprocess.run(
         ["git", "check-ignore", "-q", str(Path(settings.STATIC_ROOT) / "x")],
         cwd=BACKEND,
+        env={k: v for k, v in os.environ.items() if not k.startswith("GIT_")},
         check=False,
     )
     assert ignored.returncode == 0
