@@ -1,3 +1,4 @@
+# QA 68 clean-case marker.
 import logging
 
 from django.db import DatabaseError, InterfaceError, connection
