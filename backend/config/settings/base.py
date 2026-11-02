@@ -63,6 +63,7 @@ TEMPLATES = [
 
 # Serves the Swagger assets while DEBUG is on; the docs page is off elsewhere.
 STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
