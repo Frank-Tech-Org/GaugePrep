@@ -84,7 +84,7 @@ Each pull request also runs these as separate checks. A HIGH or CRITICAL finding
 
 | Check | What it scans |
 |---|---|
-| Semgrep | Source code, community rules (pinned `semgrep/semgrep-rules` for Python, TypeScript and generic, metrics off), ERROR findings fail |
+| Semgrep | Source code, community rules (pinned `semgrep/semgrep-rules` for Python, TypeScript and generic, metrics off), ERROR findings fail, except `.claude/skills/semgrep/scripts` |
 | pip-audit | The `uv.lock` dependencies; it has no severity filter, so any known advisory fails |
 | pnpm audit | The `pnpm-lock.yaml` dependencies (`pnpm audit --audit-level high`) |
 | Trivy | The repository files (`trivy fs --severity HIGH,CRITICAL`) |

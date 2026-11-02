@@ -26,7 +26,7 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      # Code checks are skipped only when every changed file is documentation or agent prompts, skills, rules or memory (not hooks or scripts).
+      # Code checks are skipped only when every changed file is documentation or agent prompts, skill documents, rules or memory (not hooks or scripts).
       - id: filter
         env:
           BASE: ${{ github.event.pull_request.base.sha }}
@@ -34,7 +34,7 @@ jobs:
         run: |
           # Separate assignment so a failing git diff stops the step instead of skipping the checks.
           diff=$(git diff --name-only --no-renames "$BASE...$HEAD")
-          other=$(printf '%s\n' "$diff" | grep -Ev '^(docs/|\.claude/(agents|skills|rules|memory)/|.*\.md$)' || true)
+          other=$(printf '%s\n' "$diff" | grep -Ev '^(docs/|\.claude/(agents|rules|memory)/|\.claude/skills/.*\.md$|.*\.md$)' || true)
           if [ -n "$other" ]; then code=true; else code=false; fi
           echo "code=$code" >> "$GITHUB_OUTPUT"
           echo "code checks: $code"
@@ -144,14 +144,15 @@ jobs:
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
-      # Ignore files come from the base commit, so a PR cannot switch off its own scan.
+      # Semgrep reads .semgrepignore in every folder, so drop all of them and restore only those at the base commit.
       - name: Use the base ignore files
         env:
           BASE: ${{ github.event.pull_request.base.sha }}
         run: |
-          for f in .semgrepignore; do
-            rm -f "$f"
-            git show "$BASE:$f" > "$f" 2>/dev/null || rm -f "$f"
+          find . -name .semgrepignore -not -path './.git/*' -delete
+          git ls-tree -r -z --name-only "$BASE" | { grep -zE '(^|/)\.semgrepignore$' || true; } | while IFS= read -r -d '' f; do
+            mkdir -p "$(dirname "$f")"
+            git show "$BASE:$f" > "$f"
           done
       # Rules are the community repo pinned to a commit (Semgrep Rules License v1.0 allows internal CI use); no login, metrics off.
       - name: Semgrep
@@ -162,7 +163,7 @@ jobs:
           git -C "$RUNNER_TEMP/semgrep-rules" fetch -q --depth 1 https://github.com/semgrep/semgrep-rules "$RULES_SHA"
           git -C "$RUNNER_TEMP/semgrep-rules" checkout -q FETCH_HEAD
           r="$RUNNER_TEMP/semgrep-rules"
-          uvx --exclude-newer 2026-10-30 semgrep==1.183.0 scan --metrics=off --disable-nosem --error --severity ERROR --quiet --exclude .claude/skills \
+          uvx --exclude-newer 2026-10-30 semgrep==1.183.0 scan --metrics=off --disable-nosem --error --severity ERROR --quiet --exclude .claude/skills/semgrep/scripts \
             --config "$r/python" --config "$r/typescript" --config "$r/generic" .
 
   pip-audit:
