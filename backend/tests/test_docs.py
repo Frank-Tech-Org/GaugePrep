@@ -12,13 +12,17 @@ def test_docs_page_is_not_served_when_debug_is_off(client: Client) -> None:
     assert client.get("/api/v1/docs").status_code == 404
 
 
-def test_docs_page_renders_when_debug_is_on() -> None:
+def test_docs_page_and_its_assets_load_when_debug_is_on() -> None:
     # api.py reads DEBUG at import, so this needs a fresh process on the local settings.
     code = (
         "import django; django.setup();"
         "from django.test import Client;"
         "client = Client(raise_request_exception=False);"
-        "print(client.get('/api/v1/docs', HTTP_HOST='localhost').status_code)"
+        "page = client.get('/api/v1/docs', HTTP_HOST='localhost');"
+        "from django.contrib.staticfiles import finders;"
+        "link = '/static/ninja/swagger-ui-bundle.js' in page.content.decode();"
+        "found = bool(finders.find('ninja/swagger-ui-bundle.js'));"
+        "print(page.status_code, link, found)"
     )
     env = {**os.environ, "DJANGO_SETTINGS_MODULE": "config.settings.local"}
     result = subprocess.run(
@@ -30,4 +34,4 @@ def test_docs_page_renders_when_debug_is_on() -> None:
         check=False,
     )
     assert result.returncode == 0, result.stderr
-    assert result.stdout.strip() == "200"
+    assert result.stdout.strip() == "200 True True"

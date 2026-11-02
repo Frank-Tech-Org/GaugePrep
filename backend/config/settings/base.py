@@ -19,6 +19,7 @@ def split_hosts(raw: str) -> list[str]:
 
 INSTALLED_APPS = [
     "django.contrib.contenttypes",
+    "django.contrib.staticfiles",
     "ninja",
     "procrastinate.contrib.django",
 ]
@@ -45,6 +46,9 @@ TEMPLATES = [
         "APP_DIRS": True,
     }
 ]
+
+# Serves the Swagger assets while DEBUG is on; the docs page is off elsewhere.
+STATIC_URL = "/static/"
 
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
