@@ -33,7 +33,6 @@
             }
           }
         },
-        "description": "Public. 503 problem details when the database is unreachable.",
         "tags": [
           "health"
         ]

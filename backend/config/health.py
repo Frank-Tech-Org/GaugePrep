@@ -1,6 +1,6 @@
 import logging
 
-from django.db import DatabaseError, connection
+from django.db import DatabaseError, InterfaceError, connection
 from django.http import HttpRequest, HttpResponse
 from ninja import Router, Schema, Status
 
@@ -21,8 +21,8 @@ def database_is_up() -> bool:
         with connection.cursor() as cursor:
             cursor.execute("SELECT 1")
             cursor.fetchone()
-    except DatabaseError:
-        logger.warning("health check: database unreachable")
+    except (DatabaseError, InterfaceError) as exc:
+        logger.warning("health check: database unreachable (%s)", type(exc).__name__)
         connection.close()
         return False
     return True
@@ -32,7 +32,6 @@ def database_is_up() -> bool:
     "/health", auth=None, response={200: Health, 503: Problem}, summary="Health"
 )
 def health(request: HttpRequest) -> Status[Health] | HttpResponse:
-    """Public. 503 problem details when the database is unreachable."""
     if database_is_up():
         return Status(200, Health(status="ok", database="ok"))
     return problem_response(

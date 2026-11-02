@@ -1,9 +1,11 @@
 import json
+import logging
 import socket
 from collections.abc import Iterator
+from unittest import mock
 
 import pytest
-from django.db import connection
+from django.db import InterfaceError, connection
 from django.test import Client
 from pytest_django.plugin import DjangoDbBlocker
 
@@ -46,3 +48,18 @@ def test_health_returns_503_problem_details_when_the_database_is_down(
     assert "127.0.0.1" not in leaked
     assert "refused" not in leaked
     assert "postgres" not in leaked
+
+
+def test_health_returns_503_when_the_connection_was_dropped(
+    client: Client, caplog: pytest.LogCaptureFixture
+) -> None:
+    secret = "postgres://u:hunter2@h/db"
+    with (
+        mock.patch.object(connection, "cursor", side_effect=InterfaceError(secret)),
+        caplog.at_level(logging.WARNING),
+    ):
+        response = client.get("/api/v1/health")
+    assert response.status_code == 503
+    assert response.json()["code"] == "database_unavailable"
+    assert "InterfaceError" in caplog.text
+    assert "hunter2" not in caplog.text
