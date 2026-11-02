@@ -26,6 +26,8 @@ Measured on 30 October to 2 November 2026: 42 `ci.yml` runs for 21 PRs, about 2 
 
 "Every PR with code" means every PR not limited to docs and agent prompts, as `ci.yml` already filters.
 
+Smoke runs at 375 px only, for minutes: a second width would double the smoke line below (360 to 720 minutes) and break the budget. The phone width is the one learners use most; 1440 px is checked by the full suite at every promotion.
+
 ### Coverage
 
 - Branch coverage floors: `examcore` 95%, backend 85%, web 80%, set in config.
@@ -44,7 +46,13 @@ Measured on 30 October to 2 November 2026: 42 `ci.yml` runs for 21 PRs, about 2 
 
 Two changes to `ci.yml` keep the budget: the `changes`, `pr-title` and `gitleaks` jobs merge into one `gate` job (each bills a full minute today), and the smoke end-to-end set runs as a step of the `check` job, reusing its PostgreSQL service and installs. No scheduled nightly runs; the full suites run on the promotion PR, the last point before staging.
 
-Assumptions: 100 PRs a month at 2 runs each; 85% of runs touch code; 60% touch `apps/` or `backend/`; 3 promotions a month (sprint end plus feature releases), each run twice.
+Assumptions:
+
+- 100 PRs a month at 2 runs each; 85% of runs touch code; 60% touch `apps/` or `backend/`.
+- 3 promotions a month (sprint end plus feature releases), each run twice.
+- 70 deploy pushes a month: about 65 merges into `develop` and 5 into `stage`, 4 minutes each, 280 minutes.
+- Measured: `gate` and `check` per-run minutes (the current jobs). Estimated, since no Playwright, mutmut or deploy workflow exists yet: smoke 3 minutes (about 5 flows on 2 workers, with the browser install cached); full end to end 25 (about 60 tests, all flows at two widths, at about 40 s each on 2 workers, plus build and install); mutmut with scoring recovery 25; deploy 4 (ARM image build on a cached layer, Kamal switch). Each estimate becomes the job or step `timeout-minutes`, so a run never bills more than its line.
+- Sensitivity: at the measured pace of about 150 PRs a month (21 PRs in 4 days) the same arithmetic gives 2,570 (gate 300, check 1,020, smoke 540, promotion 300, about 100 deploys 400, alarm 10). Past 1,600 used in a month, cut in this order: smoke runs only on the head that passed review (−270 at 150 PRs); deploy to dev skips docs-only merges (−60); then the full end to end drops 1440 px on promotions. If that still exceeds 2,000, paid minutes or a public repository go to the owner as a decision.
 
 | Workflow and job | Runs a month | Billed minutes per run | Minutes |
 |---|---|---|---|
@@ -99,7 +107,7 @@ MPL-2.0 is file-level copyleft: obligations apply only when modified files are d
 - Merging the three small jobs means a title or gitleaks failure shows as one red `gate` check; the log names which step failed.
 - The architecture document's §13.2 and §15 are updated to match. The coverage gate, endpoint-test, contract, migration-check and breaking-change tickets need no change.
 - Confirmation: `ci.yml` has a single `gate` job and no `schedule` trigger; `pnpm check` fails below a floor, on a skipped test and on a timeout; the promotion PR shows the full end-to-end and mutmut jobs.
-- Reconsider when monthly usage passes 1,600 minutes, the `check` job median passes 5 minutes, the repository becomes public (unlimited free minutes), or the plan changes to one with required checks. First fallback: run the smoke step only once a PR has passed review.
+- Reconsider when monthly usage passes 1,600 minutes, the `check` job median passes 5 minutes, the repository becomes public (unlimited free minutes), or the plan changes to one with required checks. The cuts, in order, are in the sensitivity line above.
 
 ## Sources
 
