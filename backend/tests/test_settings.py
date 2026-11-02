@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 from django.core.management import call_command
+from pytest_django import Settings
 
 BACKEND = Path(__file__).resolve().parent.parent
 
@@ -151,7 +152,9 @@ def test_local_server_answers_health_on_localhost_with_a_blank_host_list(
     assert result.stdout.strip().splitlines()[-1] in {"200", "503"}
 
 
-def test_static_root_is_git_ignored_inside_the_backend(settings) -> None:
+def test_static_root_is_git_ignored_inside_the_backend(
+    settings: Settings,
+) -> None:
     assert Path(settings.STATIC_ROOT) == BACKEND / "staticfiles"
     ignored = subprocess.run(
         ["git", "check-ignore", "-q", str(Path(settings.STATIC_ROOT) / "x")],
@@ -161,7 +164,9 @@ def test_static_root_is_git_ignored_inside_the_backend(settings) -> None:
     assert ignored.returncode == 0
 
 
-def test_collectstatic_writes_the_swagger_assets(settings, tmp_path: Path) -> None:
+def test_collectstatic_writes_the_swagger_assets(
+    settings: Settings, tmp_path: Path
+) -> None:
     settings.STATIC_ROOT = tmp_path
     call_command("collectstatic", interactive=False, verbosity=0)
     assert list(tmp_path.glob("ninja/swagger-ui*"))
