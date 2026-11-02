@@ -22,6 +22,20 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "ninja",
     "procrastinate.contrib.django",
+    "modules.identity",
+    "modules.learner",
+    "modules.curriculum",
+    "modules.content",
+    "modules.exammodels",
+    "modules.practice",
+    "modules.simulation",
+    "modules.assessment",
+    "modules.prediction",
+    "modules.calibration",
+    "modules.billing",
+    "modules.engagement",
+    "modules.reporting",
+    "modules.admin",
 ]
 
 MIDDLEWARE = [
