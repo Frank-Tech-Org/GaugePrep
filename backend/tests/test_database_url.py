@@ -23,6 +23,11 @@ def test_query_string_becomes_connection_options() -> None:
     assert parsed["OPTIONS"]["sslmode"] == "require"
 
 
+def test_default_connect_timeout_is_two_seconds() -> None:
+    parsed = parse_database_url("postgres://u:p@h/db")
+    assert parsed["OPTIONS"]["connect_timeout"] == 2
+
+
 def test_connect_timeout_is_always_set() -> None:
     parsed = parse_database_url("postgres://u:p@h/db", connect_timeout=3)
     assert parsed["OPTIONS"]["connect_timeout"] == 3

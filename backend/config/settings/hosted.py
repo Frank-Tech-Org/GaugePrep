@@ -7,7 +7,11 @@ from .base import required_env
 
 DEBUG = False
 SECRET_KEY = required_env("DJANGO_SECRET_KEY")
-ALLOWED_HOSTS = required_env("DJANGO_ALLOWED_HOSTS").split(",")
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in required_env("DJANGO_ALLOWED_HOSTS").split(",")
+    if host.strip()
+]
 DATABASES = {"default": parse_database_url(required_env("DATABASE_URL"))}
 
 # TLS ends at the proxy, which sets this header.
