@@ -171,15 +171,15 @@ GitHub doesn't enforce these on the free plan for a private organisation reposit
 
 - Agents are held by the deny list in `.claude/settings.json` and the guard hook: no raw push, `gh pr merge`, tag, release, `--amend` or `reset --hard`. They push only with `.claude/scripts/push.sh`, and `/lm-next` merges only with `.claude/scripts/merge.sh`.
 - A write-access account can still change `main` or `stage`. A workflow on every push to either alerts the owner when the commit did not come from an allowed PR. The production deploy runs only from a tag, and the workflow checks that the owner pushed it, so a bad change on `main` cannot reach users.
-- Agents use a separate free bot account. The owner's account is the only one used for `stage`, `main`, tags and releases. GitHub won't let the account that opened a PR approve it, so the owner's approval on a `develop` PR is always a different person's, and `merge.sh` checks it.
+- Two accounts, both organisation owners. Agents work as `KefouegFrank`, the owner's main account, so the commits count on it. The owner approves as `frankkefoueg`, the only account used for `stage`, `main`, tags and releases. GitHub won't let the account that opened a PR approve it, so the approval on a `develop` PR always comes from the other account, and `merge.sh` checks it.
+- Because the agents' account is an owner, its only GitHub-side limit is its token: on the agents' machine it is logged in to `gh` with the fine-grained token below and nothing broader.
 
-Setting up the agent account (an existing free account that is already an organisation member):
+Setting up the agents' account:
 
-1. In the organisation's People page its role is **Member**, not Owner. The organisation's base permission is **Read** or **No permission**. In the repo's Settings → Collaborators and teams it has **Write**.
-2. In the organisation's Settings → Personal access tokens, fine-grained tokens are allowed (approval required is fine).
-3. Signed in as that account, create a fine-grained token: resource owner `LinguaMentor`, only `linguamentor-v3`, 90 days. Read and write: Contents, Pull requests, Issues. Read: Metadata, Actions, Commit statuses (fine-grained tokens can't have Checks, so tools read CI from Actions runs). Leave Workflows out, so the account can't push workflow changes. Organisation permission Projects: read and write.
-4. Approve the token request as organisation owner if GitHub asks.
-5. On the machine running the agents: `gh auth login --with-token` (paste the token), then `gh auth setup-git` and `gh auth status`. The owner returns to their own account with `gh auth switch` before merging into `stage` or `main`, tagging or releasing.
+1. In the organisation's Settings → Personal access tokens, fine-grained tokens are allowed (approval required is fine).
+2. Signed in as that account, create a fine-grained token: resource owner `LinguaMentor`, only `linguamentor-v3`, 90 days. Read and write: Contents, Pull requests, Issues. Read: Metadata, Actions, Commit statuses (fine-grained tokens can't have Checks, so tools read CI from Actions runs). Leave Workflows out, so the account can't push workflow changes. Organisation permission Projects: read and write.
+3. Approve the token request as organisation owner if GitHub asks.
+4. On the machine running the agents: `gh auth logout -u <account>` for any broader login of that account, then `gh auth login --with-token` (paste the token), `gh auth setup-git` and `gh auth status`. The owner approves in the browser as `frankkefoueg`, and switches `gh` to it with `gh auth switch` only to merge into `stage` or `main`, tag or release.
 
 Files that control these limits (`.claude/hooks/`, `.claude/settings*`, `.claude/scripts/push.sh` and `merge.sh`, `.github/workflows/`) change only by the owner's hand, and `merge.sh` refuses a PR that touches them.
 

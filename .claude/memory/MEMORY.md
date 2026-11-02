@@ -11,7 +11,7 @@
 - [Notion weekly demos](notion-weekly-demos.md) — weekly report in Notion: key features delivered vs to deliver, no tickets or process
 - [CTO session owns delivery](cto-session-owns-delivery.md) — the main session is the CTO; read docs, board, Notion and studio plan before acting; owner steps in only for decisions and approvals
 - [Progressive delivery by milestone](progressive-delivery-by-milestone.md) — no tickets or code ahead of the foundation; build pack location and which milestone uses each part
-- [GitHub accounts](github-accounts-owner-and-agents.md) — KefouegFrank owner/approver, frankkefoueg agents with a fine-grained token, its 403s
+- [GitHub accounts](github-accounts-owner-and-agents.md) — since 2026-11-02 KefouegFrank is the agents' account (fine-grained token), frankkefoueg approves and releases; its 403s
 - [.env.example mirrors .env](env-example-mirrors-env.md) — same keys in both, added by the ticket that needs them; owner pastes values
 - [Branches and environments](branches-and-environments.md) — develop→dev, stage→staging, main→production; owner merges promotions; responsive mobile-first, not mobile-only
 - [Ticket-linked branches, no PR for ticket-only work](ticket-linked-branches-and-no-pr-docs.md) — create branches from the ticket so branch and PR show in its Development panel; no branch or PR when nothing is written to the repo
