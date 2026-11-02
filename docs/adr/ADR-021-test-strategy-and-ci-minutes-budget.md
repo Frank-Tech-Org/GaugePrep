@@ -78,7 +78,7 @@ Branch protection and required checks are unavailable on the free private plan. 
 
 MPL-2.0 is file-level copyleft: obligations apply only when modified files are distributed. Both run in tests, unmodified, and never ship to learners. Neither could be written in 200 lines (a shrinking property engine; a WCAG rule engine). The other tools are MIT, BSD-3-Clause or Apache-2.0 (pytest-randomly, pytest-timeout, pytest-cov, Schemathesis, mutmut, diff-cover, Playwright, React Testing Library) and are checked by the ticket that adds them.
 
-- `@vitest/coverage-v8` (MIT, dev-only), pinned to the exact Vitest version (peer dependency); measures the web branch-coverage floor. Accepted in #84.
+- `@vitest/coverage-v8` (MIT, dev-only), pinned to the exact Vitest version (peer dependency); measures the web branch-coverage floor; `vitest` and it are bumped together. Accepted in #84 (checks in the PR).
 
 ### When each layer starts
 
