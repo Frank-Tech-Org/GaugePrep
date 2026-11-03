@@ -21,7 +21,7 @@ The Oracle Always Free ARM server is lost, reclaimed or changed by Oracle, or yo
 6. Point DNS for the dev and staging hostnames at the new IP in Cloudflare. Deploying the apps is a separate step (ticket #11).
 7. Note the end time and fill the table below.
 
-The script installs unattended security updates, Docker Engine from the official Docker apt repository (key fingerprint checked), a key-only deploy user in the `docker` group, key-only SSH with root login off, and ufw allowing only 22, 80 and 443. Admin login as root stops working after it runs. It also removes Oracle's default INPUT `REJECT icmp-host-prohibited` rule (running and saved), which would otherwise block 80 and 443, and rate-limits SSH with `ufw limit`.
+The script installs unattended security updates, Docker Engine from the official Docker apt repository (key fingerprint checked), a key-only deploy user in the `docker` group, key-only SSH with root login off, and ufw allowing only 22, 80 and 443. Admin login as root stops working after it runs. It also removes Oracle's default INPUT `REJECT icmp-host-prohibited` rule (running and saved), which would otherwise block 80 and 443, and rate-limits SSH with `ufw limit`. Once ufw is active with 22 limited, it also removes Oracle's own `NEW ... --dport 22 -j ACCEPT` rule (running and saved), so the SSH rate limit applies without a reboot; open sessions stay up because ufw allows established connections. Log rotation (`json-file`, 10m x 3) goes into `/etc/docker/daemon.json`: an existing file is merged when `jq` is installed, otherwise overwritten with a warning. Docker is never restarted by the script, so a file that changed on a running server applies at Docker's next restart.
 
 Security notes:
 
@@ -43,4 +43,4 @@ Security notes:
 
 ## Rollback
 
-The script only prepares a blank server, so rolling back is discarding it. To undo one change on a live server: remove `/etc/ssh/sshd_config.d/00-lm-hardening.conf` and `sudo systemctl reload ssh` (SSH hardening), or `sudo ufw disable` (firewall). Oracle's reject rule is not restored; to bring it back, `sudo iptables -A INPUT -j REJECT --reject-with icmp-host-prohibited`. If SSH locks you out, use the provider console, or delete the server and rerun from step 1.
+The script only prepares a blank server, so rolling back is discarding it. To undo one change on a live server: remove `/etc/ssh/sshd_config.d/00-lm-hardening.conf` and `sudo systemctl reload ssh` (SSH hardening), or `sudo ufw disable` (firewall). Oracle's rules are not restored; to bring them back, `sudo iptables -A INPUT -j REJECT --reject-with icmp-host-prohibited` and `sudo iptables -I INPUT -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT`. If SSH locks you out, use the provider console, or delete the server and rerun from step 1.
