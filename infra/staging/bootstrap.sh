@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
-# Takes a fresh Ubuntu ARM server to "ready for Kamal". Safe to run again: it prints "no changes" when nothing moved.
-#   sudo SERVER_DEPLOY_PUBLIC_KEY="ssh-ed25519 AAAA..." ./bootstrap.sh
-# Inputs: SERVER_DEPLOY_PUBLIC_KEY (required), SERVER_DEPLOY_USER (default deploy), DRY_RUN=1 (plan only),
-# ALLOW_ANY_ARCH=1 (skip the arm64 check, for tests).
-# shellcheck disable=SC2016  # bash -c bodies are single-quoted on purpose
+# Fresh Ubuntu ARM server to ready for Kamal; a rerun prints "no changes".
+# Inputs: SERVER_DEPLOY_PUBLIC_KEY (required), SERVER_DEPLOY_USER (default deploy), DRY_RUN=1 (plan only).
 set -euo pipefail
 
 DEPLOY_USER="${SERVER_DEPLOY_USER:-deploy}"
@@ -16,7 +13,7 @@ changes=0
 log() { printf '%s\n' "$*"; }
 die() { printf 'error: %s\n' "$*" >&2; exit 1; }
 
-# Run an action, or only announce it under DRY_RUN. Every call counts as one change.
+# Counts one change; under DRY_RUN it only announces it.
 change() {
   local what="$1"; shift
   changes=$((changes + 1))
@@ -25,11 +22,12 @@ change() {
   "$@"
 }
 
-# Write a file only when its content or mode differs.
+write_file() { printf '%s\n' "$3" > "$1" && chmod "$2" "$1"; }
+
 put_file() {
   local path="$1" mode="$2" content="$3"
   if [ -f "$path" ] && [ "$(cat "$path")" = "$content" ] && [ "$(stat -c %a "$path")" = "$mode" ]; then return 0; fi
-  change "write $path" bash -c 'printf "%s\n" "$1" > "$2" && chmod "$3" "$2"' _ "$content" "$path" "$mode"
+  change "write $path" write_file "$path" "$mode" "$content"
 }
 
 pkg_missing() { ! dpkg-query -W -f='${Status}' "$1" 2>/dev/null | grep -q '^install ok installed$'; }
@@ -55,7 +53,7 @@ validate() {
   [ "${ID:-}" = ubuntu ] || die "Ubuntu only, found ${ID:-unknown}"
   UBUNTU_CODENAME="${VERSION_CODENAME:?no VERSION_CODENAME in /etc/os-release}"
   ARCH="$(dpkg --print-architecture)"
-  [ "$ARCH" = arm64 ] || [ "${ALLOW_ANY_ARCH:-0}" = 1 ] || die "arm64 expected, found $ARCH"
+  [ "$ARCH" = arm64 ] || die "arm64 expected, found $ARCH"
 }
 
 step_updates() {
@@ -64,24 +62,33 @@ step_updates() {
 APT::Periodic::Unattended-Upgrade "1";'
 }
 
+# True when the file holds at least one primary key and every primary key is the pinned one.
+keyring_ok() {
+  gpg --show-keys --with-colons "$1" 2>/dev/null | awk -F: -v want="$DOCKER_KEY_FPR" '
+    $1 == "pub" { primary = 1; next }
+    $1 == "fpr" && primary { n++; if ($10 != want) bad = 1; primary = 0 }
+    END { exit !(n > 0 && !bad) }'
+}
+
+install_docker_key() {
+  local tmp
+  tmp="$(mktemp)"
+  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor > "$tmp"
+  if ! keyring_ok "$tmp"; then rm -f "$tmp"; die "Docker key fingerprint mismatch"; fi
+  install -d -m 755 /etc/apt/keyrings
+  install -m 644 "$tmp" "$1"
+  rm -f "$tmp"
+}
+
 step_docker() {
   apt_install ca-certificates curl gnupg
   local keyring=/etc/apt/keyrings/docker.gpg
-  local fpr=""
-  [ -f "$keyring" ] && fpr="$(gpg --show-keys --with-colons "$keyring" 2>/dev/null | awk -F: '$1 == "fpr" {print $10; exit}')"
-  if [ "$fpr" != "$DOCKER_KEY_FPR" ]; then
-    change "install the Docker apt key" bash -c '
-      set -euo pipefail
-      tmp="$(mktemp)"; trap "rm -f \"$tmp\"" EXIT
-      curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor > "$tmp"
-      got="$(gpg --show-keys --with-colons "$tmp" | awk -F: "\$1 == \"fpr\" {print \$10; exit}")"
-      [ "$got" = "$1" ] || { echo "Docker key fingerprint mismatch" >&2; exit 1; }
-      install -d -m 755 /etc/apt/keyrings
-      install -m 644 "$tmp" "$2"' _ "$DOCKER_KEY_FPR" "$keyring"
+  if [ ! -f "$keyring" ] || ! keyring_ok "$keyring"; then
+    change "install the Docker apt key" install_docker_key "$keyring"
   fi
   put_file /etc/apt/sources.list.d/docker.list 644 \
     "deb [arch=$ARCH signed-by=$keyring] https://download.docker.com/linux/ubuntu $UBUNTU_CODENAME stable"
-  # Written before the install so the first start already rotates container logs.
+  # Written before the install so the first start already rotates logs.
   [ -d /etc/docker ] || change "create /etc/docker" install -d -m 755 /etc/docker
   put_file /etc/docker/daemon.json 644 '{
   "log-driver": "json-file",
@@ -95,6 +102,12 @@ step_docker() {
     change "enable and start docker" systemctl enable --now docker
   fi
 }
+
+add_key() {
+  touch "$1" && chmod 600 "$1" && chown "$DEPLOY_USER:$DEPLOY_USER" "$1" && printf '%s\n' "$DEPLOY_KEY" >> "$1"
+}
+
+fix_keys() { chmod 600 "$1" && chown "$DEPLOY_USER:$DEPLOY_USER" "$1"; }
 
 step_user() {
   local home ssh_dir keys
@@ -113,11 +126,33 @@ step_user() {
   keys="$ssh_dir/authorized_keys"
   [ -d "$ssh_dir" ] || change "create $ssh_dir" install -d -m 700 -o "$DEPLOY_USER" -g "$DEPLOY_USER" "$ssh_dir"
   if ! { [ -f "$keys" ] && grep -qxF "$DEPLOY_KEY" "$keys"; }; then
-    change "install the deploy key for $DEPLOY_USER" bash -c 'touch "$2" && chmod 600 "$2" && chown "$3:$3" "$2" && printf "%s\n" "$1" >> "$2"' _ "$DEPLOY_KEY" "$keys" "$DEPLOY_USER"
+    change "install the deploy key for $DEPLOY_USER" add_key "$keys"
   fi
   if [ -f "$keys" ] && [ "$(stat -c '%a %U' "$keys")" != "600 $DEPLOY_USER" ]; then
-    change "fix permissions on $keys" bash -c 'chmod 600 "$1" && chown "$2:$2" "$1"' _ "$keys" "$DEPLOY_USER"
+    change "fix permissions on $keys" fix_keys "$keys"
   fi
+}
+
+sshd_hardened() {
+  local cfg
+  cfg="$(sshd -T 2>/dev/null)" || return 1
+  grep -qx 'permitrootlogin no' <<<"$cfg" && grep -qx 'passwordauthentication no' <<<"$cfg"
+}
+
+# Reverts the drop-in if sshd rejects it or the reload fails, so a rerun starts over.
+apply_ssh() {
+  local conf="$1" want="$2" old="" had=0
+  install -d -m 755 "$(dirname "$conf")"
+  if [ -f "$conf" ]; then had=1; old="$(cat "$conf")"; fi
+  if [ "$had" = 0 ] || [ "$old" != "$want" ]; then
+    printf '%s\n' "$want" > "$conf.new"
+    mv "$conf.new" "$conf"
+  fi
+  if ! sshd -t || ! systemctl reload ssh; then
+    if [ "$had" = 1 ]; then printf '%s\n' "$old" > "$conf"; else rm -f "$conf"; fi
+    die "sshd rejected the config or the reload failed, reverted"
+  fi
+  sshd_hardened || die "sshd still allows root or password login after reload"
 }
 
 step_ssh() {
@@ -126,25 +161,37 @@ step_ssh() {
 KbdInteractiveAuthentication no
 PermitRootLogin no
 PubkeyAuthentication yes'
-  if [ -f "$conf" ] && [ "$(cat "$conf")" = "$want" ]; then return 0; fi
-  # Never reload sshd with a config it rejects, and never before the deploy key is in place.
-  change "harden sshd (key-only, no root login)" bash -c '
-    set -euo pipefail
-    install -d -m 755 /etc/ssh/sshd_config.d
-    printf "%s\n" "$1" > "$2.new"
-    mv "$2.new" "$2"
-    if ! sshd -t; then rm -f "$2"; echo "sshd rejected the config, reverted" >&2; exit 1; fi
-    systemctl reload ssh' _ "$want" "$conf"
+  if [ -f "$conf" ] && [ "$(cat "$conf")" = "$want" ] && sshd_hardened; then return 0; fi
+  change "harden sshd (key-only, no root login)" apply_ssh "$conf" "$want"
 }
 
-ufw_has() { ufw status 2>/dev/null | grep -Eq "^$1/tcp +ALLOW"; }
+ufw_has() { ufw status 2>/dev/null | grep -Eq "^$1/tcp +$2"; }
+
+# Oracle images ship this REJECT in INPUT and in the saved rules; it would sit ahead of ufw's allows.
+ORACLE_RULE='-A INPUT -j REJECT --reject-with icmp-host-prohibited'
+
+oracle_reject_present() {
+  command -v iptables >/dev/null 2>&1 || return 1
+  iptables -C INPUT -j REJECT --reject-with icmp-host-prohibited 2>/dev/null \
+    || grep -qxF -- "$ORACLE_RULE" /etc/iptables/rules.v4 2>/dev/null
+}
+
+drop_oracle_reject() {
+  iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited 2>/dev/null || true
+  if [ -f /etc/iptables/rules.v4 ]; then
+    grep -vxF -- "$ORACLE_RULE" /etc/iptables/rules.v4 > /etc/iptables/rules.v4.new || true
+    cat /etc/iptables/rules.v4.new > /etc/iptables/rules.v4
+    rm -f /etc/iptables/rules.v4.new
+  fi
+}
 
 step_firewall() {
   apt_install ufw
   # SSH is allowed before the firewall is switched on, so enabling it cannot cut the session.
+  if ! ufw_has 22 LIMIT; then change "ufw limit 22/tcp" ufw limit 22/tcp; fi
   local port
-  for port in 22 80 443; do
-    if ! ufw_has "$port"; then change "ufw allow $port/tcp" ufw allow "$port/tcp"; fi
+  for port in 80 443; do
+    if ! ufw_has "$port" ALLOW; then change "ufw allow $port/tcp" ufw allow "$port/tcp"; fi
   done
   if ! ufw status verbose 2>/dev/null | grep -q 'Default: deny (incoming), allow (outgoing)'; then
     change "ufw default deny incoming, allow outgoing" bash -c 'ufw default deny incoming && ufw default allow outgoing'
@@ -152,6 +199,7 @@ step_firewall() {
   if ! ufw status 2>/dev/null | grep -q '^Status: active'; then
     change "ufw enable" ufw --force enable
   fi
+  if oracle_reject_present; then change "remove Oracle's INPUT reject rule" drop_oracle_reject; fi
 }
 
 validate
