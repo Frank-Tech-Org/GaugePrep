@@ -13,7 +13,6 @@ changes=0
 log() { printf '%s\n' "$*"; }
 die() { printf 'error: %s\n' "$*" >&2; exit 1; }
 
-# Counts one change; under DRY_RUN it only announces it.
 change() {
   local what="$1"; shift
   changes=$((changes + 1))
@@ -80,6 +79,23 @@ install_docker_key() {
   rm -f "$tmp"
 }
 
+put_daemon_json() {
+  local f=/etc/docker/daemon.json merged
+  local desired='{
+  "log-driver": "json-file",
+  "log-opts": { "max-size": "10m", "max-file": "3" }
+}'
+  if [ -f "$f" ] && command -v jq >/dev/null 2>&1; then
+    merged="$(jq -S --argjson d "$desired" '. * $d' "$f")" || die "$f is not valid JSON"
+    if [ "$(jq -S . "$f")" != "$merged" ]; then change "merge log rotation into $f" write_file "$f" 644 "$merged"; fi
+    return 0
+  fi
+  if [ -f "$f" ] && [ "$(cat "$f")" != "$desired" ]; then log "warning: $f exists and jq is missing, it will be overwritten"; fi
+  put_file "$f" 644 "$desired"
+}
+
+# daemon.json is written before the install so the first start already rotates logs. A running Docker is not
+# restarted (that would stop containers); it reads the file on its next start.
 step_docker() {
   apt_install ca-certificates curl gnupg
   local keyring=/etc/apt/keyrings/docker.gpg
@@ -88,12 +104,8 @@ step_docker() {
   fi
   put_file /etc/apt/sources.list.d/docker.list 644 \
     "deb [arch=$ARCH signed-by=$keyring] https://download.docker.com/linux/ubuntu $UBUNTU_CODENAME stable"
-  # Written before the install so the first start already rotates logs.
   [ -d /etc/docker ] || change "create /etc/docker" install -d -m 755 /etc/docker
-  put_file /etc/docker/daemon.json 644 '{
-  "log-driver": "json-file",
-  "log-opts": { "max-size": "10m", "max-file": "3" }
-}'
+  put_daemon_json
   if pkg_missing docker-ce; then
     change "apt install Docker Engine" bash -c \
       'apt-get update -qq && apt-get install -y -qq docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin'
@@ -139,9 +151,14 @@ sshd_hardened() {
   grep -qx 'permitrootlogin no' <<<"$cfg" && grep -qx 'passwordauthentication no' <<<"$cfg"
 }
 
+# The marker outlives a run killed before the reload, so a rerun reloads even when sshd -T already reads as hardened.
+# It sits in /run, which a reboot clears (the reboot loads the config anyway).
+SSH_MARKER=/run/lm-sshd-reload-pending
+
 # Reverts the drop-in if sshd rejects it or the reload fails, so a rerun starts over.
 apply_ssh() {
   local conf="$1" want="$2" old="" had=0
+  : > "$SSH_MARKER"
   install -d -m 755 "$(dirname "$conf")"
   if [ -f "$conf" ]; then had=1; old="$(cat "$conf")"; fi
   if [ "$had" = 0 ] || [ "$old" != "$want" ]; then
@@ -153,6 +170,7 @@ apply_ssh() {
     die "sshd rejected the config or the reload failed, reverted"
   fi
   sshd_hardened || die "sshd still allows root or password login after reload"
+  rm -f "$SSH_MARKER"
 }
 
 step_ssh() {
@@ -161,7 +179,7 @@ step_ssh() {
 KbdInteractiveAuthentication no
 PermitRootLogin no
 PubkeyAuthentication yes'
-  if [ -f "$conf" ] && [ "$(cat "$conf")" = "$want" ] && sshd_hardened; then return 0; fi
+  if [ -f "$conf" ] && [ "$(cat "$conf")" = "$want" ] && sshd_hardened && [ ! -e "$SSH_MARKER" ]; then return 0; fi
   change "harden sshd (key-only, no root login)" apply_ssh "$conf" "$want"
 }
 
@@ -179,15 +197,38 @@ oracle_reject_present() {
 drop_oracle_reject() {
   iptables -D INPUT -j REJECT --reject-with icmp-host-prohibited 2>/dev/null || true
   if [ -f /etc/iptables/rules.v4 ]; then
-    grep -vxF -- "$ORACLE_RULE" /etc/iptables/rules.v4 > /etc/iptables/rules.v4.new || true
-    cat /etc/iptables/rules.v4.new > /etc/iptables/rules.v4
-    rm -f /etc/iptables/rules.v4.new
+    strip_saved_rule "$ORACLE_RULE"
   fi
 }
 
+# grep exits 1 when nothing is left, which is fine; 2 is a read error and must not truncate rules.v4.
+strip_saved_rule() {
+  local rules=/etc/iptables/rules.v4 rc=0
+  grep -vxF -- "$1" "$rules" > "$rules.new" || rc=$?
+  if [ "$rc" -gt 1 ]; then rm -f "$rules.new"; die "could not read $rules (grep exit $rc), left untouched"; fi
+  cat "$rules.new" > "$rules"
+  rm -f "$rules.new"
+}
+
+ORACLE_SSH_RULE='-A INPUT -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT'
+ORACLE_SSH_ARGS=(-p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT)
+
+oracle_ssh_present() {
+  command -v iptables >/dev/null 2>&1 || return 1
+  iptables -C INPUT "${ORACLE_SSH_ARGS[@]}" 2>/dev/null \
+    || grep -qxF -- "$ORACLE_SSH_RULE" /etc/iptables/rules.v4 2>/dev/null
+}
+
+drop_oracle_ssh() {
+  iptables -D INPUT "${ORACLE_SSH_ARGS[@]}" 2>/dev/null || true
+  if [ -f /etc/iptables/rules.v4 ]; then strip_saved_rule "$ORACLE_SSH_RULE"; fi
+}
+
+# SSH is allowed before ufw is switched on, so enabling it cannot cut the session.
+# Oracle's own NEW-port-22 accept sits ahead of ufw's chains and hides the rate limit; it goes only once ufw is
+# active with 22 limited, and established connections stay allowed by ufw's conntrack rule.
 step_firewall() {
   apt_install ufw
-  # SSH is allowed before the firewall is switched on, so enabling it cannot cut the session.
   if ! ufw_has 22 LIMIT; then change "ufw limit 22/tcp" ufw limit 22/tcp; fi
   local port
   for port in 80 443; do
@@ -200,6 +241,9 @@ step_firewall() {
     change "ufw enable" ufw --force enable
   fi
   if oracle_reject_present; then change "remove Oracle's INPUT reject rule" drop_oracle_reject; fi
+  if oracle_ssh_present && { [ "$DRY_RUN" = 1 ] || { ufw status 2>/dev/null | grep -q '^Status: active' && ufw_has 22 LIMIT; }; }; then
+    change "remove Oracle's port-22 accept rule (ufw limits SSH instead)" drop_oracle_ssh
+  fi
 }
 
 validate
