@@ -75,24 +75,10 @@ def gh_api(rest):
 
 # Owner-only files: hooks, settings, the push and merge scripts, CI workflows, scanner ignore files and config, npm/pnpm config.
 OWNER_ONLY = re.compile(r"\.claude/(hooks/|settings(\.local)?\.json|scripts/(push|merge)\.sh)|\.github/workflows/"
-                        r"|(^|[/=\s])(\.semgrepignore|\.trivyignore\S*|trivy\.yaml|\.gitleaks\.toml|\.gitleaksignore|\.npmrc|\.pnpmfile\.\S*)$")
+                        r"|(\.semgrepignore|\.trivyignore[\w.-]*|(?<![\w.-])trivy\.yaml|\.gitleaks\.toml|\.gitleaksignore|\.npmrc|\.pnpmfile\.[\w.-]*)(?=$|[\s\x27\"/;)\\])")
 READ_ONLY = {"cat", "head", "tail", "less", "more", "ls", "diff", "cmp", "grep", "rg", "wc", "sha256sum",
              "md5sum", "stat", "file", "echo", "printf", "jq", "test", "["}
 GIT_READ = {"diff", "log", "show", "status", "add", "commit", "ls-files", "blame", "grep"}
-
-# sed only reads unless it edits in place or its script can write (-f, or a script naming an owner-only file).
-def sed_reads(args):
-    script_seen = False
-    for i, a in enumerate(args):
-        if a.startswith(("--in-place", "--file")) or re.fullmatch(r"-[a-zA-Z]*[if]\S*", a):
-            return False
-        if a in ("-e", "--expression") and i + 1 < len(args) and OWNER_ONLY.search(args[i + 1]):
-            return False
-        if not a.startswith("-") and not script_seen and not any(x in ("-e", "--expression") for x in args[:i]):
-            script_seen = True
-            if OWNER_ONLY.search(a):
-                return False
-    return True
 
 # Secret files: .env and .env.<anything> except .env.example, and keys.
 SECRET = re.compile(r"(^|[\s/\"\x27=@<])\.env(\.(?!example\b)[\w-]+)?($|[\s\"\x27])|\.(pem|key)\b")
@@ -131,9 +117,6 @@ for w in segments:
         elif prog in ("bash", "sh"):
             if "-c" in w:
                 block("changing an owner-only file")
-        elif prog == "sed":
-            if not sed_reads(w[1:]):
-                block("changing an owner-only file (the owner copies it from .claude/proposed/)")
         elif prog not in READ_ONLY and prog != "gh":
             block("changing an owner-only file (the owner copies it from .claude/proposed/)")
 
