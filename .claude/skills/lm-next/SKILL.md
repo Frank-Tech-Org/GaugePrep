@@ -1,6 +1,6 @@
 ---
 name: lm-next
-description: Move LinguaMentor work one step forward. Works out from the board, branches, worktrees, open PRs and checkpoints which ticket is nearest done and what its next step is (build, fix, review, merge, QA), does that step, or starts the next ticket when there is room. Also records a blocker.
+description: Move GaugePrep work one step forward. Works out from the board, branches, worktrees, open PRs and checkpoints which ticket is nearest done and what its next step is (build, fix, review, merge, QA), does that step, or starts the next ticket when there is room. Also records a blocker.
 argument-hint: "[#n to override] [block <#blocker or text>]"
 disable-model-invocation: true
 ---

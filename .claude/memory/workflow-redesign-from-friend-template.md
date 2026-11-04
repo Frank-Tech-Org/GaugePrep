@@ -1,6 +1,6 @@
 ---
 name: workflow-redesign-from-friend-template
-description: "One-ticket lifecycle with department agents and /lm-* commands, adapted for LinguaMentor from a friend's OpenRisk setup; the owner's decisions on it"
+description: "One-ticket lifecycle with department agents and /lm-* commands, adapted for GaugePrep from a friend's OpenRisk setup; the owner's decisions on it"
 metadata:
   node_type: memory
   type: project
@@ -8,7 +8,7 @@ metadata:
   modified: 2026-10-24T19:58:45.070Z
 ---
 
-On 2026-10-24 I built a new delivery workflow for linguamentor-v3. It is described in `docs/process/branching-and-release.md` and `CLAUDE.md`, with 19 agents in `.claude/agents/<department>/`, 12 `/lm-*` skills, `.claude/scripts/board.sh` and a guard hook.
+On 2026-10-24 I built a new delivery workflow for this repository. It is described in `docs/process/branching-and-release.md` and `CLAUDE.md`, with 19 agents in `.claude/agents/<department>/`, 12 `/lm-*` skills, `.claude/scripts/board.sh` and a guard hook.
 
 The source material was a friend's setup, untracked in the repo root: `prompt` (their EduTrack/Acavira brief), the original `Branching & Release Workflow Proposal.md` and `claude_template_as_example_to_update_claude/` (their OpenRisk `.claude`).
 
@@ -26,4 +26,4 @@ My own design calls:
 
 **Why:** The owner said the brief, the proposal and the template are a friend's approach, shared so it can be adapted. The EduTrack steps (v1.0.0 release, platform redesign v2, acavira tags) do not apply.
 
-**How to apply:** Write content for LinguaMentor's stack and never copy OpenRisk agent text or memories. This is the only allowed exception to [[ignore-other-repos]]. The no-commit rule still holds, and the guard hook now enforces it ([[agents-commit-owner-merges]]).
+**How to apply:** Write content for GaugePrep's stack and never copy OpenRisk agent text or memories. This is the only allowed exception to [[ignore-other-repos]]. The no-commit rule still holds, and the guard hook now enforces it ([[agents-commit-owner-merges]]).

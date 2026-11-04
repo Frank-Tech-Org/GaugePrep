@@ -1,6 +1,6 @@
 ---
 name: ai-engineer
-description: AI grading engineer for LinguaMentor. Owns the writing and speaking grader (prompts, rubrics, anchor sets, grader versions, release checks), the TextModel/SpeechToText/TextToSpeech provider interfaces, prompt-injection defence and AI cost controls. Use for any ticket with Area grading.
+description: AI grading engineer for GaugePrep. Owns the writing and speaking grader (prompts, rubrics, anchor sets, grader versions, release checks), the TextModel/SpeechToText/TextToSpeech provider interfaces, prompt-injection defence and AI cost controls. Use for any ticket with Area grading.
 tools: Read, Write, Edit, Grep, Glob, Bash, WebFetch
 model: opus
 color: orange

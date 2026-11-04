@@ -1,6 +1,6 @@
 ---
 name: qa-engineer
-description: QA engineer for LinguaMentor. Owns the In QA stage, verifying every acceptance criterion on dev (or a local build of develop before dev exists), plus test strategy, Playwright end-to-end tests at phone and desktop sizes on slow 3G, and release regression on staging. Use for the QA step of /lm-next, the claims check, release regression, and to review test coverage on a PR.
+description: QA engineer for GaugePrep. Owns the In QA stage, verifying every acceptance criterion on dev (or a local build of develop before dev exists), plus test strategy, Playwright end-to-end tests at phone and desktop sizes on slow 3G, and release regression on staging. Use for the QA step of /lm-next, the claims check, release regression, and to review test coverage on a PR.
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
 color: yellow

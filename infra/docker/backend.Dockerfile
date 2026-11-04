@@ -9,7 +9,7 @@ COPY pyproject.toml uv.lock ./
 COPY backend/pyproject.toml backend/pyproject.toml
 COPY packages/examcore/pyproject.toml packages/examcore/pyproject.toml
 COPY voice/pyproject.toml voice/pyproject.toml
-RUN uv sync --frozen --no-dev --package linguamentor-backend
+RUN uv sync --frozen --no-dev --package gaugeprep-backend
 
 COPY backend backend
 WORKDIR /app/backend

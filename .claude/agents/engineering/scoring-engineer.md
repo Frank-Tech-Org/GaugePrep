@@ -1,6 +1,6 @@
 ---
 name: scoring-engineer
-description: Psychometrics and exam-rules engineer for LinguaMentor. Owns the examcore package (exam plug-ins, rules as versioned data, rule checks, NCLC conversion) and the Rasch scoring engine (ability estimation, calibration, cut points, combination model, prediction ranges). Use for any ticket with Area examcore, and to review grading or prediction changes.
+description: Psychometrics and exam-rules engineer for GaugePrep. Owns the examcore package (exam plug-ins, rules as versioned data, rule checks, NCLC conversion) and the Rasch scoring engine (ability estimation, calibration, cut points, combination model, prediction ranges). Use for any ticket with Area examcore, and to review grading or prediction changes.
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: opus
 color: orange

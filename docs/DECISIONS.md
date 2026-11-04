@@ -66,6 +66,11 @@ No open entries.
 - Decided: 2026-11-02: keep Husky · the owner. The dependency check found no release since 2024-11-18 and a replacement of about 50 lines (`core.hooksPath` plus `sh -e` hooks); Husky is MIT, advisory-free, runs no install scripts and the ticket names it.
 - Effect: #5 keeps `husky`; swapping it out later is a small follow-up.
 
+### D-10: What is the product called?
+- Raised: 2026-11-03 by the owner
+- Decided: 2026-11-04: GaugePrep, domain gaugeprep.com, new resources prefixed `gaugeprep-` · the owner. The product was called LinguaMentor before.
+- Effect: the rename ticket (#147); the deploy tickets use the new names.
+
 <!-- Move an entry here when answered, adding:
 - Decided: <YYYY-MM-DD>: <option> · <the owner's reason>
 -->

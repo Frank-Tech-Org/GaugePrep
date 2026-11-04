@@ -1,6 +1,6 @@
 ---
 name: lm-release
-description: Release LinguaMentor. With "check", run only the release gate (security, performance budgets, public claims) on staging. With no argument or a version, merge the changelog into develop, open the promotion PR develop → stage, run the gate and regression on staging, then open the release PR stage → main. With "<version> done", after the owner has merged, tagged and published, move the released tickets to Done.
+description: Release GaugePrep. With "check", run only the release gate (security, performance budgets, public claims) on staging. With no argument or a version, merge the changelog into develop, open the promotion PR develop → stage, run the gate and regression on staging, then open the release PR stage → main. With "<version> done", after the owner has merged, tagged and published, move the released tickets to Done.
 argument-hint: "[version] [done] | check"
 arguments: [version, phase]
 disable-model-invocation: true

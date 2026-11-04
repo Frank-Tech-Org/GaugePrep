@@ -1,4 +1,4 @@
-# LinguaMentor: System Architecture
+# GaugePrep: System Architecture
 
 ## 0. Document control
 
@@ -7,13 +7,13 @@
 | Document | System architecture |
 | Version | 1.0 |
 | Date | 22 October 2026 |
-| Owner | CTO, LinguaMentor |
+| Owner | CTO, GaugePrep |
 | Product owner | Frank |
 | Inputs | Product Requirements Document v1.0; TCF Canada exam specification and calibration brief v1.0 |
 | Companion files | Architecture decision records (docs/adr), milestone 0 backlog |
-| Audience | Every engineer, reviewer and operator working on LinguaMentor |
+| Audience | Every engineer, reviewer and operator working on GaugePrep |
 
-This document describes how LinguaMentor is built and run: its structure, technologies, data, AI and speech pipelines, infrastructure, delivery process, quality practices and the plan to start development. Every technology choice was made from the vendor's or project's own current documentation in October 2026; versions and limits are listed in Appendix A with their sources. Each major decision also has a short decision record (Appendix B) explaining the alternatives considered.
+This document describes how GaugePrep is built and run: its structure, technologies, data, AI and speech pipelines, infrastructure, delivery process, quality practices and the plan to start development. Every technology choice was made from the vendor's or project's own current documentation in October 2026; versions and limits are listed in Appendix A with their sources. Each major decision also has a short decision record (Appendix B) explaining the alternatives considered.
 
 When the PRD or the exam specification and this document disagree, the PRD wins on what the product does, the exam specification wins on exam rules, and this document wins on how the system does it. Any change to a decision in this document is made by writing a new decision record and updating the affected section.
 
@@ -21,7 +21,7 @@ When the PRD or the exam specification and this document disagree, the PRD wins 
 
 ### 1.1 Product in one paragraph
 
-LinguaMentor prepares learners for high-stakes language exams. It places the learner, teaches them from their level to the level their target needs, lets them sit full simulations under real exam conditions (including a live AI examiner for speaking), and predicts their real result using the exam's own scoring rules, as a range with a stated confidence. The first release covers TCF Canada and a free French track for learners in Cameroon; later releases add TEF Canada, German, English and other exams through the same engine.
+GaugePrep prepares learners for high-stakes language exams. It places the learner, teaches them from their level to the level their target needs, lets them sit full simulations under real exam conditions (including a live AI examiner for speaking), and predicts their real result using the exam's own scoring rules, as a range with a stated confidence. The first release covers TCF Canada and a free French track for learners in Cameroon; later releases add TEF Canada, German, English and other exams through the same engine.
 
 ### 1.2 Architecture drivers
 
@@ -87,7 +87,7 @@ The design must reach these without changes and must scale tenfold by adding ser
         | HTTPS (api.)                 |
         v                              v
  +-------------------------------------------------+        Anthropic / OpenAI
- |                LinguaMentor platform            | -----> Speech recognition
+ |                GaugePrep platform            | -----> Speech recognition
  |  core app | job worker | scoring | voice examiner|        ElevenLabs
  +-------------------------------------------------+        Notch Pay, Resend
         |  WebRTC via LiveKit (UDP, TURN/TLS 443)            Sentry, Grafana
@@ -100,7 +100,7 @@ The design must reach these without changes and must scale tenfold by adding ser
 
 ### 3.1 Style
 
-LinguaMentor is a modular monolith: one codebase, deployed as one application, divided into modules with enforced boundaries. Three additional process types run from the same codebase because their workloads differ from web requests. Microservices are not used: they would add network calls, distributed consistency and multiple deployments without a benefit at the planned scale (ADR-001).
+GaugePrep is a modular monolith: one codebase, deployed as one application, divided into modules with enforced boundaries. Three additional process types run from the same codebase because their workloads differ from web requests. Microservices are not used: they would add network calls, distributed consistency and multiple deployments without a benefit at the planned scale (ADR-001).
 
 ### 3.2 Process types
 
@@ -304,7 +304,7 @@ Every `task_grade`, `paper_score` and `prediction` stores: exam rules version, i
 | Speaking recordings | 12 months, by R2 lifecycle rule |
 | Attestation uploads | Deleted after verification |
 | Grades, scores, predictions | Kept without personal data for accuracy statistics |
-| Payment records | Kept as required for accounting; card data never stored by LinguaMentor |
+| Payment records | Kept as required for accounting; card data never stored by GaugePrep |
 | Raw webhooks | 24 months |
 
 ### 7.5 Growth
@@ -452,7 +452,7 @@ The chained pipeline is used instead of a speech-to-speech model because grading
 ### 13.1 Repository layout
 
 ```
-linguamentor/                      private GitHub repository
+gaugeprep/                      private GitHub repository
   apps/web/                        Next.js PWA (pnpm)
   backend/
     config/                        Django settings per environment
@@ -505,6 +505,8 @@ Servers run in Germany (Hetzner) next to the database in Frankfurt (Neon). Traff
 | Payments | Notch Pay test keys | Notch Pay test keys | Notch Pay test keys | Notch Pay live keys |
 | Email | Local mail catcher | Resend free | Resend free | Resend |
 | Monitoring | Console | Sentry and Grafana Cloud free | Sentry and Grafana Cloud free | Sentry and Grafana Cloud |
+| Host | `localhost` | `dev.gaugeprep.com` (planned) | `staging.gaugeprep.com` (planned) | Not yet named |
+| Kamal service and image | None | `gaugeprep-dev`, `ghcr.io/<org>/gaugeprep-backend` (planned) | `gaugeprep-staging`, `ghcr.io/<org>/gaugeprep-backend` (planned) | Not yet named |
 
 Dev deploys every merge into `develop` and is where each ticket is tested. Staging deploys the `stage` branch, the release candidate, and is where the release gate and the weekly demo run. SMS in dev goes to a fake provider. Both are fully scripted and rebuilt from scratch in under an hour, because free tiers can change without notice (Oracle halved its free ARM allowance on 15 June 2026). Both hold only synthetic data from seed scripts. Branches and promotion are in `docs/process/branching-and-release.md` and ADR-019.
 

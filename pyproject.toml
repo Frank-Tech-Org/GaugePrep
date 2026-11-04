@@ -1,9 +1,9 @@
 [project]
-name = "linguamentor"
+name = "gaugeprep"
 version = "0.0.0"
-description = "LinguaMentor workspace root"
+description = "GaugePrep workspace root"
 requires-python = ">=3.14,<3.15"
-dependencies = ["examcore", "linguamentor-backend", "linguamentor-voice"]
+dependencies = ["examcore", "gaugeprep-backend", "gaugeprep-voice"]
 
 [tool.uv]
 package = false
@@ -13,8 +13,8 @@ members = ["backend", "packages/examcore", "voice"]
 
 [tool.uv.sources]
 examcore = { workspace = true }
-linguamentor-backend = { workspace = true }
-linguamentor-voice = { workspace = true }
+gaugeprep-backend = { workspace = true }
+gaugeprep-voice = { workspace = true }
 
 [dependency-groups]
 dev = [

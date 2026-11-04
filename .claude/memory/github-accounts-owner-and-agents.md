@@ -8,7 +8,7 @@ metadata:
   modified: 2026-11-02T00:00:00.000Z
 ---
 
-On 2026-11-02 the owner swapped the accounts so the agents' commits count on their main account. `KefouegFrank` is the agents' account: the active `gh` account on this machine through a fine-grained token (repo `linguamentor-v3`, Contents, Pull requests and Issues read and write, Actions and Commit statuses read, org Projects read and write, no Workflows), git identity `kefouegFrank` <kefoueg@gmail.com>. `frankkefoueg` is the owner's approver: approves PRs into `develop` as a sign-off (checked by `merge.sh`), merges `stage` and `main`, tags and releases. The owner chose to keep both as organisation Owner, so the token is the agents' only GitHub-side limit. Setup steps are in `docs/process/branching-and-release.md` section 9.
+On 2026-11-02 the owner swapped the accounts so the agents' commits count on their main account. `KefouegFrank` is the agents' account: the active `gh` account on this machine through a fine-grained token (repo `LinguaMentor/linguamentor-v3`, Contents, Pull requests and Issues read and write, Actions and Commit statuses read, org Projects read and write, no Workflows), git identity `kefouegFrank` <kefoueg@gmail.com>. `frankkefoueg` is the owner's approver: approves PRs into `develop` as a sign-off (checked by `merge.sh`), merges `stage` and `main`, tags and releases. The owner chose to keep both as organisation Owner, so the token is the agents' only GitHub-side limit. Setup steps are in `docs/process/branching-and-release.md` section 9.
 
 As of 2026-10-30 a token with those permissions gets 403 on org issue types, org issue fields and repo Actions secrets. Issue type can still be set with a REST PATCH on the issue, and field values through IDs read from an issue.
 
