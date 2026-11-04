@@ -11,7 +11,7 @@ COPY packages/examcore/pyproject.toml packages/examcore/pyproject.toml
 COPY voice/pyproject.toml voice/pyproject.toml
 RUN uv sync --frozen --no-dev --package linguamentor-backend
 
-COPY backend backend
+COPY backend_missing backend
 WORKDIR /app/backend
 RUN useradd --system --no-create-home app
 USER app
