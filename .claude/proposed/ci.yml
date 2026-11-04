@@ -1,0 +1,262 @@
+name: ci
+
+# Runs on every pull request. No secrets are used; the postgres credentials below are test-only.
+# Scanners are free open-source binaries: no Semgrep App login, no Snyk, no tokens.
+on:
+  pull_request:
+    branches: [develop, stage, main]
+    types: [opened, synchronize, reopened, edited]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+# GitHub-hosted arm64 runners (ubuntu-24.04-arm) are free for public repositories only, so this private repo uses x64.
+jobs:
+  changes:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      code: ${{ steps.filter.outputs.code }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      # Code checks are skipped only when every changed file is documentation or agent prompts, skill documents, rules or memory (not hooks or scripts).
+      - id: filter
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          # Separate assignment so a failing git diff stops the step instead of skipping the checks.
+          diff=$(git diff --name-only --no-renames "$BASE...$HEAD")
+          other=$(printf '%s\n' "$diff" | grep -Ev '^(docs/|\.claude/(agents|rules|memory)/|\.claude/skills/.*\.md$|.*\.md$)' || true)
+          if [ -n "$other" ]; then code=true; else code=false; fi
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          echo "code checks: $code"
+
+  check:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: linguamentor
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d linguamentor"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/linguamentor
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Show the database is reachable
+        run: |
+          pg_isready -h localhost -p 5432 -U postgres -d linguamentor
+          psql "$DATABASE_URL" -tAc 'select version()'
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+      # The pnpm version comes from the packageManager field in package.json.
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: uv sync --frozen
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+
+  pr-title:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    steps:
+      # Only the check script comes from the PR; the template comes from the base commit so a PR cannot edit its own rules.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: .github/scripts
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: base
+          sparse-checkout: .github/pull_request_template.md
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+      # Title and body reach the script only through env, never inside the run text.
+      - name: PR description
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: bash .github/scripts/check-pr-description.sh base/.github/pull_request_template.md
+
+  gitleaks:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      GITLEAKS_VERSION: 8.30.1
+      GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      # The MIT-licensed binary, not gitleaks/gitleaks-action, which needs a paid licence on organisations.
+      - name: Install gitleaks
+        run: |
+          curl -sSfL -o "$RUNNER_TEMP/gitleaks.tgz" "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          echo "${GITLEAKS_SHA256}  $RUNNER_TEMP/gitleaks.tgz" | sha256sum --check -
+          mkdir "$RUNNER_TEMP/gitleaks-bin"
+          tar -xzf "$RUNNER_TEMP/gitleaks.tgz" -C "$RUNNER_TEMP/gitleaks-bin" gitleaks
+      # Scans the full history reachable from the PR head, not other branches. Config and ignore list come from the base commit, so a PR cannot switch off its own scan.
+      - name: Scan the full git history
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          # gitleaks:allow comments and the checkout's own .gitleaksignore would let a PR skip its own secret.
+          args=(git --redact --verbose --ignore-gitleaks-allow --log-opts="HEAD")
+          rm -f .gitleaksignore
+          # Always pass a config from the base, so the PR's own ./.gitleaks.toml is never loaded.
+          git show "$BASE:.gitleaks.toml" > "$RUNNER_TEMP/gl.toml" 2>/dev/null || printf '[extend]\nuseDefault = true\n' > "$RUNNER_TEMP/gl.toml"
+          args+=(--config "$RUNNER_TEMP/gl.toml")
+          git show "$BASE:.gitleaksignore" > "$RUNNER_TEMP/gl.ignore" 2>/dev/null || : > "$RUNNER_TEMP/gl.ignore"
+          args+=(--gitleaks-ignore-path "$RUNNER_TEMP/gl.ignore")
+          "$RUNNER_TEMP/gitleaks-bin/gitleaks" "${args[@]}"
+
+  # Runs on every pull request, docs included.
+  semgrep:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+      # Semgrep reads .semgrepignore in every folder, so drop all of them and restore only those at the base commit.
+      - name: Use the base ignore files
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          find . -name .semgrepignore -not -path './.git/*' -delete
+          git ls-tree -r -z --name-only "$BASE" | { grep -zE '(^|/)\.semgrepignore$' || true; } | while IFS= read -r -d '' f; do
+            mkdir -p "$(dirname "$f")"
+            git show "$BASE:$f" > "$f"
+          done
+      # Rules are the community repo pinned to a commit (Semgrep Rules License v1.0 allows internal CI use); no login, metrics off.
+      - name: Semgrep
+        env:
+          RULES_SHA: 16b9e6d45f10649f6a531ec4838ed9924372c3bc
+        run: |
+          git init -q "$RUNNER_TEMP/semgrep-rules"
+          git -C "$RUNNER_TEMP/semgrep-rules" fetch -q --depth 1 https://github.com/semgrep/semgrep-rules "$RULES_SHA"
+          git -C "$RUNNER_TEMP/semgrep-rules" checkout -q FETCH_HEAD
+          r="$RUNNER_TEMP/semgrep-rules"
+          uvx --no-config --exclude-newer 2026-10-30 semgrep==1.183.0 scan --max-target-bytes 0 --metrics=off --disable-nosem --error --severity ERROR --quiet --exclude .claude/skills/semgrep/scripts --exclude .claude/skills/webapp-testing/scripts/with_server.py \
+            --config "$r/python" --config "$r/typescript" --config "$r/generic" .
+
+  pip-audit:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+      # pip-audit has no severity filter, so any known advisory fails this check.
+      - name: Audit the uv lockfile
+        run: |
+          uv export --no-config --frozen --no-hashes --no-emit-project --no-emit-workspace -o "$RUNNER_TEMP/requirements.txt"
+          uvx --no-config --exclude-newer 2026-10-30 pip-audit==2.10.1 --no-deps --disable-pip -r "$RUNNER_TEMP/requirements.txt"
+
+  pnpm-audit:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # Audit a rebuilt copy: the lockfile (parsed with yq, top-level fields allowlisted) plus fresh package.json and workspace files, so no PR setting, hook or .npmrc is read.
+      - name: Rebuild a clean audit directory
+        run: |
+          set -euo pipefail
+          d="$RUNNER_TEMP/audit"
+          mkdir "$d"
+          yq '{"lockfileVersion": .lockfileVersion, "settings": .settings, "importers": .importers, "packages": .packages, "snapshots": .snapshots}' pnpm-lock.yaml > "$d/pnpm-lock.yaml"
+          printf 'packages:\n' > "$d/pnpm-workspace.yaml"
+          git ls-files -z '*package.json' | while IFS= read -r -d '' f; do
+            dir=$(dirname "$f")
+            mkdir -p "$d/$dir"
+            jq '{dependencies, devDependencies, optionalDependencies}' "$f" > "$d/$dir/package.json.tmp"
+            mv "$d/$dir/package.json.tmp" "$d/$dir/package.json"
+            if [ "$dir" != . ]; then printf '  - "%s"\n' "$dir" >> "$d/pnpm-workspace.yaml"; fi
+          done
+      # The pnpm version comes from the packageManager field in package.json.
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - name: pnpm audit
+        working-directory: ${{ runner.temp }}/audit
+        run: pnpm audit --ignore-pnpmfile --audit-level high --registry https://registry.npmjs.org/
+
+  trivy:
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      TRIVY_VERSION: 0.76.1
+      TRIVY_SHA256: c7cbe3137fb8a48a17574bede3dd6beb16742d1e9772929940fc90082c39d9c0
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      # Trivy ignore files and config come from the base commit, so a PR cannot switch off its own scan.
+      - name: Use the base Trivy ignore files
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          for f in .trivyignore .trivyignore.yaml .trivyignore.yml trivy.yaml trivy.yml; do
+            rm -f "$f"
+            git show "$BASE:$f" > "$f" 2>/dev/null || rm -f "$f"
+          done
+          # Rewrite the markers so Trivy no longer reads them as ignores. git grep exits 1 on no match, absorbed by || true.
+          { git grep -lzE '(trivy|tfsec):(ignore|exp)' || true; } | xargs -0 -r sed -i -E 's/(trivy|tfsec):(ignore|exp)/\1-\2/g'
+      # The Apache-2.0 binary, not aquasecurity/trivy-action.
+      - name: Install Trivy
+        run: |
+          curl -sSfL -o "$RUNNER_TEMP/trivy.tgz" "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz"
+          echo "${TRIVY_SHA256}  $RUNNER_TEMP/trivy.tgz" | sha256sum --check -
+          mkdir "$RUNNER_TEMP/trivy-bin"
+          tar -xzf "$RUNNER_TEMP/trivy.tgz" -C "$RUNNER_TEMP/trivy-bin" trivy
+      - name: Trivy filesystem scan
+        run: |
+          "$RUNNER_TEMP/trivy-bin/trivy" fs --severity HIGH,CRITICAL --exit-code 1 --scanners vuln,misconfig .
