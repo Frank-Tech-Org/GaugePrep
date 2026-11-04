@@ -16,8 +16,8 @@ concurrency:
 
 # GitHub-hosted arm64 runners (ubuntu-24.04-arm) are free for public repositories only, so this private repo uses x64.
 jobs:
-  # One runner for the path filter, the secret scan and the title and description check. When it fails, the jobs that need it are skipped, and a skipped job counts as passing for merge: only the red gate blocks.
-  # The title script comes from the PR and runs last, after the filter and the scan have finished, so it cannot change their results.
+  # One runner for the path filter, the secret scan, the API breaking-change check and the title and description check. When it fails, the jobs that need it are skipped, and a skipped job counts as passing for merge: only the red gate blocks.
+  # The title script comes from the PR and runs last, after the filter, the scan and the API check have finished, so it cannot change their results.
   gate:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
@@ -27,6 +27,9 @@ jobs:
     env:
       GITLEAKS_VERSION: 8.30.1
       GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+      OASDIFF_VERSION: 1.35.0
+      OASDIFF_GO_VERSION: 1.27.3
+      OASDIFF_SHA256: 0183d4d74308201752a025bffddb4fad020916824bcb7fd3a5db2d1444bc5116
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -72,6 +75,54 @@ jobs:
           args+=(--gitleaks-ignore-path "$RUNNER_TEMP/gl.ignore")
           if ! "$RUNNER_TEMP/gitleaks-bin/gitleaks" "${args[@]}"; then
             echo "::error title=Secret found::gitleaks found a secret in the history; the File line in the output above names the file. Remove it from every commit and rotate it."
+            exit 1
+          fi
+      # Both specs come from git objects, so nothing in the checkout can touch the API check.
+      - name: API contract files
+        id: oas
+        if: ${{ !cancelled() }}
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          compare=false
+          changed=$(git diff --name-only --no-renames "$BASE...$HEAD" -- backend/openapi.json)
+          if [ -z "$changed" ]; then
+            echo "backend/openapi.json unchanged, skipping"
+          elif ! git show "$BASE:backend/openapi.json" > "$RUNNER_TEMP/openapi.base.json" 2>/dev/null; then
+            echo "backend/openapi.json is new on this PR, nothing to compare"
+          elif ! git show "$HEAD:backend/openapi.json" > "$RUNNER_TEMP/openapi.head.json" 2>/dev/null; then
+            echo "::error title=API contract removed::backend/openapi.json exists on the base branch and is missing on this PR. Restore it."
+            exit 1
+          else
+            compare=true
+          fi
+          echo "compare=$compare" >> "$GITHUB_OUTPUT"
+      # Holds only the oasdiff binary we build; its hash is checked after every restore, so a poisoned entry cannot run.
+      - name: Cache the oasdiff build
+        id: oas-cache
+        if: ${{ !cancelled() && steps.oas.outputs.compare == 'true' }}
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/oasdiff-bin
+          key: oasdiff-${{ env.OASDIFF_VERSION }}-go${{ env.OASDIFF_GO_VERSION }}-linux-amd64
+      # Built from source: the release binary ships a Go stdlib CVE. Output hash pinned.
+      - name: API breaking changes
+        if: ${{ !cancelled() && steps.oas.outputs.compare == 'true' }}
+        run: |
+          bin="$RUNNER_TEMP/oasdiff-bin/oasdiff"
+          if ! { [ -f "$bin" ] && echo "${OASDIFF_SHA256}  $bin" | sha256sum --check --quiet -; }; then
+            rm -rf "$RUNNER_TEMP/oasdiff-bin"
+            GOTOOLCHAIN="go${OASDIFF_GO_VERSION}" CGO_ENABLED=0 GOFLAGS= GOWORK=off GOPATH="$RUNNER_TEMP/gopath" GOBIN="$RUNNER_TEMP/oasdiff-bin" \
+              go install -trimpath "github.com/oasdiff/oasdiff@v${OASDIFF_VERSION}"
+            echo "${OASDIFF_SHA256}  $bin" | sha256sum --check -
+          fi
+          # Empty config and our own severity file: a .oasdiff.* file in the checkout is never read. External refs are refused.
+          : > "$RUNNER_TEMP/oasdiff.config.yaml"
+          echo 'response-optional-property-removed err' > "$RUNNER_TEMP/oasdiff.severity"
+          cd "$RUNNER_TEMP"
+          if ! "$bin" breaking openapi.base.json openapi.head.json --config oasdiff.config.yaml --severity-levels oasdiff.severity --allow-external-refs=false --match-path '^/api/v1/' --fail-on ERR; then
+            echo "::error title=Breaking API change::oasdiff found a breaking change under /api/v1 (listed above). Installed copies of the web app still call the old contract: make the change additive, or keep the old field or operation until a new API version."
             exit 1
           fi
       # The script comes from the PR; the template is read from the base commit, so a PR cannot loosen the template it is checked against.
