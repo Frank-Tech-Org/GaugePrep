@@ -27,6 +27,7 @@ dev = [
     "pytest-randomly>=5.0.0",
     "pytest-timeout>=2.4.0",
     "ruff>=0.17.2",
+    "schemathesis==4.33.0",
 ]
 
 [tool.ruff]
