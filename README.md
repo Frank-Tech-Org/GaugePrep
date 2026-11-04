@@ -84,7 +84,11 @@ No skips: with `CI=true` any skipped or xfail test (pytest or Vitest) fails the 
 
 ### Gate job in CI
 
-One `gate` job runs first on every pull request, in this order: the path filter (which decides whether the code jobs, pip-audit, pnpm audit, Trivy and the backend image run), the gitleaks secret scan over the full git history, and last the title and description check (its script comes from the pull request, so it runs after the scan and cannot change it). It fails red with a message naming the bad title or description rule, or the file holding the secret. When it fails, the jobs that need it are skipped; a skipped job counts as passing for merge, so a red `gate` is what blocks, and a grey job is not a pass.
+One `gate` job runs first on every pull request, in this order: the path filter (which decides whether the code jobs, pip-audit, pnpm audit, Trivy and the backend image run), the gitleaks secret scan over the full git history, the API breaking-change check, and last the title and description check (its script comes from the pull request, so it runs after the scan and the API check and cannot change them). It fails red with a message naming the bad title or description rule, the file holding the secret, or the breaking API change. When it fails, the jobs that need it are skipped; a skipped job counts as passing for merge, so a red `gate` is what blocks, and a grey job is not a pass.
+
+### API breaking changes
+
+When a pull request changes `backend/openapi.json`, the `API breaking changes` step of `gate` compares it with the base branch copy (both read with `git show`, never from the checkout) using [oasdiff](https://github.com/oasdiff/oasdiff) v1.35.0 (Apache-2.0, release binary pinned by version and SHA256). It runs `oasdiff breaking --match-path '^/api/v1/' --fail-on ERR` and fails on a removed operation, a removed required response property, a request property that became required, or a changed property type, naming each one. Adding an optional field or a new operation passes. Removing an optional response property is not reported by oasdiff. Installed copies of the web app keep calling the old contract for days, so a breaking change needs a new API version, not an edit. Run it locally with the same command on two copies of the document. The step runs with `contents: read` and no secret.
 
 ### API contract tests
 
