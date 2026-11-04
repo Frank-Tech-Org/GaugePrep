@@ -21,5 +21,14 @@ expect red-scope 1 'feat: add x' "$full" "scope is required"
 expect red-empty 1 '' ''
 expect inject-title 1 '$(id) `id` "; echo pwned' "$full"
 expect inject-title-ok 0 'fix(ci): $(id) `id`' "$full"
+expect red-newline-title 1 $'feat(x): a\nmore text' "$full" "Title must be"
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp" "$out"' EXIT
+: >"$tmp/empty.md"
+for c in "missing:$tmp/nope.md" "empty:$tmp/empty.md"; do
+  PR_TITLE='feat(api): add x' PR_BODY="$full" bash "$S" "${c#*:}" >"$out" 2>&1
+  got=$?
+  if [ "$got" = 1 ] && grep -Fq 'Template' "$out"; then echo "ok   red-template-${c%%:*}"; else echo "FAIL red-template-${c%%:*} (exit $got)"; fail=1; fi
+done
 if grep -q 'uid=' "$out"; then echo "FAIL injection executed"; fail=1; fi
 exit $fail

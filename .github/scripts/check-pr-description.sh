@@ -7,7 +7,7 @@ title=${PR_TITLE-}
 body=${PR_BODY-}
 errors=()
 
-re='^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)\([a-z0-9._/-]+\)!?: .+'
+re='^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)\([a-z0-9._/-]+\)!?: [^[:cntrl:]]+$'
 if ! [[ "$title" =~ $re ]]; then
   errors+=("Title must be <type>(<scope>): <subject>; types: feat fix docs style refactor perf test build ci chore revert; the scope is required.")
 fi
@@ -17,14 +17,23 @@ if ! [[ "$body" =~ Refs\ \#[0-9]+ ]]; then
 fi
 
 body_headings=$(printf '%s\n' "$body" | tr -d '\r' | sed -E 's/[[:space:]]+$//')
-while IFS= read -r heading; do
-  heading=$(printf '%s' "$heading" | tr -d '\r' | sed -E 's/[[:space:]]+$//')
-  [ -z "$heading" ] && continue
-  [ "$heading" = "## Evidence" ] && continue
-  if ! printf '%s\n' "$body_headings" | grep -Fxq -- "$heading"; then
-    errors+=("Body is missing the heading '$heading'.")
-  fi
-done < <(grep -E '^## ' "$template")
+# Fail closed: an unreadable or heading-less template must not pass every body.
+template_headings=""
+if [ -r "$template" ]; then
+  template_headings=$(grep -E '^## ' "$template")
+fi
+if [ -z "$template_headings" ]; then
+  errors+=("Template '$template' is missing, unreadable or has no '## ' heading.")
+else
+  while IFS= read -r heading; do
+    heading=$(printf '%s' "$heading" | tr -d '\r' | sed -E 's/[[:space:]]+$//')
+    [ -z "$heading" ] && continue
+    [ "$heading" = "## Evidence" ] && continue
+    if ! printf '%s\n' "$body_headings" | grep -Fxq -- "$heading"; then
+      errors+=("Body is missing the heading '$heading'.")
+    fi
+  done <<< "$template_headings"
+fi
 
 if [ "${#errors[@]}" -gt 0 ]; then
   for e in "${errors[@]}"; do printf '::error::%s\n' "$e"; done
