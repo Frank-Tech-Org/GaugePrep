@@ -21,12 +21,14 @@ jobs:
     timeout-minutes: 5
     outputs:
       code: ${{ steps.filter.outputs.code }}
+      backend_image: ${{ steps.filter.outputs.backend_image }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           persist-credentials: false
       # Code checks are skipped only when every changed file is documentation or agent prompts, skill documents, rules or memory (not hooks or scripts).
+      # The image build runs only when a file that feeds the backend image changed.
       - id: filter
         env:
           BASE: ${{ github.event.pull_request.base.sha }}
@@ -36,8 +38,12 @@ jobs:
           diff=$(git diff --name-only --no-renames "$BASE...$HEAD")
           other=$(printf '%s\n' "$diff" | grep -Ev '^(docs/|\.claude/(agents|rules|memory)/|\.claude/skills/.*\.md$|.*\.md$)' || true)
           if [ -n "$other" ]; then code=true; else code=false; fi
+          image=$(printf '%s\n' "$diff" | grep -E '^(infra/docker/|uv\.lock$|\.dockerignore$|(.*/)?pyproject\.toml$)' || true)
+          if [ -n "$image" ]; then backend_image=true; else backend_image=false; fi
           echo "code=$code" >> "$GITHUB_OUTPUT"
+          echo "backend_image=$backend_image" >> "$GITHUB_OUTPUT"
           echo "code checks: $code"
+          echo "backend image: $backend_image"
 
   check:
     needs: changes
@@ -82,11 +88,25 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
 
+  # Not part of check: it runs only when an image input changed, and a skipped job counts as passing for merge.
+  backend-image:
+    name: backend image
+    needs: changes
+    if: needs.changes.outputs.backend_image == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build the backend image
+        run: docker build -f infra/docker/backend.Dockerfile .
+
   pr-title:
     runs-on: ubuntu-24.04
     timeout-minutes: 2
     steps:
-      # Only the check script comes from the PR; the template comes from the base commit so a PR cannot edit its own rules.
+      # Only the check script comes from the PR; the template comes from the base commit, so a PR cannot loosen the template it is checked against.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           sparse-checkout: .github/scripts
