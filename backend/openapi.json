@@ -72,6 +72,10 @@
           "version": {
             "title": "Version",
             "type": "string"
+          },
+          "build": {
+            "title": "Build",
+            "type": "string"
           }
         },
         "required": ["status", "database"],
