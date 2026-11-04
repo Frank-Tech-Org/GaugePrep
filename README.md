@@ -121,3 +121,5 @@ The failure names each broken rule. Editing the body re-runs the check.
 | `pre-push` | A push to `develop`, `stage` or `main`; then runs `pnpm check` and refuses on failure (skipped when nothing is pushed or the push only deletes branches) |
 
 Run one tool with `pnpm run check:<name>`, for example `pnpm run check:mypy`. Fix formatting with `uv run ruff format backend packages voice` and `pnpm exec prettier --write <file>`.
+
+qa 108 skipped probe
