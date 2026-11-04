@@ -112,6 +112,18 @@ Each pull request also runs these checks (gitleaks inside `gate`, the rest as se
 
 Documentation-only pull requests skip pip-audit, pnpm audit and Trivy. The only secret-scan allowlist entry is the placeholder key in `api-design.md`, in `.gitleaks.toml`.
 
+### Scanner settings
+
+The `Scanner settings` step of `gate` compares the pull request with its merge base and fails when the pull request:
+
+- adds or edits a scanner or package-manager settings file: `.semgrepignore`, `.trivyignore*`, `trivy.yaml`, `.gitleaks.toml`, `.gitleaksignore`, `.npmrc` or `.pnpmfile.*`, at any depth; the log names each file
+- adds a line to `pnpm-workspace.yaml` that sets an `audit*` key, `ignoreCves`, `ignoreGhsas`, `onlyBuiltDependencies`, `overrides`, `pnpmfile`, `globalPnpmfile` or `ignorePnpmfile`
+- adds a line containing `nosem` (also `nosemgrep`), `trivy:`, `tfsec:` or `--ignore-vuln`; the log names each file and line
+
+Markdown files and the owner-only CI workflow are not searched, since they only describe these markers. Deleting a settings file is not flagged, because it can only widen what the scans see.
+
+The check flags; it does not decide. When the suppression is justified, the owner merges over the red check. The free plan cannot make checks required, so nothing stops that merge but `merge.sh`, which reads the gate and refuses a red one: the owner merges by hand, after reading the named files and lines.
+
 ### Pull request description
 
 The title and description check, a step of `gate` (script `.github/scripts/check-pr-description.sh`, local cases in `check-pr-description.test.sh`) fails when:
