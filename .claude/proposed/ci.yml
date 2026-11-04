@@ -78,27 +78,35 @@ jobs:
             exit 1
           fi
       # Fails on added or edited scanner settings and on added inline suppressions; the owner merges over it when justified. Docs and the owner-only workflow are skipped because they only describe the markers.
-      # A deleted settings file is not flagged: removing an ignore or config only tightens a scan. In pnpm-workspace.yaml only the audit, override, build and pnpmfile keys count.
+      # A deleted file is not flagged: removing an ignore or config only tightens a scan. pnpm-workspace.yaml is compared with its packages list removed, so any other change is flagged.
       - name: Scanner settings
         if: ${{ !cancelled() }}
         env:
           BASE: ${{ github.event.pull_request.base.sha }}
           HEAD: ${{ github.event.pull_request.head.sha }}
         run: |
-          # Separate assignments so a failing git diff stops the step. File and line names only are printed, never PR text.
-          d=(git -c core.quotepath=off diff --no-renames --diff-filter=AM "$BASE...$HEAD")
-          names=$("${d[@]}" --name-only)
-          added=$("${d[@]}" -U0 -- . ':!*.md' ':!.github/workflows/ci.yml' ':!.claude/proposed/ci.yml')
-          files=$(printf '%s\n' "$names" | grep -E '(^|/)(\.semgrepignore|\.trivyignore[^/]*|trivy\.ya?ml|\.gitleaks\.toml|\.gitleaksignore|\.npmrc|\.pnpmfile\.[^/]*)$' || true)
-          ws='^[[:space:]]*(audit[A-Za-z]*|ignoreCves|ignoreGhsas|onlyBuiltDependencies|overrides|pnpmfile|globalPnpmfile|ignorePnpmfile)[[:space:]]*:'
-          hits=$(printf '%s\n' "$added" | awk -v ws="$ws" '
+          # Separate files so a failing git diff stops the step. Only file names and line numbers are printed, never line contents.
+          d=(git -c core.quotepath=off diff --no-renames --diff-filter=d "$BASE...$HEAD")
+          "${d[@]}" -z --name-only > "$RUNNER_TEMP/scanner.names"
+          "${d[@]}" -U0 --text --no-textconv --no-ext-diff -- . ':!*.md' ':!.github/workflows/ci.yml' ':!.claude/proposed/ci.yml' > "$RUNNER_TEMP/scanner.diff"
+          strip() { awk '/^[[:space:]]*(#|$)/ {next} /^packages:[[:space:]]*$/ {s=1; next} s && /^[[:space:]]*-/ {next} {s=0; print}'; }
+          files=
+          while IFS= read -r -d '' f; do
+            case "${f##*/}" in
+              .semgrepignore|.trivyignore*|trivy.yaml|trivy.yml|.gitleaks.toml|.gitleaksignore|.npmrc|.pnpmfile.*) ;;
+              pnpm-workspace.yaml) [ "$(git show "$BASE:$f" 2>/dev/null | strip)" != "$(git show "$HEAD:$f" | strip)" ] || continue ;;
+              *) continue ;;
+            esac
+            files+="  $(printf %s "$f" | tr -d '[:cntrl:]')"$'\n'
+          done < "$RUNNER_TEMP/scanner.names"
+          hits=$(tr '\0' ' ' < "$RUNNER_TEMP/scanner.diff" | awk '
             /^diff / { hdr = 1; next }
-            hdr && /^\+\+\+ / { f = substr($0, 7); sub(/\t$/, "", f); next }
+            hdr && /^\+\+\+ / { f = substr($0, 5); sub(/^"?b\//, "", f); next }
             /^@@ / { hdr = 0; match($0, /\+[0-9]+/); n = substr($0, RSTART + 1, RLENGTH - 1); next }
-            !hdr && /^\+/ { t = substr($0, 2); if (t ~ /nosem|trivy:|tfsec:|--ignore-vuln/ || (f ~ /(^|\/)pnpm-workspace\.yaml$/ && t ~ ws)) print f ":" n; n++ }')
+            !hdr && /^\+/ { if (tolower($0) ~ /nosem|trivy:|tfsec:|--ignore-vuln|gitleaks:allow/) print "  " f ":" n; n++ }' | tr -d '\000-\011\013-\037')
           if [ -n "$files$hits" ]; then
-            [ -z "$files" ] || printf 'Scanner or package-manager settings changed:\n%s\n' "$files" | sed 's/^/  /'
-            [ -z "$hits" ] || printf 'Inline suppression or audit setting added at file:line:\n%s\n' "$hits" | sed 's/^/  /'
+            [ -z "$files" ] || printf 'Scanner or package-manager settings changed (pnpm-workspace.yaml: anything beyond the packages list):\n%s' "$files"
+            [ -z "$hits" ] || printf 'Inline suppression added at file:line:\n%s\n' "$hits"
             echo "::error title=Scanner settings::This pull request changes scanner settings or adds a suppression (listed above). Remove it, or the owner merges over this check when it is justified."
             exit 1
           fi
