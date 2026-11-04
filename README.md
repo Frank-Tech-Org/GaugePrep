@@ -86,6 +86,10 @@ No skips: with `CI=true` any skipped or xfail test (pytest or Vitest) fails the 
 
 One `gate` job runs first on every pull request, in this order: the path filter (which decides whether the code jobs, pip-audit, pnpm audit, Trivy and the backend image run), the gitleaks secret scan over the full git history, and last the title and description check (its script comes from the pull request, so it runs after the scan and cannot change it). It fails red with a message naming the bad title or description rule, or the file holding the secret. When it fails, the jobs that need it are skipped; a skipped job counts as passing for merge, so a red `gate` is what blocks, and a grey job is not a pass.
 
+### API contract tests
+
+`backend/tests/test_contract.py` runs inside `pytest`. [Schemathesis](https://schemathesis.readthedocs.io) (MIT, dev dependency only) generates requests for every operation in `backend/openapi.json` and calls the Django app in-process: no server, no network. Each response must use a documented status, never be a 5xx, and match its documented schema; a failure names the operation and the status. The tests also fail when `backend/openapi.json` is missing or has no operations. Response content types are not checked yet. After an API change, regenerate the document (the command is in the `test_openapi.py` failure message) and run `uv run pytest backend/tests/test_contract.py`.
+
 ### Backend image build in CI
 
 The `backend image` check runs `docker build -f infra/docker/backend.Dockerfile .` (no push, no login) only when a pull request changes `infra/docker/`, `uv.lock`, a `pyproject.toml` or `.dockerignore`; otherwise it shows as skipped and does not block the merge. It catches a Dockerfile, lockfile or workspace change that breaks the image, which `pnpm check` never builds. It builds for x64, so ARM-only problems still show at deploy.
