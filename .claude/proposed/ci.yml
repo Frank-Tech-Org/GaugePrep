@@ -99,6 +99,11 @@ jobs:
             esac
             files+="  $(printf %s "$f" | tr -d '[:cntrl:]')"$'\n'
           done < "$RUNNER_TEMP/scanner.names"
+          # The local Semgrep rules are read from the base, so a merged edit or deletion becomes the next base: flag every change under semgrep/, deletions included.
+          git -c core.quotepath=off diff --no-renames -z --name-only "$BASE...$HEAD" -- semgrep/ > "$RUNNER_TEMP/semgrep.names"
+          while IFS= read -r -d '' f; do
+            files+="  $(printf %s "$f" | tr -d '[:cntrl:]')"$'\n'
+          done < "$RUNNER_TEMP/semgrep.names"
           hits=$(tr '\0' ' ' < "$RUNNER_TEMP/scanner.diff" | awk '
             /^diff / { hdr = 1; next }
             hdr && /^\+\+\+ / { f = substr($0, 5); sub(/^"?b\//, "", f); next }

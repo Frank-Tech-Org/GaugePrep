@@ -10,7 +10,12 @@ rules:
           - pattern: $REQ.$ATTR
           - metavariable-regex:
               metavariable: $ATTR
-              regex: ^(GET|POST|body|data|query_params|COOKIES|META|headers|FILES)$
+              regex: ^(GET|POST|body|data|query_params|COOKIES|META|headers|FILES|session|path|path_info)$
+          - metavariable-regex:
+              metavariable: $REQ
+              regex: ^(request|self\.request)$
+      - patterns:
+          - pattern: $REQ.read(...)
           - metavariable-regex:
               metavariable: $REQ
               regex: ^(request|self\.request)$
@@ -34,7 +39,12 @@ rules:
           - pattern: $REQ.$ATTR
           - metavariable-regex:
               metavariable: $ATTR
-              regex: ^(GET|POST|body|data|query_params|COOKIES|META|headers|FILES)$
+              regex: ^(GET|POST|body|data|query_params|COOKIES|META|headers|FILES|session|path|path_info)$
+          - metavariable-regex:
+              metavariable: $REQ
+              regex: ^(request|self\.request)$
+      - patterns:
+          - pattern: $REQ.read(...)
           - metavariable-regex:
               metavariable: $REQ
               regex: ^(request|self\.request)$
@@ -57,10 +67,15 @@ rules:
       - patterns:
           - pattern: $P
           - focus-metavariable: $P
-          - pattern-inside: |
-              @$R.$METHOD(...)
-              def $F($REQ, ..., $P: $T, ...):
-                  ...
+          - pattern-either:
+              - pattern-inside: |
+                  @$R.$METHOD(...)
+                  def $F($REQ, ..., $P: $T, ...):
+                      ...
+              - pattern-inside: |
+                  @$R.$METHOD(...)
+                  def $F($REQ, ..., $P, ...):
+                      ...
     pattern-sanitizers:
       - pattern-either:
           - pattern: int(...)
@@ -80,10 +95,15 @@ rules:
       - patterns:
           - pattern: $P
           - focus-metavariable: $P
-          - pattern-inside: |
-              @$R.$METHOD(...)
-              def $F($REQ, ..., $P: $T, ...):
-                  ...
+          - pattern-either:
+              - pattern-inside: |
+                  @$R.$METHOD(...)
+                  def $F($REQ, ..., $P: $T, ...):
+                      ...
+              - pattern-inside: |
+                  @$R.$METHOD(...)
+                  def $F($REQ, ..., $P, ...):
+                      ...
     pattern-sanitizers:
       - pattern-either:
           - pattern: int(...)

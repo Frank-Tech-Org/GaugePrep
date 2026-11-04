@@ -82,3 +82,62 @@ def ninja_exec(request, payload: str):
 def ninja_exec_ok(request, payload: str):
     # ok: lm-ninja-param-exec
     exec("x = 1")
+
+
+def eval_session(request):
+    # ruleid: lm-django-request-eval
+    return eval(request.session["expr"])
+
+
+def eval_path(request):
+    # ruleid: lm-django-request-eval
+    return eval(request.path_info)
+
+
+def eval_read(request):
+    # ruleid: lm-django-request-eval
+    return eval(request.read())
+
+
+def eval_path_ok(request):
+    # ok: lm-django-request-eval
+    return eval(str(int(request.path)))
+
+
+def exec_session(request):
+    # ruleid: lm-django-request-exec
+    exec(request.session["code"])
+
+
+def exec_read(request):
+    # ruleid: lm-django-request-exec
+    exec(request.read())
+
+
+def exec_path_ok(request):
+    # ok: lm-django-request-exec
+    exec(str(int(request.path)))
+
+
+@api.get("/untyped")
+def ninja_eval_untyped(request, expr):
+    # ruleid: lm-ninja-param-eval
+    return eval(expr)
+
+
+@api.get("/untyped-ok")
+def ninja_eval_untyped_ok(request, expr):
+    # ok: lm-ninja-param-eval
+    return eval("1 + 1")
+
+
+@router.post("/untyped-run")
+def ninja_exec_untyped(request, payload):
+    # ruleid: lm-ninja-param-exec
+    exec(payload)
+
+
+@router.post("/untyped-run-ok")
+def ninja_exec_untyped_ok(request, payload):
+    # ok: lm-ninja-param-exec
+    exec("x = 1")
