@@ -1,4 +1,5 @@
 # Local development image; production images come with the deploy work.
+# qa 108 green probe
 FROM ghcr.io/astral-sh/uv:python3.14-trixie-slim
 
 ENV UV_LINK_MODE=copy PYTHONUNBUFFERED=1 PATH="/app/.venv/bin:$PATH"
