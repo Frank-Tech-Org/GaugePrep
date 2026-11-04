@@ -122,7 +122,7 @@ The `Scanner settings` step of `gate` compares the pull request with its merge b
 
 Diffs are read as text whatever `.gitattributes` says, and file names are matched NUL-safe and printed without control characters. Markdown files and the owner-only CI workflow are not searched, since they only describe these markers. Deleting a settings file is not flagged, because it can only widen what the scans see.
 
-Limits: a marker split across lines or built at run time is not seen, and a path added to the `packages:` list is not flagged.
+Limits: a marker split across lines or built at run time is not seen, and a path added to the `packages:` list is not flagged. A `pnpm-workspace.yaml` that is not a regular file is always flagged. pnpm 11 (pinned in `package.json`) no longer reads settings from a `pnpm` field in `package.json`, so that field is not checked.
 
 The check flags; it does not decide. When the suppression is justified, the owner merges over the red check. The free plan cannot make checks required, so nothing stops that merge but `merge.sh`, which reads the gate and refuses a red one: the owner merges by hand, after reading the named files and lines.
 
