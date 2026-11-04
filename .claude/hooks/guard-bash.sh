@@ -73,8 +73,9 @@ def gh_api(rest):
     if writes and API_PROTECTED.search(endpoint):
         block("a merge, ref, tag or release write through the GitHub API (use .claude/scripts/merge.sh)")
 
-# Owner-only files: hooks, settings, the push and merge scripts, CI workflows.
-OWNER_ONLY = re.compile(r"\.claude/(hooks/|settings(\.local)?\.json|scripts/(push|merge)\.sh)|\.github/workflows/")
+# Owner-only files: hooks, settings, the push and merge scripts, CI workflows, scanner ignore files and config, npm/pnpm config.
+OWNER_ONLY = re.compile(r"\.claude/(hooks/|settings(\.local)?\.json|scripts/(push|merge)\.sh)|\.github/workflows/"
+                        r"|(\.semgrepignore|\.trivyignore[\w.-]*|(?<![\w.-])trivy\.yaml|\.gitleaks\.toml|\.gitleaksignore|\.npmrc|\.pnpmfile\.[\w.-]*)(?![\w.-])")
 READ_ONLY = {"cat", "head", "tail", "less", "more", "ls", "diff", "cmp", "grep", "rg", "wc", "sha256sum",
              "md5sum", "stat", "file", "echo", "printf", "jq", "test", "["}
 GIT_READ = {"diff", "log", "show", "status", "add", "commit", "ls-files", "blame", "grep"}
