@@ -1,4 +1,4 @@
-# LinguaMentor
+# GaugePrep
 
 Exam preparation platform. This repository holds the web app, the backend, the voice examiner and the shared exam rules.
 

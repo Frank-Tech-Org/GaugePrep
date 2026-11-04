@@ -1,4 +1,4 @@
-# LinguaMentor
+# GaugePrep
 
 Exam preparation platform for TCF Canada first: a responsive, mobile-first web app installable as a PWA (Next.js), a Django modular monolith, a LiveKit voice examiner and a shared `examcore` rules package. Sources of truth:
 
@@ -132,4 +132,4 @@ Needs the owner: <decision or action, or "nothing">
 
 - Agents keep no memory files. A lesson worth keeping (a recurring defect, a ruling, a provider quirk) becomes a one-line edit to the agent's own file or to `.claude/rules/`, in the same PR as the work, so it is reviewed and nothing piles up.
 - The project memory is `.claude/memory/`, read by `cto` and by the session running the commands: one index, `MEMORY.md`, and a file per standing fact, updated in place, never duplicated. Memory changes go in the commit with the work they came from. It is selected by `autoMemoryDirectory` in `.claude/settings.local.json`, which needs an absolute path, so each machine sets its own:
-  `{ "autoMemoryDirectory": "/absolute/path/to/linguamentor-v3/.claude/memory" }`
+  `{ "autoMemoryDirectory": "/absolute/path/to/checkout/.claude/memory" }`

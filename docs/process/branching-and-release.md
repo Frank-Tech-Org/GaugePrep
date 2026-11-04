@@ -34,7 +34,7 @@ flowchart LR
 
 ## 2. Board columns
 
-Board: org project #6, "LinguaMentor Delivery".
+Board: org project #6.
 
 | Column | Meaning | Where the code is | Leaves when | Command |
 |---|---|---|---|---|
@@ -190,7 +190,7 @@ Every Friday the owner tries the app on staging, on their phone and on a compute
 - **Security:** serious issues open (target zero) from the CI scans and the weekly staging scan, and the date of the last attack test.
 - **Performance:** each PRD budget against the latest Lighthouse and k6 figures.
 
-On Thursday `/pm report` has `product-manager` post one entry in the Notion database **Weekly demos** (under the private page **LinguaMentor Studio**): the 13 key features of release 1 delivered against those still to deliver, in learner terms with no ticket numbers, then launch readiness, the two scorecards and risks to the launch date. `security-engineer` and `performance-engineer` supply the scorecards.
+On Thursday `/pm report` has `product-manager` post one entry in the Notion database **Weekly demos** (under the owner's private studio page): the 13 key features of release 1 delivered against those still to deliver, in learner terms with no ticket numbers, then launch readiness, the two scorecards and risks to the launch date. `security-engineer` and `performance-engineer` supply the scorecards.
 
 ## 10. Checklists
 
