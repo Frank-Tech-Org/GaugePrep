@@ -73,7 +73,7 @@ uv run python backend/manage.py export_openapi_schema --api config.api.api --ind
 | `mypy` | Python types (strict) |
 | `lint-imports` (Import Linter) | Module boundaries; zero contracts for now |
 | `makemigrations --check` | Fails when a model change has no migration, naming the app. Every module under `backend/modules/` is passed by app label (`.github/scripts/check-migrations.sh`), because a bare check skips apps that have no migrations package yet. Fix: run `python manage.py makemigrations <app>` in `backend/` and commit the file |
-| `pytest` | Python tests in random order (pytest-randomly prints the seed; replay with `--randomly-seed=N`), 30 s timeout per test; collecting none fails. Database tests skip with a reason when PostgreSQL is unreachable, and fail when `CI=true` |
+| `pytest` | Python tests in random order (pytest-randomly prints the seed; replay with `--randomly-seed=N`), 30 s timeout per test; collecting none fails, and an unregistered marker fails collection (`--strict-markers`). Database tests skip with a reason when PostgreSQL is unreachable, and fail when `CI=true` |
 | `coverage report` | Branch coverage per package, floors set in each package pyproject.toml: `examcore` 95%, backend 85%. Fails below the floor. `voice` has no code yet and is not measured |
 | `prettier --check` | TypeScript and JSON formatting |
 | `eslint` | TypeScript lint (`apps/web/eslint.config.js`) |
