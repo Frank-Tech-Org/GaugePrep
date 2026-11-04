@@ -58,17 +58,18 @@ def _module_marks(tree: ast.Module) -> list[Mark]:
     return _marks(nodes)
 
 
-def _tests(tree: ast.Module) -> list[tuple[ast.FunctionDef, list[Mark]]]:
+Function = ast.FunctionDef | ast.AsyncFunctionDef
+
+
+def _tests(tree: ast.Module) -> list[tuple[Function, list[Mark]]]:
     base = _module_marks(tree)
-    found: list[tuple[ast.FunctionDef, list[Mark]]] = []
+    found: list[tuple[Function, list[Mark]]] = []
     for stmt in tree.body:
-        if isinstance(stmt, ast.FunctionDef):
+        if isinstance(stmt, Function):
             found.append((stmt, base))
         elif isinstance(stmt, ast.ClassDef):
             inherited = base + _marks(stmt.decorator_list)
-            found += [
-                (m, inherited) for m in stmt.body if isinstance(m, ast.FunctionDef)
-            ]
+            found += [(m, inherited) for m in stmt.body if isinstance(m, Function)]
     return [(f, m) for f, m in found if f.name.startswith("test_")]
 
 
@@ -265,3 +266,38 @@ def test_scan_reports_a_malformed_marker(tmp_path: Path, args: str) -> None:
     names, errors = scan(tmp_path, src)
     assert errors == ["test_x.py:2: success marker needs one string argument"]
     assert names["success"] == set()
+
+
+ASYNC_KINDS = (
+    '@pytest.mark.success("A")\nasync def test_s(): ...\n'
+    '@pytest.mark.not_found("A")\nasync def test_n(): ...\n'
+)
+
+
+def test_scan_counts_an_async_test_function(tmp_path: Path) -> None:
+    src = '@pytest.mark.success("A")\nasync def test_a(): ...\n'
+    assert scan(tmp_path, src)[0]["success"] == {"A"}
+
+
+def test_scan_counts_an_async_test_method(tmp_path: Path) -> None:
+    src = (
+        '@pytest.mark.refused("A")\nclass TestA:\n'
+        '    @pytest.mark.success("A")\n    async def test_a(self): ...\n'
+    )
+    names = scan(tmp_path, src)[0]
+    assert names["success"] == {"A"}
+    assert names["refused"] == {"A"}
+
+
+def test_missing_flags_an_async_test_without_the_refused_marker(
+    tmp_path: Path,
+) -> None:
+    spec = write_spec(tmp_path, ITEMS)
+    root = tmp_path / "tests"
+    root.mkdir()
+    (root / "test_items.py").write_text(
+        "import pytest\n"
+        + ASYNC_KINDS.replace("A", "GET /api/v1/items")
+        + "async def test_r(): ...\n"
+    )
+    assert missing(spec, root, Path()) == ["GET /api/v1/items: missing refused test"]
