@@ -5,9 +5,9 @@ requires-python = "==3.14.*"
 [manifest]
 members = [
     "examcore",
-    "linguamentor",
-    "linguamentor-backend",
-    "linguamentor-voice",
+    "gaugeprep",
+    "gaugeprep-backend",
+    "gaugeprep-voice",
 ]
 
 [[package]]
@@ -318,6 +318,75 @@ version = "0.0.0"
 source = { editable = "packages/examcore" }
 
 [[package]]
+name = "gaugeprep"
+version = "0.0.0"
+source = { virtual = "." }
+dependencies = [
+    { name = "examcore" },
+    { name = "gaugeprep-backend" },
+    { name = "gaugeprep-voice" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "django-stubs" },
+    { name = "import-linter" },
+    { name = "mypy" },
+    { name = "pytest" },
+    { name = "pytest-cov" },
+    { name = "pytest-django" },
+    { name = "pytest-randomly" },
+    { name = "pytest-timeout" },
+    { name = "ruff" },
+    { name = "schemathesis" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "examcore", editable = "packages/examcore" },
+    { name = "gaugeprep-backend", virtual = "backend" },
+    { name = "gaugeprep-voice", virtual = "voice" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "django-stubs", specifier = ">=5" },
+    { name = "import-linter", specifier = ">=2.15" },
+    { name = "mypy", specifier = ">=2.4.0" },
+    { name = "pytest", specifier = ">=9.1.1" },
+    { name = "pytest-cov", specifier = ">=7.1.0" },
+    { name = "pytest-django", specifier = ">=4.11" },
+    { name = "pytest-randomly", specifier = ">=5.0.0" },
+    { name = "pytest-timeout", specifier = ">=2.4.0" },
+    { name = "ruff", specifier = ">=0.17.2" },
+    { name = "schemathesis", specifier = "==4.33.0" },
+]
+
+[[package]]
+name = "gaugeprep-backend"
+version = "0.0.0"
+source = { virtual = "backend" }
+dependencies = [
+    { name = "django" },
+    { name = "django-ninja" },
+    { name = "procrastinate", extra = ["django"] },
+    { name = "psycopg", extra = ["binary"] },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "django", specifier = ">=6.1,<6.2" },
+    { name = "django-ninja", specifier = ">=1.4" },
+    { name = "procrastinate", extras = ["django"], specifier = ">=3" },
+    { name = "psycopg", extras = ["binary"], specifier = ">=3.2" },
+]
+
+[[package]]
+name = "gaugeprep-voice"
+version = "0.0.0"
+source = { virtual = "voice" }
+
+[[package]]
 name = "graphql-core"
 version = "3.3.1"
 source = { registry = "https://pypi.org/simple" }
@@ -557,75 +626,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/ca/1c/946e6443d7cd32347a086043395e421e52fd603c9163d2ec970ceab8eed6/librt-0.16.0-cp314-cp314t-win_amd64.whl", hash = "sha256:d46ca272b251d033dd4527b0dec5f261a28a52bd5fa0f99c117b0a1f8588cc2d", size = 126227, upload-time = "2026-09-29T00:54:17.165Z" },
     { url = "https://files.pythonhosted.org/packages/c2/a3/bc4f9959d3c62bcbf9e5fd3470a8bbd8bf33224ed4c25d7fba173201b8ac/librt-0.16.0-cp314-cp314t-win_arm64.whl", hash = "sha256:b9d6d4b14e92d876f8026b54c20c445f36425214c1081dc76f74e40db386b82b", size = 116493, upload-time = "2026-09-29T00:54:18.567Z" },
 ]
-
-[[package]]
-name = "linguamentor"
-version = "0.0.0"
-source = { virtual = "." }
-dependencies = [
-    { name = "examcore" },
-    { name = "linguamentor-backend" },
-    { name = "linguamentor-voice" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "django-stubs" },
-    { name = "import-linter" },
-    { name = "mypy" },
-    { name = "pytest" },
-    { name = "pytest-cov" },
-    { name = "pytest-django" },
-    { name = "pytest-randomly" },
-    { name = "pytest-timeout" },
-    { name = "ruff" },
-    { name = "schemathesis" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "examcore", editable = "packages/examcore" },
-    { name = "linguamentor-backend", virtual = "backend" },
-    { name = "linguamentor-voice", virtual = "voice" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "django-stubs", specifier = ">=5" },
-    { name = "import-linter", specifier = ">=2.15" },
-    { name = "mypy", specifier = ">=2.4.0" },
-    { name = "pytest", specifier = ">=9.1.1" },
-    { name = "pytest-cov", specifier = ">=7.1.0" },
-    { name = "pytest-django", specifier = ">=4.11" },
-    { name = "pytest-randomly", specifier = ">=5.0.0" },
-    { name = "pytest-timeout", specifier = ">=2.4.0" },
-    { name = "ruff", specifier = ">=0.17.2" },
-    { name = "schemathesis", specifier = "==4.33.0" },
-]
-
-[[package]]
-name = "linguamentor-backend"
-version = "0.0.0"
-source = { virtual = "backend" }
-dependencies = [
-    { name = "django" },
-    { name = "django-ninja" },
-    { name = "procrastinate", extra = ["django"] },
-    { name = "psycopg", extra = ["binary"] },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "django", specifier = ">=6.1,<6.2" },
-    { name = "django-ninja", specifier = ">=1.4" },
-    { name = "procrastinate", extras = ["django"], specifier = ">=3" },
-    { name = "psycopg", extras = ["binary"], specifier = ">=3.2" },
-]
-
-[[package]]
-name = "linguamentor-voice"
-version = "0.0.0"
-source = { virtual = "voice" }
 
 [[package]]
 name = "markdown-it-py"

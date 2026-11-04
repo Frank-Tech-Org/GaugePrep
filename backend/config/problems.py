@@ -16,7 +16,7 @@ class Problem(Schema):
 
 def problem_response(status: int, code: str, title: str, detail: str) -> JsonResponse:
     body = Problem(
-        type=f"urn:linguamentor:problem:{code.replace('_', '-')}",
+        type=f"urn:gaugeprep:problem:{code.replace('_', '-')}",
         title=title,
         status=status,
         detail=detail,

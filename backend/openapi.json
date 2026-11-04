@@ -1,7 +1,7 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "LinguaMentor API",
+    "title": "GaugePrep API",
     "version": "1",
     "description": "Public HTTP API. Errors are RFC 9457 problem details."
   },
@@ -33,9 +33,7 @@
             }
           }
         },
-        "tags": [
-          "health"
-        ]
+        "tags": ["health"]
       }
     }
   },
@@ -52,10 +50,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "status",
-          "database"
-        ],
+        "required": ["status", "database"],
         "title": "Health",
         "type": "object"
       },
@@ -82,13 +77,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "type",
-          "title",
-          "status",
-          "detail",
-          "code"
-        ],
+        "required": ["type", "title", "status", "detail", "code"],
         "title": "Problem",
         "type": "object"
       }

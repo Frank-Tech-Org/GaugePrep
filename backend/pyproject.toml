@@ -1,5 +1,5 @@
 [project]
-name = "linguamentor-backend"
+name = "gaugeprep-backend"
 version = "0.0.0"
 description = "Core application, job worker and scoring engine"
 requires-python = ">=3.14,<3.15"
