@@ -5,7 +5,7 @@
 
 ## Context
 
-Production deploys only from a version tag `vX.Y.Z` on a commit that is on `main`; `main` never deploys by itself. The production deploy workflow must know whether the tag deploys at once or waits for an approval. One person operates the system, so a second approver does not exist. The repository is private, in the `LinguaMentor` organisation on GitHub's free plan (owner decision D-6).
+Production deploys only from a version tag `vX.Y.Z` on a commit that is on `main`; `main` never deploys by itself. The production deploy workflow must know whether the tag deploys at once or waits for an approval. One person operates the system, so a second approver does not exist. The repository is private, in the `Frank-Tech-Org` organisation on GitHub's free plan (owner decision D-6).
 
 On that plan GitHub gives a private repository no environments, so no required reviewers and no deployment protection rules: "Organizations with GitHub Team and users with GitHub Pro can configure environments for private repositories", and "If you are on a GitHub Free, GitHub Pro, or GitHub Team plan, required reviewers are only available for public repositories." Rulesets, including tag rulesets, are also listed only for Team and Enterprise on private repositories, so tag creation cannot be restricted on GitHub either.
 

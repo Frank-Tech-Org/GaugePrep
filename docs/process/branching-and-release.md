@@ -34,7 +34,7 @@ flowchart LR
 
 ## 2. Board columns
 
-Board: org project #6.
+Board: org project #6, "GaugePrep Delivery", in the `Frank-Tech-Org` organisation; repository `Frank-Tech-Org/GaugePrep`. Both were renamed on 2026-11-04 with the product (D-10); the old names redirect.
 
 | Column | Meaning | Where the code is | Leaves when | Command |
 |---|---|---|---|---|
@@ -133,7 +133,7 @@ A hotfix never waits (section 8). Ready to deploy tickets that belong to an unfi
 2. The release manager commits the `CHANGELOG.md` entry on `chore/release-<version>`, and `/lm-next` merges it into `develop` like any reviewed PR.
 3. The release manager opens the promotion PR from `develop` into `stage`. The owner merges it with a **merge commit**. Staging deploys.
 4. On staging, run the gate (security pass and attack test, dependency audit, performance audit with the load run, claim verification, UX check on changed screens) and `qa-engineer`'s regression. A failure is fixed by a ticket on `develop`, then promoted again from step 3.
-5. The release manager opens the release PR from `stage` into `main` using the release PR template. `content-marketer` writes the French and English release notes, starting from GitHub's generated notes (`gh api repos/LinguaMentor/linguamentor-v3/releases/generate-notes -f tag_name=v<version> -f target_commitish=stage -f previous_tag_name=<last tag>`, which creates nothing) and rewriting them in learner terms. The owner merges the release PR with a **merge commit**.
+5. The release manager opens the release PR from `stage` into `main` using the release PR template. `content-marketer` writes the French and English release notes, starting from GitHub's generated notes (`gh api repos/Frank-Tech-Org/GaugePrep/releases/generate-notes -f tag_name=v<version> -f target_commitish=stage -f previous_tag_name=<last tag>`, which creates nothing) and rewriting them in learner terms. The owner merges the release PR with a **merge commit**.
 6. The owner tags and publishes:
    ```bash
    git switch main && git pull
@@ -150,7 +150,7 @@ For an urgent production bug: a Bug ticket with priority Urgent and the `hotfix`
 
 1. Branch from `main`, never from `develop` or `stage`, so unreleased work cannot reach production:
    ```bash
-   gh issue develop <n> -R LinguaMentor/linguamentor-v3 --base main --name hotfix/0.2.1-fix-timer-drift
+   gh issue develop <n> -R Frank-Tech-Org/GaugePrep --base main --name hotfix/0.2.1-fix-timer-drift
    git fetch origin hotfix/0.2.1-fix-timer-drift
    git switch hotfix/0.2.1-fix-timer-drift
    ```
@@ -177,7 +177,7 @@ GitHub doesn't enforce these on the free plan for a private organisation reposit
 Setting up the agents' account:
 
 1. In the organisation's Settings → Personal access tokens, fine-grained tokens are allowed (approval required is fine).
-2. Signed in as that account, create a fine-grained token: resource owner `LinguaMentor`, only `linguamentor-v3`, 90 days. Read and write: Contents, Pull requests, Issues. Read: Metadata, Actions, Commit statuses (fine-grained tokens can't have Checks, so tools read CI from Actions runs). Leave Workflows out, so the account can't push workflow changes. Organisation permission Projects: read and write.
+2. Signed in as that account, create a fine-grained token: resource owner `Frank-Tech-Org`, only `GaugePrep`, 90 days. Read and write: Contents, Pull requests, Issues. Read: Metadata, Actions, Commit statuses (fine-grained tokens can't have Checks, so tools read CI from Actions runs). Leave Workflows out, so the account can't push workflow changes. Organisation permission Projects: read and write.
 3. Approve the token request as organisation owner if GitHub asks.
 4. On the machine running the agents: `gh auth logout -u <account>` for any broader login of that account, then `gh auth login --with-token` (paste the token), `gh auth setup-git` and `gh auth status`. The owner approves in the browser as `frankkefoueg`, and switches `gh` to it with `gh auth switch` only to merge into `stage` or `main`, tag or release.
 
