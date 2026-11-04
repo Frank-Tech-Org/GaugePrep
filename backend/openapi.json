@@ -10,7 +10,17 @@
       "get": {
         "operationId": "config_health_health",
         "summary": "Health",
-        "parameters": [],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "probe",
+            "required": true,
+            "schema": {
+              "title": "Probe",
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -33,9 +43,7 @@
             }
           }
         },
-        "tags": [
-          "health"
-        ]
+        "tags": ["health"]
       }
     }
   },
@@ -52,10 +60,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "status",
-          "database"
-        ],
+        "required": ["status", "database"],
         "title": "Health",
         "type": "object"
       },
@@ -82,13 +87,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "type",
-          "title",
-          "status",
-          "detail",
-          "code"
-        ],
+        "required": ["type", "title", "status", "detail", "code"],
         "title": "Problem",
         "type": "object"
       }
