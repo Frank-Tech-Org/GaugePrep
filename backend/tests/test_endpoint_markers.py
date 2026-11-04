@@ -6,14 +6,17 @@ from pathlib import Path
 
 import pytest
 
-BACKEND = Path(__file__).resolve().parent.parent
+HERE = Path(__file__).resolve().parent
+BACKEND = HERE.parent
 KINDS = ("success", "not_found", "refused")
+DISABLING = {"skip", "skipif", "xfail"}
 EXEMPT = {"GET /api/v1/health", "GET /api/v1/openapi.json"}
 HTTP_METHODS = {"get", "post", "put", "patch", "delete", "options", "head", "trace"}
 
+Mark = tuple[str, ast.Call | None]
+
 
 def operations(spec_path: Path) -> list[tuple[str, str]]:
-    """(key, operationId) for every operation; fails on a missing or empty spec."""
     assert spec_path.is_file(), f"{spec_path} is missing"
     paths = json.loads(spec_path.read_text())["paths"]
     found = [
@@ -26,45 +29,95 @@ def operations(spec_path: Path) -> list[tuple[str, str]]:
     return found
 
 
-def marked(root: Path, skip: Path) -> dict[str, set[str]]:
-    """Operation names per marker kind, read from `pytest.mark.<kind>("...")` calls."""
+def _mark(node: ast.expr) -> Mark | None:
+    call = node if isinstance(node, ast.Call) else None
+    target = call.func if call else node
+    if (
+        isinstance(target, ast.Attribute)
+        and isinstance(target.value, ast.Attribute)
+        and target.value.attr == "mark"
+        and isinstance(target.value.value, ast.Name)
+        and target.value.value.id == "pytest"
+    ):
+        return target.attr, call
+    return None
+
+
+def _marks(nodes: list[ast.expr]) -> list[Mark]:
+    return [m for node in nodes if (m := _mark(node))]
+
+
+def _module_marks(tree: ast.Module) -> list[Mark]:
+    nodes: list[ast.expr] = []
+    for stmt in tree.body:
+        if isinstance(stmt, ast.Assign) and any(
+            isinstance(t, ast.Name) and t.id == "pytestmark" for t in stmt.targets
+        ):
+            value = stmt.value
+            nodes += value.elts if isinstance(value, ast.List | ast.Tuple) else [value]
+    return _marks(nodes)
+
+
+def _tests(tree: ast.Module) -> list[tuple[ast.FunctionDef, list[Mark]]]:
+    base = _module_marks(tree)
+    found: list[tuple[ast.FunctionDef, list[Mark]]] = []
+    for stmt in tree.body:
+        if isinstance(stmt, ast.FunctionDef):
+            found.append((stmt, base))
+        elif isinstance(stmt, ast.ClassDef):
+            inherited = base + _marks(stmt.decorator_list)
+            found += [
+                (m, inherited) for m in stmt.body if isinstance(m, ast.FunctionDef)
+            ]
+    return [(f, m) for f, m in found if f.name.startswith("test_")]
+
+
+def marked(root: Path, skip: Path) -> tuple[dict[str, set[str]], list[str]]:
+    """Operation names per kind, plus malformed markers as `file:line` errors."""
     names: dict[str, set[str]] = {kind: set() for kind in KINDS}
-    for file in root.rglob("*.py"):
+    errors: list[str] = []
+    for file in sorted(root.glob("test_*.py")):
         if file == skip:
             continue
-        for node in ast.walk(ast.parse(file.read_text())):
-            if not (
-                isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
-            ):
+        for func, inherited in _tests(ast.parse(file.read_text())):
+            found = inherited + _marks(func.decorator_list)
+            if any(name in DISABLING for name, _ in found):
                 continue
-            mark = node.func.value
-            if (
-                node.func.attr in KINDS
-                and isinstance(mark, ast.Attribute)
-                and mark.attr == "mark"
-            ):
-                names[node.func.attr].update(
-                    arg.value
-                    for arg in node.args
-                    if isinstance(arg, ast.Constant) and isinstance(arg.value, str)
-                )
-    return names
+            for name, call in found:
+                if name not in KINDS:
+                    continue
+                args = call.args if call else []
+                if (
+                    call is None
+                    or len(args) != 1
+                    or call.keywords
+                    or not isinstance(args[0], ast.Constant)
+                    or not isinstance(args[0].value, str)
+                ):
+                    line = call.lineno if call else func.lineno
+                    errors.append(
+                        f"{file.name}:{line}: {name} marker needs one string argument"
+                    )
+                else:
+                    names[name].add(args[0].value)
+    return names, sorted(set(errors))
 
 
 def missing(spec_path: Path, root: Path, skip: Path) -> list[str]:
     ops = operations(spec_path)
-    names = marked(root, skip)
-    return [
+    names, errors = marked(root, skip)
+    gaps = [
         f"{key}: missing {kind} test"
         for key, operation_id in ops
         if key not in EXEMPT
         for kind in KINDS
         if key not in names[kind] and operation_id not in names[kind]
     ]
+    return errors + gaps
 
 
 def test_every_operation_has_success_not_found_and_refused_tests() -> None:
-    gaps = missing(BACKEND / "openapi.json", BACKEND, Path(__file__).resolve())
+    gaps = missing(BACKEND / "openapi.json", HERE, Path(__file__).resolve())
     assert not gaps, "\n".join(gaps)
 
 
@@ -129,6 +182,17 @@ def test_exempt_operations_need_no_tests(tmp_path: Path) -> None:
     ]
 
 
+def test_malformed_markers_are_reported_by_missing(tmp_path: Path) -> None:
+    spec = write_spec(tmp_path, ITEMS)
+    root = write_tests(tmp_path, KINDS)
+    (root / "test_bad.py").write_text(
+        "import pytest\n@pytest.mark.success()\ndef test_a(): ...\n"
+    )
+    assert missing(spec, root, Path()) == [
+        "test_bad.py:2: success marker needs one string argument"
+    ]
+
+
 def test_fails_when_the_spec_is_missing(tmp_path: Path) -> None:
     with pytest.raises(AssertionError, match="is missing"):
         operations(tmp_path / "openapi.json")
@@ -141,3 +205,63 @@ def test_fails_when_the_spec_has_no_operations(tmp_path: Path) -> None:
 
 def test_counts_exempt_operations_as_operations(tmp_path: Path) -> None:
     assert operations(write_spec(tmp_path, {"/api/v1/health": {"get": {}}}))
+
+
+def scan(tmp_path: Path, source: str) -> tuple[dict[str, set[str]], list[str]]:
+    (tmp_path / "test_x.py").write_text("import pytest\n" + source)
+    return marked(tmp_path, Path())
+
+
+def test_scan_counts_a_decorator(tmp_path: Path) -> None:
+    names, errors = scan(tmp_path, '@pytest.mark.success("A")\ndef test_a(): ...\n')
+    assert names["success"] == {"A"}
+    assert errors == []
+
+
+def test_scan_counts_a_class_marker_on_its_tests(tmp_path: Path) -> None:
+    src = '@pytest.mark.refused("A")\nclass TestA:\n    def test_a(self): ...\n'
+    assert scan(tmp_path, src)[0]["refused"] == {"A"}
+
+
+def test_scan_counts_module_pytestmark(tmp_path: Path) -> None:
+    src = 'pytestmark = [pytest.mark.not_found("A")]\ndef test_a(): ...\n'
+    assert scan(tmp_path, src)[0]["not_found"] == {"A"}
+
+
+def test_scan_counts_a_parametrized_test(tmp_path: Path) -> None:
+    src = (
+        '@pytest.mark.success("A")\n@pytest.mark.parametrize("n", [1, 2])\n'
+        "def test_a(n): ...\n"
+    )
+    assert scan(tmp_path, src)[0]["success"] == {"A"}
+
+
+def test_scan_ignores_comments_and_strings(tmp_path: Path) -> None:
+    src = '# @pytest.mark.success("A")\nX = \'@pytest.mark.success("B")\'\n'
+    names, errors = scan(tmp_path, src)
+    assert names["success"] == set()
+    assert errors == []
+
+
+def test_scan_ignores_an_unknown_kind(tmp_path: Path) -> None:
+    src = '@pytest.mark.succes("A")\ndef test_a(): ...\n'
+    assert scan(tmp_path, src)[0] == {kind: set() for kind in KINDS}
+
+
+def test_scan_ignores_a_marker_on_a_non_test_function(tmp_path: Path) -> None:
+    src = '@pytest.mark.success("A")\ndef helper(): ...\n'
+    assert scan(tmp_path, src)[0]["success"] == set()
+
+
+@pytest.mark.parametrize("extra", ['skip("no")', 'skipif(True, reason="no")', "xfail"])
+def test_scan_ignores_a_disabled_test(tmp_path: Path, extra: str) -> None:
+    src = f'@pytest.mark.success("A")\n@pytest.mark.{extra}\ndef test_a(): ...\n'
+    assert scan(tmp_path, src)[0]["success"] == set()
+
+
+@pytest.mark.parametrize("args", ["", '"A", "B"', "1", 'op="A"'])
+def test_scan_reports_a_malformed_marker(tmp_path: Path, args: str) -> None:
+    src = f"@pytest.mark.success({args})\ndef test_a(): ...\n"
+    names, errors = scan(tmp_path, src)
+    assert errors == ["test_x.py:2: success marker needs one string argument"]
+    assert names["success"] == set()
