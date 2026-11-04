@@ -82,6 +82,10 @@ uv run python backend/manage.py export_openapi_schema --api config.api.api --ind
 
 No skips: with `CI=true` any skipped or xfail test (pytest or Vitest) fails the run and is named; locally it only warns. Floors only go up.
 
+### Backend image build in CI
+
+The `backend image` check runs `docker build -f infra/docker/backend.Dockerfile .` (no push, no login) only when a pull request changes `infra/docker/`, `uv.lock`, a `pyproject.toml` or `.dockerignore`; otherwise it shows as skipped and does not block the merge. It catches a Dockerfile, lockfile or workspace change that breaks the image, which `pnpm check` never builds. It builds for x64, so ARM-only problems still show at deploy.
+
 ### Security scans in CI
 
 Each pull request also runs these as separate checks. A HIGH or CRITICAL finding fails the check and blocks the merge (pip-audit fails on any advisory, as it has no severity filter). All are free and open source, with no token or account.
