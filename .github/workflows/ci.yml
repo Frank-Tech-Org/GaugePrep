@@ -78,7 +78,7 @@ jobs:
             exit 1
           fi
       # Fails on added or edited scanner settings and on added inline suppressions; the owner merges over it when justified. Docs and the owner-only workflow are skipped because they only describe the markers.
-      # A deleted file is not flagged: removing an ignore or config only tightens a scan. pnpm-workspace.yaml is compared with its packages list removed, so any other change is flagged.
+      # A deleted file is not flagged, except under semgrep/: removing an ignore or config only tightens a scan. pnpm-workspace.yaml is compared with its packages list removed, so any other change is flagged.
       - name: Scanner settings
         if: ${{ !cancelled() }}
         env:
@@ -99,6 +99,11 @@ jobs:
             esac
             files+="  $(printf %s "$f" | tr -d '[:cntrl:]')"$'\n'
           done < "$RUNNER_TEMP/scanner.names"
+          # The local Semgrep rules are read from the base, so a merged edit or deletion becomes the next base: flag every change under semgrep/, deletions included.
+          git -c core.quotepath=off diff --no-renames -z --name-only "$BASE...$HEAD" -- semgrep/ > "$RUNNER_TEMP/semgrep.names"
+          while IFS= read -r -d '' f; do
+            files+="  $(printf %s "$f" | tr -d '[:cntrl:]')"$'\n'
+          done < "$RUNNER_TEMP/semgrep.names"
           hits=$(tr '\0' ' ' < "$RUNNER_TEMP/scanner.diff" | awk '
             /^diff / { hdr = 1; next }
             hdr && /^\+\+\+ / { f = substr($0, 5); sub(/^"?b\//, "", f); next }
@@ -251,16 +256,37 @@ jobs:
             git show "$BASE:$f" > "$f"
           done
       # Rules are the community repo pinned to a commit (Semgrep Rules License v1.0 allows internal CI use); no login, metrics off.
+      # Our own rules (semgrep/*.yaml) are read from the base commit, so a PR cannot weaken them. The first PR that adds them is scanned without them; the test step below covers it.
+      # The test snippets hold the unsafe calls on purpose, so that one file is excluded from the scan.
       - name: Semgrep
         env:
           RULES_SHA: 16b9e6d45f10649f6a531ec4838ed9924372c3bc
+          BASE: ${{ github.event.pull_request.base.sha }}
         run: |
           git init -q "$RUNNER_TEMP/semgrep-rules"
           git -C "$RUNNER_TEMP/semgrep-rules" fetch -q --depth 1 https://github.com/semgrep/semgrep-rules "$RULES_SHA"
           git -C "$RUNNER_TEMP/semgrep-rules" checkout -q FETCH_HEAD
           r="$RUNNER_TEMP/semgrep-rules"
-          uvx --no-config --exclude-newer 2026-10-30 semgrep==1.183.0 scan --max-target-bytes 0 --metrics=off --disable-nosem --error --severity ERROR --quiet --exclude .claude/skills/semgrep/scripts --exclude .claude/skills/webapp-testing/scripts/with_server.py \
-            --config "$r/python" --config "$r/typescript" --config "$r/generic" .
+          mkdir "$RUNNER_TEMP/local-rules"
+          git ls-tree -r -z --name-only "$BASE" -- semgrep | { grep -zE '^semgrep/[^/]+\.yaml$' || true; } | while IFS= read -r -d '' f; do
+            git show "$BASE:$f" > "$RUNNER_TEMP/local-rules/${f##*/}"
+          done
+          args=(--config "$r/python" --config "$r/typescript" --config "$r/generic")
+          if [ -n "$(ls -A "$RUNNER_TEMP/local-rules")" ]; then
+            args+=(--config "$RUNNER_TEMP/local-rules")
+          else
+            echo "::notice title=Local rules::No semgrep/*.yaml on the base commit; scanning with the pinned community rules only."
+          fi
+          uvx --no-config --exclude-newer 2026-10-30 semgrep==1.183.0 scan --max-target-bytes 0 --metrics=off --disable-nosem --error --severity ERROR --quiet --exclude .claude/skills/semgrep/scripts --exclude .claude/skills/webapp-testing/scripts/with_server.py --exclude semgrep/request-eval-exec.py \
+            "${args[@]}" .
+      # Runs this pull request's rules against its own snippets, so an edited rule that stops matching fails here. The scan above still uses the base copy.
+      - name: Local rule tests
+        run: |
+          if [ -d semgrep ]; then
+            uvx --no-config --exclude-newer 2026-10-30 semgrep==1.183.0 --metrics=off --test semgrep/
+          else
+            echo "No semgrep/ directory, nothing to test."
+          fi
 
   pip-audit:
     needs: gate

@@ -104,7 +104,7 @@ Each pull request also runs these checks (the `gate` job holds the path filter, 
 
 | Check | What it scans |
 |---|---|
-| Semgrep | Source code, community rules (pinned `semgrep/semgrep-rules` for Python, TypeScript and generic, metrics off), ERROR findings fail, except two vendored dev tools that never ship: `.claude/skills/semgrep/scripts` and `.claude/skills/webapp-testing/scripts/with_server.py` |
+| Semgrep | Source code, community rules (pinned `semgrep/semgrep-rules` for Python, TypeScript and generic, metrics off) plus our own rules in `semgrep/` (see Local Semgrep rules), ERROR findings fail, except two vendored dev tools that never ship: `.claude/skills/semgrep/scripts` and `.claude/skills/webapp-testing/scripts/with_server.py` |
 | pip-audit | The `uv.lock` dependencies; it has no severity filter, so any known advisory fails |
 | pnpm audit | The `pnpm-lock.yaml` dependencies, audited in a rebuilt directory with no pull request settings or hooks (`pnpm audit --audit-level high`) |
 | Trivy | The repository files (`trivy fs --severity HIGH,CRITICAL`) |
@@ -112,15 +112,26 @@ Each pull request also runs these checks (the `gate` job holds the path filter, 
 
 Documentation-only pull requests skip pip-audit, pnpm audit and Trivy. The only secret-scan allowlist entry is the placeholder key in `api-design.md`, in `.gitleaks.toml`.
 
+### Local Semgrep rules
+
+`semgrep/request-eval-exec.yaml` holds our own ERROR-rated taint rules: Django request data (`request.GET`, `POST`, `body`, `data`, `query_params`, `COOKIES`, `META`, `headers`, `FILES`, `session`, `path`, `path_info`, `read()`, also via `self.request`) and Django Ninja endpoint parameters, typed or not, reaching `eval` or `exec`. `int()`, `float()` and `ast.literal_eval()` count as parsing and end the taint.
+
+- The Semgrep check reads `semgrep/*.yaml` from the pull request's base commit, next to the pinned community rules, so a pull request cannot weaken or delete them. Only `*.yaml` is read; a base `*.yml` file is ignored. The pull request that first adds the rules is scanned without them. Once such a pull request is merged, its version is the next base, so the `Scanner settings` step flags any added, edited, deleted or renamed file under `semgrep/` (see below).
+- Each rule has a matching and a non-matching snippet in `semgrep/request-eval-exec.py` (`# ruleid:` and `# ok:` comments). That file holds unsafe calls on purpose, so it is the only file this rule set excludes from the scan, and nothing in it is ever scanned.
+- Run the tests with `uvx semgrep --test semgrep/`. CI runs the same command (step `Local rule tests`) against the pull request's own rules.
+- Adding a rule file: put it in `semgrep/` with a test file of the same name; the scan picks up any top-level `semgrep/*.yaml`, but each new test file needs its own `--exclude` in the workflow.
+- Limits: the rules match names, not flow. Missed: an alias (`r = request`), `getattr(builtins, "eval")`, `__import__("builtins").eval`, plain Django URL keyword arguments (`def v(request, x)`), `request.resolver_match`, request data held in other variable names, and flow across files or helper functions.
+
 ### Scanner settings
 
 The `Scanner settings` step of `gate` compares the pull request with its merge base and fails when the pull request:
 
 - adds or edits a scanner or package-manager settings file: `.semgrepignore`, `.trivyignore*`, `trivy.yaml`, `trivy.yml`, `.gitleaks.toml`, `.gitleaksignore`, `.npmrc` or `.pnpmfile.*`, at any depth, including a file replaced by a symlink; the log names each file
 - changes a `pnpm-workspace.yaml` beyond its `packages:` list (any key, item, flow or quoted form), compared with the list removed, so adding an app stays green; this covers the audit, override, build-permission and pnpmfile keys without listing them
+- adds, edits, deletes or renames any file under `semgrep/` (the local Semgrep rules and their tests); the log names each full path, deletions included
 - adds a line containing `nosem` (also `nosemgrep`), `trivy:`, `tfsec:`, `--ignore-vuln` or `gitleaks:allow`, in any case; the log names each file and line, never the line contents
 
-Diffs are read as text whatever `.gitattributes` says, and file names are matched NUL-safe and printed without control characters. Markdown files and the owner-only CI workflow are not searched, since they only describe these markers. Deleting a settings file is not flagged, because it can only widen what the scans see.
+Diffs are read as text whatever `.gitattributes` says, and file names are matched NUL-safe and printed without control characters. Markdown files and the owner-only CI workflow are not searched, since they only describe these markers. Deleting a settings file is not flagged (except under `semgrep/`, where a deleted rule widens what gets through), because it can only widen what the scans see.
 
 Limits: a marker split across lines or built at run time is not seen, and a path added to the `packages:` list is not flagged. A `pnpm-workspace.yaml` that is not a regular file is always flagged. pnpm 11 (pinned in `package.json`) no longer reads settings from a `pnpm` field in `package.json`, so that field is not checked.
 
