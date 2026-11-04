@@ -120,7 +120,7 @@ Documentation-only pull requests skip pip-audit, pnpm audit and Trivy. The only 
 - Each rule has a matching and a non-matching snippet in `semgrep/request-eval-exec.py` (`# ruleid:` and `# ok:` comments). That file holds unsafe calls on purpose, so it is the only file this rule set excludes from the scan, and nothing in it is ever scanned.
 - Run the tests with `uvx semgrep --test semgrep/`. CI runs the same command (step `Local rule tests`) against the pull request's own rules.
 - Adding a rule file: put it in `semgrep/` with a test file of the same name; the scan picks up any top-level `semgrep/*.yaml`, but each new test file needs its own `--exclude` in the workflow.
-- Limits: the rules match names, not flow. Missed: an alias (`r = request`), `getattr(builtins, "eval")`, request data held in other variable names, and flow across files or helper functions.
+- Limits: the rules match names, not flow. Missed: an alias (`r = request`), `getattr(builtins, "eval")`, `__import__("builtins").eval`, plain Django URL keyword arguments (`def v(request, x)`), `request.resolver_match`, request data held in other variable names, and flow across files or helper functions.
 
 ### Scanner settings
 

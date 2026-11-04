@@ -78,7 +78,7 @@ jobs:
             exit 1
           fi
       # Fails on added or edited scanner settings and on added inline suppressions; the owner merges over it when justified. Docs and the owner-only workflow are skipped because they only describe the markers.
-      # A deleted file is not flagged: removing an ignore or config only tightens a scan. pnpm-workspace.yaml is compared with its packages list removed, so any other change is flagged.
+      # A deleted file is not flagged, except under semgrep/: removing an ignore or config only tightens a scan. pnpm-workspace.yaml is compared with its packages list removed, so any other change is flagged.
       - name: Scanner settings
         if: ${{ !cancelled() }}
         env:
