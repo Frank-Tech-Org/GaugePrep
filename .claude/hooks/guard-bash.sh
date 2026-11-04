@@ -19,14 +19,18 @@ def block(why):
     sys.exit(2)
 
 # Split on shell separators outside quotes, then read each simple command as words.
+# The lexer reads the "|" of a ">|" redirect as a pipe, so the word after it is kept as a written file.
 lexer = shlex.shlex(cmd, posix=True, punctuation_chars=";&|\n")
 lexer.whitespace_split = True
-words, segments = [], []
+words, segments, clobbered, after_clobber = [], [], [], False
 try:
     for tok in lexer:
         if set(tok) <= set(";&|\n"):
+            after_clobber = tok.startswith("|") and bool(words) and words[-1].endswith(">")
             segments.append(words); words = []
         else:
+            if after_clobber:
+                clobbered.append(tok); after_clobber = False
             words.append(tok)
     segments.append(words)
 except ValueError:
@@ -80,6 +84,9 @@ READ_ONLY = {"cat", "head", "tail", "less", "more", "ls", "diff", "cmp", "grep",
              "md5sum", "stat", "file", "echo", "printf", "jq", "test", "["}
 GIT_READ = {"diff", "log", "show", "status", "add", "commit", "ls-files", "blame", "grep"}
 
+if any(OWNER_ONLY.search(t) for t in clobbered):
+    block("writing to an owner-only file")
+
 # Secret files: .env and .env.<anything> except .env.example, and keys.
 SECRET = re.compile(r"(^|[\s/\"\x27=@<])\.env(\.(?!example\b)[\w-]+)?($|[\s\"\x27])|\.(pem|key)\b")
 READERS = {"cat", "less", "more", "head", "tail", "sed", "awk", "grep", "rg", "cp", "mv", "base64", "xxd",
@@ -103,7 +110,7 @@ for w in segments:
     if prog not in ("git", "gh"):  # their messages may contain ">" as text
         for i, a in enumerate(w):
             if ">" in a:
-                target = a.split(">")[-1] or (w[i + 1] if i + 1 < len(w) else "")
+                target = a.split(">")[-1].lstrip("|&") or (w[i + 1] if i + 1 < len(w) else "")
                 if OWNER_ONLY.search(target):
                     block("writing to an owner-only file")
     if owner_args:
