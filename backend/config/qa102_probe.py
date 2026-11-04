@@ -1,5 +1,5 @@
-from django.http import HttpResponse
+from django.http import HttpRequest, HttpResponse
 
 
-def probe(request):
+def probe(request: HttpRequest) -> HttpResponse:
     return HttpResponse(str(int(request.GET["n"]) + 1))
