@@ -11,7 +11,7 @@ pr=${1:-}
 repo=LinguaMentor/linguamentor-v3
 owner=frankkefoueg
 [ "$(git remote get-url origin)" = "https://github.com/$repo.git" ] \
-  || { echo "merge.sh: origin is not the LinguaMentor repository" >&2; exit 2; }
+  || { echo "merge.sh: origin is not $repo" >&2; exit 2; }
 
 fail() { echo "merge.sh: refused, $1" >&2; exit 1; }
 # gh --paginate prints one JSON array per page; slurp and join them so no page is skipped.
