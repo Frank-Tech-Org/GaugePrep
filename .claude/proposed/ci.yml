@@ -28,7 +28,8 @@ jobs:
       GITLEAKS_VERSION: 8.30.1
       GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
       OASDIFF_VERSION: 1.35.0
-      OASDIFF_SHA256: a8023002fcb2eaa7f5758148a9303cb63d33b939886df312268bc0fc7b939140
+      OASDIFF_GO_VERSION: 1.27.3
+      OASDIFF_SHA256: 0183d4d74308201752a025bffddb4fad020916824bcb7fd3a5db2d1444bc5116
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -76,33 +77,47 @@ jobs:
             echo "::error title=Secret found::gitleaks found a secret in the history; the File line in the output above names the file. Remove it from every commit and rotate it."
             exit 1
           fi
-      # Runs only when the PR changes backend/openapi.json. Both documents are read from git objects into the runner temp dir, so no PR script or checkout file is executed or compared; the Apache-2.0 release binary is pinned by version and SHA256.
-      # Only /api/v1 paths count. oasdiff opens local files only here, never a URL.
-      - name: API breaking changes
+      # The API check runs only when the PR changes backend/openapi.json. Both documents are read from git objects into the runner temp dir, so no PR script or checkout file is executed or compared.
+      - name: API contract files
+        id: oas
         if: ${{ !cancelled() }}
         env:
           BASE: ${{ github.event.pull_request.base.sha }}
           HEAD: ${{ github.event.pull_request.head.sha }}
         run: |
+          compare=false
           changed=$(git diff --name-only --no-renames "$BASE...$HEAD" -- backend/openapi.json)
           if [ -z "$changed" ]; then
             echo "backend/openapi.json unchanged, skipping"
-            exit 0
-          fi
-          if ! git show "$BASE:backend/openapi.json" > "$RUNNER_TEMP/openapi.base.json" 2>/dev/null; then
+          elif ! git show "$BASE:backend/openapi.json" > "$RUNNER_TEMP/openapi.base.json" 2>/dev/null; then
             echo "backend/openapi.json is new on this PR, nothing to compare"
-            exit 0
-          fi
-          if ! git show "$HEAD:backend/openapi.json" > "$RUNNER_TEMP/openapi.head.json" 2>/dev/null; then
+          elif ! git show "$HEAD:backend/openapi.json" > "$RUNNER_TEMP/openapi.head.json" 2>/dev/null; then
             echo "::error title=API contract removed::backend/openapi.json exists on the base branch and is missing on this PR. Restore it."
             exit 1
+          else
+            compare=true
           fi
-          curl -sSfL -o "$RUNNER_TEMP/oasdiff.tgz" "https://github.com/oasdiff/oasdiff/releases/download/v${OASDIFF_VERSION}/oasdiff_${OASDIFF_VERSION}_linux_amd64.tar.gz"
-          echo "${OASDIFF_SHA256}  $RUNNER_TEMP/oasdiff.tgz" | sha256sum --check -
-          mkdir "$RUNNER_TEMP/oasdiff-bin"
-          tar -xzf "$RUNNER_TEMP/oasdiff.tgz" -C "$RUNNER_TEMP/oasdiff-bin" oasdiff
-          "$RUNNER_TEMP/oasdiff-bin/oasdiff" --version | grep -qx "oasdiff version ${OASDIFF_VERSION}"
-          if ! "$RUNNER_TEMP/oasdiff-bin/oasdiff" breaking "$RUNNER_TEMP/openapi.base.json" "$RUNNER_TEMP/openapi.head.json" --match-path '^/api/v1/' --fail-on ERR; then
+          echo "compare=$compare" >> "$GITHUB_OUTPUT"
+      # Holds only the oasdiff binary we build; its hash is checked after every restore, so a poisoned entry cannot run.
+      - name: Cache the oasdiff build
+        id: oas-cache
+        if: ${{ !cancelled() && steps.oas.outputs.compare == 'true' }}
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/oasdiff-bin
+          key: oasdiff-${{ env.OASDIFF_VERSION }}-go${{ env.OASDIFF_GO_VERSION }}-linux-amd64
+      # Apache-2.0 oasdiff built from source at a pinned module version and toolchain (the release binary carried a Go standard library CVE). The output hash is pinned: a -trimpath build with CGO off at this toolchain is reproducible. oasdiff opens local files only here, never a URL. Only /api/v1 paths count.
+      - name: API breaking changes
+        if: ${{ !cancelled() && steps.oas.outputs.compare == 'true' }}
+        run: |
+          bin="$RUNNER_TEMP/oasdiff-bin/oasdiff"
+          if ! { [ -f "$bin" ] && echo "${OASDIFF_SHA256}  $bin" | sha256sum --check --quiet -; }; then
+            rm -rf "$RUNNER_TEMP/oasdiff-bin"
+            GOTOOLCHAIN="go${OASDIFF_GO_VERSION}" CGO_ENABLED=0 GOFLAGS= GOWORK=off GOPATH="$RUNNER_TEMP/gopath" GOBIN="$RUNNER_TEMP/oasdiff-bin" \
+              go install -trimpath "github.com/oasdiff/oasdiff@v${OASDIFF_VERSION}"
+            echo "${OASDIFF_SHA256}  $bin" | sha256sum --check -
+          fi
+          if ! "$bin" breaking "$RUNNER_TEMP/openapi.base.json" "$RUNNER_TEMP/openapi.head.json" --match-path '^/api/v1/' --fail-on ERR; then
             echo "::error title=Breaking API change::oasdiff found a breaking change under /api/v1 (listed above). Installed copies of the web app still call the old contract: make the change additive, or keep the old field or operation until a new API version."
             exit 1
           fi
