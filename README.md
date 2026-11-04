@@ -100,7 +100,7 @@ The `backend image` check runs `docker build -f infra/docker/backend.Dockerfile 
 
 ### Security scans in CI
 
-Each pull request also runs these checks (gitleaks inside `gate`, the rest as separate jobs). A HIGH or CRITICAL finding fails the check and blocks the merge (pip-audit fails on any advisory, as it has no severity filter). All are free and open source, with no token or account.
+Each pull request also runs these checks (the `gate` job holds the path filter, secret scan, API breaking changes, scanner settings, and title and description steps; the other scanners are separate jobs). A HIGH or CRITICAL finding fails the check and blocks the merge (pip-audit fails on any advisory, as it has no severity filter). All are free and open source, with no token or account.
 
 | Check | What it scans |
 |---|---|
@@ -111,6 +111,20 @@ Each pull request also runs these checks (gitleaks inside `gate`, the rest as se
 | gitleaks (in `gate`) | The full git history, not only the pull request's commits |
 
 Documentation-only pull requests skip pip-audit, pnpm audit and Trivy. The only secret-scan allowlist entry is the placeholder key in `api-design.md`, in `.gitleaks.toml`.
+
+### Scanner settings
+
+The `Scanner settings` step of `gate` compares the pull request with its merge base and fails when the pull request:
+
+- adds or edits a scanner or package-manager settings file: `.semgrepignore`, `.trivyignore*`, `trivy.yaml`, `trivy.yml`, `.gitleaks.toml`, `.gitleaksignore`, `.npmrc` or `.pnpmfile.*`, at any depth, including a file replaced by a symlink; the log names each file
+- changes a `pnpm-workspace.yaml` beyond its `packages:` list (any key, item, flow or quoted form), compared with the list removed, so adding an app stays green; this covers the audit, override, build-permission and pnpmfile keys without listing them
+- adds a line containing `nosem` (also `nosemgrep`), `trivy:`, `tfsec:`, `--ignore-vuln` or `gitleaks:allow`, in any case; the log names each file and line, never the line contents
+
+Diffs are read as text whatever `.gitattributes` says, and file names are matched NUL-safe and printed without control characters. Markdown files and the owner-only CI workflow are not searched, since they only describe these markers. Deleting a settings file is not flagged, because it can only widen what the scans see.
+
+Limits: a marker split across lines or built at run time is not seen, and a path added to the `packages:` list is not flagged. A `pnpm-workspace.yaml` that is not a regular file is always flagged. pnpm 11 (pinned in `package.json`) no longer reads settings from a `pnpm` field in `package.json`, so that field is not checked.
+
+The check flags; it does not decide. When the suppression is justified, the owner merges over the red check. The free plan cannot make checks required, so nothing stops that merge but `merge.sh`, which reads the gate and refuses a red one: the owner merges by hand, after reading the named files and lines.
 
 ### Pull request description
 
