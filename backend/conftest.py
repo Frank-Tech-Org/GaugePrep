@@ -7,6 +7,14 @@ import psycopg
 import pytest
 from django.conf import settings
 
+
+def pytest_configure(config: pytest.Config) -> None:
+    for kind in ("success", "not_found", "refused"):
+        config.addinivalue_line(
+            "markers", f"{kind}(operation): test covers this API operation"
+        )
+
+
 _probe: dict[str, str | None] = {}
 
 
