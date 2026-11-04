@@ -33,9 +33,7 @@
             }
           }
         },
-        "tags": [
-          "health"
-        ]
+        "tags": ["health"]
       }
     }
   },
@@ -46,16 +44,9 @@
           "status": {
             "title": "Status",
             "type": "string"
-          },
-          "database": {
-            "title": "Database",
-            "type": "string"
           }
         },
-        "required": [
-          "status",
-          "database"
-        ],
+        "required": ["status"],
         "title": "Health",
         "type": "object"
       },
@@ -82,13 +73,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "type",
-          "title",
-          "status",
-          "detail",
-          "code"
-        ],
+        "required": ["type", "title", "status", "detail", "code"],
         "title": "Problem",
         "type": "object"
       }
