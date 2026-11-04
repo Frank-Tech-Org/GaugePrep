@@ -16,7 +16,8 @@ concurrency:
 
 # GitHub-hosted arm64 runners (ubuntu-24.04-arm) are free for public repositories only, so this private repo uses x64.
 jobs:
-  # One runner for the path filter, the title and description check and the secret scan. When it fails, the jobs that need it are skipped, and a skipped job counts as passing for merge: only the red gate blocks.
+  # One runner for the path filter, the secret scan and the title and description check. When it fails, the jobs that need it are skipped, and a skipped job counts as passing for merge: only the red gate blocks.
+  # The title script comes from the PR and runs last, after the filter and the scan have finished, so it cannot change their results.
   gate:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
@@ -48,20 +49,8 @@ jobs:
           echo "backend_image=$backend_image" >> "$GITHUB_OUTPUT"
           echo "code checks: $code"
           echo "backend image: $backend_image"
-      # The script comes from the PR; the template is read from the base commit, so a PR cannot loosen the template it is checked against.
-      # Title and body reach the script only through env, never inside the run text.
-      - name: PR title and description
-        if: ${{ !cancelled() }}
-        env:
-          PR_TITLE: ${{ github.event.pull_request.title }}
-          PR_BODY: ${{ github.event.pull_request.body }}
-          BASE: ${{ github.event.pull_request.base.sha }}
-        run: |
-          git show "$BASE:.github/pull_request_template.md" > "$RUNNER_TEMP/pull_request_template.md"
-          bash .github/scripts/check-pr-description.sh "$RUNNER_TEMP/pull_request_template.md"
       # The MIT-licensed binary, not gitleaks/gitleaks-action, which needs a paid licence on organisations.
       - name: Install gitleaks
-        if: ${{ !cancelled() }}
         run: |
           curl -sSfL -o "$RUNNER_TEMP/gitleaks.tgz" "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
           echo "${GITLEAKS_SHA256}  $RUNNER_TEMP/gitleaks.tgz" | sha256sum --check -
@@ -85,6 +74,17 @@ jobs:
             echo "::error title=Secret found::gitleaks found a secret in the history; the File line in the output above names the file. Remove it from every commit and rotate it."
             exit 1
           fi
+      # The script comes from the PR; the template is read from the base commit, so a PR cannot loosen the template it is checked against.
+      # Title and body reach the script only through env, never inside the run text.
+      - name: PR title and description
+        if: ${{ !cancelled() }}
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          git show "$BASE:.github/pull_request_template.md" > "$RUNNER_TEMP/pull_request_template.md"
+          bash .github/scripts/check-pr-description.sh "$RUNNER_TEMP/pull_request_template.md"
 
   check:
     needs: gate
