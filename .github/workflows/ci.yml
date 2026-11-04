@@ -16,12 +16,17 @@ concurrency:
 
 # GitHub-hosted arm64 runners (ubuntu-24.04-arm) are free for public repositories only, so this private repo uses x64.
 jobs:
-  changes:
+  # One runner for the path filter, the secret scan and the title and description check. When it fails, the jobs that need it are skipped, and a skipped job counts as passing for merge: only the red gate blocks.
+  # The title script comes from the PR and runs last, after the filter and the scan have finished, so it cannot change their results.
+  gate:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
       code: ${{ steps.filter.outputs.code }}
       backend_image: ${{ steps.filter.outputs.backend_image }}
+    env:
+      GITLEAKS_VERSION: 8.30.1
+      GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -44,10 +49,46 @@ jobs:
           echo "backend_image=$backend_image" >> "$GITHUB_OUTPUT"
           echo "code checks: $code"
           echo "backend image: $backend_image"
+      # The MIT-licensed binary, not gitleaks/gitleaks-action, which needs a paid licence on organisations.
+      - name: Install gitleaks
+        run: |
+          curl -sSfL -o "$RUNNER_TEMP/gitleaks.tgz" "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          echo "${GITLEAKS_SHA256}  $RUNNER_TEMP/gitleaks.tgz" | sha256sum --check -
+          mkdir "$RUNNER_TEMP/gitleaks-bin"
+          tar -xzf "$RUNNER_TEMP/gitleaks.tgz" -C "$RUNNER_TEMP/gitleaks-bin" gitleaks
+      # Scans the full history reachable from the PR head, not other branches. Config and ignore list come from the base commit, so a PR cannot switch off its own scan.
+      - name: Scan the full git history
+        if: ${{ !cancelled() }}
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          # gitleaks:allow comments and the checkout's own .gitleaksignore would let a PR skip its own secret.
+          args=(git --redact --verbose --ignore-gitleaks-allow --log-opts="HEAD")
+          rm -f .gitleaksignore
+          # Always pass a config from the base, so the PR's own ./.gitleaks.toml is never loaded.
+          git show "$BASE:.gitleaks.toml" > "$RUNNER_TEMP/gl.toml" 2>/dev/null || printf '[extend]\nuseDefault = true\n' > "$RUNNER_TEMP/gl.toml"
+          args+=(--config "$RUNNER_TEMP/gl.toml")
+          git show "$BASE:.gitleaksignore" > "$RUNNER_TEMP/gl.ignore" 2>/dev/null || : > "$RUNNER_TEMP/gl.ignore"
+          args+=(--gitleaks-ignore-path "$RUNNER_TEMP/gl.ignore")
+          if ! "$RUNNER_TEMP/gitleaks-bin/gitleaks" "${args[@]}"; then
+            echo "::error title=Secret found::gitleaks found a secret in the history; the File line in the output above names the file. Remove it from every commit and rotate it."
+            exit 1
+          fi
+      # The script comes from the PR; the template is read from the base commit, so a PR cannot loosen the template it is checked against.
+      # Title and body reach the script only through env, never inside the run text.
+      - name: PR title and description
+        if: ${{ !cancelled() }}
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          git show "$BASE:.github/pull_request_template.md" > "$RUNNER_TEMP/pull_request_template.md"
+          bash .github/scripts/check-pr-description.sh "$RUNNER_TEMP/pull_request_template.md"
 
   check:
-    needs: changes
-    if: needs.changes.outputs.code == 'true'
+    needs: gate
+    if: needs.gate.outputs.code == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     services:
@@ -91,8 +132,8 @@ jobs:
   # Not part of check: it runs only when an image input changed, and a skipped job counts as passing for merge.
   backend-image:
     name: backend image
-    needs: changes
-    if: needs.changes.outputs.backend_image == 'true'
+    needs: gate
+    if: needs.gate.outputs.backend_image == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -101,63 +142,6 @@ jobs:
           persist-credentials: false
       - name: Build the backend image
         run: docker build -f infra/docker/backend.Dockerfile .
-
-  pr-title:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 2
-    steps:
-      # Only the check script comes from the PR; the template comes from the base commit, so a PR cannot loosen the template it is checked against.
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          sparse-checkout: .github/scripts
-          sparse-checkout-cone-mode: false
-          persist-credentials: false
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ github.event.pull_request.base.sha }}
-          path: base
-          sparse-checkout: .github/pull_request_template.md
-          sparse-checkout-cone-mode: false
-          persist-credentials: false
-      # Title and body reach the script only through env, never inside the run text.
-      - name: PR description
-        env:
-          PR_TITLE: ${{ github.event.pull_request.title }}
-          PR_BODY: ${{ github.event.pull_request.body }}
-        run: bash .github/scripts/check-pr-description.sh base/.github/pull_request_template.md
-
-  gitleaks:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 5
-    env:
-      GITLEAKS_VERSION: 8.30.1
-      GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-      # The MIT-licensed binary, not gitleaks/gitleaks-action, which needs a paid licence on organisations.
-      - name: Install gitleaks
-        run: |
-          curl -sSfL -o "$RUNNER_TEMP/gitleaks.tgz" "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
-          echo "${GITLEAKS_SHA256}  $RUNNER_TEMP/gitleaks.tgz" | sha256sum --check -
-          mkdir "$RUNNER_TEMP/gitleaks-bin"
-          tar -xzf "$RUNNER_TEMP/gitleaks.tgz" -C "$RUNNER_TEMP/gitleaks-bin" gitleaks
-      # Scans the full history reachable from the PR head, not other branches. Config and ignore list come from the base commit, so a PR cannot switch off its own scan.
-      - name: Scan the full git history
-        env:
-          BASE: ${{ github.event.pull_request.base.sha }}
-        run: |
-          # gitleaks:allow comments and the checkout's own .gitleaksignore would let a PR skip its own secret.
-          args=(git --redact --verbose --ignore-gitleaks-allow --log-opts="HEAD")
-          rm -f .gitleaksignore
-          # Always pass a config from the base, so the PR's own ./.gitleaks.toml is never loaded.
-          git show "$BASE:.gitleaks.toml" > "$RUNNER_TEMP/gl.toml" 2>/dev/null || printf '[extend]\nuseDefault = true\n' > "$RUNNER_TEMP/gl.toml"
-          args+=(--config "$RUNNER_TEMP/gl.toml")
-          git show "$BASE:.gitleaksignore" > "$RUNNER_TEMP/gl.ignore" 2>/dev/null || : > "$RUNNER_TEMP/gl.ignore"
-          args+=(--gitleaks-ignore-path "$RUNNER_TEMP/gl.ignore")
-          "$RUNNER_TEMP/gitleaks-bin/gitleaks" "${args[@]}"
 
   # Runs on every pull request, docs included.
   semgrep:
@@ -195,8 +179,8 @@ jobs:
             --config "$r/python" --config "$r/typescript" --config "$r/generic" .
 
   pip-audit:
-    needs: changes
-    if: needs.changes.outputs.code == 'true'
+    needs: gate
+    if: needs.gate.outputs.code == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -214,8 +198,8 @@ jobs:
           uvx --no-config --exclude-newer 2026-10-30 pip-audit==2.10.1 --no-deps --disable-pip -r "$RUNNER_TEMP/requirements.txt"
 
   pnpm-audit:
-    needs: changes
-    if: needs.changes.outputs.code == 'true'
+    needs: gate
+    if: needs.gate.outputs.code == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -247,8 +231,8 @@ jobs:
         run: pnpm audit --ignore-pnpmfile --audit-level high --registry https://registry.npmjs.org/
 
   trivy:
-    needs: changes
-    if: needs.changes.outputs.code == 'true'
+    needs: gate
+    if: needs.gate.outputs.code == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     env:

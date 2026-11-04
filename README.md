@@ -64,7 +64,7 @@ uv run python backend/manage.py export_openapi_schema --api config.api.api --ind
 
 ## Checks
 
-`pnpm check` is the single command that defines "passes". Git hooks and CI run the same command, and CI adds the pull request title check (Conventional Commits) and the security scans below. It stops at the first failure and prints `check failed: <tool>`.
+`pnpm check` is the single command that defines "passes". Git hooks and CI run the same command, and CI adds the `gate` job and the security scans below. It stops at the first failure and prints `check failed: <tool>`.
 
 | Tool | What it does |
 |---|---|
@@ -82,6 +82,10 @@ uv run python backend/manage.py export_openapi_schema --api config.api.api --ind
 
 No skips: with `CI=true` any skipped or xfail test (pytest or Vitest) fails the run and is named; locally it only warns. Floors only go up.
 
+### Gate job in CI
+
+One `gate` job runs first on every pull request, in this order: the path filter (which decides whether the code jobs, pip-audit, pnpm audit, Trivy and the backend image run), the gitleaks secret scan over the full git history, and last the title and description check (its script comes from the pull request, so it runs after the scan and cannot change it). It fails red with a message naming the bad title or description rule, or the file holding the secret. When it fails, the jobs that need it are skipped; a skipped job counts as passing for merge, so a red `gate` is what blocks, and a grey job is not a pass.
+
 ### API contract tests
 
 `backend/tests/test_contract.py` runs inside `pytest`. [Schemathesis](https://schemathesis.readthedocs.io) (MIT, dev dependency only) generates requests for every operation in `backend/openapi.json` and calls the Django app in-process: no server, no network. Each response must use a documented status, never be a 5xx, and match its documented schema; a failure names the operation and the status. The tests also fail when `backend/openapi.json` is missing or has no operations. Response content types are not checked yet. After an API change, regenerate the document (the command is in the `test_openapi.py` failure message) and run `uv run pytest backend/tests/test_contract.py`.
@@ -92,7 +96,7 @@ The `backend image` check runs `docker build -f infra/docker/backend.Dockerfile 
 
 ### Security scans in CI
 
-Each pull request also runs these as separate checks. A HIGH or CRITICAL finding fails the check and blocks the merge (pip-audit fails on any advisory, as it has no severity filter). All are free and open source, with no token or account.
+Each pull request also runs these checks (gitleaks inside `gate`, the rest as separate jobs). A HIGH or CRITICAL finding fails the check and blocks the merge (pip-audit fails on any advisory, as it has no severity filter). All are free and open source, with no token or account.
 
 | Check | What it scans |
 |---|---|
@@ -100,13 +104,13 @@ Each pull request also runs these as separate checks. A HIGH or CRITICAL finding
 | pip-audit | The `uv.lock` dependencies; it has no severity filter, so any known advisory fails |
 | pnpm audit | The `pnpm-lock.yaml` dependencies, audited in a rebuilt directory with no pull request settings or hooks (`pnpm audit --audit-level high`) |
 | Trivy | The repository files (`trivy fs --severity HIGH,CRITICAL`) |
-| gitleaks | The full git history, not only the pull request's commits |
+| gitleaks (in `gate`) | The full git history, not only the pull request's commits |
 
 Documentation-only pull requests skip pip-audit, pnpm audit and Trivy. The only secret-scan allowlist entry is the placeholder key in `api-design.md`, in `.gitleaks.toml`.
 
 ### Pull request description
 
-The `pr-title` check (script `.github/scripts/check-pr-description.sh`, local cases in `check-pr-description.test.sh`) fails when:
+The title and description check, a step of `gate` (script `.github/scripts/check-pr-description.sh`, local cases in `check-pr-description.test.sh`) fails when:
 
 - the title is not `<type>(<scope>): <subject>` with a scope, using the commitlint types (feat fix docs style refactor perf test build ci chore revert)
 - the body has no `Refs #<number>`
