@@ -33,9 +33,27 @@
             }
           }
         },
-        "tags": [
-          "health"
-        ]
+        "tags": ["health"]
+      }
+    },
+    "/api/v1/version": {
+      "get": {
+        "operationId": "config_health_version",
+        "summary": "Version",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          }
+        },
+        "tags": ["health"]
       }
     }
   },
@@ -50,12 +68,13 @@
           "database": {
             "title": "Database",
             "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "string"
           }
         },
-        "required": [
-          "status",
-          "database"
-        ],
+        "required": ["status", "database"],
         "title": "Health",
         "type": "object"
       },
@@ -82,13 +101,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "type",
-          "title",
-          "status",
-          "detail",
-          "code"
-        ],
+        "required": ["type", "title", "status", "detail", "code"],
         "title": "Problem",
         "type": "object"
       }
