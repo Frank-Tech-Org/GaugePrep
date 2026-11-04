@@ -82,6 +82,10 @@ uv run python backend/manage.py export_openapi_schema --api config.api.api --ind
 
 No skips: with `CI=true` any skipped or xfail test (pytest or Vitest) fails the run and is named; locally it only warns. Floors only go up.
 
+### API contract tests
+
+`backend/tests/test_contract.py` runs inside `pytest`. [Schemathesis](https://schemathesis.readthedocs.io) (MIT, dev dependency only) generates requests for every operation in `backend/openapi.json` and calls the Django app in-process: no server, no network. Each response must use a documented status, never be a 5xx, and match its documented schema; a failure names the operation and the status. The tests also fail when `backend/openapi.json` is missing or has no operations. Response content types are not checked yet. After an API change, regenerate the document (the command is in the `test_openapi.py` failure message) and run `uv run pytest backend/tests/test_contract.py`.
+
 ### Backend image build in CI
 
 The `backend image` check runs `docker build -f infra/docker/backend.Dockerfile .` (no push, no login) only when a pull request changes `infra/docker/`, `uv.lock`, a `pyproject.toml` or `.dockerignore`; otherwise it shows as skipped and does not block the merge. It catches a Dockerfile, lockfile or workspace change that breaks the image, which `pnpm check` never builds. It builds for x64, so ARM-only problems still show at deploy.
