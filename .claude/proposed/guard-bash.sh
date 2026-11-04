@@ -75,7 +75,7 @@ def gh_api(rest):
 
 # Owner-only files: hooks, settings, the push and merge scripts, CI workflows, scanner ignore files and config, npm/pnpm config.
 OWNER_ONLY = re.compile(r"\.claude/(hooks/|settings(\.local)?\.json|scripts/(push|merge)\.sh)|\.github/workflows/"
-                        r"|(\.semgrepignore|\.trivyignore[\w.-]*|(?<![\w.-])trivy\.yaml|\.gitleaks\.toml|\.gitleaksignore|\.npmrc|\.pnpmfile\.[\w.-]*)(?=$|[\s\x27\"/;)\\])")
+                        r"|(\.semgrepignore|\.trivyignore[\w.-]*|(?<![\w.-])trivy\.yaml|\.gitleaks\.toml|\.gitleaksignore|\.npmrc|\.pnpmfile\.[\w.-]*)(?![\w.-])")
 READ_ONLY = {"cat", "head", "tail", "less", "more", "ls", "diff", "cmp", "grep", "rg", "wc", "sha256sum",
              "md5sum", "stat", "file", "echo", "printf", "jq", "test", "["}
 GIT_READ = {"diff", "log", "show", "status", "add", "commit", "ls-files", "blame", "grep"}
