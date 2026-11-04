@@ -5,40 +5,7 @@
     "version": "1",
     "description": "Public HTTP API. Errors are RFC 9457 problem details."
   },
-  "paths": {
-    "/api/v1/health": {
-      "get": {
-        "operationId": "config_health_health",
-        "summary": "Health",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Health"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "Service Unavailable",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Problem"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "health"
-        ]
-      }
-    }
-  },
+  "paths": {},
   "components": {
     "schemas": {
       "Health": {
@@ -52,10 +19,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "status",
-          "database"
-        ],
+        "required": ["status", "database"],
         "title": "Health",
         "type": "object"
       },
@@ -82,13 +46,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "type",
-          "title",
-          "status",
-          "detail",
-          "code"
-        ],
+        "required": ["type", "title", "status", "detail", "code"],
         "title": "Problem",
         "type": "object"
       }
