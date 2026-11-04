@@ -77,7 +77,7 @@ jobs:
             echo "::error title=Secret found::gitleaks found a secret in the history; the File line in the output above names the file. Remove it from every commit and rotate it."
             exit 1
           fi
-      # The API check runs only when the PR changes backend/openapi.json. Both documents are read from git objects into the runner temp dir, so no PR script or checkout file is executed or compared.
+      # Both specs come from git objects, so nothing in the checkout can touch the API check.
       - name: API contract files
         id: oas
         if: ${{ !cancelled() }}
@@ -106,7 +106,7 @@ jobs:
         with:
           path: ${{ runner.temp }}/oasdiff-bin
           key: oasdiff-${{ env.OASDIFF_VERSION }}-go${{ env.OASDIFF_GO_VERSION }}-linux-amd64
-      # Apache-2.0 oasdiff built from source at a pinned module version and toolchain (the release binary carried a Go standard library CVE). The output hash is pinned: a -trimpath build with CGO off at this toolchain is reproducible. oasdiff opens local files only here, never a URL. Only /api/v1 paths count.
+      # Built from source: the release binary ships a Go stdlib CVE. Output hash pinned.
       - name: API breaking changes
         if: ${{ !cancelled() && steps.oas.outputs.compare == 'true' }}
         run: |
@@ -117,7 +117,11 @@ jobs:
               go install -trimpath "github.com/oasdiff/oasdiff@v${OASDIFF_VERSION}"
             echo "${OASDIFF_SHA256}  $bin" | sha256sum --check -
           fi
-          if ! "$bin" breaking "$RUNNER_TEMP/openapi.base.json" "$RUNNER_TEMP/openapi.head.json" --match-path '^/api/v1/' --fail-on ERR; then
+          # Empty config and our own severity file: a .oasdiff.* file in the checkout is never read. External refs are refused.
+          : > "$RUNNER_TEMP/oasdiff.config.yaml"
+          echo 'response-optional-property-removed err' > "$RUNNER_TEMP/oasdiff.severity"
+          cd "$RUNNER_TEMP"
+          if ! "$bin" breaking openapi.base.json openapi.head.json --config oasdiff.config.yaml --severity-levels oasdiff.severity --allow-external-refs=false --match-path '^/api/v1/' --fail-on ERR; then
             echo "::error title=Breaking API change::oasdiff found a breaking change under /api/v1 (listed above). Installed copies of the web app still call the old contract: make the change additive, or keep the old field or operation until a new API version."
             exit 1
           fi
