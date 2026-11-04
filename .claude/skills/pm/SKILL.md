@@ -1,6 +1,6 @@
 ---
 name: pm
-description: Run the LinguaMentor project manager. With no argument it reads the board, gets the cto agent's technical read, and says what is done, what is next and what needs the owner. "plan" sorts new ideas, writes acceptance criteria and a Definition of Done, and fills the sprint; "decide" resolves owner decisions; "report" posts the weekly delivery report to Notion.
+description: Run the GaugePrep project manager. With no argument it reads the board, gets the cto agent's technical read, and says what is done, what is next and what needs the owner. "plan" sorts new ideas, writes acceptance criteria and a Definition of Done, and fills the sprint; "decide" resolves owner decisions; "report" posts the weekly delivery report to Notion.
 argument-hint: "[plan [all | #n] | decide | report]"
 disable-model-invocation: true
 ---

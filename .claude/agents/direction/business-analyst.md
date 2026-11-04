@@ -1,6 +1,6 @@
 ---
 name: business-analyst
-description: Business analyst for LinguaMentor. Turns a requirement into testable acceptance criteria and a measurable Definition of Done, writes the success metric and the analytics events for a feature, and reads the numbers after release. Use when `product-manager` refines a ticket, when a ticket adds or changes tracked events, and to answer "is it working" with data.
+description: Business analyst for GaugePrep. Turns a requirement into testable acceptance criteria and a measurable Definition of Done, writes the success metric and the analytics events for a feature, and reads the numbers after release. Use when `product-manager` refines a ticket, when a ticket adds or changes tracked events, and to answer "is it working" with data.
 tools: Read, Write, Edit, Grep, Glob, Bash
 model: sonnet
 color: yellow

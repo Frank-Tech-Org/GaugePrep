@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Board helper for org project #6 "LinguaMentor Delivery", shared by the /lm-* commands.
+# Board helper for org project #6, shared by the /lm-* commands.
 #   board.sh list [Status]          issues on the board, optionally one column
 #   board.sh wip                    tickets in flight (In progress, In review, In QA); the limit is 2, or 3 once CI exists
 #   board.sh info <n>               type, area, priority, status, sprint, blockers

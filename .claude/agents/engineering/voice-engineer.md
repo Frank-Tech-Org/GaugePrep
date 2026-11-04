@@ -1,6 +1,6 @@
 ---
 name: voice-engineer
-description: Voice engineer for LinguaMentor's speaking examiner. Builds the LiveKit Agents worker (turn detection, speech recognition, Claude Haiku dialogue, ElevenLabs voice), server-side recording, transcripts and the internal API calls to the core. Use for any ticket with Area voice.
+description: Voice engineer for GaugePrep's speaking examiner. Builds the LiveKit Agents worker (turn detection, speech recognition, Claude Haiku dialogue, ElevenLabs voice), server-side recording, transcripts and the internal API calls to the core. Use for any ticket with Area voice.
 tools: Read, Write, Edit, Grep, Glob, Bash, WebFetch
 model: sonnet
 color: green

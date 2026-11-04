@@ -1,6 +1,6 @@
 ---
 name: lm-hotfix
-description: Fix an urgent LinguaMentor production bug from main. Finds the Urgent hotfix Bug on the board, pauses the tickets in flight with a checkpoint, branches hotfix/* from main, fixes and tests, and hands the owner the PR, tag and back-merge steps.
+description: Fix an urgent GaugePrep production bug from main. Finds the Urgent hotfix Bug on the board, pauses the tickets in flight with a checkpoint, branches hotfix/* from main, fixes and tests, and hands the owner the PR, tag and back-merge steps.
 argument-hint: "[#n to override]"
 disable-model-invocation: true
 ---
