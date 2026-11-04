@@ -84,7 +84,7 @@ No skips: with `CI=true` any skipped or xfail test (pytest or Vitest) fails the 
 
 ### Gate job in CI
 
-One `gate` job runs first on every pull request, in this order: the path filter (which decides whether the code jobs, pip-audit, pnpm audit, Trivy and the backend image run), the title and description check, and the gitleaks secret scan over the full git history. It fails red with a message naming the bad title or description rule, or the file holding the secret. When it fails, the jobs that need it are skipped; a skipped job counts as passing for merge, so a red `gate` is what blocks, and a grey job is not a pass.
+One `gate` job runs first on every pull request, in this order: the path filter (which decides whether the code jobs, pip-audit, pnpm audit, Trivy and the backend image run), the gitleaks secret scan over the full git history, and last the title and description check (its script comes from the pull request, so it runs after the scan and cannot change it). It fails red with a message naming the bad title or description rule, or the file holding the secret. When it fails, the jobs that need it are skipped; a skipped job counts as passing for merge, so a red `gate` is what blocks, and a grey job is not a pass.
 
 ### Backend image build in CI
 
