@@ -95,6 +95,16 @@ Each pull request also runs these as separate checks. A HIGH or CRITICAL finding
 
 Documentation-only pull requests skip pip-audit, pnpm audit and Trivy. The only secret-scan allowlist entry is the placeholder key in `api-design.md`, in `.gitleaks.toml`.
 
+### Pull request description
+
+The `pr-title` check (script `.github/scripts/check-pr-description.sh`, local cases in `check-pr-description.test.sh`) fails when:
+
+- the title is not `<type>(<scope>): <subject>` with a scope, using the commitlint types (feat fix docs style refactor perf test build ci chore revert)
+- the body has no `Refs #<number>`
+- the body lacks any `## ` heading of `.github/pull_request_template.md`, read from the base branch; `## Evidence` is optional
+
+The failure names each broken rule. Editing the body re-runs the check.
+
 ### Git hooks
 
 `pnpm install` installs the hooks (Husky, through the `prepare` script). They need [gitleaks](https://github.com/gitleaks/gitleaks) 8.19 or newer on your PATH, because `gitleaks git --staged` replaces the deprecated `gitleaks protect`. With gitleaks missing, `pre-commit` refuses.
