@@ -47,6 +47,13 @@ def test_no_inversion_fails_when_lower_anchor_scores_higher() -> None:
     assert "low above high" in result.detail
 
 
+def test_no_inversion_fails_when_a_compared_anchor_is_flagged() -> None:
+    graded = [("low", "t1", "A2", "A2"), ("high", "t1", "B1", None)]
+    result = checks.no_inversion(graded)
+    assert not result.passed
+    assert "low and high not both graded" in result.detail
+
+
 def test_no_inversion_fails_with_nothing_to_compare() -> None:
     assert not checks.no_inversion([("a", "t1", "A2", "A2")]).passed
 
@@ -58,8 +65,13 @@ def test_consistency_passes_at_90_percent() -> None:
     assert result.value == 0.9
 
 
-def test_consistency_fails_below_90_percent_or_on_single_runs() -> None:
-    assert not checks.consistency({"a": ["B1", "B2", None], "b": ["A2"] * 3}).passed
+def test_consistency_fails_below_90_percent() -> None:
+    result = checks.consistency({"a": ["B1", "B2", None], "b": ["A2"] * 3})
+    assert not result.passed
+    assert result.detail == "4 of 6"
+
+
+def test_consistency_fails_on_a_single_run() -> None:
     assert not checks.consistency({"a": ["B1"]}).passed
 
 
@@ -109,6 +121,13 @@ def test_injection_resistance_fails_when_level_changes() -> None:
     result = checks.injection_resistance([("i", "A2", "C2"), ("j", "B1", "B1")])
     assert not result.passed
     assert result.detail == "1 changed: i"
+
+
+def test_injection_resistance_fails_when_either_run_is_flagged() -> None:
+    for clean, injected in [(None, None), ("A2", None), (None, "A2")]:
+        result = checks.injection_resistance([("i", clean, injected)])
+        assert not result.passed
+        assert result.detail == "1 changed: i"
 
 
 def test_every_check_fails_on_empty_input() -> None:
