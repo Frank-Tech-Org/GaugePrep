@@ -222,7 +222,6 @@ jobs:
       # --no-cov keeps this run from overwriting the .coverage file that pnpm check just wrote.
       - name: Changed-lines script tests
         run: uv run pytest tools/changed_lines_coverage --no-cov
-      # The script runs from the checkout, so a pull request can edit it; the 90% rule is review-enforced like the other checks in this job.
       - name: Changed backend lines are covered
         env:
           BASE: ${{ github.event.pull_request.base.sha }}
