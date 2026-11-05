@@ -100,7 +100,9 @@ The script's own tests run with `uv run pytest tools/changed_lines_coverage --no
 
 ### Gate job in CI
 
-One `gate` job runs first on every pull request, in this order: the path filter (which decides whether the code jobs, pip-audit, pnpm audit, Trivy and the backend image run), the gitleaks secret scan over the full git history, the API breaking-change check, and last the title and description check (its script comes from the pull request, so it runs after the scan and the API check and cannot change them). It fails red with a message naming the bad title or description rule, the file holding the secret, or the breaking API change. When it fails, the jobs that need it are skipped; a skipped job counts as passing for merge, so a red `gate` is what blocks, and a grey job is not a pass.
+One `gate` job runs first on every pull request, in this order: the path filter (which decides whether the code jobs, pip-audit, pnpm audit, Trivy and the backend image run), the gitleaks secret scan over the full git history, the API breaking-change check, the scanner settings check, and last the title and description check (its script comes from the pull request, so it runs after the scan and the API check and cannot change them). Every step fails red with a message naming the bad title or description rule, the file holding the secret, the breaking API change or the changed setting.
+
+A red secret scan, API check or title check skips the tests, pip-audit, pnpm audit, Trivy and the backend image build. A red `Scanner settings` step alone does not: those jobs still run, so a pull request the owner merges over that flag still has its test and scan results. The pull request stays red while the step fails. A skipped job counts as passing for merge, so a red `gate` is what blocks, and a grey job is not a pass.
 
 ### API breaking changes
 
@@ -145,13 +147,14 @@ The `Scanner settings` step of `gate` compares the pull request with its merge b
 - adds or edits a scanner or package-manager settings file: `.semgrepignore`, `.trivyignore*`, `trivy.yaml`, `trivy.yml`, `.gitleaks.toml`, `.gitleaksignore`, `.npmrc` or `.pnpmfile.*`, at any depth, including a file replaced by a symlink; the log names each file
 - changes a `pnpm-workspace.yaml` beyond its `packages:` list (any key, item, flow or quoted form), compared with the list removed, so adding an app stays green; this covers the audit, override, build-permission and pnpmfile keys without listing them
 - adds, edits, deletes or renames any file under `semgrep/` (the local Semgrep rules and their tests); the log names each full path, deletions included
+- changes `packageManager`, `devEngines` or the `pnpm` field in any `package.json` (a new file counts as changed from nothing); the log names the file and the field, and a file that is not valid JSON is named without a field. Base and head are compared with `jq`, so a changed script or dependency does not trip it
 - adds a line containing `nosem` (also `nosemgrep`), `trivy:`, `tfsec:`, `--ignore-vuln` or `gitleaks:allow`, in any case; the log names each file and line, never the line contents
 
 Diffs are read as text whatever `.gitattributes` says, and file names are matched NUL-safe and printed without control characters. Markdown files and the owner-only CI workflow are not searched, since they only describe these markers. Deleting a settings file is not flagged (except under `semgrep/`, where a deleted rule widens what gets through), because it can only widen what the scans see.
 
-Limits: a marker split across lines or built at run time is not seen, and a path added to the `packages:` list is not flagged. A `pnpm-workspace.yaml` that is not a regular file is always flagged. pnpm 11 (pinned in `package.json`) no longer reads settings from a `pnpm` field in `package.json`, so that field is not checked.
+Limits: the `package.json` check looks only at those three top-level fields. A marker split across lines or built at run time is not seen, and a path added to the `packages:` list is not flagged. A `pnpm-workspace.yaml` that is not a regular file is always flagged. pnpm 11 (pinned in `package.json`) no longer reads settings from a `pnpm` field, but the field is still flagged, since dropping to an older pnpm would bring it back.
 
-The check flags; it does not decide. When the suppression is justified, the owner merges over the red check. The free plan cannot make checks required, so nothing stops that merge but `merge.sh`, which reads the gate and refuses a red one: the owner merges by hand, after reading the named files and lines.
+The check flags; it does not decide. It prints file names, field names and line numbers, never values. When the suppression is justified, the owner merges over the red check. The free plan cannot make checks required, so nothing stops that merge but `merge.sh`, which reads the gate and refuses a red one: the owner merges by hand, after reading the named files and lines.
 
 ### Pull request description
 
