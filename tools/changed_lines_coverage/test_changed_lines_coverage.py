@@ -1,9 +1,18 @@
 import json
+import os
 import subprocess
 from pathlib import Path
 
 import changed_lines_coverage as clc
 import pytest
+
+
+# Git hooks export GIT_DIR and friends; without this the temp repos below
+# would run their git commands against the real checkout.
+@pytest.fixture(autouse=True)
+def clean_git_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    for name in [n for n in os.environ if n.startswith("GIT_")]:
+        monkeypatch.delenv(name)
 
 
 def diff_for(path: str, *hunks: str) -> str:
@@ -204,7 +213,9 @@ def test_malformed_report_exits_2(
 
 
 def test_changed_file_missing_from_report_exits_2(
-    tmp_path, monkeypatch, capsys
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
 ) -> None:
     repo = repo_with_change(tmp_path)
     code, _, err = run_main(
