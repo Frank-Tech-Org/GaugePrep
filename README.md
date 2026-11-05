@@ -90,8 +90,8 @@ Run it locally against `develop` after a test run:
 
 ```sh
 uv run pytest
-uv run coverage json --rcfile=backend/pyproject.toml -o coverage.json
-uv run python tools/changed_lines_coverage/changed_lines_coverage.py --base develop
+uv run coverage json --rcfile=backend/pyproject.toml -o /tmp/coverage.json
+uv run python tools/changed_lines_coverage/changed_lines_coverage.py --base develop --coverage /tmp/coverage.json
 ```
 
 The script's own tests run with `uv run pytest tools/changed_lines_coverage --no-cov` (without `--no-cov` they overwrite the `.coverage` file from your last run).
