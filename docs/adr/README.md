@@ -25,3 +25,4 @@
 | [ADR-021](ADR-021-test-strategy-and-ci-minutes-budget.md) | Test strategy and CI minutes budget | Accepted |
 | [ADR-022](ADR-022-pr-security-scanners-scope.md) | PR security scanners catch accidents, not a deliberate bypass | Accepted |
 | [ADR-023](ADR-023-email-verification-only-no-sms-sign-up.md) | Email verification only, no SMS sign-up | Accepted |
+| [ADR-024](ADR-024-resend-for-transactional-email-mailpit-locally-and-in-dev.md) | Resend for transactional email, Mailpit locally and in dev | Accepted |

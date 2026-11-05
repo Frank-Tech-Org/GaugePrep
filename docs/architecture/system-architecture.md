@@ -502,7 +502,7 @@ Servers run in Germany (Hetzner) next to the database in Frankfurt (Neon). Traff
 | CDN and DNS | None | Cloudflare free | Cloudflare free | Cloudflare free |
 | AI and speech | Local open models | Self-hosted open models | Self-hosted open models | Real providers |
 | Payments | Notch Pay test keys | Notch Pay test keys | Notch Pay test keys | Notch Pay live keys |
-| Email | Local mail catcher | Resend free | Resend free | Resend |
+| Email | Mailpit | Mailpit | Resend free | Resend free, Pro once over 100 a day (owner decision) |
 | Monitoring | Console | Sentry and Grafana Cloud free | Sentry and Grafana Cloud free | Sentry and Grafana Cloud |
 | Host | `localhost` | `dev.gaugeprep.com` (planned) | `staging.gaugeprep.com` (planned) | Not yet named |
 | Kamal service and image | None | `gaugeprep-dev`, `ghcr.io/<org>/gaugeprep-backend` (planned) | `gaugeprep-staging`, `ghcr.io/<org>/gaugeprep-backend` (planned) | Not yet named |
@@ -665,7 +665,7 @@ Content production (items, prompts, lessons, anchors) runs in parallel from M1 u
 | Import Linter | 2.15 (4 September 2026) | PyPI |
 | Sentry | Developer plan free: 5,000 errors, 5 million spans | sentry.io pricing |
 | Grafana Cloud | Free: 10,000 series, 50 GB logs and traces, 3 users | Last9 pricing analysis, September 2026 |
-| Resend | Free 3,000 emails a month; Pro $20 for 50,000 | resend.com pricing |
+| Resend | Free 3,000 emails a month, 100 a day, 3 domains; Pro $20 for 50,000; data stored in the US (ADR-024) | resend.com pricing and GDPR page, 5 November 2026 |
 | OWASP ASVS | 5.0.0 (May 2025) | OWASP ASVS repository |
 
 ## Appendix B: Decision records
@@ -695,6 +695,7 @@ Content production (items, prompts, lessons, anchors) runs in parallel from M1 u
 | ADR-021 | Test strategy and CI minutes budget |
 | ADR-022 | PR security scanners catch accidents, not a deliberate bypass |
 | ADR-023 | Email verification only, no SMS sign-up |
+| ADR-024 | Resend for transactional email, Mailpit locally and in dev |
 
 ## Appendix C: Glossary
 
