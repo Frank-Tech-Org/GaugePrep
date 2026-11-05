@@ -79,6 +79,10 @@ No open entries.
 - Decided: 2026-11-05: no · the owner. Once the owner's part is done and only a third party's reply is awaited, the next owner task can start. First case: #18 alongside #14.
 - Effect: process doc §1, the CLAUDE.md parallel-tickets rule.
 
+### D-13: Verify sign-ups by SMS?
+- Decided: 2026-11-05: no, email verification only, Google sign-in stays · the owner. SMS costs money per message and the owner prefers email.
+- Effect: Twilio and the MTN sender ID are dropped; sign-up uses email (or Google); no phone number is collected. ADR-023 supersedes ADR-018.
+
 <!-- Move an entry here when answered, adding:
 - Decided: <YYYY-MM-DD>: <option> · <the owner's reason>
 -->

@@ -19,8 +19,9 @@
 | [ADR-015](ADR-015-github-actions-and-kamal-for-delivery.md) | GitHub Actions and Kamal for delivery | Accepted |
 | [ADR-016](ADR-016-sentry-and-grafana-cloud-for-observability.md) | Sentry and Grafana Cloud for observability | Accepted |
 | [ADR-017](ADR-017-opus-with-aac-fallback-for-audio.md) | Opus with AAC fallback for audio | Accepted |
-| [ADR-018](ADR-018-twilio-for-sms-verification-codes-behind-an-sms-provider-int.md) | Twilio for SMS verification codes behind an SMS provider interface | Accepted |
+| [ADR-018](ADR-018-twilio-for-sms-verification-codes-behind-an-sms-provider-int.md) | Twilio for SMS verification codes behind an SMS provider interface | Superseded by ADR-023 |
 | [ADR-019](ADR-019-dev-staging-and-production-from-develop-stage-and-main.md) | Dev, staging and production from develop, stage and main | Accepted |
 | [ADR-020](ADR-020-production-deploys-on-the-owners-tag-without-an-approval-gate.md) | Production deploys on the owner's tag, without an approval gate | Accepted |
 | [ADR-021](ADR-021-test-strategy-and-ci-minutes-budget.md) | Test strategy and CI minutes budget | Accepted |
 | [ADR-022](ADR-022-pr-security-scanners-scope.md) | PR security scanners catch accidents, not a deliberate bypass | Accepted |
+| [ADR-023](ADR-023-email-verification-only-no-sms-sign-up.md) | Email verification only, no SMS sign-up | Accepted |
