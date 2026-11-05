@@ -83,6 +83,10 @@ No open entries.
 - Decided: 2026-11-05: no, email verification only, Google sign-in stays · the owner. SMS costs money per message and the owner prefers email.
 - Effect: Twilio and the MTN sender ID are dropped; sign-up uses email (or Google); no phone number is collected. ADR-023 supersedes ADR-018.
 
+### D-14: Which email provider, and what does dev send to?
+- Decided: 2026-11-05: under D-11 · cto. Resend free in staging and production through plain SMTP (no SDK), Mailpit (MIT) locally and in dev so synthetic addresses never bounce on the real account. Brevo free is the fallback if mail logs must stay in the EU.
+- Effect: ADR-024. Owner actions: the Resend account, the sending subdomain's DNS records in Cloudflare and the API key values. Resend Pro ($20 a month) past 100 emails a day is a later owner call.
+
 <!-- Move an entry here when answered, adding:
 - Decided: <YYYY-MM-DD>: <option> · <the owner's reason>
 -->

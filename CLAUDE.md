@@ -1,6 +1,6 @@
 # GaugePrep
 
-Exam preparation platform for TCF Canada first: a responsive, mobile-first web app installable as a PWA (Next.js), a Django modular monolith, a LiveKit voice examiner and a shared `examcore` rules package. Sources of truth:
+Exam preparation platform for TCF Canada first: a responsive web app installable as a PWA (Next.js), a Django modular monolith, a LiveKit voice examiner and a shared `examcore` rules package. Sources of truth:
 
 - Product: `docs/product/PRD.md`
 - Architecture: `docs/architecture/system-architecture.md`, decisions in `docs/adr/`

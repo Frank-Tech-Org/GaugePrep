@@ -52,7 +52,7 @@ AI essay scoring and score predictors are common and often free. GaugePrep is po
 1. **Exam fidelity first.** Formats, timings, number of plays, word limits and scoring rules match the real exam. A simulation that is easier or kinder than the exam is a defect.
 2. **Skills, not templates.** TCF and telc score memorised or copied texts as "A1 not reached", zero, or fraud. The product teaches transferable skills and never trains learners to recite templates.
 3. **Honest numbers.** Ranges and confidence are always shown. Accuracy is measured and published.
-4. **Built for the learner's reality.** A mid-range smartphone, costly data, mobile money, French or English interface.
+4. **Built for the learner's reality.** Works on a computer and on a mid-range smartphone, over costly data, with mobile money and a French or English interface.
 5. **One engine, many exams.** Each new exam adds content and an exam model, not a new product.
 
 ### 2.4 What the product is not
