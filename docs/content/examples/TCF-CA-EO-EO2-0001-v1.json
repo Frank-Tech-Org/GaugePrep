@@ -1,0 +1,42 @@
+{
+  "schema": "speaking-task/1",
+  "code": "TCF-CA-EO-EO2-0001",
+  "version": 1,
+  "exam": "TCF_CA",
+  "paper": "EO",
+  "type": "EO2",
+  "theme": "leisure",
+  "setting": "The learner phones a sports centre to enrol their child in swimming lessons.",
+  "card_fr": "Vous voulez inscrire votre enfant à des cours de natation. Vous téléphonez au centre sportif. Renseignez-vous sur les jours et les horaires, le prix, l'âge minimum et ce qu'il faut apporter. L'examinateur joue le rôle de l'employé du centre.",
+  "learner_role": "Parent calling the sports centre",
+  "examiner_role": "Receptionist at the sports centre",
+  "register": "neutral",
+  "info_to_obtain": [
+    {
+      "label": "Days and times",
+      "examiner_answer_fr": "Le mercredi et le samedi, de 14 heures à 15 heures."
+    },
+    {
+      "label": "Price",
+      "examiner_answer_fr": "25 000 francs CFA par trimestre."
+    },
+    { "label": "Minimum age", "examiner_answer_fr": "À partir de 6 ans." },
+    {
+      "label": "What to bring",
+      "examiner_answer_fr": "Un maillot de bain, un bonnet et un certificat médical."
+    }
+  ],
+  "complication": {
+    "trigger": "When the learner chooses or asks about Wednesday",
+    "text_fr": "Ah, je suis désolé, le groupe du mercredi est complet.",
+    "alternatives_fr": "Il reste trois places le samedi. On peut aussi vous mettre sur la liste d'attente du mercredi."
+  },
+  "other_facts_fr": "Le centre est au quartier Bonamoussadi, à côté du stade. Inscription sur place du lundi au vendredi, de 9 heures à 17 heures. Paiement en espèces ou par Mobile Money. Les maîtres-nageurs sont diplômés. Groupes de 10 enfants maximum. Pas de cours pendant les vacances scolaires.",
+  "target_band": ["A2", "B2"],
+  "authoring": {
+    "author": "example",
+    "drafted_with_ai": false,
+    "originality_statement": "original",
+    "notes": "From exam specification Appendix A, completed with the facts the examiner needs."
+  }
+}

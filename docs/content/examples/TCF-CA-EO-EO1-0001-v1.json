@@ -1,0 +1,61 @@
+{
+  "schema": "speaking-task/1",
+  "code": "TCF-CA-EO-EO1-0001",
+  "version": 1,
+  "exam": "TCF_CA",
+  "paper": "EO",
+  "type": "EO1",
+  "questions": [
+    {
+      "stage": "simple",
+      "domain": "identity",
+      "text_fr": "Comment vous appelez-vous, et d'où venez-vous ?"
+    },
+    {
+      "stage": "simple",
+      "domain": "home",
+      "text_fr": "Où habitez-vous en ce moment ?"
+    },
+    {
+      "stage": "simple",
+      "domain": "family",
+      "text_fr": "Parlez-moi un peu de votre famille."
+    },
+    {
+      "stage": "developing",
+      "domain": "work",
+      "text_fr": "Que faites-vous dans la vie ? Décrivez-moi une journée de travail ou d'études."
+    },
+    {
+      "stage": "developing",
+      "domain": "interests",
+      "text_fr": "Qu'est-ce que vous aimez faire pendant votre temps libre ? Pourquoi ?"
+    },
+    {
+      "stage": "developing",
+      "domain": "daily_life",
+      "text_fr": "Comment est-ce que vous vous déplacez dans votre ville ? Qu'est-ce qui vous plaît ou vous déplaît dans ces déplacements ?"
+    },
+    {
+      "stage": "open",
+      "domain": "travel",
+      "text_fr": "Racontez-moi un voyage ou un événement qui vous a marqué."
+    },
+    {
+      "stage": "open",
+      "domain": "plans",
+      "text_fr": "Quels sont vos projets pour les cinq prochaines années ?"
+    },
+    {
+      "stage": "open",
+      "domain": "opinions",
+      "text_fr": "À votre avis, qu'est-ce qui change le plus dans la vie des jeunes aujourd'hui par rapport à la génération de vos parents ?"
+    }
+  ],
+  "authoring": {
+    "author": "example",
+    "drafted_with_ai": true,
+    "model": "claude-opus-5-5",
+    "originality_statement": "original"
+  }
+}

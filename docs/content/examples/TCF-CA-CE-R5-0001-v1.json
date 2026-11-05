@@ -1,0 +1,54 @@
+{
+  "schema": "reading-item/1",
+  "code": "TCF-CA-CE-R5-0001",
+  "version": 1,
+  "exam": "TCF_CA",
+  "paper": "CE",
+  "type": "R5",
+  "target_level": "B2",
+  "difficulty_adjustment": 0.1,
+  "theme": "work",
+  "focus": "attitude",
+  "document": {
+    "layout": "press_article",
+    "title": "Télétravail : n'oublions pas les nouveaux",
+    "body": "On présente souvent le télétravail comme une victoire des salariés : moins de transports, plus de liberté, un meilleur équilibre entre vie professionnelle et vie familiale. Ces avantages sont réels, et personne ne souhaite revenir aux bureaux pleins cinq jours sur cinq.\n\nPourtant, pour beaucoup de jeunes recrues, le télétravail signifie surtout apprendre seul. Un stagiaire qui débute chez lui ne voit pas comment un collègue expérimenté répond à un client mécontent ou prépare une réunion difficile. Il pose moins de questions, de peur de déranger, et il met plus de temps à comprendre les règles non écrites de l'entreprise. Certains finissent même par démissionner avant la fin de leur première année, sans que leur responsable ait compris ce qui n'allait pas.\n\nLes entreprises qui réussissent ne sont donc pas celles qui renvoient tout le monde chez soi, ni celles qui imposent un retour complet au bureau. Ce sont celles qui organisent des journées communes consacrées à la transmission : des moments où les anciens et les nouveaux travaillent côte à côte, sur de vrais dossiers.\n\nLe télétravail n'est ni un progrès ni une menace en soi. Tout dépend de la manière dont on l'organise, et surtout de la place qu'on laisse à ceux qui arrivent.",
+    "attribution": "L'Écho de Bonabéri, rubrique Économie",
+    "word_count": 209
+  },
+  "question": {
+    "text": "Quelle est la position de l'auteur ?"
+  },
+  "options": [
+    {
+      "key": "A",
+      "text": "Le télétravail doit être réservé aux salariés expérimentés.",
+      "rationale": "The author describes the difficulty for new hires but never proposes excluding them from remote work."
+    },
+    {
+      "key": "B",
+      "text": "Le télétravail nuit à l'apprentissage s'il n'est pas organisé.",
+      "rationale": "Correct: the article says everything depends on organisation and on shared days for passing on know-how."
+    },
+    {
+      "key": "C",
+      "text": "Les jeunes recrues préfèrent travailler depuis chez elles.",
+      "rationale": "The text speaks about what new hires lose, not about their preferences."
+    },
+    {
+      "key": "D",
+      "text": "Les entreprises devraient supprimer le télétravail.",
+      "rationale": "The author explicitly rejects a full return to the office."
+    }
+  ],
+  "key": "B",
+  "key_passage": "Le télétravail n'est ni un progrès ni une menace en soi. Tout dépend de la manière dont on l'organise",
+  "skill_note": "Identify the writer's overall position in an opinion article.",
+  "authoring": {
+    "author": "example",
+    "drafted_with_ai": true,
+    "model": "claude-opus-5-5",
+    "originality_statement": "original",
+    "notes": "Extended from exam specification Appendix A to the R5 length range to show the file format."
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "schema": "speaking-task/1",
+  "code": "TCF-CA-EO-EO3-0001",
+  "version": 1,
+  "exam": "TCF_CA",
+  "paper": "EO",
+  "type": "EO3",
+  "theme": "city_and_countryside",
+  "question_fr": "Selon vous, vaut-il mieux élever ses enfants en ville ou à la campagne ?",
+  "issue_summary": "Where children grow up best: cities offer schools, health care and opportunities; the countryside offers space, safety, nature and family ties.",
+  "arguments_for": [
+    "City: better schools, universities and health services nearby",
+    "City: more cultural activities and openness to diversity",
+    "City: more job opportunities for parents"
+  ],
+  "arguments_against": [
+    "Countryside: more space, less pollution and less traffic",
+    "Countryside: stronger community and family ties",
+    "Countryside: lower cost of living and calmer life"
+  ],
+  "follow_ups": [
+    {
+      "kind": "precision",
+      "text_fr": "Quand vous dites que la ville offre plus d'opportunités, à quoi pensez-vous exactement ?"
+    },
+    {
+      "kind": "example",
+      "text_fr": "Pouvez-vous me donner un exemple tiré de votre expérience ou de votre entourage ?"
+    },
+    {
+      "kind": "counter_view",
+      "text_fr": "Certains disent que les enfants des villes grandissent trop vite et passent trop de temps devant les écrans. Qu'en pensez-vous ?"
+    }
+  ],
+  "authoring": {
+    "author": "example",
+    "drafted_with_ai": true,
+    "model": "claude-opus-5-5",
+    "originality_statement": "original"
+  }
+}
