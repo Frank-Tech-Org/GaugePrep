@@ -1,5 +1,5 @@
 [project]
-name = "linguamentor-voice"
+name = "gaugeprep-voice"
 version = "0.0.0"
 description = "Voice examiner worker"
 requires-python = ">=3.14,<3.15"

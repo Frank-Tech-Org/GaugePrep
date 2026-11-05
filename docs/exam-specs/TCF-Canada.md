@@ -1,4 +1,4 @@
-# LinguaMentor: TCF Canada Exam Specification and Calibration Brief
+# GaugePrep: TCF Canada Exam Specification and Calibration Brief
 
 ## 0. Document control
 
@@ -8,11 +8,11 @@
 | Version | 1.0 |
 | Date | 22 October 2026 |
 | Owner | Frank, founder |
-| Parent document | LinguaMentor Product Requirements Document v1.0 |
+| Parent document | GaugePrep Product Requirements Document v1.0 |
 | Exam reference | France Éducation international (FEI), Manuel du candidat TCF, version Q, September 2026; IRCC test equivalency chart |
 | Used by | Content authors and reviewers, the prediction grader, the simulation engine, the system architecture |
 
-This document is the single source of truth for how LinguaMentor reproduces TCF Canada: the exam rules, the construct per skill and level, the specification of every item and task type, the simulation form blueprint, the scoring and prediction model, the calibration plan, and the content production rules. The PRD says what the product does; this document says exactly how TCF Canada is modelled. Every rule here is stored as versioned exam data in the product, and a change to this document creates a new version of that data.
+This document is the single source of truth for how GaugePrep reproduces TCF Canada: the exam rules, the construct per skill and level, the specification of every item and task type, the simulation form blueprint, the scoring and prediction model, the calibration plan, and the content production rules. The PRD says what the product does; this document says exactly how TCF Canada is modelled. Every rule here is stored as versioned exam data in the product, and a change to this document creates a new version of that data.
 
 ## 1. Exam rules
 
@@ -70,7 +70,7 @@ Below NCLC 4 the product reports the CEFR level only. Express Entry's French-lan
 
 ## 2. Construct: what each level means in each skill
 
-The descriptors below are LinguaMentor's own wording, built from the CEFR and FEI's description of each paper. They drive item writing, task rating, anchors and feedback.
+The descriptors below are GaugePrep's own wording, built from the CEFR and FEI's description of each paper. They drive item writing, task rating, anchors and feedback.
 
 ### 2.1 Listening
 
@@ -255,7 +255,7 @@ The task level is the level supported by at least two of the three criteria, nev
 
 ### 7.1 Listening and reading blueprint
 
-Each form has 39 items per paper, ordered by increasing difficulty. The distribution by level is LinguaMentor's design, set to measure across the whole scale with the most precision around B1 to C1, where NCLC 5 to 9 sit.
+Each form has 39 items per paper, ordered by increasing difficulty. The distribution by level is GaugePrep's design, set to measure across the whole scale with the most precision around B1 to C1, where NCLC 5 to 9 sit.
 
 | Level | Listening items | Reading items | Listening types | Reading types |
 |---|---|---|---|---|
@@ -460,7 +460,7 @@ Feedback is written in the learner's interface language, with French examples. I
 - Every prediction stores the versions of the exam rules, the item bank, the cut points, the combination model and the grader.
 - Before each product release, FEI's latest candidate manual and IRCC's equivalency chart are checked; any change creates a new exam-rules version and an update of this document.
 
-## Appendix A: Example items in LinguaMentor style
+## Appendix A: Example items in GaugePrep style
 
 ### Listening, type L2 (A1)
 

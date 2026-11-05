@@ -1,9 +1,19 @@
 [project]
-name = "linguamentor-backend"
+name = "gaugeprep-backend"
 version = "0.0.0"
 description = "Core application, job worker and scoring engine"
 requires-python = ">=3.14,<3.15"
-dependencies = []
+dependencies = [
+    "django>=6.1,<6.2",
+    "django-ninja>=1.4",
+    "procrastinate[django]>=3",
+    "psycopg[binary]>=3.2",
+]
 
 [tool.uv]
 package = false
+
+[tool.coverage.report]
+include = ["*/backend/*"]
+fail_under = 85
+show_missing = true

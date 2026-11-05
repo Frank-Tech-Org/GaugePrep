@@ -9,6 +9,7 @@ __pycache__/
 node_modules/
 .next/
 out/
+apps/web/dist/
 
 # Local configuration and secrets
 .env
@@ -21,4 +22,14 @@ out/
 # Editors and OS
 .idea/
 .vscode/
+*.code-workspace
 .DS_Store
+
+# collectstatic output
+backend/staticfiles/
+.coverage
+.coverage.*
+coverage/
+
+# Grader release check output
+grader-check-report.json

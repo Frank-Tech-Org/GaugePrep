@@ -1,0 +1,14 @@
+# Each stdin line is "<local ref> <local sha> <remote ref> <remote sha>".
+pushes=0
+while read -r _ local_sha remote_ref _; do
+  case "$remote_ref" in
+    refs/heads/develop|refs/heads/stage|refs/heads/main)
+      echo "pre-push: refusing to push to ${remote_ref#refs/heads/}. Push a work branch and open a PR." >&2
+      exit 1 ;;
+  esac
+  case "$local_sha" in *[!0]*) pushes=1 ;; esac
+done
+
+if [ "$pushes" = 1 ]; then
+  pnpm check
+fi

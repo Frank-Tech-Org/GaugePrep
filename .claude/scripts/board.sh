@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Board helper for org project #6 "LinguaMentor Delivery", shared by the /lm-* commands.
+# Board helper for org project #6, shared by the /lm-* commands.
 #   board.sh list [Status]          issues on the board, optionally one column
 #   board.sh wip                    tickets in flight (In progress, In review, In QA); the limit is 2, or 3 once CI exists
 #   board.sh info <n>               type, area, priority, status, sprint, blockers
@@ -11,9 +11,9 @@
 #   board.sh sprint <n> <Sprint>    put the issue in a sprint, e.g. "Sprint 2"
 set -euo pipefail
 
-OWNER=LinguaMentor
+OWNER=Frank-Tech-Org
 PROJECT=6
-REPO=LinguaMentor/linguamentor-v3
+REPO=Frank-Tech-Org/GaugePrep
 WIP_COLUMNS='["In progress","In review","In QA"]'
 
 items() { gh project item-list "$PROJECT" --owner "$OWNER" --limit 500 --format json; }
@@ -37,7 +37,7 @@ status_of() {
 info() {
   local n=$1
   gh api graphql -F n="$n" -f query='query($n: Int!) {
-    repository(owner: "LinguaMentor", name: "linguamentor-v3") { issue(number: $n) {
+    repository(owner: "Frank-Tech-Org", name: "GaugePrep") { issue(number: $n) {
       number title state issueType { name } milestone { title }
       issueFieldValues(first: 10) { nodes { ... on IssueFieldSingleSelectValue { name field { ... on IssueFieldSingleSelect { name } } } } }
     } } }' | jq -r '.data.repository.issue
@@ -64,7 +64,7 @@ move() {
 sprint() {
   local n=$1 title=$2 pid fid iid item
   pid=$(gh project view "$PROJECT" --owner "$OWNER" --format json --jq .id)
-  read -r fid iid < <(gh api graphql -f query='{ organization(login: "LinguaMentor") { projectV2(number: 6) {
+  read -r fid iid < <(gh api graphql -f query='{ organization(login: "Frank-Tech-Org") { projectV2(number: 6) {
       field(name: "Sprint") { ... on ProjectV2IterationField { id configuration { iterations { id title } } } } } } }' \
     | jq -r --arg t "$title" '.data.organization.projectV2.field
         | "\(.id) \(.configuration.iterations[] | select(.title == $t) | .id)"') || true
@@ -94,29 +94,29 @@ unblock() {
 
 issue_id() {
   gh api graphql -F n="$1" -f query='query($n: Int!) {
-    repository(owner: "LinguaMentor", name: "linguamentor-v3") { issue(number: $n) { id } } }' \
+    repository(owner: "Frank-Tech-Org", name: "GaugePrep") { issue(number: $n) { id } } }' \
     --jq .data.repository.issue.id
 }
 
 set_field() {
-  local n=$1 field=$2 value=$3 fid oid
-  read -r fid oid < <(gh api graphql -f query='{ organization(login: "LinguaMentor") {
-      issueFields(first: 20) { nodes { ... on IssueFieldSingleSelect { id name options { id name } } } } } }' \
-    | jq -r --arg f "$field" --arg v "$value" '.data.organization.issueFields.nodes[]
-        | select(.name == $f) | "\(.id) \(.options[] | select(.name == $v) | .id)"') || true
-  [ -n "${oid:-}" ] || { echo "No $field option named '$value'" >&2; exit 1; }
+  local n=$1 field=$2 value=$3 fid oid pages
+  # The agents' token can't list org issue fields, so the field and its options are read from issues that use it.
+  pages=$(gh api graphql --paginate -f query='query($endCursor: String) { repository(owner: "Frank-Tech-Org", name: "GaugePrep") {
+      issues(first: 100, after: $endCursor, states: [OPEN, CLOSED]) { pageInfo { hasNextPage endCursor } nodes { issueFieldValues(first: 10) { nodes {
+        ... on IssueFieldSingleSelectValue { field { ... on IssueFieldSingleSelect { id name options { id name } } } } } } } } } }')
+  read -r fid oid < <(jq -rs --arg f "$field" --arg v "$value" '[.[].data.repository.issues.nodes[].issueFieldValues.nodes[].field
+        | select(. and .name == $f)] | first // empty | "\(.id) \(.options[] | select(.name == $v) | .id)"' <<<"$pages") || true
+  [ -n "${oid:-}" ] || { echo "No $field option named '$value' (or no issue uses $field yet)" >&2; exit 1; }
   gh api graphql -f i="$(issue_id "$n")" -f f="$fid" -f o="$oid" -f query='mutation($i: ID!, $f: ID!, $o: ID!) {
     setIssueFieldValue(input: { issueId: $i, issueFields: [{ fieldId: $f, singleSelectOptionId: $o }] }) { clientMutationId } }' >/dev/null
   echo "#$n $field: $value"
 }
 
 set_type() {
-  local n=$1 type=$2 tid
-  tid=$(gh api graphql -f query='{ organization(login: "LinguaMentor") { issueTypes(first: 20) { nodes { id name } } } }' \
-    | jq -r --arg t "$type" '.data.organization.issueTypes.nodes[] | select(.name == $t) | .id')
-  [ -n "$tid" ] || { echo "No issue type named '$type'" >&2; exit 1; }
-  gh api graphql -f i="$(issue_id "$n")" -f t="$tid" -f query='mutation($i: ID!, $t: ID!) {
-    updateIssueIssueType(input: { issueId: $i, issueTypeId: $t }) { clientMutationId } }' >/dev/null
+  local n=$1 type=$2 got
+  # REST takes the type by name; the agents' token can't list org issue types through GraphQL.
+  got=$(gh api -X PATCH "repos/$REPO/issues/$n" -f type="$type" --jq '.type.name // empty' 2>&1) || true
+  [ "$got" = "$type" ] || { echo "Could not set #$n to type '$type' (unknown type, or: $got)" >&2; exit 1; }
   echo "#$n type: $type"
 }
 
