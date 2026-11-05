@@ -94,7 +94,7 @@ uv run coverage json --rcfile=backend/pyproject.toml -o /tmp/coverage.json
 uv run python tools/changed_lines_coverage/changed_lines_coverage.py --base develop --coverage /tmp/coverage.json
 ```
 
-`git diff` leaves out untracked files, so `git add` new backend files before a local run. The script exits 2 (not 1) when it cannot judge: a missing or malformed coverage file, an unknown base, or changed backend files that are all absent from the report.
+`git diff` leaves out untracked files, so `git add` new backend files before a local run. The script exits 2 (not 1) when it cannot judge: a missing or malformed coverage file, an unknown base, or any changed backend file absent from the report.
 
 The script's own tests run with `uv run pytest tools/changed_lines_coverage --no-cov` (without `--no-cov` they overwrite the `.coverage` file from your last run).
 

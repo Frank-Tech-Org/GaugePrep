@@ -51,9 +51,7 @@ def evaluate(
     covered = executable = 0
     uncovered: dict[str, list[int]] = {}
     for path, lines in changed.items():
-        entry = files.get(path)
-        if entry is None:
-            continue
+        entry = files[path]
         hit = lines & set(entry["executed_lines"])
         miss = lines & set(entry["missing_lines"])
         covered += len(hit)
@@ -122,7 +120,7 @@ def main(argv: list[str] | None = None) -> int:
         if missing:
             names = ", ".join(sorted(missing))
             raise ValueError(
-                f"no changed backend file is in the coverage report: {names}"
+                f"changed backend files missing from the coverage report: {names}"
             )
         covered, executable, uncovered = evaluate(changed, report)
     except (
