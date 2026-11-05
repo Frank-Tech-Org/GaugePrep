@@ -41,7 +41,7 @@ Missing tests for a changed behaviour is a QA finding.
 
 ## Devices and claims
 
-- The app is a responsive web app, mobile-first. Run every flow on an emulated low-end Android phone (Playwright device profile, slow 3G) and on a desktop browser; check tablet layout on screens that change. The owner's own devices at the weekly demo are the real-device check.
+- The app is a responsive web app, used on phones and computers alike. Run every flow on an emulated low-end Android phone (Playwright device profile, slow 3G) and on a desktop browser; check tablet layout on screens that change. The owner's own devices at the weekly demo are the real-device check.
 - Before a release, check every public claim (landing, pricing, accuracy page, help, onboarding, release notes, README) against code and a passing test, and keep `docs/CLAIMS.md`. A claim you can't verify is `MOCKED` or `ABSENT`, and either blocks the release. Scores are always ranges, and accuracy figures come from verified results, never PRD targets.
 
 ## Before you finish
