@@ -197,8 +197,10 @@ jobs:
     env:
       DATABASE_URL: postgres://postgres:postgres@localhost:5432/linguamentor
     steps:
+      # Full history so the changed-lines step can find the merge base with the pull request's base commit.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          fetch-depth: 0
           persist-credentials: false
       - name: Show the database is reachable
         run: |
@@ -217,6 +219,15 @@ jobs:
       - run: uv sync --frozen
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
+      # --no-cov keeps this run from overwriting the .coverage file that pnpm check just wrote.
+      - name: Changed-lines script tests
+        run: uv run pytest tools/changed_lines_coverage --no-cov
+      - name: Changed backend lines are covered
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          uv run coverage json --rcfile=backend/pyproject.toml -o "$RUNNER_TEMP/coverage.json"
+          uv run python tools/changed_lines_coverage/changed_lines_coverage.py --base "$BASE" --coverage "$RUNNER_TEMP/coverage.json" --threshold 90
 
   # Not part of check: it runs only when an image input changed, and a skipped job counts as passing for merge.
   backend-image:

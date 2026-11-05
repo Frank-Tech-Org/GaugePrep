@@ -82,6 +82,22 @@ uv run python backend/manage.py export_openapi_schema --api config.api.api --ind
 
 No skips: with `CI=true` any skipped or xfail test (pytest or Vitest) fails the run and is named; locally it only warns. Floors only go up.
 
+### Changed-line coverage (CI only)
+
+After `pnpm check`, the `check` job runs the script in `tools/changed_lines_coverage/`. It takes the backend Python lines the pull request adds or edits (`git diff -U0` from the merge base) and fails when fewer than 90% of the executable ones are covered (line coverage, not branch). The log lists the uncovered lines as `file: line numbers`. A pull request with no changed executable backend lines passes with "no changed backend lines". Tests, migrations and other files left out of the coverage report are not counted. `pnpm check` does not run it.
+
+Run it locally against `develop` after a test run:
+
+```sh
+uv run pytest
+uv run coverage json --rcfile=backend/pyproject.toml -o /tmp/coverage.json
+uv run python tools/changed_lines_coverage/changed_lines_coverage.py --base develop --coverage /tmp/coverage.json
+```
+
+`git diff` leaves out untracked files, so `git add` new backend files before a local run. The script exits 2 (not 1) when it cannot judge: a missing or malformed coverage file, an unknown base, or any changed backend file absent from the report.
+
+The script's own tests run with `uv run pytest tools/changed_lines_coverage --no-cov` (without `--no-cov` they overwrite the `.coverage` file from your last run).
+
 ### Gate job in CI
 
 One `gate` job runs first on every pull request, in this order: the path filter (which decides whether the code jobs, pip-audit, pnpm audit, Trivy and the backend image run), the gitleaks secret scan over the full git history, the API breaking-change check, and last the title and description check (its script comes from the pull request, so it runs after the scan and the API check and cannot change them). It fails red with a message naming the bad title or description rule, the file holding the secret, or the breaking API change. When it fails, the jobs that need it are skipped; a skipped job counts as passing for merge, so a red `gate` is what blocks, and a grey job is not a pass.
