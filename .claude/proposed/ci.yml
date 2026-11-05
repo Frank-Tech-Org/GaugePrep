@@ -175,14 +175,15 @@ jobs:
           while IFS= read -r -d '' f; do
             files+="  $(printf %s "$f" | tr -d '[:cntrl:]')"$'\n'
           done < "$RUNNER_TEMP/semgrep.names"
-          # A package.json that changes packageManager, devEngines or pnpm is named with the field. A new file counts as changed from nothing; one that is not valid JSON, or not an object, is named without a field.
+          # A package.json that changes packageManager, devEngines, pnpm or resolutions is named with the field. A new file counts as changed from nothing; one that is not valid JSON, or not an object, is named without a field.
           pkg=
+          mb=$(git merge-base "$BASE" "$HEAD")
           while IFS= read -r -d '' f; do
             [ "${f##*/}" = package.json ] || continue
-            if git cat-file -e "$BASE:$f" 2>/dev/null; then git show "$BASE:$f" > "$RUNNER_TEMP/pkg.base"; else echo '{}' > "$RUNNER_TEMP/pkg.base"; fi
+            if git cat-file -e "$mb:$f" 2>/dev/null; then git show "$mb:$f" > "$RUNNER_TEMP/pkg.base"; else echo '{}' > "$RUNNER_TEMP/pkg.base"; fi
             git show "$HEAD:$f" > "$RUNNER_TEMP/pkg.head"
             name=$(printf %s "$f" | tr -d '[:cntrl:]')
-            if ! changed=$(jq -nr --slurpfile b "$RUNNER_TEMP/pkg.base" --slurpfile h "$RUNNER_TEMP/pkg.head" '["packageManager","devEngines","pnpm"][] | select($b[0][.] != $h[0][.])' 2>/dev/null); then
+            if ! changed=$(jq -nr --slurpfile b "$RUNNER_TEMP/pkg.base" --slurpfile h "$RUNNER_TEMP/pkg.head" 'if ($b[0]|type) == "object" and ($h[0]|type) == "object" then ["packageManager","devEngines","pnpm","resolutions"][] | select($b[0][.] != $h[0][.]) else error("not an object") end' 2>/dev/null); then
               pkg+="  $name: not readable as a JSON object"$'\n'
               continue
             fi
