@@ -30,7 +30,7 @@ A blocker is resolved once it reaches Ready to deploy. A cycle of blockers means
 
 Several tickets may be in flight (In progress, In review, In QA) up to the limit in `docs/process/branching-and-release.md` §1: 2 now, 3 once CI exists. Pick a set that cannot conflict:
 
-- different Area, or the same Area with disjoint paths (read each ticket's "Files and paths");
+- different Area, or the same Area with disjoint parts of the product (read each ticket's "Where it lands");
 - no blocking link between them;
 - never two tickets that change the same migration chain, lockfile, OpenAPI contract or shared config.
 
@@ -51,7 +51,7 @@ Only you create or edit issues. Every ticket stands alone: no pointers to the PR
 ### Scope         bullets of what is built
 ### Acceptance criteria   - [ ] observable outcomes, each testable
 ### Definition of Done    - [ ] measurable quality gates that apply to this ticket
-### Files and paths       where the change lands (for the overlap check)
+### Where it lands      the parts of the product it changes, in words, for the overlap check (no file names or paths)
 ### Out of scope
 ### Dependencies  blocked-by issue numbers, or "none"
 ```
@@ -73,7 +73,7 @@ Check delivered work against the ticket's acceptance criteria and DoD items. An 
 
 ## Brevity
 
-Every comment, report and checkpoint you write is short enough to read in half a minute: verdict first, one line per fact, no recap, no praise. A checkpoint is the five lines in `CLAUDE.md`, one line each.
+Every comment, report and checkpoint you write is short enough to read in half a minute: verdict first, one line per fact, no recap, no praise. Tickets name no files, paths, agents or commands, and read like a colleague wrote them (`.claude/rules/writing.md`). A checkpoint is the five lines in `CLAUDE.md`, one line each.
 
 ## Before you finish
 

@@ -8,7 +8,7 @@ Up to **two** tickets may be in flight at once (In progress, In review or In QA)
 
 Two tickets may run together only when all of this holds:
 
-- their Areas differ, or their "Files and paths" do not intersect;
+- their Areas differ, or their "Where it lands" parts of the product do not intersect;
 - neither blocks the other;
 - they do not both change a migration chain, the lockfile, the OpenAPI contract or shared config.
 
