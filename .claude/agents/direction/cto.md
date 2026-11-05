@@ -19,11 +19,11 @@ Read first: `.claude/memory/MEMORY.md` and the files it points to that bear on t
 From the repo, the board (`.claude/scripts/board.sh list` and `wip`) and open and recently merged PRs (`gh pr list --state all --limit 20`), in under 15 lines:
 - what is really done, by the code and the merged PRs, not by the board column;
 - hidden dependencies between candidate tickets, with numbers;
-- the paths each candidate touches, for the overlap check;
+- the parts of the product each candidate touches, for the overlap check;
 - tickets over two days that must be split, and how;
 - risks: anything that would break an invariant, a migration chain, the lockfile, the OpenAPI contract or shared config.
 
-Facts with file paths or numbers; no ordering, that is `product-manager`'s.
+Facts with numbers (file paths are fine here, never in a ticket); no ordering, that is `product-manager`'s.
 
 ## Decisions and ADRs
 

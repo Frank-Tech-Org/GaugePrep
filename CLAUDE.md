@@ -123,7 +123,7 @@ Every command that changes a ticket ends by posting this on the issue. It is how
 ```text
 **Checkpoint** · <stage> · <agent> · <YYYY-MM-DD>
 Branch: <branch or "none">
-Done: <what is finished, with file paths>
+Done: <what is finished, in plain words>
 Verified: <commands that passed, or "nothing yet">
 Next: <the role and the exact next step, never a slash command>
 Needs the owner: <decision or action, or "nothing">
