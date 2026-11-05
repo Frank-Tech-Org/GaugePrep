@@ -9,6 +9,7 @@ __pycache__/
 node_modules/
 .next/
 out/
+apps/web/dist/
 
 # Local configuration and secrets
 .env
