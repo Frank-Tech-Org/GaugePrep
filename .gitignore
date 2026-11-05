@@ -29,3 +29,6 @@ backend/staticfiles/
 .coverage
 .coverage.*
 coverage/
+
+# Grader release check output
+grader-check-report.json
