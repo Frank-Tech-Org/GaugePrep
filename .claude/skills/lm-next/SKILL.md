@@ -60,7 +60,7 @@ Route by the Area field with the table in `CLAUDE.md`. Each agent's prompt carri
 
 Run the checks for what changed (`uv run pytest`, `pnpm check`, Playwright, whichever exist) and paste the result lines. Go through the DoD and name anything unmet. Never push red.
 
-Commit in logical steps, never `--amend`, staging only this ticket's paths: `git commit -m "<type>(<area>): <subject>" -m "Refs #<n>"`, then `.claude/scripts/push.sh <branch>`. A fix commit is `fix(<area>): address review on #<n>`. Open the PR into `develop` with `gh api` (`gh pr create` fails on the classic-projects error); the body is a trimmed `.github/pull_request_template.md`: summary, `Refs #<n>`, what changed, the criteria and DoD checklist. After every later commit on the branch, including files the owner installs, rewrite the body to match the diff at the new head. Checkpoint stage: In progress.
+Commit in logical steps, never `--amend`, staging only this ticket's paths: `git commit -m "<type>(<area>): <subject>" -m "Refs #<n>"`, then `.claude/scripts/push.sh <branch>`. A fix commit is `fix(<area>): address review on #<n>`. Open the PR into `develop` with `gh api` (`gh pr create` fails on the classic-projects error); the body is a trimmed `.github/pull_request_template.md`: summary, `Refs #<n>`, what changed, the criteria and DoD checklist. Write it in the developer's voice per `.claude/rules/writing.md`: no list of every file, no `.claude`, agent or command names. After every later commit on the branch, including files the owner installs, rewrite the body to match the diff at the new head. Checkpoint stage: In progress.
 
 ## 4. Review
 
@@ -73,7 +73,7 @@ Commit in logical steps, never `--amend`, staging only this ticket's paths: `git
 - `performance-engineer` for a learner page's bundle or media, a hot query, or the grading or voice path;
 - `qa-engineer` for the claims check if learner-facing claims or copy change.
 
-Each checks the DoD items in its area. Post one PR comment, at most 10 lines plus findings, verdict first: a verdict per reviewer, fixes as `file:line — problem — fix`, unmet criteria and unticked DoD items by name. The last line alone is `REVIEW: PASS <full head sha>` or `REVIEW: CHANGES <full head sha>`. A new commit makes it stale. After three rounds of CHANGES, stop and ask the owner. Checkpoint stage: In review.
+Each checks the DoD items in its area. Post one PR comment in the same voice, at most 10 lines plus findings, verdict first: a verdict per reviewer, fixes as `file:line — problem — fix`, unmet criteria and unticked DoD items by name. The last line alone is `REVIEW: PASS <full head sha>` or `REVIEW: CHANGES <full head sha>`. A new commit makes it stale. After three rounds of CHANGES, stop and ask the owner. Checkpoint stage: In review.
 
 ## 5. Merge
 

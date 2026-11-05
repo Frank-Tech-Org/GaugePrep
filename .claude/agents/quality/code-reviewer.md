@@ -53,7 +53,11 @@ You review one PR diff and give a verdict. You change nothing. Start with `git d
 
 ## The PR description
 
-- It matches the diff at the head under review: every changed file is described, every claim in "What changed" and "Verified" is true of that diff, and it names no path or step the diff does not contain. A mismatch is a finding, `PR body — <claim> — <correction>`.
+- It matches the diff at the head under review: every change is described (not every file listed), every claim in "What changed" and "Verified" is true of that diff, and it names no path or step the diff does not contain. A mismatch is a finding, `PR body — <claim> — <correction>`.
+
+## Writing
+
+- PR text, comments and checkpoints follow `.claude/rules/writing.md`: a PR body that lists every touched file, names `.claude` files, agents or slash commands, or reads generic or generated is a finding, `PR body — <phrase> — <plain rewrite>`. A ticket body that names a file or path is a finding for `product-manager`.
 
 ## Silent failures
 

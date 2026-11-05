@@ -8,7 +8,7 @@ Up to **two** tickets may be in flight at once (In progress, In review or In QA)
 
 Two tickets may run together only when all of this holds:
 
-- their Areas differ, or their "Files and paths" do not intersect;
+- their Areas differ, or their "Where it lands" parts of the product do not intersect;
 - neither blocks the other;
 - they do not both change a migration chain, the lockfile, the OpenAPI contract or shared config.
 
@@ -105,7 +105,7 @@ hotfix/<version>-<short-slug>       hotfix/0.2.1-fix-timer-drift
 In a normal week the owner runs two commands: `/pm` to plan and `/lm-next` to move work. Commands take no ticket number. Each works out its target from the board, the current branch or worktree, open PRs and the last checkpoint, checks that the environment allows the step, and otherwise names the command to run instead. `#n` overrides the choice.
 
 1. **Triage.** New tickets land in Ideas. `/pm plan` sets type, area, priority and milestone, flags duplicates, and moves accepted tickets to Backlog. The owner closes duplicates and rejected ideas.
-2. **Refine.** The same `/pm plan` pass writes the acceptance criteria, the Definition of Done, the files and paths and the dependencies, splits anything over two days, and moves the ticket to Ready.
+2. **Refine.** The same `/pm plan` pass writes the acceptance criteria, the Definition of Done, where it lands and the dependencies, splits anything over two days, and moves the ticket to Ready.
 3. **Plan the sprint.** It then puts Ready tickets into the two-week Sprint iteration in dependency order. Sprints sit inside the product milestones (M0 to M8).
 4. **Pick.** The `cto` agent writes the technical read, and `/pm` hands it to `product-manager`, which names the set of tickets to start, up to the parallel limit: blockers first, then milestone, priority and size, and only tickets that cannot conflict.
 5. **Build.** `/lm-next` checks the parallel limit and overlap, moves the ticket to In progress and creates `feature/<n>-<slug>` from the ticket, off an up-to-date `develop`, in the owner's checkout (or its own worktree when that holds another ticket in flight). The owning agents implement, test, commit, push the branch and open the PR into `develop`.

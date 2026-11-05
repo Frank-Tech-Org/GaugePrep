@@ -21,6 +21,7 @@ Exam preparation platform for TCF Canada first: a responsive, mobile-first web a
 - **Ticket titles have no type prefix, and tickets that have not started have no comments.** The Type field says chore or decision; Conventional Commit prefixes are for commits and PR titles. Checkpoint comments start when work starts.
 - **Tickets stand alone.** An issue body never points at the PRD, the architecture doc, ADR numbers or exam-spec sections. Inline the facts the reader needs. Ticket and PR text (bodies, comments, checkpoints) never names a slash command; it says which role does the next step and what it is, like "qa-engineer checks each criterion on dev".
 - **PR text is short.** One or two sentences of summary, `Refs #<n>`, what changed, and only the checklist items that matter. Titles follow Conventional Commits.
+- **Write like the developer who did the work.** Tickets name no files or paths. PRs and comments name a path only when the reviewer needs it, and never name `.claude` files, agents or slash commands; commands the owner must run stay in. Plain, specific, human, nothing that reads generic or generated (`.claude/rules/writing.md`).
 - **Write plainly.** Code comments are rare and brief: one or two lines at a file's entry or above a complete block, saying what the code can't, in a developer's voice (`.claude/rules/comments.md`). Longer reasoning goes in the PR or an ADR.
 - **Progressive by milestone.** Tickets and code are written for the current milestone only; later work, including the build pack's parts, waits for its milestone. Changes not tied to a ticket go on the open setup PR's branch; every other branch and PR links to a ticket.
 - **`.env.example` mirrors `.env`.** Both hold the same keys. A ticket that adds a setting adds the key to `.env.example`, runs `.claude/scripts/env-check.sh --add` (key names only, never values) and lists the keys under "Owner: paste values for" in the PR. Agents never read `.env`.
@@ -122,7 +123,7 @@ Every command that changes a ticket ends by posting this on the issue. It is how
 ```text
 **Checkpoint** · <stage> · <agent> · <YYYY-MM-DD>
 Branch: <branch or "none">
-Done: <what is finished, with file paths>
+Done: <what is finished, in plain words>
 Verified: <commands that passed, or "nothing yet">
 Next: <the role and the exact next step, never a slash command>
 Needs the owner: <decision or action, or "nothing">
