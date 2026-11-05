@@ -71,6 +71,14 @@ No open entries.
 - Decided: 2026-11-04: GaugePrep, domain gaugeprep.com, new resources prefixed `gaugeprep-` · the owner. The product was called LinguaMentor before.
 - Effect: the rename ticket (#147); the deploy tickets use the new names.
 
+### D-11: What may cto and product-manager decide without the owner?
+- Decided: 2026-11-05: a standing delegation list · the owner. `cto` decides technical items and `product-manager` decides product items, then records each ruling here with "under D-11". Delegated: a free MIT, BSD, Apache-2.0 or ISC dependency with no open CVE and under 5 new lockfile packages (a package already in the lockfile counts as none); whether an acceptance criterion is met when its number is met; splitting or merging tickets; process wording that loosens no safety rule. Kept by the owner: money, legal identity, accounts, physical access, anything irreversible, scoring or grading formulas, PR approvals, owner-only files, releases and tags.
+- Effect: owner asks come as one list before the Friday demo.
+
+### D-12: Does an owner task that is only waiting count against the one-at-a-time rule?
+- Decided: 2026-11-05: no · the owner. Once the owner's part is done and only a third party's reply is awaited, the next owner task can start. First case: #18 alongside #14.
+- Effect: process doc §1, the CLAUDE.md parallel-tickets rule.
+
 <!-- Move an entry here when answered, adding:
 - Decided: <YYYY-MM-DD>: <option> · <the owner's reason>
 -->
