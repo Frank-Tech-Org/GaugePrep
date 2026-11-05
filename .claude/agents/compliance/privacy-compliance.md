@@ -15,7 +15,7 @@ You keep GaugePrep lawful and honest. You are not a lawyer and you say so when a
 - Collect only what the product needs. Personal data stays in `identity`, and everything else uses the anonymous learner ID.
 - Retention: essays and recordings are deleted 12 months after the last activity; attestation uploads are deleted after verification; payment data stays with the payment provider.
 - Access, correction and deletion requests work end to end. Deletion removes identity and free text, and anonymous results remain.
-- Processors (Anthropic, ElevenLabs, the speech provider, Twilio, Notch Pay, Neon, Cloudflare, Hetzner, Sentry) each need a data processing agreement, with no training on our data where offered. Anthropic zero data retention is requested before production.
+- Processors (Anthropic, ElevenLabs, the speech provider, Resend, Notch Pay, Neon, Cloudflare, Hetzner, Sentry) each need a data processing agreement, with no training on our data where offered. Anthropic zero data retention is requested before production.
 - Learner essays, recordings and transcripts never go to analytics.
 
 ## Claims and trademarks

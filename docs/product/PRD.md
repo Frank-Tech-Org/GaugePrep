@@ -147,7 +147,7 @@ Preparation is bought in a burst of one to six months before an exam date, drive
 
 ### 6.1 The learner journey
 
-1. **Sign up:** email or phone number, interface language (French or English), age check (16 or older).
+1. **Sign up:** email or Google, interface language (French or English), age check (16 or older).
 2. **Set a goal:** target exam (TCF Canada in the first release), target NCLC per skill (prefilled with NCLC 7 for Express Entry), exam date if known. Or choose the free track with no exam.
 3. **Diagnostic:** an adaptive placement across the four skills, 25 to 35 minutes, which can be done in parts.
 4. **Plan:** the gap between the diagnostic and the target per skill, turned into a weekly plan fitted to the weeks left before the exam date.
@@ -213,7 +213,7 @@ Each requirement has an identifier used by design, development and testing.
 
 | ID | Requirement | Acceptance criteria |
 |---|---|---|
-| ACC-1 | Sign up with email or phone number and password, or with Google | Account created; email or phone verified by code before paid features |
+| ACC-1 | Sign up with email and password, or with Google | Account created; email verified by code before paid features; no phone number is asked for |
 | ACC-2 | Minimum age 16, matching the minimum age of the TCF | Date of birth required; under 16 refused with a clear message |
 | ACC-3 | Interface language French or English, changeable at any time | All screens, emails and feedback available in both languages |
 | ACC-4 | Goal setting | Learner chooses an exam or the free track; for TCF Canada, a target NCLC per skill (default NCLC 7) and an optional exam date |
@@ -343,7 +343,7 @@ Each requirement has an identifier used by design, development and testing.
 
 | ID | Requirement | Acceptance criteria |
 |---|---|---|
-| ADM-1 | Learner lookup | Find a learner by email or phone; see plan, payments and usage, not essay content unless the learner shares it |
+| ADM-1 | Learner lookup | Find a learner by email; see plan, payments and usage, not essay content unless the learner shares it |
 | ADM-2 | Manual actions | Extend access, refund, verify a result report |
 | ADM-3 | Help | Help centre with frequent questions in French and English; contact form |
 | ADM-4 | Operations dashboard | Sign-ups, conversions, active learners, AI cost per day, prediction accuracy |

@@ -73,7 +73,6 @@ The design must reach these without changes and must scale tenfold by adding ser
 | LiveKit | Real-time audio rooms (WebRTC) for the examiner | Local dev server, LiveKit Cloud free tier in staging, self-hosted in production |
 | Notch Pay | MTN Mobile Money, Orange Money and cards in Cameroon | Test keys locally and in staging, live keys in production |
 | Resend | Transactional email | Staging and production |
-| Twilio | SMS verification codes for phone sign-up (about $0.0075 per SMS to Cameroon per a vendor comparison; MTN requires a pre-registered sender ID, which can take up to 3 weeks) | Staging and production |
 | Cloudflare | DNS, CDN (data centre in Douala), static hosting of the PWA, R2 object storage, edge rate limits | All environments except local |
 | Neon | Managed PostgreSQL 18 in Frankfurt | Staging (free) and production (paid) |
 | Sentry, Grafana Cloud | Errors and traces; logs, metrics, dashboards and alerts | Staging and production |
@@ -191,8 +190,8 @@ class ExamModel(Protocol):
 
 ### 6.1 Sign-up and goal
 
-1. The learner signs up with email or phone, a password or Google, and a date of birth (16 or older).
-2. identity creates the account and records the required consent; a single-use, time-limited verification code is sent by email (Resend) or by SMS (Twilio, behind an SMS provider interface).
+1. The learner signs up with email and a password, or with Google, and a date of birth (16 or older). No phone number is collected.
+2. identity creates the account and records the required consent; a single-use, time-limited verification code is sent by email (Resend).
 3. The learner sets a goal: exam, target NCLC per skill (default 7), exam date.
 
 ### 6.2 Multiple-choice answer (practice or simulation)
@@ -508,7 +507,7 @@ Servers run in Germany (Hetzner) next to the database in Frankfurt (Neon). Traff
 | Host | `localhost` | `dev.gaugeprep.com` (planned) | `staging.gaugeprep.com` (planned) | Not yet named |
 | Kamal service and image | None | `gaugeprep-dev`, `ghcr.io/<org>/gaugeprep-backend` (planned) | `gaugeprep-staging`, `ghcr.io/<org>/gaugeprep-backend` (planned) | Not yet named |
 
-Dev deploys every merge into `develop` and is where each ticket is tested. Staging deploys the `stage` branch, the release candidate, and is where the release gate and the weekly demo run. SMS in dev goes to a fake provider. Both are fully scripted and rebuilt from scratch in under an hour, because free tiers can change without notice (Oracle halved its free ARM allowance on 15 June 2026). Both hold only synthetic data from seed scripts. Branches and promotion are in `docs/process/branching-and-release.md` and ADR-019.
+Dev deploys every merge into `develop` and is where each ticket is tested. Staging deploys the `stage` branch, the release candidate, and is where the release gate and the weekly demo run. Both are fully scripted and rebuilt from scratch in under an hour, because free tiers can change without notice (Oracle halved its free ARM allowance on 15 June 2026). Both hold only synthetic data from seed scripts. Branches and promotion are in `docs/process/branching-and-release.md` and ADR-019.
 
 ### 14.3 Production topology
 
@@ -539,7 +538,6 @@ Dev deploys every merge into `develop` and is where each ticket is tested. Stagi
 | Hetzner voice server (ARM, sized by load test) | About €41 |
 | Neon Launch (about 0.5 compute unit average, storage) | About $40 to $45 |
 | Cloudflare, R2, Resend, Sentry, Grafana Cloud at launch volume | €0 to €5 |
-| SMS verification codes | Per message, only for phone sign-ups |
 | Total | About €90 to €100 |
 
 ## 15. Testing strategy
@@ -669,7 +667,6 @@ Content production (items, prompts, lessons, anchors) runs in parallel from M1 u
 | Grafana Cloud | Free: 10,000 series, 50 GB logs and traces, 3 users | Last9 pricing analysis, September 2026 |
 | Resend | Free 3,000 emails a month; Pro $20 for 50,000 | resend.com pricing |
 | OWASP ASVS | 5.0.0 (May 2025) | OWASP ASVS repository |
-| Twilio SMS | About $0.0075 per SMS to Cameroon; MTN sender ID pre-registration up to 3 weeks | sent.dm Cameroon SMS pricing comparison |
 
 ## Appendix B: Decision records
 
@@ -692,10 +689,12 @@ Content production (items, prompts, lessons, anchors) runs in parallel from M1 u
 | ADR-015 | GitHub Actions and Kamal for delivery |
 | ADR-016 | Sentry and Grafana Cloud for observability |
 | ADR-017 | Opus with AAC fallback for audio |
-| ADR-018 | Twilio for SMS verification codes behind an SMS provider interface |
+| ADR-018 | Twilio for SMS verification codes behind an SMS provider interface (superseded by ADR-023) |
 | ADR-019 | Dev, staging and production from develop, stage and main |
 | ADR-020 | Production deploys on the owner's tag, without an approval gate |
 | ADR-021 | Test strategy and CI minutes budget |
+| ADR-022 | PR security scanners catch accidents, not a deliberate bypass |
+| ADR-023 | Email verification only, no SMS sign-up |
 
 ## Appendix C: Glossary
 
