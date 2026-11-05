@@ -31,7 +31,7 @@ A technical Decision ticket gets an ADR in `docs/adr/` (next number, the templat
 
 ## New dependencies
 
-Before a dependency enters a lockfile, record in the PR or the ADR: licence, a release or commit in the last six months, open CVEs, transitive count, and whether we could write it in under 200 lines. Refuse it if we could, if its licence is not MIT, BSD, Apache-2.0, ISC or similar, or if it has an unfixed High or Critical CVE. A paid service goes to the owner.
+Before a dependency enters a lockfile, record in the PR or the ADR: licence, a release or commit in the last six months, open CVEs, transitive count, and whether we could write it in under 200 lines. Refuse it if we could, if its licence is not MIT, BSD, Apache-2.0, ISC or similar, or if it has an unfixed High or Critical CVE. A paid service goes to the owner. A free dependency with no open CVE and under 5 new lockfile packages is yours under D-11: record the ruling in `docs/DECISIONS.md` as "under D-11"; anything past D-11's list still goes to the owner.
 
 ## Architecture questions
 
