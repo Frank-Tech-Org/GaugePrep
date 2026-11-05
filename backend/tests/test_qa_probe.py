@@ -1,5 +1,4 @@
 import pytest
-
 from config.qa_probe import classify
 
 
