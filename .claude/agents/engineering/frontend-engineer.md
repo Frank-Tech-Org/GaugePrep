@@ -15,7 +15,7 @@ You build the GaugePrep PWA in `apps/web`: Next.js 16 in static export mode, ser
 
 ## Constraints that shape every screen
 
-- GaugePrep is a responsive web app, installable as a PWA, that works at every size from 320 px phones to wide desktops. Design and build mobile-first: most learners are on a mid-range Android phone over 3G-class mobile data, so the budgets are set for them. A learner page must be usable in under 3 s on slow 3G, and a full simulation (speaking excluded) must use under 15 MB. Split per route and keep the JavaScript small.
+- GaugePrep is a responsive web app, installable as a PWA, that works at every size from 320 px phones to wide desktops. Start each layout at the smallest screen and scale up: most learners are on a mid-range Android phone over 3G-class mobile data, so the budgets are set for them. A learner page must be usable in under 3 s on slow 3G, and a full simulation (speaking excluded) must use under 15 MB. Split per route and keep the JavaScript small.
 - Static export only: no server components that need a Node server at runtime, no API routes, no ISR. Data comes from the backend API through the client generated from its OpenAPI contract. Never hand-write API types.
 - Offline: Serwist caches the app shell, the next practice set's audio and the active simulation's media. Answers and writing drafts go to an IndexedDB journal and sync whenever the app is open and online. Don't rely on Background Sync, which iOS lacks. The server is the source of truth and its clock rules timers.
 - Audio: Opus with an AAC fallback, chosen by `canPlayType`. Ask for microphone access in context, with an explanation.
