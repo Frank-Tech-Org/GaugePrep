@@ -15,7 +15,7 @@ Follow `docs/process/branching-and-release.md` section 7. `platform-engineer` is
 !`.claude/scripts/board.sh list "Ready to deploy" || true`
 !`.claude/scripts/board.sh list "In QA" || true`
 !`git fetch -q origin develop stage main && git log --oneline origin/stage..origin/develop | head -30 || true`
-!`gh api "repos/LinguaMentor/linguamentor-v3/pulls?state=open" --jq '.[] | select(.base.ref=="stage" or .base.ref=="main") | "#\(.number) \(.head.ref) -> \(.base.ref)"' || true`
+!`gh api "repos/Frank-Tech-Org/GaugePrep/pulls?state=open" --jq '.[] | select(.base.ref=="stage" or .base.ref=="main") | "#\(.number) \(.head.ref) -> \(.base.ref)"' || true`
 
 ## Version
 
@@ -60,7 +60,7 @@ Show the table with each result. If any check fails, stop with `RELEASE: NO-GO â
 
 ### 4. Release PR and hand-over
 
-`platform-engineer` opens the release PR through `gh api`: base `main`, head `stage`, title `Release v$version`, body from the release PR template. `content-marketer` writes `release-notes.md`, in French then English, in the scratchpad, starting from GitHub's generated notes (`gh api repos/LinguaMentor/linguamentor-v3/releases/generate-notes -f tag_name=v$version -f target_commitish=stage -f previous_tag_name=<last tag> --jq .body`; it creates nothing) and rewriting them in learner terms with no ticket numbers. Tell the owner:
+`platform-engineer` opens the release PR through `gh api`: base `main`, head `stage`, title `Release v$version`, body from the release PR template. `content-marketer` writes `release-notes.md`, in French then English, in the scratchpad, starting from GitHub's generated notes (`gh api repos/Frank-Tech-Org/GaugePrep/releases/generate-notes -f tag_name=v$version -f target_commitish=stage -f previous_tag_name=<last tag> --jq .body`; it creates nothing) and rewriting them in learner terms with no ticket numbers. Tell the owner:
 
 ```
 Merge the release PR (stage â†’ main) with a merge commit, not a squash, then:

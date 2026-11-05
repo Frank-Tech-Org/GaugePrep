@@ -8,7 +8,7 @@ set -euo pipefail
 
 pr=${1:-}
 [ $# -eq 1 ] && [[ "$pr" =~ ^[0-9]+$ ]] || { echo "merge.sh: usage: merge.sh <pr-number>" >&2; exit 2; }
-repo=LinguaMentor/linguamentor-v3
+repo=Frank-Tech-Org/GaugePrep
 owner=frankkefoueg
 [ "$(git remote get-url origin)" = "https://github.com/$repo.git" ] \
   || { echo "merge.sh: origin is not $repo" >&2; exit 2; }

@@ -11,9 +11,9 @@
 #   board.sh sprint <n> <Sprint>    put the issue in a sprint, e.g. "Sprint 2"
 set -euo pipefail
 
-OWNER=LinguaMentor
+OWNER=Frank-Tech-Org
 PROJECT=6
-REPO=LinguaMentor/linguamentor-v3
+REPO=Frank-Tech-Org/GaugePrep
 WIP_COLUMNS='["In progress","In review","In QA"]'
 
 items() { gh project item-list "$PROJECT" --owner "$OWNER" --limit 500 --format json; }
@@ -37,7 +37,7 @@ status_of() {
 info() {
   local n=$1
   gh api graphql -F n="$n" -f query='query($n: Int!) {
-    repository(owner: "LinguaMentor", name: "linguamentor-v3") { issue(number: $n) {
+    repository(owner: "Frank-Tech-Org", name: "GaugePrep") { issue(number: $n) {
       number title state issueType { name } milestone { title }
       issueFieldValues(first: 10) { nodes { ... on IssueFieldSingleSelectValue { name field { ... on IssueFieldSingleSelect { name } } } } }
     } } }' | jq -r '.data.repository.issue
@@ -64,7 +64,7 @@ move() {
 sprint() {
   local n=$1 title=$2 pid fid iid item
   pid=$(gh project view "$PROJECT" --owner "$OWNER" --format json --jq .id)
-  read -r fid iid < <(gh api graphql -f query='{ organization(login: "LinguaMentor") { projectV2(number: 6) {
+  read -r fid iid < <(gh api graphql -f query='{ organization(login: "Frank-Tech-Org") { projectV2(number: 6) {
       field(name: "Sprint") { ... on ProjectV2IterationField { id configuration { iterations { id title } } } } } } }' \
     | jq -r --arg t "$title" '.data.organization.projectV2.field
         | "\(.id) \(.configuration.iterations[] | select(.title == $t) | .id)"') || true
@@ -94,14 +94,14 @@ unblock() {
 
 issue_id() {
   gh api graphql -F n="$1" -f query='query($n: Int!) {
-    repository(owner: "LinguaMentor", name: "linguamentor-v3") { issue(number: $n) { id } } }' \
+    repository(owner: "Frank-Tech-Org", name: "GaugePrep") { issue(number: $n) { id } } }' \
     --jq .data.repository.issue.id
 }
 
 set_field() {
   local n=$1 field=$2 value=$3 fid oid pages
   # The agents' token can't list org issue fields, so the field and its options are read from issues that use it.
-  pages=$(gh api graphql --paginate -f query='query($endCursor: String) { repository(owner: "LinguaMentor", name: "linguamentor-v3") {
+  pages=$(gh api graphql --paginate -f query='query($endCursor: String) { repository(owner: "Frank-Tech-Org", name: "GaugePrep") {
       issues(first: 100, after: $endCursor, states: [OPEN, CLOSED]) { pageInfo { hasNextPage endCursor } nodes { issueFieldValues(first: 10) { nodes {
         ... on IssueFieldSingleSelectValue { field { ... on IssueFieldSingleSelect { id name options { id name } } } } } } } } } }')
   read -r fid oid < <(jq -rs --arg f "$field" --arg v "$value" '[.[].data.repository.issues.nodes[].issueFieldValues.nodes[].field

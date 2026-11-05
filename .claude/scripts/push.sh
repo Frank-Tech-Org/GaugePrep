@@ -12,8 +12,8 @@ if ! [[ "$branch" =~ ^(feature|hotfix|chore)/[A-Za-z0-9._-]+$ ]] || [[ "$branch"
   echo "push.sh: '$branch' is not a work branch (feature/*, hotfix/*, chore/*)" >&2; exit 2
 fi
 git rev-parse --verify --quiet "refs/heads/$branch" >/dev/null || { echo "push.sh: no local branch '$branch'" >&2; exit 2; }
-[ "$(git remote get-url origin)" = "https://github.com/LinguaMentor/linguamentor-v3.git" ] \
-  || { echo "push.sh: origin is not LinguaMentor/linguamentor-v3" >&2; exit 2; }
+[ "$(git remote get-url origin)" = "https://github.com/Frank-Tech-Org/GaugePrep.git" ] \
+  || { echo "push.sh: origin is not Frank-Tech-Org/GaugePrep" >&2; exit 2; }
 
 # An explicit refs/heads -> refs/heads refspec, so the target can only be the branch of the same name.
 args=(push --set-upstream)

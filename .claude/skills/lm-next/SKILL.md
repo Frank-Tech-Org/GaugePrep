@@ -15,8 +15,8 @@ One step per run, on one ticket, then a checkpoint. No number is needed; `#n` on
 !`.claude/scripts/board.sh wip || true`
 !`git branch --show-current`
 !`git worktree list`
-!`gh api "repos/LinguaMentor/linguamentor-v3/pulls?state=open" --jq '.[] | "#\(.number) \(.head.ref) -> \(.base.ref) \(.head.sha)"' || true`
-!`gh api "repos/LinguaMentor/linguamentor-v3/pulls?state=closed&base=develop&per_page=10" --jq '.[] | select(.merged_at) | "merged #\(.number) \(.head.ref)"' || true`
+!`gh api "repos/Frank-Tech-Org/GaugePrep/pulls?state=open" --jq '.[] | "#\(.number) \(.head.ref) -> \(.base.ref) \(.head.sha)"' || true`
+!`gh api "repos/Frank-Tech-Org/GaugePrep/pulls?state=closed&base=develop&per_page=10" --jq '.[] | select(.merged_at) | "merged #\(.number) \(.head.ref)"' || true`
 
 ## 1. Pick the ticket
 
@@ -51,7 +51,7 @@ A ticket that changes no repository file (an owner task, research, a decision re
 New ticket: claim it and create the branch from the ticket, so the branch and the PR opened from it show in the ticket's Development panel:
 ```
 .claude/scripts/board.sh move <n> "In progress"
-gh issue develop <n> -R LinguaMentor/linguamentor-v3 --base develop --name feature/<n>-<short-slug>
+gh issue develop <n> -R Frank-Tech-Org/GaugePrep --base develop --name feature/<n>-<short-slug>
 git fetch origin feature/<n>-<short-slug>
 ```
 **Where to work.** Build and fix in the owner's checkout, so the owner sees the work in the editor: `git switch <branch>` there. Switch only from a clean tree; otherwise stop and ask the owner. If the checkout holds another ticket in flight, or the branch is already in a worktree, work in `../lm-<n>` instead (`git worktree add ../lm-<n> <branch>`, or the existing one). The owner's edits on the ticket's branch, committed or not, are part of the ticket: read them before continuing, commit them with the ticket and never discard them.
@@ -78,7 +78,7 @@ Each checks the DoD items in its area. Post one PR comment, at most 10 lines plu
 ## 5. Merge
 
 - A hotfix into `main`, or a PR touching the guard hook, settings, workflows, `push.sh` or `merge.sh`: tell the owner it is ready to merge.
-- No approval from `frankkefoueg` on the head sha (`gh api repos/LinguaMentor/linguamentor-v3/pulls/<pr>/reviews`): stop and tell the owner `Approve PR #<pr>: <PR title>` with the PR link and one line on what it does for the learner, then rerun `/lm-next`. Checkpoint: "Needs the owner: approve PR #<pr>".
+- No approval from `frankkefoueg` on the head sha (`gh api repos/Frank-Tech-Org/GaugePrep/pulls/<pr>/reviews`): stop and tell the owner `Approve PR #<pr>: <PR title>` with the PR link and one line on what it does for the learner, then rerun `/lm-next`. Checkpoint: "Needs the owner: approve PR #<pr>".
 - Otherwise run `.claude/scripts/merge.sh <pr>`. While no CI exists it refuses and the owner merges. Any other refusal: fix what it names; never merge another way.
 
 Once the PR is merged, by the script or the owner: if the owner's checkout is on its branch, switch it to `develop` and pull (clean tree only, otherwise stop and ask the owner); if the branch had a worktree, remove it.
