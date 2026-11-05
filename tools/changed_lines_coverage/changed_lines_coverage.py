@@ -13,19 +13,32 @@ from pathlib import Path
 HUNK = re.compile(r"^@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@")
 
 
+# Mirrors the coverage omit list, so these files are never expected in the report.
+UNMEASURED = re.compile(r"(^|/)(tests|migrations)/|(^|/)(conftest|manage)\.py$")
+
+
 def parse_diff(diff: str) -> dict[str, set[int]]:
     """Added or changed lines per backend .py file, from `git diff -U0`."""
     changed: dict[str, set[int]] = {}
     path: str | None = None
+    header = False
     for line in diff.splitlines():
-        if line.startswith("+++ "):
-            name = line[4:]
+        if line.startswith("diff --git "):
+            header, path = True, None
+        elif header and line.startswith("+++ "):
+            name = line[4:].removesuffix(
+                "\t"
+            )  # git appends a tab after names with spaces
+            if name.startswith('"') and "backend/" in name:
+                raise ValueError(f"cannot read the quoted path {name}")
             ok = name.startswith("b/backend/") and name.endswith(".py")
-            path = name[2:] if ok else None
-        elif path and (m := HUNK.match(line)):
-            start, count = int(m[1]), int(m[2] if m[2] is not None else 1)
-            # A count of 0 is a pure deletion: nothing on the new side to cover.
-            changed.setdefault(path, set()).update(range(start, start + count))
+            path = name[2:] if ok and not UNMEASURED.search(name) else None
+        elif line.startswith("@@"):
+            header = False
+            if path and (m := HUNK.match(line)):
+                start, count = int(m[1]), int(m[2] if m[2] is not None else 1)
+                # A count of 0 is a pure deletion: nothing on the new side to cover.
+                changed.setdefault(path, set()).update(range(start, start + count))
     return changed
 
 
@@ -34,12 +47,13 @@ def evaluate(
 ) -> tuple[int, int, dict[str, list[int]]]:
     """Return (covered, executable, uncovered lines per file) over the changed lines."""
     files = report["files"]
-    assert isinstance(files, dict)
+    if not isinstance(files, dict):
+        raise ValueError("the coverage report has no files table")
     covered = executable = 0
     uncovered: dict[str, list[int]] = {}
     for path, lines in changed.items():
         entry = files.get(path)
-        if entry is None:  # not measured: tests, migrations, other omitted files
+        if entry is None:
             continue
         hit = lines & set(entry["executed_lines"])
         miss = lines & set(entry["missing_lines"])
@@ -103,11 +117,24 @@ def main(argv: list[str] | None = None) -> int:
     args = ap.parse_args(argv)
     try:
         report = json.loads(args.coverage.read_text())
-        diff = git_diff(args.base)
-    except (OSError, ValueError, subprocess.CalledProcessError) as exc:
-        print(f"changed-lines coverage: cannot run: {exc}", file=sys.stderr)
+        changed = {p: n for p, n in parse_diff(git_diff(args.base)).items() if n}
+        files = report["files"]
+        missing = [p for p in changed if p not in files]
+        if changed and len(missing) == len(changed):
+            names = ", ".join(sorted(missing))
+            raise ValueError(
+                f"no changed backend file is in the coverage report: {names}"
+            )
+        covered, executable, uncovered = evaluate(changed, report)
+    except (
+        OSError,
+        ValueError,
+        KeyError,
+        TypeError,
+        subprocess.CalledProcessError,
+    ) as exc:
+        print(f"changed-lines coverage: cannot run: {exc!r}", file=sys.stderr)
         return 2
-    covered, executable, uncovered = evaluate(parse_diff(diff), report)
     if executable == 0:
         print("changed-lines coverage: no changed backend lines")
         return 0

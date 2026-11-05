@@ -133,3 +133,124 @@ def test_no_changed_backend_lines_passes(
     monkeypatch.chdir(tmp_path)
     assert clc.main(["--base", "HEAD~1"]) == 0
     assert "no changed backend lines" in capsys.readouterr().out
+
+
+def repo_with_change(tmp_path: Path, name: str = "a.py") -> Path:
+    (tmp_path / "backend").mkdir()
+    git(tmp_path, "init", "-q", "-b", "main")
+    git(tmp_path, "commit", "-q", "--allow-empty", "-m", "base")
+    (tmp_path / "backend" / name).write_text("a = 1\nb = 2\n")
+    git(tmp_path, "add", ".")
+    git(tmp_path, "commit", "-q", "-m", "add")
+    return tmp_path
+
+
+def run_main(
+    repo: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    report_text: str | None,
+    base: str = "HEAD~1",
+) -> tuple[int, str, str]:
+    if report_text is not None:
+        (repo / "coverage.json").write_text(report_text)
+    monkeypatch.chdir(repo)
+    code = clc.main(["--base", base])
+    out, err = capsys.readouterr()
+    return code, out, err
+
+
+def test_missing_coverage_file_exits_2(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    repo = repo_with_change(tmp_path)
+    code, _, err = run_main(repo, monkeypatch, capsys, None)
+    assert code == 2
+    assert "cannot run" in err and "FileNotFoundError" in err
+
+
+def test_invalid_coverage_json_exits_2(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    code, _, err = run_main(repo_with_change(tmp_path), monkeypatch, capsys, "{nope")
+    assert code == 2
+    assert "cannot run" in err
+
+
+def test_unresolvable_base_exits_2(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    repo = repo_with_change(tmp_path)
+    code, _, err = run_main(
+        repo, monkeypatch, capsys, '{"files": {}}', base="nosuchref"
+    )
+    assert code == 2
+    assert "cannot run" in err
+
+
+@pytest.mark.parametrize(
+    "text",
+    ["{}", '{"files": []}', '{"files": {"backend/a.py": {"missing_lines": [2]}}}'],
+)
+def test_malformed_report_exits_2(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    text: str,
+) -> None:
+    code, _, err = run_main(repo_with_change(tmp_path), monkeypatch, capsys, text)
+    assert code == 2
+    assert "cannot run" in err
+
+
+def test_changed_file_missing_from_report_exits_2(
+    tmp_path, monkeypatch, capsys
+) -> None:
+    repo = repo_with_change(tmp_path)
+    code, _, err = run_main(
+        repo, monkeypatch, capsys, '{"files": {"backend/other.py": {}}}'
+    )
+    assert code == 2
+    assert "backend/a.py" in err
+
+
+def test_tests_only_change_still_passes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    (tmp_path / "backend" / "tests").mkdir(parents=True)
+    git(tmp_path, "init", "-q", "-b", "main")
+    git(tmp_path, "commit", "-q", "--allow-empty", "-m", "base")
+    (tmp_path / "backend" / "tests" / "t.py").write_text("a = 1\n")
+    git(tmp_path, "add", ".")
+    git(tmp_path, "commit", "-q", "-m", "add")
+    code, _, _ = run_main(tmp_path, monkeypatch, capsys, '{"files": {}}')
+    assert code == 0
+
+
+def test_added_line_starting_with_plus_plus_does_not_end_the_file() -> None:
+    diff = (
+        "diff --git a/backend/a.py b/backend/a.py\n"
+        "--- a/backend/a.py\n+++ b/backend/a.py\n"
+        "@@ -0,0 +1,2 @@\n+x = 1\n+++ y\n"
+        "@@ -9,0 +10,1 @@\n+z = 2\n"
+    )
+    assert clc.parse_diff(diff) == {"backend/a.py": {1, 2, 10}}
+
+
+def test_path_with_a_space(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    repo = repo_with_change(tmp_path, "my file.py")
+    text = json.dumps(report("backend/my file.py", [1], [2]))
+    code, out, _ = run_main(repo, monkeypatch, capsys, text)
+    assert code == 1
+    assert "backend/my file.py: 2" in out
+
+
+def test_quoted_path_exits_2(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    repo = repo_with_change(tmp_path, 'q"x.py')
+    code, _, err = run_main(repo, monkeypatch, capsys, '{"files": {}}')
+    assert code == 2
+    assert "quoted path" in err
