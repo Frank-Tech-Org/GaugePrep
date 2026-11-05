@@ -207,7 +207,7 @@ class ExamModel(Protocol):
 1. The learner submits a task; practice or simulation stores a `production` and writes a grading job.
 2. The worker runs the rule checks from `examcore` (word count, copying, off-topic, memorised text, similarity to own past texts).
 3. If a rule fails, the task level is "A1 not reached" and no model call is made.
-4. Otherwise, two independent grading passes run on Claude Sonnet 5.5 with the task's rubric and anchors (cached prompt prefix), each returning criterion levels, task level and quoted evidence as validated JSON.
+4. Otherwise, two independent grading passes run on Claude Sonnet 5.5 with the task's rubric and exemplars (cached prompt prefix; never the evaluation anchors), each returning criterion levels, task level and quoted evidence as validated JSON.
 5. A third pass runs when the passes differ by more than one level.
 6. The worker writes an append-only `task_grade` with the grader version, and the feedback text.
 7. When the three tasks of a paper are graded, the combination model produces the mark out of 20, CEFR and NCLC in a `paper_score`, followed by a new `prediction`.
@@ -336,7 +336,7 @@ Switching provider is a configuration change. There is no silent fallback: if th
 ### 8.3 Grader versioning and release
 
 - A grader version is the combination of model ID, prompt, rubric, anchor set and settings. Any change creates a new version.
-- A new version serves learners only after it passes the release checks of the exam specification (Section 9.1): exact level on at least 60% of anchors, within one level on 95%, no inversions, 90% consistency over repeated runs, rule checks, gaming and injection tests.
+- A new version serves learners only after it passes the release checks of the exam specification (Section 9.1): exact level on at least 60% of evaluation anchors, within one level on 95%, no inversions, 90% consistency over repeated runs, rule checks, gaming and injection tests.
 - The release check is a CI workflow that calls the real model and stores its report with the grader version.
 
 ### 8.4 Prompt and output safety
@@ -370,7 +370,7 @@ The chained pipeline is used instead of a speech-to-speech model because grading
 ### 8.7 Cost controls
 
 - Usage counters per learner per day and per month enforce the PRD limits (8 writing evaluations, 30 speaking minutes and 1 simulation per day; 300 speaking minutes and 120 writing evaluations per month).
-- Prompt caching for rubric and anchors.
+- Prompt caching for rubric and exemplars.
 - Rule checks before any model call; no model call for a task that fails a rule.
 - Daily AI spend per provider tracked against budget, with alerts.
 

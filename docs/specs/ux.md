@@ -6,7 +6,7 @@ Screens, navigation, states and key copy of the release 1 PWA. It turns the PRD 
 
 ## 1. Principles
 
-1. **Phone first.** Designed at 360 x 640 CSS pixels and tested on a mid-range Android phone over slow 3G (PRD 14). Desktop is the same layout with a wider content column (maximum 720 px) and keyboard support.
+1. **Small screens first.** A responsive web app, designed at a 360 x 640 CSS pixel viewport and tested in the browser of a mid-range smartphone over slow 3G (PRD 14). Wider screens get the same layout with a wider content column (maximum 720 px) and keyboard support.
 2. **Exam fidelity.** Simulation screens look and behave like a computer-based exam: no hints, no feedback, timers visible, rules stated before starting (PRD 2.3, SIM-3).
 3. **Honest numbers.** Every predicted score is shown as a range with its confidence and the estimate notice (PRE-5). Never show a single number without its range.
 4. **Light on data.** Images only where they carry meaning; audio downloaded once and cached; no autoplay video.
