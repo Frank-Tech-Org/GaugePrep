@@ -13,11 +13,16 @@ One-time setup, by the owner:
 1. Create the two projects by direct upload, with production branch `main`:
 
    ```bash
-   CLOUDFLARE_API_TOKEN=<dev token> CLOUDFLARE_ACCOUNT_ID=<id> npx --yes wrangler@4.151.3 pages project create gaugeprep-dev --production-branch main
-   CLOUDFLARE_API_TOKEN=<staging token> CLOUDFLARE_ACCOUNT_ID=<id> npx --yes wrangler@4.151.3 pages project create gaugeprep-staging --production-branch main
+   read -rs CLOUDFLARE_API_TOKEN; export CLOUDFLARE_API_TOKEN   # paste the dev token; keeps it out of shell history
+   CLOUDFLARE_ACCOUNT_ID=<id> npx --yes wrangler@4.153.0 pages project create gaugeprep-dev --production-branch main
+   read -rs CLOUDFLARE_API_TOKEN; export CLOUDFLARE_API_TOKEN   # now the staging token
+   CLOUDFLARE_ACCOUNT_ID=<id> npx --yes wrangler@4.153.0 pages project create gaugeprep-staging --production-branch main
+   unset CLOUDFLARE_API_TOKEN
    ```
 
-2. Add the four repository secrets listed in `.env.example` (`DEV_` and `STAGING_` token and account ID). Tokens: Pages edit permission only, one account.
+2. Add the four repository secrets listed in `.env.example` (`DEV_` and `STAGING_` token and account ID). Tokens: Pages edit permission only. That permission covers every Pages project in the account, so keep production in a different Cloudflare account.
+
+The secrets are repository-wide: anyone who can push a branch can write a workflow that reads them. The `if` on the branch in the workflow is not a barrier against that. Keep write access to trusted people only; GitHub Environments with a branch rule would close it, if the plan allows them for a private repository.
 
 Free plan limits: 500 builds a month and 20,000 files per site. Direct upload does not run Cloudflare builds, and the placeholder is one file.
 
