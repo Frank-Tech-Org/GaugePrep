@@ -13,8 +13,8 @@ from pathlib import Path
 HUNK = re.compile(r"^@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@")
 
 
-# Mirrors the coverage omit list, so these files are never expected in the report.
-UNMEASURED = re.compile(r"(^|/)(tests|migrations)/|(^|/)(conftest|manage)\.py$")
+# The omit patterns in pyproject.toml, so these files are never expected in the report.
+UNMEASURED = re.compile(r"^backend/tests/|/migrations/|(^|/)(conftest|manage)\.py$")
 
 
 def parse_diff(diff: str) -> dict[str, set[int]]:
@@ -25,14 +25,13 @@ def parse_diff(diff: str) -> dict[str, set[int]]:
     for line in diff.splitlines():
         if line.startswith("diff --git "):
             header, path = True, None
+        # Git ends a name with a tab when it holds a space.
         elif header and line.startswith("+++ "):
-            name = line[4:].removesuffix(
-                "\t"
-            )  # git appends a tab after names with spaces
+            name = line[4:].removesuffix("\t")
             if name.startswith('"') and "backend/" in name:
                 raise ValueError(f"cannot read the quoted path {name}")
             ok = name.startswith("b/backend/") and name.endswith(".py")
-            path = name[2:] if ok and not UNMEASURED.search(name) else None
+            path = name[2:] if ok and not UNMEASURED.search(name[2:]) else None
         elif line.startswith("@@"):
             header = False
             if path and (m := HUNK.match(line)):
@@ -120,7 +119,7 @@ def main(argv: list[str] | None = None) -> int:
         changed = {p: n for p, n in parse_diff(git_diff(args.base)).items() if n}
         files = report["files"]
         missing = [p for p in changed if p not in files]
-        if changed and len(missing) == len(changed):
+        if missing:
             names = ", ".join(sorted(missing))
             raise ValueError(
                 f"no changed backend file is in the coverage report: {names}"

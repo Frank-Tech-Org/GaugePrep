@@ -254,3 +254,28 @@ def test_quoted_path_exits_2(
     code, _, err = run_main(repo, monkeypatch, capsys, '{"files": {}}')
     assert code == 2
     assert "quoted path" in err
+
+
+def test_one_changed_file_absent_from_report_exits_2(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    repo = repo_with_change(tmp_path)
+    (repo / "backend" / "b.py").write_text("c = 3\n")
+    git(repo, "add", ".")
+    git(repo, "commit", "-q", "-m", "second file")
+    text = json.dumps(report("backend/a.py", [1, 2], []))
+    code, _, err = run_main(repo, monkeypatch, capsys, text, base="HEAD~2")
+    assert code == 2
+    assert "backend/b.py" in err
+
+
+def test_only_the_backend_tests_directory_is_unmeasured() -> None:
+    def changed(path: str) -> dict[str, set[int]]:
+        diff = (
+            f"diff --git a/{path} b/{path}\n--- a/{path}\n+++ b/{path}\n@@ -0,0 +1 @@\n"
+        )
+        return clc.parse_diff(diff)
+
+    assert changed("backend/tests/t.py") == {}
+    assert changed("backend/modules/x/migrations/0001_a.py") == {}
+    assert changed("backend/modules/x/tests/t.py") != {}
