@@ -42,6 +42,7 @@ python_version = "3.14"
 strict = true
 files = ["packages/examcore/src", "backend", "voice", "tools"]
 explicit_package_bases = true
+exclude = ["tools/changed_lines_coverage/test_"]
 mypy_path = ["packages/examcore/src", "backend", "tools"]
 plugins = ["mypy_django_plugin.main"]
 
