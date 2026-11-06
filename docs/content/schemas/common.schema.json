@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gaugeprep.com/schemas/content/common.schema.json",
+  "title": "Shared definitions for GaugePrep content",
+  "$defs": {
+    "cefr": {
+      "type": "string",
+      "enum": ["A1", "A2", "B1", "B2", "C1", "C2"]
+    },
+    "cefr_or_below": {
+      "type": "string",
+      "enum": ["BELOW_A1", "A1", "A2", "B1", "B2", "C1", "C2"],
+      "description": "BELOW_A1 is 'A1 not reached'."
+    },
+    "theme": {
+      "type": "string",
+      "description": "The 13 TCF themes of exam specification Section 5.2.",
+      "enum": [
+        "housing",
+        "work",
+        "education",
+        "health",
+        "transport",
+        "environment",
+        "technology",
+        "consumption",
+        "leisure",
+        "family",
+        "community_life",
+        "culture",
+        "city_and_countryside"
+      ]
+    },
+    "focus": {
+      "type": "string",
+      "enum": [
+        "main_idea",
+        "detail",
+        "inference",
+        "attitude",
+        "purpose",
+        "structure",
+        "vocabulary_in_context"
+      ]
+    },
+    "option_key": {
+      "type": "string",
+      "enum": ["A", "B", "C", "D"]
+    },
+    "accent": {
+      "type": "string",
+      "description": "Variety of French spoken by a voice or used in a text.",
+      "enum": [
+        "fr_FR",
+        "fr_CA",
+        "fr_BE",
+        "fr_CH",
+        "fr_AF_WEST",
+        "fr_AF_CENTRAL"
+      ]
+    },
+    "voice_profile": {
+      "type": "object",
+      "required": ["gender", "age_band", "accent"],
+      "additionalProperties": false,
+      "properties": {
+        "gender": { "type": "string", "enum": ["female", "male"] },
+        "age_band": { "type": "string", "enum": ["20_34", "35_49", "50_70"] },
+        "accent": { "$ref": "#/$defs/accent" },
+        "voice_id": {
+          "type": "string",
+          "description": "Voice bank identifier (see audio-script-rules.md). Filled by the audio producer if left empty by the author."
+        }
+      }
+    },
+    "authoring": {
+      "type": "object",
+      "required": ["author", "drafted_with_ai", "originality_statement"],
+      "additionalProperties": false,
+      "properties": {
+        "author": {
+          "type": "string",
+          "description": "Agent or person identifier."
+        },
+        "drafted_with_ai": { "type": "boolean" },
+        "model": {
+          "type": "string",
+          "description": "Model ID used for drafting, when drafted_with_ai is true."
+        },
+        "originality_statement": {
+          "type": "string",
+          "const": "original",
+          "description": "The author confirms the content is original under originality-and-sources.md."
+        },
+        "regional_usage": {
+          "type": "string",
+          "description": "Words or expressions specific to one French-speaking country, if any, and why they are used."
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "content_ref": {
+      "type": "object",
+      "required": ["code", "version"],
+      "additionalProperties": false,
+      "properties": {
+        "code": { "type": "string" },
+        "version": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "mcq_option": {
+      "type": "object",
+      "required": ["key", "text", "rationale"],
+      "additionalProperties": false,
+      "properties": {
+        "key": { "$ref": "#/$defs/option_key" },
+        "text": { "type": "string", "minLength": 1 },
+        "rationale": {
+          "type": "string",
+          "minLength": 1,
+          "description": "For the correct option: why it is right. For a distractor: why a learner might choose it and why it is wrong. Shown in feedback (exam specification Section 11)."
+        }
+      }
+    },
+    "four_options": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": { "$ref": "#/$defs/mcq_option" }
+    }
+  }
+}

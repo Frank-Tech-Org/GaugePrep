@@ -1,0 +1,202 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gaugeprep.com/schemas/content/speaking-task.schema.json",
+  "title": "TCF Canada speaking content (EO1 interview set, EO2 role-play card, EO3 point-of-view question)",
+  "description": "Exam specification Section 6. The examiner prompt, added with the voice work, consumes these fields.",
+  "type": "object",
+  "required": [
+    "schema",
+    "code",
+    "version",
+    "exam",
+    "paper",
+    "type",
+    "authoring"
+  ],
+  "properties": {
+    "schema": { "const": "speaking-task/1" },
+    "code": { "type": "string", "pattern": "^TCF-CA-EO-EO[1-3]-[0-9]{4}$" },
+    "version": { "type": "integer", "minimum": 1 },
+    "exam": { "const": "TCF_CA" },
+    "paper": { "const": "EO" },
+    "type": { "type": "string", "enum": ["EO1", "EO2", "EO3"] },
+    "authoring": { "$ref": "common.schema.json#/$defs/authoring" }
+  },
+  "oneOf": [
+    {
+      "title": "EO1 directed interview set",
+      "properties": {
+        "type": { "const": "EO1" },
+        "questions": {
+          "type": "array",
+          "minItems": 8,
+          "maxItems": 10,
+          "items": {
+            "type": "object",
+            "required": ["stage", "text_fr"],
+            "additionalProperties": false,
+            "properties": {
+              "stage": {
+                "type": "string",
+                "enum": ["simple", "developing", "open"],
+                "description": "Order is simple, then developing, then open."
+              },
+              "text_fr": { "type": "string" },
+              "domain": {
+                "type": "string",
+                "enum": [
+                  "identity",
+                  "family",
+                  "home",
+                  "work",
+                  "studies",
+                  "daily_life",
+                  "interests",
+                  "travel",
+                  "plans",
+                  "opinions"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "required": ["questions"],
+      "additionalProperties": false,
+      "$comment": "properties repeated so additionalProperties applies",
+      "patternProperties": {
+        "^(schema|code|version|exam|paper|authoring)$": true
+      }
+    },
+    {
+      "title": "EO2 interaction card",
+      "properties": {
+        "type": { "const": "EO2" },
+        "theme": { "$ref": "common.schema.json#/$defs/theme" },
+        "setting": {
+          "type": "string",
+          "description": "In English, for reviewers."
+        },
+        "card_fr": {
+          "type": "string",
+          "description": "Learner-facing card in French, read during the 2-minute preparation."
+        },
+        "learner_role": { "type": "string" },
+        "examiner_role": { "type": "string" },
+        "register": { "type": "string", "enum": ["neutral", "formal"] },
+        "info_to_obtain": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 5,
+          "items": {
+            "type": "object",
+            "required": ["label", "examiner_answer_fr"],
+            "additionalProperties": false,
+            "properties": {
+              "label": {
+                "type": "string",
+                "description": "What the learner must find out, in English."
+              },
+              "examiner_answer_fr": {
+                "type": "string",
+                "description": "What the examiner says only when asked."
+              }
+            }
+          }
+        },
+        "complication": {
+          "type": "object",
+          "required": ["trigger", "text_fr"],
+          "additionalProperties": false,
+          "properties": {
+            "trigger": {
+              "type": "string",
+              "description": "When the examiner introduces it, for example 'when the learner chooses Wednesday'."
+            },
+            "text_fr": { "type": "string" },
+            "alternatives_fr": {
+              "type": "string",
+              "description": "What the examiner offers if the learner asks for an alternative."
+            }
+          }
+        },
+        "other_facts_fr": {
+          "type": "string",
+          "description": "Plausible answers to likely extra questions, so the examiner never invents inconsistent facts."
+        },
+        "target_band": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": { "$ref": "common.schema.json#/$defs/cefr" }
+        }
+      },
+      "required": [
+        "theme",
+        "setting",
+        "card_fr",
+        "learner_role",
+        "examiner_role",
+        "register",
+        "info_to_obtain",
+        "complication",
+        "other_facts_fr"
+      ],
+      "additionalProperties": false,
+      "patternProperties": {
+        "^(schema|code|version|exam|paper|authoring)$": true
+      }
+    },
+    {
+      "title": "EO3 point-of-view question",
+      "properties": {
+        "type": { "const": "EO3" },
+        "theme": { "$ref": "common.schema.json#/$defs/theme" },
+        "question_fr": { "type": "string" },
+        "issue_summary": {
+          "type": "string",
+          "description": "In English: the issue and the main positions, for the examiner and the grader."
+        },
+        "arguments_for": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" }
+        },
+        "arguments_against": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" }
+        },
+        "follow_ups": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "object",
+            "required": ["kind", "text_fr"],
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": ["precision", "example", "counter_view"]
+              },
+              "text_fr": { "type": "string" }
+            }
+          }
+        }
+      },
+      "required": [
+        "theme",
+        "question_fr",
+        "issue_summary",
+        "arguments_for",
+        "arguments_against",
+        "follow_ups"
+      ],
+      "additionalProperties": false,
+      "patternProperties": {
+        "^(schema|code|version|exam|paper|authoring)$": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,187 @@
+{
+  "schema": "lesson/1",
+  "code": "FR-CUR-B1-U04-L2",
+  "version": 1,
+  "level": "B1",
+  "unit": 4,
+  "lesson": 2,
+  "unit_goal": {
+    "fr": "Donner son opinion et la justifier simplement sur un sujet de la vie quotidienne.",
+    "en": "Give and briefly justify an opinion on an everyday topic."
+  },
+  "goal": {
+    "fr": "Je peux exprimer mon accord ou mon désaccord et donner une raison.",
+    "en": "I can say whether I agree or disagree and give a reason."
+  },
+  "tcf_link": ["EE2", "EO3", "L3"],
+  "input": {
+    "kind": "audio",
+    "text_fr": "S1: Tu as vu ? La mairie veut fermer la rue du marché aux voitures le samedi.\nS2: Oui, et je trouve que c'est une bonne idée. On pourra marcher tranquillement.\nS1: Moi, je ne suis pas d'accord. Les commerçants vont perdre des clients, parce que les gens viennent en voiture.\nS2: Peut-être, mais à mon avis, ils viendront à pied ou en moto-taxi. [pause] Et il y aura moins de bruit.\nS1: C'est vrai que le bruit, c'est pénible. Mais il faudrait au moins un parking à côté.",
+    "speakers": [
+      { "gender": "male", "age_band": "35_49", "accent": "fr_AF_CENTRAL" },
+      { "gender": "female", "age_band": "20_34", "accent": "fr_FR" }
+    ],
+    "comprehension": {
+      "id": "E1",
+      "kind": "choice",
+      "instruction": {
+        "fr": "Écoutez et choisissez la bonne réponse.",
+        "en": "Listen and choose the correct answer."
+      },
+      "items": [
+        {
+          "prompt": "Que veut faire la mairie ?",
+          "choices": [
+            "Fermer le marché le samedi",
+            "Interdire les voitures dans la rue du marché le samedi",
+            "Construire un parking"
+          ],
+          "answer": "Interdire les voitures dans la rue du marché le samedi",
+          "explanation": {
+            "fr": "« fermer la rue du marché aux voitures le samedi »",
+            "en": "'close the market street to cars on Saturdays'"
+          }
+        },
+        {
+          "prompt": "Pourquoi l'homme n'est-il pas d'accord ?",
+          "choices": [
+            "À cause du bruit",
+            "Parce que les commerçants vont perdre des clients",
+            "Parce qu'il n'aime pas marcher"
+          ],
+          "answer": "Parce que les commerçants vont perdre des clients",
+          "explanation": {
+            "fr": "« Les commerçants vont perdre des clients, parce que les gens viennent en voiture. »",
+            "en": "He says traders will lose customers."
+          }
+        },
+        {
+          "prompt": "Qu'est-ce que l'homme propose à la fin ?",
+          "choices": [
+            "Un parking à côté",
+            "Des moto-taxis gratuits",
+            "Un marché le dimanche"
+          ],
+          "answer": "Un parking à côté",
+          "explanation": {
+            "fr": "« il faudrait au moins un parking à côté »",
+            "en": "'there should at least be a car park nearby'"
+          }
+        }
+      ]
+    }
+  },
+  "explanation": {
+    "focus": "discourse",
+    "body": {
+      "fr": "Pour donner son opinion : je trouve que, à mon avis, je pense que (+ indicatif). Pour dire son accord : je suis d'accord, c'est vrai que. Pour dire son désaccord : je ne suis pas d'accord, je ne pense pas que (+ subjonctif). Pour justifier : parce que, car, en effet. Pour nuancer : peut-être, mais ; c'est vrai que..., mais...",
+      "en": "To give an opinion: je trouve que, à mon avis, je pense que (+ indicative). To agree: je suis d'accord, c'est vrai que. To disagree: je ne suis pas d'accord, je ne pense pas que (+ subjunctive). To justify: parce que, car, en effet. To qualify: peut-être, mais; c'est vrai que..., mais..."
+    },
+    "examples_fr": [
+      "À mon avis, c'est une bonne idée parce qu'il y aura moins de bruit.",
+      "C'est vrai que le bruit est pénible, mais les commerçants risquent de perdre des clients.",
+      "Je ne pense pas que ce soit une solution pour tout le monde."
+    ]
+  },
+  "practice": [
+    {
+      "id": "E2",
+      "kind": "gap_fill",
+      "instruction": {
+        "fr": "Complétez avec : parce que, à mon avis, mais, je ne suis pas d'accord.",
+        "en": "Complete with: parce que, à mon avis, mais, je ne suis pas d'accord."
+      },
+      "items": [
+        {
+          "prompt": "___, le télétravail est pratique pour les parents.",
+          "answer": "À mon avis",
+          "explanation": {
+            "fr": "On introduit une opinion en début de phrase.",
+            "en": "Introduces an opinion at the start of a sentence."
+          }
+        },
+        {
+          "prompt": "Je préfère le bus ___ c'est moins cher.",
+          "answer": "parce que",
+          "explanation": {
+            "fr": "« parce que » introduit la raison.",
+            "en": "'parce que' introduces the reason."
+          }
+        },
+        {
+          "prompt": "C'est vrai que la ville est animée, ___ elle est bruyante.",
+          "answer": "mais",
+          "explanation": {
+            "fr": "« mais » introduit une nuance.",
+            "en": "'mais' introduces a contrast."
+          }
+        },
+        {
+          "prompt": "Tu penses que les écrans sont dangereux ? ___ : ils sont utiles pour apprendre.",
+          "answer": "Je ne suis pas d'accord",
+          "explanation": {
+            "fr": "On exprime un désaccord, puis on justifie.",
+            "en": "Expresses disagreement, then justifies."
+          }
+        }
+      ]
+    },
+    {
+      "id": "E3",
+      "kind": "ordering",
+      "instruction": {
+        "fr": "Remettez les mots dans l'ordre.",
+        "en": "Put the words in order."
+      },
+      "items": [
+        {
+          "prompt": "pense | je | que | utile | c'est",
+          "answer": "je pense que c'est utile",
+          "explanation": {
+            "fr": "Sujet + verbe d'opinion + que + proposition.",
+            "en": "Subject + opinion verb + que + clause."
+          }
+        },
+        {
+          "prompt": "d'accord | suis | ne | je | pas",
+          "answer": "je ne suis pas d'accord",
+          "explanation": {
+            "fr": "La négation entoure le verbe : ne ... pas.",
+            "en": "Negation surrounds the verb: ne ... pas."
+          }
+        },
+        {
+          "prompt": "avis | mon | trop | à | c'est | cher",
+          "answer": "à mon avis c'est trop cher || à mon avis, c'est trop cher",
+          "explanation": {
+            "fr": "« à mon avis » se place en tête de phrase.",
+            "en": "'à mon avis' goes at the start."
+          }
+        }
+      ]
+    }
+  ],
+  "production": {
+    "kind": "writing",
+    "prompt_fr": "Votre quartier veut interdire les voitures dans la rue du marché le samedi. Vous écrivez un message sur le groupe WhatsApp des habitants : vous donnez votre opinion et vous la justifiez avec deux raisons.",
+    "word_range": [60, 100],
+    "success_criteria": [
+      "states a clear opinion with an opinion expression",
+      "gives at least two reasons with parce que, car or en effet",
+      "acknowledges another view with c'est vrai que... mais or peut-être, mais",
+      "uses an informal register suited to neighbours"
+    ]
+  },
+  "summary": {
+    "fr": "Pour convaincre à l'examen, donnez toujours votre avis ET une raison. Nuancez avec « c'est vrai que..., mais... ».",
+    "en": "To convince in the exam, always give your opinion AND a reason. Qualify it with 'c'est vrai que..., mais...'."
+  },
+  "vocabulary": ["FR-VOC-transport-0001"],
+  "estimated_minutes": 20,
+  "authoring": {
+    "author": "example",
+    "drafted_with_ai": true,
+    "model": "claude-opus-5-5",
+    "originality_statement": "original"
+  }
+}

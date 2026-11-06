@@ -1,0 +1,72 @@
+{
+  "schema": "listening-item/1",
+  "code": "TCF-CA-CO-L4-0001",
+  "version": 1,
+  "exam": "TCF_CA",
+  "paper": "CO",
+  "type": "L4",
+  "target_level": "A2",
+  "difficulty_adjustment": 0,
+  "theme": "health",
+  "focus": "detail",
+  "script": {
+    "genre": "voicemail",
+    "speakers": [
+      {
+        "id": "S1",
+        "role": "medical secretary",
+        "voice": {
+          "gender": "female",
+          "age_band": "35_49",
+          "accent": "fr_AF_CENTRAL"
+        }
+      }
+    ],
+    "turns": [
+      {
+        "speaker": "S1",
+        "text": "Bonjour Madame Ekane, ici le cabinet du docteur Mbarga. [pause] Votre rendez-vous de jeudi est déplacé à vendredi, même heure. [pause] Si cela ne vous convient pas, rappelez-nous avant mercredi midi. Merci, bonne journée."
+      }
+    ],
+    "target_wpm": 125,
+    "background": "phone_line",
+    "estimated_seconds": 18
+  },
+  "question": {
+    "mode": "spoken",
+    "text": "Que doit faire Madame Ekane si vendredi ne lui convient pas ?",
+    "voice": { "gender": "male", "age_band": "35_49", "accent": "fr_FR" }
+  },
+  "options_mode": "written",
+  "options": [
+    {
+      "key": "A",
+      "text": "Venir jeudi comme prévu.",
+      "rationale": "Jeudi is the original day the learner hears first; the message says the appointment is moved away from Thursday."
+    },
+    {
+      "key": "B",
+      "text": "Téléphoner avant mercredi midi.",
+      "rationale": "Correct: 'rappelez-nous avant mercredi midi' means call back before Wednesday noon."
+    },
+    {
+      "key": "C",
+      "text": "Envoyer un message vendredi.",
+      "rationale": "Vendredi is the new day, but no message is requested, and Friday is too late."
+    },
+    {
+      "key": "D",
+      "text": "Passer au cabinet mercredi.",
+      "rationale": "Mercredi is mentioned only as the deadline to call; the secretary does not ask her to come in."
+    }
+  ],
+  "key": "B",
+  "key_passage": "Si cela ne vous convient pas, rappelez-nous avant mercredi midi.",
+  "skill_note": "Identify the action requested in a short practical message.",
+  "authoring": {
+    "author": "example",
+    "drafted_with_ai": false,
+    "originality_statement": "original",
+    "notes": "Taken from exam specification Appendix A to show the file format."
+  }
+}

@@ -26,3 +26,4 @@
 | [ADR-022](ADR-022-pr-security-scanners-scope.md) | PR security scanners catch accidents, not a deliberate bypass | Accepted |
 | [ADR-023](ADR-023-email-verification-only-no-sms-sign-up.md) | Email verification only, no SMS sign-up | Accepted |
 | [ADR-024](ADR-024-resend-for-transactional-email-mailpit-locally-and-in-dev.md) | Resend for transactional email, Mailpit locally and in dev | Accepted |
+| [ADR-025](ADR-025-content-authored-as-validated-files-imported-into-the-content-module.md) | Content authored as validated files, imported into the content module | Proposed |
