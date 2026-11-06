@@ -1,18 +1,25 @@
 name: ci
 
-# Runs on every pull request. No secrets are used; the postgres credentials below are test-only.
+# Runs on every pull request, and when another workflow calls it (the Pages publish does, before it publishes). No secrets are used; the postgres credentials below are test-only.
 # Scanners are free open-source binaries: no Semgrep App login, no Snyk, no tokens.
+# When called from a push, the pull request context is missing: BASE is the commit before the push and the title, scanner settings and changed-lines checks are skipped (they judge a pull request, not a branch).
 on:
   pull_request:
     branches: [develop, stage, main]
     types: [opened, synchronize, reopened, edited]
+  workflow_call:
 
 permissions:
   contents: read
 
+env:
+  BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+  HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+
+# A push has no pull request number, so each run gets its own group and none cancels another.
 concurrency:
-  group: ci-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
+  group: ci-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 # GitHub-hosted arm64 runners (ubuntu-24.04-arm) are free for public repositories only, so this private repo uses x64.
 jobs:
@@ -26,7 +33,7 @@ jobs:
     outputs:
       code: ${{ steps.filter.outputs.code }}
       backend_image: ${{ steps.filter.outputs.backend_image }}
-      ok: ${{ steps.early.outputs.ok == 'true' && steps.title.outcome == 'success' }}
+      ok: ${{ steps.early.outputs.ok == 'true' && (steps.title.outcome == 'success' || github.event_name != 'pull_request') }}
     env:
       GITLEAKS_VERSION: 8.30.1
       GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
@@ -38,19 +45,23 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      # Code checks are skipped only when every changed file is documentation or agent prompts, skill documents, rules or memory (not hooks or scripts).
-      # The image build runs only when a file that feeds the backend image changed.
+      # On a pull request, code checks are skipped only when every changed file is documentation or agent prompts, skill documents, rules or memory (not hooks or scripts).
+      # On a push or a manual run every code check runs: the publish must not go out over a red branch. The image build runs only when a file that feeds the backend image changed, or when the push has no usable base.
       - id: filter
-        env:
-          BASE: ${{ github.event.pull_request.base.sha }}
-          HEAD: ${{ github.event.pull_request.head.sha }}
         run: |
           # Separate assignment so a failing git diff stops the step instead of skipping the checks.
-          diff=$(git diff --name-only --no-renames "$BASE...$HEAD")
-          other=$(printf '%s\n' "$diff" | grep -Ev '^(docs/|\.claude/(agents|rules|memory)/|\.claude/skills/.*\.md$|.*\.md$)' || true)
-          if [ -n "$other" ]; then code=true; else code=false; fi
-          image=$(printf '%s\n' "$diff" | grep -E '^(infra/docker/|uv\.lock$|\.dockerignore$|(.*/)?pyproject\.toml$)' || true)
-          if [ -n "$image" ]; then backend_image=true; else backend_image=false; fi
+          if [ -n "$BASE" ] && git cat-file -e "$BASE^{commit}" 2>/dev/null; then
+            diff=$(git diff --name-only --no-renames "$BASE...$HEAD")
+            other=$(printf '%s\n' "$diff" | grep -Ev '^(docs/|\.claude/(agents|rules|memory)/|\.claude/skills/.*\.md$|.*\.md$)' || true)
+            if [ -n "$other" ]; then code=true; else code=false; fi
+            image=$(printf '%s\n' "$diff" | grep -E '^(infra/docker/|uv\.lock$|\.dockerignore$|(.*/)?pyproject\.toml$)' || true)
+            if [ -n "$image" ]; then backend_image=true; else backend_image=false; fi
+          else
+            echo "no usable base commit, running everything"
+            code=true
+            backend_image=true
+          fi
+          if [ "$GITHUB_EVENT_NAME" != pull_request ]; then code=true; fi
           echo "code=$code" >> "$GITHUB_OUTPUT"
           echo "backend_image=$backend_image" >> "$GITHUB_OUTPUT"
           echo "code checks: $code"
@@ -63,44 +74,45 @@ jobs:
           echo "${GITLEAKS_SHA256}  $RUNNER_TEMP/gitleaks.tgz" | sha256sum --check -
           mkdir "$RUNNER_TEMP/gitleaks-bin"
           tar -xzf "$RUNNER_TEMP/gitleaks.tgz" -C "$RUNNER_TEMP/gitleaks-bin" gitleaks
-      # Scans the full history reachable from the PR head, not other branches. Config and ignore list come from the base commit, so a PR cannot switch off its own scan.
+      # Scans the full history reachable from the head, not other branches. Config and ignore list come from the base commit, so a PR cannot switch off its own scan.
+      # On a push the base is the commit before the push, or its first parent when that is gone (new branch, force push, manual run).
       - name: Scan the full git history
         id: gitleaks
         if: ${{ !cancelled() }}
-        env:
-          BASE: ${{ github.event.pull_request.base.sha }}
         run: |
+          if [ "$GITHUB_EVENT_NAME" != pull_request ] && ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then BASE=$(git rev-parse -q --verify "$HEAD^" || true); fi
           # gitleaks:allow comments and the checkout's own .gitleaksignore would let a PR skip its own secret.
           args=(git --redact --verbose --ignore-gitleaks-allow --log-opts="HEAD")
           rm -f .gitleaksignore
-          # Always pass a config from the base, so the PR's own ./.gitleaks.toml is never loaded.
-          git show "$BASE:.gitleaks.toml" > "$RUNNER_TEMP/gl.toml" 2>/dev/null || printf '[extend]\nuseDefault = true\n' > "$RUNNER_TEMP/gl.toml"
+          # Always pass a config from the base, so the head's own ./.gitleaks.toml is never loaded.
+          { [ -n "$BASE" ] && git show "$BASE:.gitleaks.toml" > "$RUNNER_TEMP/gl.toml" 2>/dev/null; } || printf '[extend]\nuseDefault = true\n' > "$RUNNER_TEMP/gl.toml"
           args+=(--config "$RUNNER_TEMP/gl.toml")
-          git show "$BASE:.gitleaksignore" > "$RUNNER_TEMP/gl.ignore" 2>/dev/null || : > "$RUNNER_TEMP/gl.ignore"
+          { [ -n "$BASE" ] && git show "$BASE:.gitleaksignore" > "$RUNNER_TEMP/gl.ignore" 2>/dev/null; } || : > "$RUNNER_TEMP/gl.ignore"
           args+=(--gitleaks-ignore-path "$RUNNER_TEMP/gl.ignore")
           if ! "$RUNNER_TEMP/gitleaks-bin/gitleaks" "${args[@]}"; then
             echo "::error title=Secret found::gitleaks found a secret in the history; the File line in the output above names the file. Remove it from every commit and rotate it."
             exit 1
           fi
-      # Both specs come from git objects, so nothing in the checkout can touch the API check.
+      # Both specs come from git objects, so nothing in the checkout can touch the API check. A push with no usable base has nothing to compare.
       - name: API contract files
         id: oas
         if: ${{ !cancelled() }}
-        env:
-          BASE: ${{ github.event.pull_request.base.sha }}
-          HEAD: ${{ github.event.pull_request.head.sha }}
         run: |
           compare=false
-          changed=$(git diff --name-only --no-renames "$BASE...$HEAD" -- backend/openapi.json)
-          if [ -z "$changed" ]; then
-            echo "backend/openapi.json unchanged, skipping"
-          elif ! git show "$BASE:backend/openapi.json" > "$RUNNER_TEMP/openapi.base.json" 2>/dev/null; then
-            echo "backend/openapi.json is new on this PR, nothing to compare"
-          elif ! git show "$HEAD:backend/openapi.json" > "$RUNNER_TEMP/openapi.head.json" 2>/dev/null; then
-            echo "::error title=API contract removed::backend/openapi.json exists on the base branch and is missing on this PR. Restore it."
-            exit 1
+          if [ -z "$BASE" ] || ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then
+            echo "no usable base commit, skipping the API comparison"
           else
-            compare=true
+            changed=$(git diff --name-only --no-renames "$BASE...$HEAD" -- backend/openapi.json)
+            if [ -z "$changed" ]; then
+              echo "backend/openapi.json unchanged, skipping"
+            elif ! git show "$BASE:backend/openapi.json" > "$RUNNER_TEMP/openapi.base.json" 2>/dev/null; then
+              echo "backend/openapi.json is new on this PR, nothing to compare"
+            elif ! git show "$HEAD:backend/openapi.json" > "$RUNNER_TEMP/openapi.head.json" 2>/dev/null; then
+              echo "::error title=API contract removed::backend/openapi.json exists on the base branch and is missing on this PR. Restore it."
+              exit 1
+            else
+              compare=true
+            fi
           fi
           echo "compare=$compare" >> "$GITHUB_OUTPUT"
       # Holds only the oasdiff binary we build; its hash is checked after every restore, so a poisoned entry cannot run.
@@ -150,11 +162,9 @@ jobs:
           echo "ok=$ok" >> "$GITHUB_OUTPUT"
       # Fails on added or edited scanner settings, on added inline suppressions and on a changed pnpm version or setting in a package.json; the owner merges over it when justified. Docs and the owner-only workflow are skipped because they only describe the markers.
       # A deleted file is not flagged, except under semgrep/: removing an ignore or config only tightens a scan. pnpm-workspace.yaml is compared with its packages list removed, so any other change is flagged.
+      # Pull requests only: the owner can merge over it, and on a push it would block every publish after that merge.
       - name: Scanner settings
-        if: ${{ !cancelled() }}
-        env:
-          BASE: ${{ github.event.pull_request.base.sha }}
-          HEAD: ${{ github.event.pull_request.head.sha }}
+        if: ${{ !cancelled() && github.event_name == 'pull_request' }}
         run: |
           # Separate files so a failing git diff stops the step. Only file names, field names and line numbers are printed, never values or line contents.
           d=(git -c core.quotepath=off diff --no-renames --diff-filter=d "$BASE...$HEAD")
@@ -202,14 +212,13 @@ jobs:
             exit 1
           fi
       # The script comes from the PR; the template is read from the base commit, so a PR cannot loosen the template it is checked against.
-      # Title and body reach the script only through env, never inside the run text.
+      # Title and body reach the script only through env, never inside the run text. Pull requests only: a push has no title.
       - name: PR title and description
         id: title
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && github.event_name == 'pull_request' }}
         env:
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_BODY: ${{ github.event.pull_request.body }}
-          BASE: ${{ github.event.pull_request.base.sha }}
         run: |
           git show "$BASE:.github/pull_request_template.md" > "$RUNNER_TEMP/pull_request_template.md"
           bash .github/scripts/check-pr-description.sh "$RUNNER_TEMP/pull_request_template.md"
@@ -261,9 +270,9 @@ jobs:
       # --no-cov keeps this run from overwriting the .coverage file that pnpm check just wrote.
       - name: Changed-lines script tests
         run: uv run pytest tools/changed_lines_coverage --no-cov
+      # Pull requests only: the 90% threshold judges the lines one pull request adds, and a push has no such diff.
       - name: Changed backend lines are covered
-        env:
-          BASE: ${{ github.event.pull_request.base.sha }}
+        if: ${{ github.event_name == 'pull_request' }}
         run: |
           uv run coverage json --rcfile=backend/pyproject.toml -o "$RUNNER_TEMP/coverage.json"
           uv run python tools/changed_lines_coverage/changed_lines_coverage.py --base "$BASE" --coverage "$RUNNER_TEMP/coverage.json" --threshold 90
@@ -296,31 +305,35 @@ jobs:
           enable-cache: true
           cache-dependency-glob: uv.lock
       # Semgrep reads .semgrepignore in every folder, so drop all of them and restore only those at the base commit.
+      # On a push the base is the commit before it, or its first parent; with neither, none are restored and the scan is stricter.
       - name: Use the base ignore files
-        env:
-          BASE: ${{ github.event.pull_request.base.sha }}
         run: |
+          if [ "$GITHUB_EVENT_NAME" != pull_request ] && ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then BASE=$(git rev-parse -q --verify "$HEAD^" || true); fi
           find . -name .semgrepignore -not -path './.git/*' -delete
-          git ls-tree -r -z --name-only "$BASE" | { grep -zE '(^|/)\.semgrepignore$' || true; } | while IFS= read -r -d '' f; do
-            mkdir -p "$(dirname "$f")"
-            git show "$BASE:$f" > "$f"
-          done
+          if [ -n "$BASE" ]; then
+            git ls-tree -r -z --name-only "$BASE" | { grep -zE '(^|/)\.semgrepignore$' || true; } | while IFS= read -r -d '' f; do
+              mkdir -p "$(dirname "$f")"
+              git show "$BASE:$f" > "$f"
+            done
+          fi
       # Rules are the community repo pinned to a commit (Semgrep Rules License v1.0 allows internal CI use); no login, metrics off.
       # Our own rules (semgrep/*.yaml) are read from the base commit, so a PR cannot weaken them. The first PR that adds them is scanned without them; the test step below covers it.
       # The test snippets hold the unsafe calls on purpose, so that one file is excluded from the scan.
       - name: Semgrep
         env:
           RULES_SHA: 16b9e6d45f10649f6a531ec4838ed9924372c3bc
-          BASE: ${{ github.event.pull_request.base.sha }}
         run: |
+          if [ "$GITHUB_EVENT_NAME" != pull_request ] && ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then BASE=$(git rev-parse -q --verify "$HEAD^" || true); fi
           git init -q "$RUNNER_TEMP/semgrep-rules"
           git -C "$RUNNER_TEMP/semgrep-rules" fetch -q --depth 1 https://github.com/semgrep/semgrep-rules "$RULES_SHA"
           git -C "$RUNNER_TEMP/semgrep-rules" checkout -q FETCH_HEAD
           r="$RUNNER_TEMP/semgrep-rules"
           mkdir "$RUNNER_TEMP/local-rules"
-          git ls-tree -r -z --name-only "$BASE" -- semgrep | { grep -zE '^semgrep/[^/]+\.yaml$' || true; } | while IFS= read -r -d '' f; do
-            git show "$BASE:$f" > "$RUNNER_TEMP/local-rules/${f##*/}"
-          done
+          if [ -n "$BASE" ]; then
+            git ls-tree -r -z --name-only "$BASE" -- semgrep | { grep -zE '^semgrep/[^/]+\.yaml$' || true; } | while IFS= read -r -d '' f; do
+              git show "$BASE:$f" > "$RUNNER_TEMP/local-rules/${f##*/}"
+            done
+          fi
           args=(--config "$r/python" --config "$r/typescript" --config "$r/generic")
           if [ -n "$(ls -A "$RUNNER_TEMP/local-rules")" ]; then
             args+=(--config "$RUNNER_TEMP/local-rules")
@@ -403,14 +416,13 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      # Trivy ignore files and config come from the base commit, so a PR cannot switch off its own scan.
+      # Trivy ignore files and config come from the base commit, so a PR cannot switch off its own scan. On a push the base is the commit before it, or its first parent; with neither, none are used.
       - name: Use the base Trivy ignore files
-        env:
-          BASE: ${{ github.event.pull_request.base.sha }}
         run: |
+          if [ "$GITHUB_EVENT_NAME" != pull_request ] && ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then BASE=$(git rev-parse -q --verify "$HEAD^" || true); fi
           for f in .trivyignore .trivyignore.yaml .trivyignore.yml trivy.yaml trivy.yml; do
             rm -f "$f"
-            git show "$BASE:$f" > "$f" 2>/dev/null || rm -f "$f"
+            if [ -n "$BASE" ]; then git show "$BASE:$f" > "$f" 2>/dev/null || rm -f "$f"; fi
           done
           # Rewrite the markers so Trivy no longer reads them as ignores. git grep exits 1 on no match, absorbed by || true.
           { git grep -lzE '(trivy|tfsec):(ignore|exp)' || true; } | xargs -0 -r sed -i -E 's/(trivy|tfsec):(ignore|exp)/\1-\2/g'
