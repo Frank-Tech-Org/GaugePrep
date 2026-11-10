@@ -6,7 +6,7 @@ The Oracle Always Free ARM server is lost, reclaimed or changed by Oracle, or yo
 
 ## Steps
 
-1. Create an Ubuntu 24.04 LTS arm64 server (Oracle: Ampere A1, 2 OCPU, 12 GB, public IP, your admin SSH key). In the provider network rules allow inbound TCP 22, 80 and 443 only (Oracle: the VCN security list).
+1. Create an Ubuntu 24.04 LTS arm64 server (Oracle: Ampere A1, 2 OCPU, 12 GB; AWS: t4g.small, 30 GB gp3, the imported `gaugeprep-deploy` key pair), with a public IP and your admin SSH key. In the provider network rules allow inbound TCP 22, 80 and 443 only (Oracle: the VCN security list; AWS: the instance's security group).
 2. Note the start time. Log in with the admin key (Oracle: user `ubuntu`, not root).
 3. Get the script onto the server: `git clone` the repository, or `scp infra/staging/bootstrap.sh`.
 4. Preview, then apply (the deploy public key is `ssh-keygen -y -f <deploy private key>`; `SERVER_DEPLOY_USER` is optional and defaults to `deploy`):
@@ -30,7 +30,7 @@ Security notes:
 
 | Run | Server | Start | End | Minutes |
 | --- | --- | --- | --- | --- |
-| Blank-server timing | not yet run, owner to fill | | | |
+| Blank-server timing, 2026-11-10 | AWS t4g.small, Ubuntu 24.04.5 arm64 | 12:04:23 UTC | 12:05:23 UTC | 1 (second run: `no changes`) |
 
 ## Verify
 
