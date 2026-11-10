@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Fresh Ubuntu ARM server to ready for Kamal; a rerun prints "no changes".
+# Fresh Ubuntu ARM server to ready for Kamal (updates, Docker, deploy user, SSH, firewall, 2 GB swap); a rerun prints "no changes".
 # Inputs: SERVER_DEPLOY_PUBLIC_KEY (required), SERVER_DEPLOY_USER (default deploy), DRY_RUN=1 (plan only).
 set -euo pipefail
 
@@ -246,6 +246,31 @@ step_firewall() {
   fi
 }
 
+SWAPFILE=/swapfile
+SWAP_BYTES=$((2 * 1024 * 1024 * 1024))
+
+make_swap() {
+  fallocate -l "$SWAP_BYTES" "$SWAPFILE" && chmod 600 "$SWAPFILE" && mkswap "$SWAPFILE" >/dev/null
+}
+
+swap_active() { swapon --show=NAME --noheadings 2>/dev/null | grep -qxF "$SWAPFILE"; }
+
+add_fstab_swap() { printf '%s none swap sw 0 0\n' "$SWAPFILE" >> /etc/fstab; }
+
+# A 2 GB server runs out of memory during image pulls and migrations without swap; low swappiness keeps it a last resort.
+step_swap() {
+  if [ -e "$SWAPFILE" ] && [ "$(stat -c %s "$SWAPFILE")" != "$SWAP_BYTES" ]; then
+    die "$SWAPFILE exists and is not 2 GB, remove it or resize it by hand"
+  fi
+  if [ ! -e "$SWAPFILE" ]; then change "create a 2 GB $SWAPFILE" make_swap; fi
+  if ! swap_active; then change "swapon $SWAPFILE" swapon "$SWAPFILE"; fi
+  if ! grep -qE "^${SWAPFILE}[[:space:]]+none[[:space:]]+swap" /etc/fstab 2>/dev/null; then
+    change "add $SWAPFILE to /etc/fstab" add_fstab_swap
+  fi
+  put_file /etc/sysctl.d/99-swappiness.conf 644 'vm.swappiness=10'
+  if [ "$(sysctl -n vm.swappiness)" != 10 ]; then change "set vm.swappiness=10" sysctl -q -w vm.swappiness=10; fi
+}
+
 validate
 [ "$DRY_RUN" = 1 ] && log "dry run: nothing will be changed"
 step_updates
@@ -253,6 +278,7 @@ step_docker
 step_user
 step_ssh
 step_firewall
+step_swap
 
 if [ "$changes" -eq 0 ]; then
   log "no changes"
