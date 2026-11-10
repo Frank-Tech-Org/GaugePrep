@@ -1,0 +1,15 @@
+service: gaugeprep-backend-dev
+
+servers:
+  web:
+    hosts:
+      - <%= ENV.fetch("DEV_SERVER_HOST") %>
+    options:
+      memory: 320m
+
+proxy:
+  host: dev.gaugeprep.com
+
+env:
+  clear:
+    DJANGO_ALLOWED_HOSTS: dev.gaugeprep.com

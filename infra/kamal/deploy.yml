@@ -1,0 +1,41 @@
+# Shared by every destination; run Kamal from the repo root with -c infra/kamal/deploy.yml -d <destination>.
+# The server host lives in the destination file, so moving to another provider is a host change.
+service: gaugeprep-backend
+image: frank-tech-org/gaugeprep-backend
+
+minimum_version: 2.12.0
+require_destination: true
+hooks_path: infra/kamal/hooks
+retain_containers: 3
+
+registry:
+  server: ghcr.io
+  username:
+    - KAMAL_REGISTRY_USERNAME
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+builder:
+  arch: arm64
+  dockerfile: infra/docker/backend.Dockerfile
+  target: production
+
+ssh:
+  user: deploy
+
+# One kamal-proxy per server, shared by dev and staging, so its limit lives here.
+proxy:
+  ssl: true
+  app_port: 8000
+  healthcheck:
+    path: /api/v1/health
+    interval: 3
+    timeout: 3
+  run:
+    options:
+      memory: 64m
+
+env:
+  secret:
+    - DATABASE_URL
+    - DJANGO_SECRET_KEY
