@@ -1,5 +1,5 @@
-# Local development image; production images come with the deploy work.
-FROM ghcr.io/astral-sh/uv:python3.14-trixie-slim
+# The base is pinned by digest; Dependabot moves it by pull request.
+FROM ghcr.io/astral-sh/uv:python3.14-trixie-slim@sha256:e80c05a310400cfc90af00b5b7271ef9ad24816e3265e1162af8a678e1aad099 AS base
 
 ENV UV_LINK_MODE=copy PYTHONUNBUFFERED=1 PATH="/app/.venv/bin:$PATH"
 WORKDIR /app
@@ -15,3 +15,13 @@ COPY backend backend
 WORKDIR /app/backend
 RUN useradd --system --no-create-home app
 USER app
+
+# Deployed image: Kamal builds this target.
+FROM base AS production
+ENV DJANGO_SETTINGS_MODULE=config.settings.production
+EXPOSE 8000
+# The app user has no home, so the control socket cannot be created.
+CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "2", "--max-requests", "1000", "--max-requests-jitter", "100", "--access-logfile", "-", "--no-control-socket"]
+
+# Last stage, so a plain build (compose, CI) stays the local image.
+FROM base AS dev
