@@ -20,8 +20,9 @@ USER app
 FROM base AS production
 ENV DJANGO_SETTINGS_MODULE=config.settings.production
 EXPOSE 8000
-# The app user has no home, so the control socket cannot be created.
-CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "2", "--max-requests", "1000", "--max-requests-jitter", "100", "--access-logfile", "-", "--no-control-socket"]
+# Migrate before serving: a failed migration exits the container, so kamal-proxy never switches to it.
+# The app user has no home, so gunicorn's control socket is off.
+CMD ["sh", "-c", "python manage.py migrate --noinput && exec gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2 --max-requests 1000 --max-requests-jitter 100 --access-logfile - --no-control-socket"]
 
 # Last stage, so a plain build (compose, CI) stays the local image.
 FROM base AS dev

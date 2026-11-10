@@ -4,7 +4,7 @@ Two parts: the backend on the shared server with Kamal (dev for now, staging fol
 
 ## Backend deploy with Kamal (dev)
 
-Config is in `infra/kamal/`: `deploy.yml` (shared), `deploy.dev.yml` (dev) and `hooks/pre-deploy` (migrations); the secrets files are `.kamal/secrets-common` and `.kamal/secrets.dev` (they only read your shell, no values). Run every Kamal command from the repo root. Dev is `dev.gaugeprep.com` (a DNS-only A record in Cloudflare pointing at the server), image `ghcr.io/frank-tech-org/gaugeprep-backend`, containers named `gaugeprep-backend-dev-web-...`.
+Config is in `infra/kamal/`: `deploy.yml` (shared) and `deploy.dev.yml` (dev); the secrets files are `.kamal/secrets-common` and `.kamal/secrets.dev` (they only read your shell, no values). Run every Kamal command from the repo root. Dev is `dev.gaugeprep.com` (a DNS-only A record in Cloudflare pointing at the server), image `ghcr.io/frank-tech-org/gaugeprep-backend`, containers named `gaugeprep-backend-dev-web-...`.
 
 ### Trigger
 
@@ -41,7 +41,7 @@ cd <repo root>
 time kamal deploy -c infra/kamal/deploy.yml -d dev
 ```
 
-That builds the arm64 `production` image, pushes it, runs `pre-deploy` (`migrate` in a one-off container of the new version) and, only if that exits 0, starts the new container, waits for `/api/v1/health` and moves traffic. The first run also boots kamal-proxy (64 MB) and requests the certificate, so the DNS record must resolve and ports 80 and 443 must be open. The first build is uncached; run it again after a small change for the cached time, and note both in the PR with "QEMU" or "native".
+That builds the arm64 `production` image, pushes it, starts the new container, which runs `migrate` before gunicorn, waits for `/api/v1/health` and only then moves traffic. If `migrate` fails, the container exits, health never passes and the old version keeps serving. The first run also boots kamal-proxy (64 MB) and requests the certificate, so the DNS record must resolve and ports 80 and 443 must be open. The first build is uncached; run it again after a small change for the cached time, and note both in the PR with "QEMU" or "native".
 
 Redeploy: run the same command. If the version is unchanged Kamal reuses the pushed image and swaps the container behind the proxy. To watch for gaps, run this in a second terminal while it deploys; it must print only 200:
 
@@ -101,7 +101,7 @@ curl -s https://dev.gaugeprep.com/api/v1/health
 git switch - && git branch -D scratch/failing-migration
 ```
 
-`kamal deploy` exits non-zero in `pre-deploy`, the health call still returns 200 from the previous version, and `kamal app details` shows the old version. The migration runs in a transaction, so the database has nothing to undo.
+`kamal deploy` exits non-zero because the new container never becomes healthy, the health call still returns 200 from the previous version, and `kamal app details` shows the old version. The migration runs in a transaction, so the database has nothing to undo.
 
 ### Rollback
 

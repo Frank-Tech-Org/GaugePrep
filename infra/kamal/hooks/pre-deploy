@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-# Runs migrations in a throwaway container of the new version before the switch. A failure exits non-zero,
-# so Kamal stops and the old container keeps serving. Run Kamal from the repo root.
-set -euo pipefail
-
-[ "${KAMAL_COMMAND:-}" = rollback ] && exit 0
-
-kamal app exec -c infra/kamal/deploy.yml -d "$KAMAL_DESTINATION" --version "$KAMAL_VERSION" \
-  "python manage.py migrate --noinput"
