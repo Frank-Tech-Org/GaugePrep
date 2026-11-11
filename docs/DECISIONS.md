@@ -87,6 +87,10 @@ No open entries.
 - Decided: 2026-11-05: under D-11 · cto. Resend free in staging and production through plain SMTP (no SDK), Mailpit (MIT) locally and in dev so synthetic addresses never bounce on the real account. Brevo free is the fallback if mail logs must stay in the EU.
 - Effect: ADR-024. Owner actions: the Resend account, the sending subdomain's DNS records in Cloudflare and the API key values. Resend Pro ($20 a month) past 100 emails a day is a later owner call.
 
+### D-15: Which app server runs the backend container?
+- Decided: 2026-11-10: gunicorn 26.2, under D-11 · cto. MIT, no required dependencies, no open CVE, the standard Django WSGI server; 2 sync workers fit the 320 MB dev container. Added to the backend's dependencies below 27, whose release was a few hours old.
+- Effect: #11 (production image stage and Kamal dev deploy).
+
 <!-- Move an entry here when answered, adding:
 - Decided: <YYYY-MM-DD>: <option> · <the owner's reason>
 -->

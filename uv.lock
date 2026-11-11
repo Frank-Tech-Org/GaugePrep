@@ -369,6 +369,7 @@ source = { virtual = "backend" }
 dependencies = [
     { name = "django" },
     { name = "django-ninja" },
+    { name = "gunicorn" },
     { name = "procrastinate", extra = ["django"] },
     { name = "psycopg", extra = ["binary"] },
 ]
@@ -377,6 +378,7 @@ dependencies = [
 requires-dist = [
     { name = "django", specifier = ">=6.1,<6.2" },
     { name = "django-ninja", specifier = ">=1.4" },
+    { name = "gunicorn", specifier = ">=26.2,<27" },
     { name = "procrastinate", extras = ["django"], specifier = ">=3" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.2" },
 ]
@@ -443,6 +445,15 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/f6/7f/af487f83f07edf544a6c837412c895afe395fa8c5abe54346f9950f9325c/grimp-3.18-cp314-cp314t-win32.whl", hash = "sha256:0c18c304540366f4da39fa16dd4fdce4fcf1f82ae812c4fb686defd399db6851", size = 1875992, upload-time = "2026-10-26T09:59:05.068Z" },
     { url = "https://files.pythonhosted.org/packages/bf/40/4acad23429f1e79a9d3cb1f33f293f8ed465c1d269d61b34282913d77f54/grimp-3.18-cp314-cp314t-win_amd64.whl", hash = "sha256:0461322a58d7fe66485cc2ddbf725f8bb6c2f3b805826746e208d78e5e4b17d6", size = 2004022, upload-time = "2026-10-26T09:58:54.919Z" },
     { url = "https://files.pythonhosted.org/packages/4a/d0/d0c2119662b549312166c8aac2e96028f5253075e60587d882e0aba4e673/grimp-3.18-cp314-cp314t-win_arm64.whl", hash = "sha256:a79cde5a2052c0c22dfd5ce0e3cb2fa0ef68625c480d779bd331f9d0bf3459f3", size = 1924204, upload-time = "2026-10-26T09:58:44.285Z" },
+]
+
+[[package]]
+name = "gunicorn"
+version = "26.2.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/d9/8a/e4ef6ee11701b6cd64702848415ffb69eeff85cb388a3c6c7fe86f22f3f8/gunicorn-26.2.0.tar.gz", hash = "sha256:62b864895d9ebff0b2f9867ba04fe811c93121596540830c9c916d0769668447", size = 787921, upload-time = "2026-08-24T15:05:59.3Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/fe/85/7522a52e5e2f42faf1a129113ab63e548c42e103e9af395b7bfe65e403e2/gunicorn-26.2.0-py3-none-any.whl", hash = "sha256:bd249d0b3f7972f7432f0a6b6ff3b3ee2d129f70cd1ff6c09a9dd9e29a2b88e3", size = 228389, upload-time = "2026-08-24T15:05:57.67Z" },
 ]
 
 [[package]]
