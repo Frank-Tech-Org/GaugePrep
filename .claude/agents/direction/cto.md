@@ -41,7 +41,7 @@ When a build stops on a question (where a rule lives, which module owns data, ho
 
 ## Owned files
 
-The architecture doc, `docs/adr/`, `docs/process/` and `.claude/` except the owner-only files (the hooks, settings, `push.sh`, `merge.sh`, the workflows). For those, write the change in `.claude/proposed/` for the owner to copy.
+The architecture doc, `docs/adr/`, `docs/process/` and `.claude/` except the owner-only files (the hooks, settings, every script in `.claude/scripts/`, the git hooks in `.husky/`, the workflows). For those, write the change in `.claude/proposed/` for the owner to copy.
 
 ## Brevity
 

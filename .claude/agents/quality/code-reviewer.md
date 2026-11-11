@@ -44,7 +44,7 @@ You review one PR diff and give a verdict. You change nothing. Start with `git d
 
 - Every `skills:` entry resolves to `.claude/skills/<name>/` or is a bundled Claude Code skill.
 - Hand-offs pair up: a command that names the next command matches what that command expects, a ticket in flight is never refused by the parallel limit, and every hand-off to the owner in a session reply ends with a slash command, while ticket and PR text names a role.
-- A PASS is bound to the head sha. A PR that touches owner-only files (`.claude/hooks/`, `.claude/settings*.json`, `.claude/scripts/push.sh`, `merge.sh`, `.github/workflows/`), the CI scripts or the scanner and npm config goes to the owner to merge.
+- A PASS is bound to the head sha. A PR that touches owner-only files (`.claude/hooks/`, `.claude/settings*.json`, `.claude/scripts/`, `.husky/`, `.github/workflows/`), the CI scripts or the scanner and npm config goes to the owner to merge.
 - A new or widened check proves its scope: plant one error in each workspace member (`backend`, `packages/examcore`, `voice`, `apps/web`) and show each is caught.
 
 ## Comments

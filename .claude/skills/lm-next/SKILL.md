@@ -77,7 +77,7 @@ Each checks the DoD items in its area. Post one PR comment in the same voice, at
 
 ## 5. Merge
 
-- A hotfix into `main`, or a PR touching the guard hook, settings, workflows, `push.sh` or `merge.sh`: tell the owner it is ready to merge.
+- A hotfix into `main`, or a PR touching the guard hook, settings, workflows, the git hooks or any script in `.claude/scripts/`: tell the owner it is ready to merge.
 - No approval from `frankkefoueg` on the head sha (`gh api repos/Frank-Tech-Org/GaugePrep/pulls/<pr>/reviews`): stop and tell the owner `Approve PR #<pr>: <PR title>` with the PR link and one line on what it does for the learner, then rerun `/lm-next`. Checkpoint: "Needs the owner: approve PR #<pr>".
 - Otherwise run `.claude/scripts/merge.sh <pr>`. While no CI exists it refuses and the owner merges. Any other refusal: fix what it names; never merge another way.
 
