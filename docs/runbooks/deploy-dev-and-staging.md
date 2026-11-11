@@ -16,7 +16,8 @@ You want a version of the backend on dev, or the last deploy broke it and you wa
 2. Install Kamal and register QEMU once, since an x86 machine builds arm64 under emulation:
 
    ```bash
-   gem install kamal -v 2.12.0
+   sudo apt-get install -y ruby-full build-essential
+   sudo gem install kamal -v 2.12.0
    docker run --privileged --rm tonistiigi/binfmt --install arm64
    ```
 
@@ -30,7 +31,15 @@ You want a version of the backend on dev, or the last deploy broke it and you wa
    export DEV_SERVER_HOST=<server address>
    ```
 
+   If the values are already in `.env`, load just these keys and the deploy key instead:
+
+   ```bash
+   while IFS= read -r l; do export "$l"; done < <(grep -E '^(DEV_[A-Z_]+|KAMAL_REGISTRY_[A-Z_]+)=' .env)
+   eval "$(ssh-agent -s)" && ssh-add ~/.ssh/gaugeprep-deploy
+   ```
+
 4. Confirm the config reads (no server contact): `cd <repo root> && kamal config -c infra/kamal/deploy.yml -d dev`.
+5. The first time on a new server, run `kamal setup -c infra/kamal/deploy.yml -d dev` instead of `kamal deploy`: it logs the server into the registry and boots kamal-proxy before the first deploy.
 
 ### Steps
 
@@ -56,13 +65,13 @@ From your machine:
 ```bash
 cd <repo root>
 curl -s https://dev.gaugeprep.com/api/v1/health
-curl -vI https://dev.gaugeprep.com 2>&1 | grep -E "issuer|verify"
+curl -sv -o /dev/null https://dev.gaugeprep.com/api/v1/health 2>&1 | grep -E "issuer|HTTP/2 "
 kamal app details -c infra/kamal/deploy.yml -d dev
 docker pull ghcr.io/frank-tech-org/gaugeprep-backend:$(git rev-parse HEAD)
 docker image inspect ghcr.io/frank-tech-org/gaugeprep-backend:$(git rev-parse HEAD) --format '{{range .Config.Env}}{{println .}}{{end}}' | grep DJANGO_SETTINGS_MODULE
 ```
 
-Expect `{"status":"ok","database":"ok"}`, an issuer of Let's Encrypt with `SSL certificate verify ok`, the container up with the git sha as version, and `DJANGO_SETTINGS_MODULE=config.settings.production`.
+Expect `{"status":"ok","database":"ok"}`, an issuer of Let's Encrypt with `HTTP/2 200` (curl stops on a bad certificate; the endpoint answers GET only, so `-I` gets 405), the container up with the git sha as version, and `DJANGO_SETTINGS_MODULE=config.settings.production`.
 
 On the server (`ssh deploy@$DEV_SERVER_HOST`):
 
@@ -77,13 +86,13 @@ sudo ufw status verbose
 
 Expect: nothing on `0.0.0.0` or `[::]` except kamal-proxy on 80 and 443 (and sshd on 22, which ufw limits); `used` under 900 in `free -m`; every container under its limit (web 320 MiB, proxy 64 MiB); `/swapfile` at 2G; `335544320` (320 MiB) for the web container, which `kamal app details` does not print; `22/tcp LIMIT IN`, 80 and 443 `ALLOW IN`.
 
-SSH limit (6 connections per 30 s), from your machine:
+SSH limit (5 new connections per 30 s), from your machine:
 
 ```bash
 for i in $(seq 1 8); do ssh -o ConnectTimeout=5 -o BatchMode=yes deploy@$DEV_SERVER_HOST true && echo "$i ok" || echo "$i refused"; done
 ```
 
-The first 6 inside 30 s connect and the rest are refused until the window passes. Wait 30 s before deploying again.
+The first 5 inside 30 s connect and the rest are refused until the window passes. Wait 30 s before deploying again.
 
 ### Failing migration
 
