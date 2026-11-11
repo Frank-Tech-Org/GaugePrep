@@ -10,8 +10,15 @@ Exam preparation platform. This repository holds the web app, the backend, the v
 | `backend` | Django application; each module is a package under `backend/modules/` |
 | `packages/examcore` | Exam rules, rule checks and scoring maths. No Django dependency |
 | `voice` | Voice examiner worker |
-| `infra` | `docker`, `kamal` and `staging` deployment files |
-| `docs` | Architecture, decision records and exam specifications |
+| `infra` | `docker` images, `kamal` deploy configs, `staging` server rebuild script |
+| `tools` | Our own checks run by CI (changed-lines coverage, grader release check) |
+| `semgrep` | Custom Semgrep rules for the pull request scan |
+| `docs` | Product, architecture, decision records, exam specs, content guide, process, runbooks |
+| `.github` | CI workflows, their helper scripts, issue and PR templates |
+| `.kamal` | Kamal secrets files; they read values from the deploying shell, never hold them |
+| `.claude` | AI team tooling: agents, rules, commands. Nothing in it runs in the product |
+
+A new top-level folder or a moved one updates this table in the same PR.
 
 ## Prerequisites
 

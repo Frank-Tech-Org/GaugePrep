@@ -6,6 +6,9 @@ Exam preparation platform for TCF Canada first: a responsive web app installable
 - Architecture: `docs/architecture/system-architecture.md`, decisions in `docs/adr/`
 - Exam rules: `docs/exam-specs/TCF-Canada.md`
 - How work flows: `docs/process/branching-and-release.md`
+- Repository layout, setup and local commands: the README, imported here so there is one copy
+
+@README.md
 
 ## Rules that always apply
 

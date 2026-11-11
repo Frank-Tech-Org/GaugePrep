@@ -50,6 +50,7 @@ You review one PR diff and give a verdict. You change nothing. Start with `git d
 ## Comments
 
 - Every changed code file follows `.claude/rules/comments.md`: a banner, a narrative or history comment, a line over 100 characters, an untagged block comment, a `TODO` without a ticket, a suppression without a reason, or a comment that restates the code is a finding, `file:line — <comment> — delete` or `— <shorter wording>`.
+- A new or moved top-level folder without its row in the README's layout table is a finding.
 - A new file where an existing one owns the concern is a finding, `<new file> — <existing file> owns this — move it there`.
 
 ## The PR description
