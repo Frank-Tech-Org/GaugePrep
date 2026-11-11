@@ -1,0 +1,127 @@
+# CI and checks
+
+How `pnpm check`, the git hooks and the pull request checks work, and how to run each one locally. Setup is in the README.
+
+## pnpm check
+
+`pnpm check` is the single command that defines "passes". Git hooks and CI run the same command, and CI adds the `gate` job and the security scans below. It stops at the first failure and prints `check failed: <tool>`.
+
+| Tool                           | What it does                                                                                                                                                                                                                                                                                                              |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ruff format --check`          | Python formatting                                                                                                                                                                                                                                                                                                         |
+| `ruff check`                   | Python lint                                                                                                                                                                                                                                                                                                               |
+| `mypy`                         | Python types (strict)                                                                                                                                                                                                                                                                                                     |
+| `lint-imports` (Import Linter) | Module boundaries; zero contracts for now                                                                                                                                                                                                                                                                                 |
+| `makemigrations --check`       | Fails when a model change has no migration, naming the app. Every module under `backend/modules/` is passed by app label (`.github/scripts/check-migrations.sh`), because a bare check skips apps that have no migrations package yet. Fix: run `python manage.py makemigrations <app>` in `backend/` and commit the file |
+| `pytest`                       | Python tests in random order (pytest-randomly prints the seed; replay with `--randomly-seed=N`), 30 s timeout per test; collecting none fails, and an unregistered marker fails collection (`--strict-markers`). Database tests skip with a reason when PostgreSQL is unreachable, and fail when `CI=true`                |
+| `coverage report`              | Branch coverage per package, floors set in each package pyproject.toml: `examcore` 95%, backend 85%. Fails below the floor. `voice` has no code yet and is not measured                                                                                                                                                   |
+| `prettier --check`             | TypeScript and JSON formatting                                                                                                                                                                                                                                                                                            |
+| `eslint`                       | TypeScript lint (`apps/web/eslint.config.js`)                                                                                                                                                                                                                                                                             |
+| `tsc --noEmit`                 | TypeScript types (`apps/web/tsconfig.json`)                                                                                                                                                                                                                                                                               |
+| `vitest`                       | TypeScript tests in random order (seed printed), 10 s timeout per test; passes when there are none. Branch coverage of `apps/web/src` (v8), floor 80%; fails below it, and an empty report passes while there is no measured code                                                                                         |
+
+No skips: with `CI=true` any skipped or xfail test (pytest or Vitest) fails the run and is named; locally it only warns. Floors only go up.
+
+## Changed-line coverage (CI only)
+
+After `pnpm check`, the `check` job runs the script in `tools/changed_lines_coverage/`. It takes the backend Python lines the pull request adds or edits (`git diff -U0` from the merge base) and fails when fewer than 90% of the executable ones are covered (line coverage, not branch). The log lists the uncovered lines as `file: line numbers`. A pull request with no changed executable backend lines passes with "no changed backend lines". Tests, migrations and other files left out of the coverage report are not counted. `pnpm check` does not run it.
+
+Run it locally against `develop` after a test run:
+
+```sh
+uv run pytest
+uv run coverage json --rcfile=backend/pyproject.toml -o /tmp/coverage.json
+uv run python tools/changed_lines_coverage/changed_lines_coverage.py --base develop --coverage /tmp/coverage.json
+```
+
+`git diff` leaves out untracked files, so `git add` new backend files before a local run. The script exits 2 (not 1) when it cannot judge: a missing or malformed coverage file, an unknown base, or any changed backend file absent from the report.
+
+The script's own tests run with `uv run pytest tools/changed_lines_coverage --no-cov` (without `--no-cov` they overwrite the `.coverage` file from your last run).
+
+## Gate job in CI
+
+One `gate` job runs first on every pull request, in this order: the path filter (which decides whether the code jobs, pip-audit, pnpm audit, Trivy and the backend image run), the gitleaks secret scan over the full git history, the API breaking-change check, the scanner settings check, and last the title and description check (its script comes from the pull request, so it runs after the scan and the API check and cannot change them). Every step fails red with a message naming the bad title or description rule, the file holding the secret, the breaking API change or the changed setting.
+
+Any red step other than `Scanner settings` (secret scan, API check, title check, path filter, gitleaks install) skips the tests, pip-audit, pnpm audit, Trivy and the backend image build. A red `Scanner settings` step alone does not: those jobs still run, so a pull request the owner merges over that flag still has its test and scan results. The pull request stays red while the step fails. A skipped job counts as passing for merge, so a red `gate` is what blocks, and a grey job is not a pass.
+
+## API breaking changes
+
+When a pull request changes `backend/openapi.json`, the `API breaking changes` step of `gate` compares it with the base branch copy (both read with `git show`, never from the checkout) using [oasdiff](https://github.com/oasdiff/oasdiff) v1.35.0 (Apache-2.0, built from source with `go install -trimpath` at the pinned module version and Go 1.27.3, cached, and run only when its SHA256 matches the pinned value). It runs `oasdiff breaking --match-path '^/api/v1/' --fail-on ERR` and fails on a removed operation, a removed response property (required or optional), a request property that became required, a changed property type or an added enum value in a response, naming each one. Adding an optional field or a new operation passes. oasdiff reads no config from the checkout (it gets an empty config file and its own severity file) and refuses external `$ref`s. Installed copies of the web app keep calling the old contract for days, so a breaking change needs a new API version, not an edit. To run it locally, build oasdiff as the `API breaking changes` step does, then: `: > empty.yaml; echo 'response-optional-property-removed err' > severity.txt; oasdiff breaking base.json head.json --config empty.yaml --severity-levels severity.txt --allow-external-refs=false --match-path '^/api/v1/' --fail-on ERR`. Without the severity file, removing an optional response property passes. The step runs with `contents: read` and no secret.
+
+## API contract tests
+
+`backend/tests/test_contract.py` runs inside `pytest`. [Schemathesis](https://schemathesis.readthedocs.io) (MIT, dev dependency only) generates requests for every operation in `backend/openapi.json` and calls the Django app in-process: no server, no network. Each response must use a documented status, never be a 5xx, and match its documented schema; a failure names the operation and the status. The tests also fail when `backend/openapi.json` is missing or has no operations. Response content types are not checked yet. After an API change, regenerate the document (the command is in the `test_openapi.py` failure message) and run `uv run pytest backend/tests/test_contract.py`.
+
+## Backend image build in CI
+
+The `backend image` check runs `docker build -f infra/docker/backend.Dockerfile .` (no push, no login) only when a pull request changes `infra/docker/`, `uv.lock`, a `pyproject.toml` or `.dockerignore`; otherwise it shows as skipped and does not block the merge. It catches a Dockerfile, lockfile or workspace change that breaks the image, which `pnpm check` never builds. It builds for x64, so ARM-only problems still show at deploy.
+
+## Security scans in CI
+
+Each pull request also runs these checks (the `gate` job holds the path filter, secret scan, API breaking changes, scanner settings, and title and description steps; the other scanners are separate jobs). A HIGH or CRITICAL finding fails the check and blocks the merge (pip-audit fails on any advisory, as it has no severity filter). All are free and open source, with no token or account.
+
+| Check                | What it scans                                                                                                                                                                                                                                                                                                                             |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Semgrep              | Source code, community rules (pinned `semgrep/semgrep-rules` for Python, TypeScript and generic, metrics off) plus our own rules in `semgrep/` (see Local Semgrep rules), ERROR findings fail, except two vendored dev tools that never ship: `.claude/skills/semgrep/scripts` and `.claude/skills/webapp-testing/scripts/with_server.py` |
+| pip-audit            | The `uv.lock` dependencies; it has no severity filter, so any known advisory fails                                                                                                                                                                                                                                                        |
+| pnpm audit           | The `pnpm-lock.yaml` dependencies, audited in a rebuilt directory with no pull request settings or hooks (`pnpm audit --audit-level high`)                                                                                                                                                                                                |
+| Trivy                | The repository files (`trivy fs --severity HIGH,CRITICAL`)                                                                                                                                                                                                                                                                                |
+| gitleaks (in `gate`) | The full git history, not only the pull request's commits                                                                                                                                                                                                                                                                                 |
+
+Documentation-only pull requests skip pip-audit, pnpm audit and Trivy. The only secret-scan allowlist entry is the placeholder key in `api-design.md`, in `.gitleaks.toml`.
+
+## Local Semgrep rules
+
+`semgrep/request-eval-exec.yaml` holds our own ERROR-rated taint rules: Django request data (`request.GET`, `POST`, `body`, `data`, `query_params`, `COOKIES`, `META`, `headers`, `FILES`, `session`, `path`, `path_info`, `read()`, also via `self.request`) and Django Ninja endpoint parameters, typed or not, reaching `eval` or `exec`. `int()`, `float()` and `ast.literal_eval()` count as parsing and end the taint.
+
+- The Semgrep check reads `semgrep/*.yaml` from the pull request's base commit, next to the pinned community rules, so a pull request cannot weaken or delete them. Only `*.yaml` is read; a base `*.yml` file is ignored. The pull request that first adds the rules is scanned without them. Once such a pull request is merged, its version is the next base, so the `Scanner settings` step flags any added, edited, deleted or renamed file under `semgrep/` (see below).
+- Each rule has a matching and a non-matching snippet in `semgrep/request-eval-exec.py` (`# ruleid:` and `# ok:` comments). That file holds unsafe calls on purpose, so it is the only file this rule set excludes from the scan, and nothing in it is ever scanned.
+- Run the tests with `uvx semgrep --test semgrep/`. CI runs the same command (step `Local rule tests`) against the pull request's own rules.
+- Adding a rule file: put it in `semgrep/` with a test file of the same name; the scan picks up any top-level `semgrep/*.yaml`, but each new test file needs its own `--exclude` in the workflow.
+- Limits: the rules match names, not flow. Missed: an alias (`r = request`), `getattr(builtins, "eval")`, `__import__("builtins").eval`, plain Django URL keyword arguments (`def v(request, x)`), `request.resolver_match`, request data held in other variable names, and flow across files or helper functions.
+
+## Scanner settings
+
+The `Scanner settings` step of `gate` compares the pull request with its merge base and fails when the pull request:
+
+- adds or edits a scanner or package-manager settings file: `.semgrepignore`, `.trivyignore*`, `trivy.yaml`, `trivy.yml`, `.gitleaks.toml`, `.gitleaksignore`, `.npmrc` or `.pnpmfile.*`, at any depth, including a file replaced by a symlink; the log names each file
+- changes a `pnpm-workspace.yaml` beyond its `packages:` list (any key, item, flow or quoted form), compared with the list removed, so adding an app stays green; this covers the audit, override, build-permission and pnpmfile keys without listing them
+- adds, edits, deletes or renames any file under `semgrep/` (the local Semgrep rules and their tests); the log names each full path, deletions included
+- changes `packageManager`, `devEngines`, `resolutions` or the `pnpm` field in any `package.json` (a new file counts as changed from nothing); the log names the file and the field, and a file that is not valid JSON is named without a field. Base and head are compared with `jq`, so a changed script or dependency does not trip it
+- adds a line containing `nosem` (also `nosemgrep`), `trivy:`, `tfsec:`, `--ignore-vuln` or `gitleaks:allow`, in any case; the log names each file and line, never the line contents
+
+Diffs are read as text whatever `.gitattributes` says, and file names are matched NUL-safe and printed without control characters. Markdown files and the owner-only CI workflow are not searched, since they only describe these markers. Deleting a settings file is not flagged (except under `semgrep/`, where a deleted rule widens what gets through), because it can only widen what the scans see.
+
+Limits: the `package.json` check looks only at those three top-level fields. A marker split across lines or built at run time is not seen, and a path added to the `packages:` list is not flagged. A `pnpm-workspace.yaml` that is not a regular file is always flagged. pnpm 11 (pinned in `package.json`) no longer reads settings from a `pnpm` field, but the field is still flagged, since dropping to an older pnpm would bring it back.
+
+The check flags; it does not decide. It prints file names, field names and line numbers, never values. When the suppression is justified, the owner merges over the red check. The free plan cannot make checks required, so nothing stops that merge but `merge.sh`, which reads the gate and refuses a red one: the owner merges by hand, after reading the named files and lines.
+
+## Pull request description
+
+The title and description check, a step of `gate` (script `.github/scripts/check-pr-description.sh`, local cases in `check-pr-description.test.sh`) fails when:
+
+- the title is not `<type>(<scope>): <subject>` with a scope, using the commitlint types (feat fix docs style refactor perf test build ci chore revert)
+- the body has no `Refs #<number>`
+- the body lacks any `## ` heading of `.github/pull_request_template.md`, read from the base branch; `## Evidence` is optional
+
+The failure names each broken rule. Editing the body re-runs the check.
+
+## Git hooks
+
+`pnpm install` installs the hooks (Husky, through the `prepare` script). They need [gitleaks](https://github.com/gitleaks/gitleaks) 8.19 or newer on your PATH, because `gitleaks git --staged` replaces the deprecated `gitleaks protect`. With gitleaks missing, `pre-commit` refuses.
+
+| Hook         | Refuses                                                                                                                                                      |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `pre-commit` | A commit on `develop`, `stage` or `main`; staged files that fail lint-staged (ruff, prettier); a staged secret found by gitleaks (rules in `.gitleaks.toml`) |
+| `commit-msg` | A message that is not Conventional Commits with a scope, `<type>(<area>): <subject>` (commitlint, `commitlint.config.mjs`)                                   |
+| `pre-push`   | A push to `develop`, `stage` or `main`; then runs `pnpm check` and refuses on failure (skipped when nothing is pushed or the push only deletes branches)     |
+
+Run one tool with `pnpm run check:<name>`, for example `pnpm run check:mypy`. Fix formatting with `uv run ruff format backend packages voice` and `pnpm exec prettier --write <file>`.
+
+## Regenerating the API contract
+
+After an API change, regenerate the committed OpenAPI file (a test fails when it is stale):
+
+```sh
+uv run python backend/manage.py export_openapi_schema --api config.api.api --indent 2 --output backend/openapi.json
+```
