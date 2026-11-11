@@ -27,3 +27,31 @@
 | [ADR-023](ADR-023-email-verification-only-no-sms-sign-up.md) | Email verification only, no SMS sign-up | Accepted |
 | [ADR-024](ADR-024-resend-for-transactional-email-mailpit-locally-and-in-dev.md) | Resend for transactional email, Mailpit locally and in dev | Accepted |
 | [ADR-025](ADR-025-content-authored-as-validated-files-imported-into-the-content-module.md) | Content authored as validated files, imported into the content module | Proposed |
+
+## Template
+
+File name `ADR-NNN-<short-slug>.md`, five words at most in the slug.
+
+```markdown
+# ADR-NNN: <decision in a few words>
+
+- Status: Proposed | Accepted | Superseded by ADR-NNN
+- Date: YYYY-MM-DD
+
+## Context
+What the system design doc and earlier ADRs say, and why that is not enough here.
+
+## Options considered
+At least three, including doing nothing: what each costs, what breaks, how we would undo it.
+
+## Evidence
+Docs, source lines or measurements behind each claim above.
+
+## Decision
+
+## Consequences
+Good, bad, and what changes in the design doc (changed in the same PR).
+
+## Revisit when
+The condition that would reopen this.
+```

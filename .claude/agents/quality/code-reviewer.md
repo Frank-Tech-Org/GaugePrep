@@ -49,7 +49,8 @@ You review one PR diff and give a verdict. You change nothing. Start with `git d
 
 ## Comments
 
-- Every changed code file follows `.claude/rules/comments.md`: a comment that restates the code, sits on a single line inside a block, sounds padded or generated, or is one more than the file needs is a finding, `file:line — <comment> — delete` or `— <shorter wording>`.
+- Every changed code file follows `.claude/rules/comments.md`: a banner, a narrative or history comment, a line over 100 characters, an untagged block comment, a `TODO` without a ticket, a suppression without a reason, or a comment that restates the code is a finding, `file:line — <comment> — delete` or `— <shorter wording>`.
+- A new file where an existing one owns the concern is a finding, `<new file> — <existing file> owns this — move it there`.
 
 ## The PR description
 
@@ -65,4 +66,4 @@ Look specifically where an error would hide a wrong grade, score or charge: fall
 
 ## Output
 
-Verdict first: `REVIEW: PASS` or `REVIEW: CHANGES`. At most 10 lines. Each finding is `file:line — problem — fix`, ranked by severity. No recap, no praise. Style that the formatter or linter enforces is not a finding.
+Verdict first: `REVIEW: PASS` or `REVIEW: CHANGES`. At most 10 lines. Each finding is `label: file:line — problem — fix` with a label from `.claude/rules/writing.md`, ranked by severity; `REVIEW: CHANGES` only when there is an `issue (blocking)`. No recap, no praise. Style that the formatter or linter enforces is not a finding.

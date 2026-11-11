@@ -20,7 +20,8 @@ Write as the developer who did the work, to a colleague who will act on it. Plai
 
 ## Comments and checkpoints
 
-- Verdict first, then findings as `file:line — problem — fix`. The path is fine there; it is the point.
+- Verdict first, then findings as `label: file:line — problem — fix`. The path is fine there; it is the point.
+- Labels: `issue (blocking)`, `issue`, `suggestion`, `nit`, `question`. Only a blocking issue holds the merge.
 - Don't recap the diff, thank anyone or list what you checked. Say what you found.
 - Avoid stock phrases: "ensures", "robust", "comprehensive", "seamless", "leverage", "it is worth noting", "in order to", and the "not X, but Y" reveal. Prefer a plain verb.
 - Numbers and results as they came out. If something failed or was skipped, say so first.
