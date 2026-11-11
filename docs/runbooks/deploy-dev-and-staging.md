@@ -21,7 +21,7 @@ You want a version of the backend on dev, or the last deploy broke it and you wa
    docker run --privileged --rm tonistiigi/binfmt --install arm64
    ```
 
-3. Create a GitHub personal access token (classic) from https://github.com/settings/tokens/new?scopes=write:packages, with an expiry; GitHub ticks `repo` too if you start from a blank form, and the token sits in plain text on the server. Check it with `curl -sI -H "Authorization: token $KAMAL_REGISTRY_PASSWORD" https://api.github.com/user | grep -i x-oauth-scopes`, which must list only `write:packages` (and `read:packages`). Create a Neon branch for dev and use its direct connection string (pooling off), since migrations run through it. Export the five keys in the shell you deploy from (`.env.example` says where each comes from; `read -rs` keeps values out of shell history):
+3. Create a GitHub personal access token (classic) from https://github.com/settings/tokens/new?scopes=write:packages, with an expiry; GitHub ticks `repo` too if you start from a blank form, and the token sits in plain text on the server. Create a Neon branch for dev and use its direct connection string (pooling off), since migrations run through it. Export the five keys in the shell you deploy from (`.env.example` says where each comes from; `read -rs` keeps values out of shell history):
 
    ```bash
    export KAMAL_REGISTRY_USERNAME=<your GitHub user name>
@@ -36,6 +36,12 @@ You want a version of the backend on dev, or the last deploy broke it and you wa
    ```bash
    while IFS= read -r l; do export "$l"; done < <(grep -E '^(DEV_[A-Z_]+|KAMAL_REGISTRY_[A-Z_]+)=' .env)
    eval "$(ssh-agent -s)" && ssh-add ~/.ssh/gaugeprep-deploy
+   ```
+
+   Then check the token's scopes; it must list only `write:packages` (and `read:packages`). The token goes through stdin so it never shows in the process list:
+
+   ```bash
+   printf 'Authorization: token %s\n' "$KAMAL_REGISTRY_PASSWORD" | curl -sI -H @- https://api.github.com/user | grep -i x-oauth-scopes
    ```
 
 4. Confirm the config reads (no server contact): `cd <repo root> && kamal config -c infra/kamal/deploy.yml -d dev`.
