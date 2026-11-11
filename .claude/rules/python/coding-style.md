@@ -9,7 +9,7 @@ paths:
 
 ## Standards
 
-- Follow **PEP 8** conventions
+- Follow **PEP 8** conventions: `snake_case` modules, functions and variables, `PascalCase` classes, `UPPER_SNAKE` constants
 - Use **type annotations** on all function signatures
 
 ## Immutability
