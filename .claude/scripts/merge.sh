@@ -36,8 +36,8 @@ done
 [ "$(field .mergeable)" = true ] || fail "PR #$pr has conflicts or its mergeability is unknown"
 [ "$(field .head.sha)" = "$sha" ] || fail "the branch moved while checking; run again"
 
-# Guardrail, CI, secret-scan config and settings files belong to the owner.
-owner_files=$(all "repos/$repo/pulls/$pr/files?per_page=100" | jq -r '[.[] | .filename, (.previous_filename // "") | select(test("^\\.claude/(hooks/|settings|scripts/(push|merge)\\.sh)|^\\.github/workflows/|^\\.gitleaks(\\.toml|ignore)$"))] | join(", ")')
+# WHY: guard files, workflows, CI scripts, scanner and npm config are merged by the owner.
+owner_files=$(all "repos/$repo/pulls/$pr/files?per_page=100" | jq -r '[.[] | .filename, (.previous_filename // "") | select(test("^\\.claude/(hooks/|settings|scripts/(push|merge)\\.sh)|^\\.github/(workflows|scripts)/|^semgrep/|(^|/)(\\.semgrepignore|\\.trivyignore[^/]*|trivy\\.ya?ml|\\.gitleaks\\.toml|\\.gitleaksignore|\\.npmrc|\\.pnpmfile\\.[^/]*|pnpm-workspace\\.yaml)$"))] | join(", ")')
 [ -z "$owner_files" ] || fail "it changes owner-only files ($owner_files); the owner merges this one"
 
 # CI fails closed: at least one check must exist on the head commit and all must have passed.
