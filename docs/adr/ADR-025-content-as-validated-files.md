@@ -34,7 +34,7 @@ Decided under D-11 (standing delegation): a free MIT dependency with no open CVE
 ## Alternatives considered
 
 - **Console only.** Agents would need browser automation or a write API for every field, with no diffs or CI checks. Rejected.
-- **Files only, no database versions.** Breaks append-only results that reference content versions in the database ([ADR-011](ADR-011-versioned-content-and-append-only-results.md)). Rejected.
+- **Files only, no database versions.** Breaks append-only results that reference content versions in the database ([ADR-011](ADR-011-versioned-content-append-only-results.md)). Rejected.
 - **Pure-Python `jsonschema`.** Also MIT and standard-complete, but it would add packages to the lockfile for no gain over a library we already ship. Rejected.
 - **Hand-written checks.** Over 200 lines for the constructs above, and they would drift from the schemas. Rejected.
 

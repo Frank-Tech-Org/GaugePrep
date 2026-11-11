@@ -39,7 +39,7 @@ content/
 
 - The file name is `<code>-v<version>.json`. A published version is never edited: a correction is a new file with the next version number.
 - CI will run the content validator on every changed file once it lands.
-- An import command (`manage.py content_import`) loads approved files into the `content` module as versions with status "approved". Publication then happens in the internal console, where the audit log records who published what (PRD CMS-2, CMS-8). The database stays the source of truth for what learners see; the repository is the authoring workspace. [ADR-025](../adr/ADR-025-content-authored-as-validated-files-imported-into-the-content-module.md) records this decision.
+- An import command (`manage.py content_import`) loads approved files into the `content` module as versions with status "approved". Publication then happens in the internal console, where the audit log records who published what (PRD CMS-2, CMS-8). The database stays the source of truth for what learners see; the repository is the authoring workspace. [ADR-025](../adr/ADR-025-content-as-validated-files.md) records this decision.
 - Audio files are not stored in Git. The media job produces them from the scripts after approval (spec 10.2 step 4).
 
 ## 3. Roles

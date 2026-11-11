@@ -61,7 +61,7 @@ Personal data lives only here (architecture 7.1).
 
 ## 4. content
 
-Content identity plus immutable versions ([ADR-011](../adr/ADR-011-versioned-content-and-append-only-results.md), [ADR-025](../adr/ADR-025-content-authored-as-validated-files-imported-into-the-content-module.md)).
+Content identity plus immutable versions ([ADR-011](../adr/ADR-011-versioned-content-append-only-results.md), [ADR-025](../adr/ADR-025-content-as-validated-files.md)).
 
 **item**: `id`, `code text unique` (`TCF-CA-CO-L4-0001`), `exam_id`, `paper text check in ('CO','CE')`, `type text`, `current_published_version_id uuid null`
 

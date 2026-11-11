@@ -1,7 +1,8 @@
 # ADR-018: Twilio for SMS verification codes behind an SMS provider interface
 
-- Status: Superseded by [ADR-023](ADR-023-email-verification-only-no-sms-sign-up.md) on 2026-11-05
+- Status: Superseded by [ADR-023](ADR-023-email-verification-only.md) on 2026-11-05
 - Date: 2026-10-22
+- Replaced by: [ADR-023](ADR-023-email-verification-only.md), email verification only, no SMS sign-up
 
 ## Context
 
