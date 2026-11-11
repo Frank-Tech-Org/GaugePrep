@@ -56,7 +56,11 @@ ALTER DEFAULT PRIVILEGES FOR ROLE {m} GRANT USAGE, SELECT ON SEQUENCES TO {s};
 """
 
 
-if __name__ == "__main__":
-    if len(sys.argv) != 3:
+def main(argv: list[str]) -> None:
+    if len(argv) != 2:
         sys.exit("usage: python -m config.db_roles <migrator> <serving>")
-    print(role_sql(sys.argv[1], sys.argv[2]))
+    print(role_sql(argv[0], argv[1]))
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:])

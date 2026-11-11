@@ -4,7 +4,7 @@ from collections.abc import Iterator
 import psycopg.errors
 import pytest
 from config.append_only import append_only
-from config.db_roles import role_sql
+from config.db_roles import main, role_sql
 from django.db import ProgrammingError, connection, transaction
 
 
@@ -97,3 +97,16 @@ def test_tables_in_a_later_schema_are_granted_too(roles: tuple[str, str]) -> Non
 def test_role_names_are_checked() -> None:
     with pytest.raises(ValueError):
         role_sql('x"; y', "ok")
+
+
+def test_command_prints_the_sql(capsys: pytest.CaptureFixture[str]) -> None:
+    main(["app_migrator", "app_serving"])
+    assert (
+        capsys.readouterr().out.strip()
+        == role_sql("app_migrator", "app_serving").strip()
+    )
+
+
+def test_command_refuses_a_missing_role() -> None:
+    with pytest.raises(SystemExit, match="usage"):
+        main(["app_migrator"])
