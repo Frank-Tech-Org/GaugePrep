@@ -21,7 +21,7 @@ You want a version of the backend on dev, or the last deploy broke it and you wa
    docker run --privileged --rm tonistiigi/binfmt --install arm64
    ```
 
-3. Create a GitHub personal access token (classic) with only `write:packages`, and a Neon branch for dev. Export the five keys in the shell you deploy from (`.env.example` says where each comes from; `read -rs` keeps values out of shell history):
+3. Create a GitHub personal access token (classic) from https://github.com/settings/tokens/new?scopes=write:packages, with an expiry; GitHub ticks `repo` too if you start from a blank form, and the token sits in plain text on the server. Check it with `curl -sI -H "Authorization: token $KAMAL_REGISTRY_PASSWORD" https://api.github.com/user | grep -i x-oauth-scopes`, which must list only `write:packages` (and `read:packages`). Create a Neon branch for dev and use its direct connection string (pooling off), since migrations run through it. Export the five keys in the shell you deploy from (`.env.example` says where each comes from; `read -rs` keeps values out of shell history):
 
    ```bash
    export KAMAL_REGISTRY_USERNAME=<your GitHub user name>
@@ -50,7 +50,7 @@ cd <repo root>
 time kamal deploy -c infra/kamal/deploy.yml -d dev
 ```
 
-That builds the arm64 `production` image, pushes it, starts the new container, which runs `migrate` before gunicorn, waits for `/api/v1/health` and only then moves traffic. If `migrate` fails, the container exits, health never passes and the old version keeps serving. The first run also boots kamal-proxy (64 MB) and requests the certificate, so the DNS record must resolve and ports 80 and 443 must be open. The first build is uncached; run it again after a small change for the cached time, and note both in the PR with "QEMU" or "native".
+That builds the arm64 `production` image, pushes it, starts the new container, which runs `migrate` before gunicorn, waits for `/api/v1/health` and only then moves traffic. If `migrate` fails, the container exits, health never passes and the old version keeps serving. Kamal waits 60 s for health (`deploy_timeout` in `deploy.yml`), migrations included; raise it before deploying a migration that takes longer. The first run also boots kamal-proxy (64 MB) and requests the certificate, so the DNS record must resolve and ports 80 and 443 must be open. The first build is uncached; run it again after a small change for the cached time, and note both in the PR with "QEMU" or "native".
 
 Redeploy: run the same command. If the version is unchanged Kamal reuses the pushed image and swaps the container behind the proxy. To watch for gaps, run this in a second terminal while it deploys; it must print only 200:
 

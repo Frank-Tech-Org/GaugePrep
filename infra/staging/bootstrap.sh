@@ -249,8 +249,11 @@ step_firewall() {
 SWAPFILE=/swapfile
 SWAP_BYTES=$((2 * 1024 * 1024 * 1024))
 
+# Built under a temp name so a run killed halfway never leaves a /swapfile without a swap header.
 make_swap() {
-  fallocate -l "$SWAP_BYTES" "$SWAPFILE" && chmod 600 "$SWAPFILE" && mkswap "$SWAPFILE" >/dev/null
+  rm -f "$SWAPFILE.tmp"
+  fallocate -l "$SWAP_BYTES" "$SWAPFILE.tmp" && chmod 600 "$SWAPFILE.tmp" \
+    && mkswap "$SWAPFILE.tmp" >/dev/null && mv "$SWAPFILE.tmp" "$SWAPFILE"
 }
 
 swap_active() { swapon --show=NAME --noheadings 2>/dev/null | grep -qxF "$SWAPFILE"; }

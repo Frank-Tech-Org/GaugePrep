@@ -19,6 +19,9 @@ builder:
   dockerfile: infra/docker/backend.Dockerfile
   target: production
 
+# Migrations run as the container starts, inside this wait; raise it before deploying a slow one.
+deploy_timeout: 60
+
 ssh:
   user: deploy
 
