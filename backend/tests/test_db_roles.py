@@ -164,9 +164,10 @@ def test_reversing_append_only_gives_update_and_delete_back_to_serving_only(
     _refused(serving, "TRUNCATE public.t_grades")
     with connection.cursor() as cursor:
         cursor.execute(
-            "SELECT obj_description('public.t_grades'::regclass, 'pg_class')"
+            "SELECT count(*) FROM pg_trigger "
+            "WHERE tgrelid = 'public.t_grades'::regclass"
         )
-        assert cursor.fetchone() == (None,)
+        assert cursor.fetchone() == (0,)
 
 
 def test_other_grantees_lose_their_table_rights(roles: tuple[str, str]) -> None:
@@ -183,3 +184,81 @@ def test_other_grantees_lose_their_table_rights(roles: tuple[str, str]) -> None:
 def test_append_only_checks_the_table_name() -> None:
     with pytest.raises(ValueError):
         append_only("public.t; SELECT 1")
+
+
+def test_serving_role_can_read_but_not_write_the_migration_history(
+    roles: tuple[str, str],
+) -> None:
+    _, serving = roles
+    _as(serving, "SELECT * FROM public.django_migrations")
+    _refused(
+        serving,
+        "INSERT INTO public.django_migrations (app, name, applied) "
+        "VALUES ('x', '0001_x', now())",
+    )
+
+
+def test_a_branch_copied_from_another_split_is_handed_over(
+    roles: tuple[str, str],
+) -> None:
+    old_migrator, old_serving = roles
+    _create_table(old_migrator, "public.t_ordinary", locked=False)
+    tag = uuid.uuid4().hex[:8]
+    migrator, serving = f"t_migrator_{tag}", f"t_serving_{tag}"
+    with connection.cursor() as cursor:
+        cursor.execute(f'CREATE ROLE "{migrator}"')
+        cursor.execute(f'CREATE ROLE "{serving}"')
+        cursor.execute(role_sql(migrator, serving))
+    _as(serving, "INSERT INTO public.t_ordinary (body) VALUES ('a')")
+    _as(migrator, "ALTER TABLE public.t_ordinary ADD COLUMN extra int")
+    _refused(old_serving, "SELECT * FROM public.t_ordinary")
+
+
+def test_role_sql_works_as_a_non_superuser_owner(roles: tuple[str, str]) -> None:
+    owner = f"t_owner_{uuid.uuid4().hex[:8]}"
+    tag = uuid.uuid4().hex[:8]
+    migrator, serving = f"t_migrator_{tag}", f"t_serving_{tag}"
+    with connection.cursor() as cursor:
+        cursor.execute(f'CREATE ROLE "{owner}" NOSUPERUSER CREATEROLE')
+        cursor.execute(
+            "DO $$ DECLARE r record; BEGIN "
+            "FOR r IN SELECT schemaname, tablename FROM pg_tables "
+            "WHERE schemaname = 'public' LOOP "
+            "EXECUTE format('ALTER TABLE %I.%I OWNER TO " + f'"{owner}"' + "', "
+            "r.schemaname, r.tablename); END LOOP; END $$"
+        )
+        cursor.execute(f'ALTER SCHEMA public OWNER TO "{owner}"')
+        cursor.execute(
+            f'ALTER DATABASE "{connection.settings_dict["NAME"]}" OWNER TO "{owner}"'
+        )
+        cursor.execute(f'SET LOCAL ROLE "{owner}"')
+        cursor.execute(f'CREATE ROLE "{migrator}"')
+        cursor.execute(f'CREATE ROLE "{serving}"')
+        cursor.execute("CREATE TABLE public.t_owned (id serial PRIMARY KEY)")
+        cursor.execute(role_sql(migrator, serving))
+        cursor.execute("RESET ROLE")
+        cursor.execute(
+            "SELECT pg_get_userbyid(relowner) FROM pg_class "
+            "WHERE oid = 'public.t_owned'::regclass"
+        )
+        assert cursor.fetchone() == (migrator,)
+    _as(serving, "INSERT INTO public.t_owned DEFAULT VALUES")
+    _refused(serving, "ALTER TABLE public.t_owned ADD COLUMN x int")
+
+
+def test_role_sql_stops_when_a_table_cannot_be_taken(roles: tuple[str, str]) -> None:
+    tag = uuid.uuid4().hex[:8]
+    owner, stranger = f"t_owner_{tag}", f"t_stranger_{tag}"
+    with connection.cursor() as cursor:
+        cursor.execute(f'CREATE ROLE "{owner}" NOSUPERUSER CREATEROLE')
+        cursor.execute(f'CREATE ROLE "{stranger}"')
+        cursor.execute(f'ALTER TABLE public.django_migrations OWNER TO "{stranger}"')
+        cursor.execute(
+            f'ALTER DATABASE "{connection.settings_dict["NAME"]}" OWNER TO "{owner}"'
+        )
+        cursor.execute(f'SET LOCAL ROLE "{owner}"')
+        cursor.execute(f'CREATE ROLE "m_{tag}"')
+        cursor.execute(f'CREATE ROLE "s_{tag}"')
+        with pytest.raises(Exception, match="not owned by"), transaction.atomic():
+            cursor.execute(role_sql(f"m_{tag}", f"s_{tag}"))
+        cursor.execute("RESET ROLE")

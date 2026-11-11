@@ -2,6 +2,6 @@
 from config.database import parse_database_url
 
 from .base import required_env
-from .hosted import *  # noqa: F403
+from .hosted import *  # noqa: F403  settings modules re-export their base
 
 DATABASES = {"default": parse_database_url(required_env("MIGRATION_DATABASE_URL"))}

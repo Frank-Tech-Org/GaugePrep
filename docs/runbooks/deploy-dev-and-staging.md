@@ -101,7 +101,7 @@ The deploy exits non-zero, staging still answers 200 on the previous version, an
 
 ### Database roles
 
-Each database has two roles. The migration role owns the schemas and tables and is the only one that can change them; its URL is `MIGRATION_DATABASE_URL`, used only by the migrate step at container start (gunicorn starts without it). The serving role is the app's `DATABASE_URL`: select, insert, update and delete on ordinary tables, select and insert only on append-only ones, no right to create, alter or drop anything. A migration makes a table append-only with `append_only("<schema>.<table>")` from `config.append_only`. Neon roles are shared by every branch of a project, so dev and staging each get a pair: `gaugeprep_dev_migrator` and `gaugeprep_dev_app`, `gaugeprep_stg_migrator` and `gaugeprep_stg_app`.
+Each database has two roles. The migration role owns the schemas and tables and is the only one that can change them; its URL is `MIGRATION_DATABASE_URL`, used only by the migrate step at container start (gunicorn starts without it). The key is hosted only (Doppler `dev` and `stg`); local runs use `DATABASE_URL` for both. The serving role is the app's `DATABASE_URL`: select, insert, update and delete on ordinary tables, select and insert only on append-only ones, select only on `django_migrations` (the app only reads it at startup), no right to create, alter or drop anything. A migration makes a table append-only with `append_only("<schema>.<table>")` from `config.append_only`; it adds triggers that refuse update, delete and truncate, and the role SQL recognises such tables by that trigger. Because the triggers also stop the migration role, Django's flush (tests with `transaction=True`) fails on those tables, and a data fix that updates their rows must reverse the operation, run the fix and apply it again. Neon roles are shared by every branch of a project, so dev and staging each get a pair: `gaugeprep_dev_migrator` and `gaugeprep_dev_app`, `gaugeprep_stg_migrator` and `gaugeprep_stg_app`.
 
 Trigger: first setup of an environment, or a password rotation.
 
@@ -115,6 +115,8 @@ psql "$OWNER_URL" -c '\password gaugeprep_dev_app'
 (cd backend && uv run python -m config.db_roles gaugeprep_dev_migrator gaugeprep_dev_app) | psql "$OWNER_URL" -v ON_ERROR_STOP=1
 unset PGPASSWORD
 ```
+
+A role SQL run also takes over objects owned by another migration role (a branch copied from a split environment) when the owner can reach them, and stops with an error if any table or sequence is still not owned by the migration role. It revokes CONNECT from every role except the owner and the pair. On a rebuilt database, run it again after the first deploy has migrated: new tables get full data grants by default, and the rerun narrows `django_migrations`.
 
 Then set `DATABASE_URL` (serving role) and `MIGRATION_DATABASE_URL` (migration role), same database, in the Doppler config (`doppler secrets set <KEY> --project gaugeprep --config dev`) and deploy. To rotate a password, run `\password <role>` as the owner, update that role's Doppler key and redeploy; rotate one role at a time.
 

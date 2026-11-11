@@ -2,10 +2,9 @@ import re
 
 from django.db import migrations
 
-from config.db_roles import APPEND_ONLY_COMMENT
+from config.db_roles import GUARD
 
 TABLE_NAME = re.compile(r"[a-z_][a-z0-9_]*(\.[a-z_][a-z0-9_]*)?")
-GUARD = "public.gp_append_only_refuse"
 
 _CREATE_GUARD = f"""
 CREATE OR REPLACE FUNCTION {GUARD}() RETURNS trigger LANGUAGE plpgsql AS $f$
@@ -15,8 +14,7 @@ BEGIN
 END $f$;
 """
 
-# Revokes from every non-owner role, whatever its name, so the same migration
-# runs on dev, staging and production.
+# WHY: revokes by grantee, not role name, so one migration runs on every environment.
 _REVOKE = """
 DO $$
 DECLARE g oid;
@@ -32,7 +30,7 @@ BEGIN
 END $$;
 """
 
-# Only roles that can insert (the serving role) get update and delete back.
+# WHY: only a role that can insert (the serving role) gets update and delete back.
 _RESTORE = """
 DO $$
 DECLARE g oid;
@@ -50,14 +48,18 @@ END $$;
 
 
 def append_only(table: str) -> migrations.RunSQL:
-    """Serving role keeps insert and select on `table`; a trigger refuses the rest."""
+    """Leave the serving role insert and select on `table`; triggers refuse the rest.
+
+    The triggers also stop the migration role, so Django's flush (tests with
+    transaction=True) fails on this table, and a backfill that updates rows must drop
+    the triggers first and recreate them (reverse this operation, then apply it).
+    """
     if not TABLE_NAME.fullmatch(table):
         raise ValueError(f"table must look like schema.table: {table!r}")
     base = f"gp_append_only_{table.replace('.', '_')}"[:55]
     return migrations.RunSQL(
         [
             _CREATE_GUARD,
-            f"COMMENT ON TABLE {table} IS '{APPEND_ONLY_COMMENT}'",
             f"CREATE OR REPLACE TRIGGER {base}_row BEFORE UPDATE OR DELETE "
             f"ON {table} FOR EACH ROW EXECUTE FUNCTION {GUARD}()",
             f"CREATE OR REPLACE TRIGGER {base}_stmt BEFORE TRUNCATE "
@@ -67,7 +69,6 @@ def append_only(table: str) -> migrations.RunSQL:
         reverse_sql=[
             f"DROP TRIGGER IF EXISTS {base}_row ON {table}",
             f"DROP TRIGGER IF EXISTS {base}_stmt ON {table}",
-            f"COMMENT ON TABLE {table} IS NULL",
             _RESTORE.format(table=table),
         ],
     )
