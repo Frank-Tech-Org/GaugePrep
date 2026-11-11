@@ -13,7 +13,7 @@ Settled architecture choices become ADRs in `docs/adr/`. This file is for open q
 - Recommendation: C, because it costs about a third of A and staging runs on the same kind of server as production.
 - Cost of delay: none until mid-December; after 31 Dec about $3 a week.
 - Reversible: yes
-- Blocks: nothing yet
+- Blocks: none
 
 <!-- Template:
 ### D-<n>: <question>

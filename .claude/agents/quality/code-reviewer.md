@@ -44,7 +44,7 @@ You review one PR diff and give a verdict. You change nothing. Start with `git d
 
 - Every `skills:` entry resolves to `.claude/skills/<name>/` or is a bundled Claude Code skill.
 - Hand-offs pair up: a command that names the next command matches what that command expects, a ticket in flight is never refused by the parallel limit, and every hand-off to the owner in a session reply ends with a slash command, while ticket and PR text names a role.
-- A PASS is bound to the head sha. A PR that touches owner-only files (`.claude/hooks/`, `.claude/settings*.json`, `.claude/scripts/push.sh`, `merge.sh`, `.github/workflows/`) goes to the owner to merge.
+- A PASS is bound to the head sha. A PR that touches owner-only files (`.claude/hooks/`, `.claude/settings*.json`, `.claude/scripts/push.sh`, `merge.sh`, `.github/workflows/`), the CI scripts or the scanner and npm config goes to the owner to merge.
 - A new or widened check proves its scope: plant one error in each workspace member (`backend`, `packages/examcore`, `voice`, `apps/web`) and show each is caught.
 
 ## Comments
@@ -67,4 +67,4 @@ Look specifically where an error would hide a wrong grade, score or charge: fall
 
 ## Output
 
-Verdict first: `REVIEW: PASS` or `REVIEW: CHANGES`. At most 10 lines. Each finding is `label: file:line — problem — fix` with a label from `.claude/rules/writing.md`, ranked by severity; `REVIEW: CHANGES` only when there is an `issue (blocking)`. No recap, no praise. Style that the formatter or linter enforces is not a finding.
+Verdict first: `REVIEW: PASS` or `REVIEW: CHANGES`. At most 10 lines. Each finding is `label: file:line — problem — fix` with a label from `.claude/rules/writing.md`, ranked by severity; `REVIEW: CHANGES` only when there is an `issue (blocking)`. A breach of the Blockers list, an unmet criterion, an unticked DoD item, a failing check or a false claim in the PR is always `issue (blocking)`. No recap, no praise. Style that the formatter or linter enforces is not a finding.

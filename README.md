@@ -33,6 +33,7 @@ A new top-level folder or a moved one updates this table in the same PR.
 uv sync
 pnpm install          # also installs the git hooks
 cp .env.example .env
+uv run python -c "import examcore"   # must import with no Django installed
 ```
 
 ## Run locally

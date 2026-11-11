@@ -1,11 +1,8 @@
-# Let agents edit workflows and scanner config on branches
+# Let agents edit scanner and npm config on branches
 
-Today agents can't touch the CI workflows, the scanner ignore and config files or the npm and pnpm config, so every change to them comes to you as a file to copy. This keeps the merge with you but lets agents write those files on a work branch:
+Agents can't touch the scanner ignore and config files or the npm and pnpm config today, so every change to them comes to you as a file to copy. This lets agents write those on a work branch; the merge script sends any PR that touches them to you, and CI already turns red on a scanner-setting change. Gitleaks and Semgrep read their config from the base branch, so a branch can't quietly weaken its own scan.
 
-- **Still blocked everywhere:** the hooks, both settings files, `push.sh` and `merge.sh`. An agent that could edit these could switch off its own guard.
-- **Writable on a branch, merged only by you:** `.github/workflows/`, `.semgrepignore`, `.trivyignore*`, `trivy.yaml`, `.gitleaks.toml`, `.gitleaksignore`, `.npmrc`, `.pnpmfile.*`. The merge script refuses any PR that touches them, and CI already flags a scanner-setting change.
-
-Risk: a workflow on a pushed branch runs with the repository secrets before you review it. Today those are only the dev and staging Pages tokens. Keep production secrets in a GitHub Environment limited to `main` before production deploys exist.
+Workflows stay locked. A workflow on a pushed branch runs before review and can grant its own token write access; with no branch protection, that token could push to `develop` or `main`. This also closes a gap that exists today: the Edit and Write tools aren't denied on workflows, so only the token's missing Workflows permission stops one reaching GitHub.
 
 ## 1. `.claude/hooks/guard-bash.sh`, lines 80 to 82
 
@@ -20,17 +17,29 @@ OWNER_ONLY = re.compile(r"\.claude/(hooks/|settings(\.local)?\.json|scripts/(pus
 with:
 
 ```python
-# Owner-only files: the guard itself. Workflows and scanner config are writable; merge.sh sends those PRs to the owner.
-OWNER_ONLY = re.compile(r"\.claude/(hooks/|settings(\.local)?\.json|scripts/(push|merge)\.sh)")
+# Owner-only: the guard and CI workflows. Scanner and npm config are owner-merged by merge.sh.
+OWNER_ONLY = re.compile(r"\.claude/(hooks/|settings(\.local)?\.json|scripts/(push|merge)\.sh)|\.github/workflows/")
 ```
 
 ## 2. `.claude/settings.json`, `permissions.deny`
 
-Delete the 24 `Edit`, `Write` and `MultiEdit` lines for `.semgrepignore`, `.trivyignore*`, `trivy.yaml`, `.gitleaks.toml`, `.gitleaksignore`, `.npmrc` and `.pnpmfile.*`. Keep everything else.
+Delete lines 76 to 96: the 21 `Edit`, `Write` and `MultiEdit` rules for `.semgrepignore`, `.trivyignore*`, `trivy.yaml`, `.gitleaks.toml`, `.gitleaksignore`, `.npmrc` and `.pnpmfile.*`. In their place add:
 
-## 3. `.claude/scripts/merge.sh`, line 40
+```json
+      "Edit(./.github/workflows/**)",
+      "Write(./.github/workflows/**)",
+      "MultiEdit(./.github/workflows/**)",
+```
 
-Replace the pattern inside `test(...)`:
+## 3. `.claude/scripts/merge.sh`, lines 39 and 40
+
+Replace the comment on line 39 with:
+
+```bash
+# Guard files, workflows, CI scripts, scanner and npm config are merged by the owner.
+```
+
+and the pattern inside `test(...)` on line 40:
 
 ```text
 ^\\.claude/(hooks/|settings|scripts/(push|merge)\\.sh)|^\\.github/workflows/|^\\.gitleaks(\\.toml|ignore)$
@@ -39,14 +48,14 @@ Replace the pattern inside `test(...)`:
 with:
 
 ```text
-^\\.claude/(hooks/|settings|scripts/(push|merge)\\.sh)|^\\.github/workflows/|(^|/)(\\.semgrepignore|\\.trivyignore[^/]*|trivy\\.yaml|\\.gitleaks\\.toml|\\.gitleaksignore|\\.npmrc|\\.pnpmfile\\.[^/]*)$
+^\\.claude/(hooks/|settings|scripts/(push|merge)\\.sh)|^\\.github/(workflows|scripts)/|^semgrep/|(^|/)(\\.semgrepignore|\\.trivyignore[^/]*|trivy\\.ya?ml|\\.gitleaks\\.toml|\\.gitleaksignore|\\.npmrc|\\.pnpmfile\\.[^/]*|pnpm-workspace\\.yaml)$
 ```
 
 ## Check
 
 ```bash
-echo '{"tool_input":{"command":"echo x > .github/workflows/t.yml"}}' | .claude/hooks/guard-bash.sh; echo "exit $?"   # exit 0
-echo '{"tool_input":{"command":"echo x > .claude/hooks/t.sh"}}' | .claude/hooks/guard-bash.sh; echo "exit $?"      # Blocked, exit 2
+echo '{"tool_input":{"command":"echo x > .trivyignore"}}' | .claude/hooks/guard-bash.sh; echo "exit $?"          # exit 0
+echo '{"tool_input":{"command":"echo x > .github/workflows/t.yml"}}' | .claude/hooks/guard-bash.sh; echo "exit $?"  # Blocked, exit 2
 ```
 
 Then delete this file in the same commit.
