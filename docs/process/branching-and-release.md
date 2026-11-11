@@ -68,8 +68,8 @@ Short-lived branches are deleted after merging. Promotions use merge commits, ne
 |---|---|---|---|
 | Local | The owner's checkout or a ticket's worktree, Docker Compose | Building and the checks before a PR | Seed data, local open models, test keys |
 | CI | Every PR, thrown away after | Tests and security scans | None |
-| Dev | `develop`, Oracle Always Free server, own Neon branch | QA of each ticket | Synthetic seed data; fake SMS, self-hosted open models for AI and speech, test payment keys |
-| Staging | `stage`, the same Oracle server as a separate deploy, own Neon branch | Release gate (attack tests, load test, 3G checks), regression and the Friday demo | Synthetic seed data; free or test-mode providers, self-hosted open models for AI and speech, no paid service |
+| Dev | `develop`, the shared dev and staging server, own Neon branch, Doppler `gaugeprep/dev` | QA of each ticket | Synthetic seed data; fake SMS, self-hosted open models for AI and speech, test payment keys |
+| Staging | `stage`, the same server as a separate deploy, own Neon branch, Doppler `gaugeprep/stg` | Release gate (attack tests, load test, 3G checks), regression and the Friday demo | Synthetic seed data; free or test-mode providers, self-hosted open models for AI and speech, no paid service |
 | Production | `main` at a tag, Hetzner | Learners | Real data, live keys |
 
 Why `stage` exists: the Friday demo and the release gate need a version that doesn't change while agents keep merging into `develop`. It replaces the `release/*` branches; a fix found on staging is made on `develop` and promoted again, so nothing is cherry-picked or back-merged after a normal release.

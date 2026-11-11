@@ -495,7 +495,7 @@ Servers run in Germany (Hetzner) next to the database in Frankfurt (Neon). Traff
 
 | Part | Local | Dev | Staging | Production |
 |---|---|---|---|---|
-| App, workers, scoring, voice | Docker Compose | Oracle Cloud Always Free ARM server, separate Kamal deploy | Oracle Cloud Always Free ARM server (2 OCPU, 12 GB) | Hetzner Cloud ARM servers (app server; voice server) |
+| App, workers, scoring, voice | Docker Compose | One shared ARM server (an AWS t4g.small, see D-16), separate Kamal deploy | The same server, separate Kamal deploy | Hetzner Cloud ARM servers (app server; voice server) |
 | Database | PostgreSQL 18 in Docker | Neon Free branch, Frankfurt | Neon Free, Frankfurt | Neon Launch, Frankfurt |
 | LiveKit | `livekit-server --dev` | LiveKit Cloud Build (free), shared with staging | LiveKit Cloud Build (free) | Self-hosted LiveKit server |
 | Object storage | Local disk via Django storage | Cloudflare R2 free tier, own bucket | Cloudflare R2 free tier | Cloudflare R2 |

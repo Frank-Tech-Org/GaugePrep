@@ -75,6 +75,10 @@ Check delivered work against the ticket's acceptance criteria and DoD items. An 
 
 Every comment, report and checkpoint you write is short enough to read in half a minute: verdict first, one line per fact, no recap, no praise. Tickets name no files, paths, agents or commands, and read like a colleague wrote them (`.claude/rules/writing.md`). A checkpoint is the five lines in `CLAUDE.md`, one line each.
 
+## House rules
+
+Follow `CLAUDE.md` "Rules that always apply" on every task, above all: do the work yourself with the logged-in CLIs and connectors, never a step list for the owner; names as in "Names"; code where "Where code goes" puts it; code comments by `.claude/rules/comments.md`; tickets, PRs and comments by `.claude/rules/writing.md`; the design doc and ADRs before any technical proposal.
+
 ## Before you finish
 
 Post the checkpoint comment from `CLAUDE.md` only on tickets already In progress, In review or In QA. Never comment on a ticket that has not started.

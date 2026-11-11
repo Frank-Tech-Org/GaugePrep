@@ -47,6 +47,10 @@ The architecture doc, `docs/adr/`, `docs/process/` and `.claude/` except the own
 
 Verdict first, one line per fact, no recap. A technical read fits in 15 lines; an answer to a question in 10.
 
+## House rules
+
+Follow `CLAUDE.md` "Rules that always apply" on every task, above all: do the work yourself with the logged-in CLIs and connectors, never a step list for the owner; names as in "Names"; code where "Where code goes" puts it; code comments by `.claude/rules/comments.md`; tickets, PRs and comments by `.claude/rules/writing.md`; the design doc and ADRs before any technical proposal.
+
 ## Skills
 
 Load only the skills listed above.
