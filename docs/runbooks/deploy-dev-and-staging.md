@@ -105,27 +105,30 @@ Each database has two roles. The migration role owns the schemas and tables and 
 
 Trigger: first setup of an environment, or a password rotation.
 
-Steps, per environment (shown for dev; `$OWNER_URL` is the Neon owner's URL for that branch, pasted into the shell with `read -rs`, never written to a file):
+Steps, per environment (shown for dev). `$OWNER_URL` is the Neon owner's URL for that branch without the password (`postgresql://<owner>@<host>/<db>?sslmode=require`); the password goes in `PGPASSWORD`, which psql reads, so it never shows in `ps` or shell history:
 
 ```bash
+read -rs PGPASSWORD; export PGPASSWORD   # the owner's password
 psql "$OWNER_URL" -c 'CREATE ROLE gaugeprep_dev_migrator LOGIN' -c 'CREATE ROLE gaugeprep_dev_app LOGIN'
 psql "$OWNER_URL" -c '\password gaugeprep_dev_migrator'
 psql "$OWNER_URL" -c '\password gaugeprep_dev_app'
 (cd backend && uv run python -m config.db_roles gaugeprep_dev_migrator gaugeprep_dev_app) | psql "$OWNER_URL" -v ON_ERROR_STOP=1
+unset PGPASSWORD
 ```
 
 Then set `DATABASE_URL` (serving role) and `MIGRATION_DATABASE_URL` (migration role), same database, in the Doppler config (`doppler secrets set <KEY> --project gaugeprep --config dev`) and deploy. To rotate a password, run `\password <role>` as the owner, update that role's Doppler key and redeploy; rotate one role at a time.
 
-Verify, with the serving role's URL in `$APP_URL`:
+Verify, with the serving role's URL without password in `$APP_URL` and `read -rs PGPASSWORD; export PGPASSWORD` set to that role's password:
 
 ```bash
 psql "$APP_URL" -c 'CREATE TABLE t (i int)'                          # permission denied
 psql "$APP_URL" -c 'ALTER TABLE django_migrations ADD COLUMN x int'  # must be owner
 psql "$APP_URL" -c 'SELECT count(*) FROM procrastinate_jobs'         # works
 curl -s https://dev.gaugeprep.com/api/v1/health                      # {"status":"ok","database":"ok"}
+unset PGPASSWORD
 ```
 
-Rollback: set `DATABASE_URL` in Doppler back to the migration role's URL and redeploy; the app runs as owner again, as before the split. The role SQL can be re-run at any time.
+Rollback: set `DATABASE_URL` in Doppler back to the migration role's URL and redeploy; the app runs as owner again, as before the split. The role SQL can be re-run at any time: tables made append-only keep select and insert only, and a trigger on them refuses update, delete and truncate even for a role that holds the privilege.
 
 ### Warning
 
