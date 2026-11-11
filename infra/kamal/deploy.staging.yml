@@ -1,11 +1,7 @@
-# Own image name: dev and staging builds of one commit would otherwise share a tag and overwrite each other's labels.
-service: gaugeprep-backend-staging
-image: frank-tech-org/gaugeprep-backend-staging
-
 servers:
   web:
     hosts:
-      - <%= ENV.fetch("STAGING_SERVER_HOST") %>
+      - <%= `doppler secrets get SERVER_HOST --plain -p gaugeprep -c stg`.strip %>
     options:
       memory: 320m
 
