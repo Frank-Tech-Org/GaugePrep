@@ -21,7 +21,7 @@ A version needs to reach dev or staging, or the last deploy broke one and the pr
 
 ### One-time setup
 
-1. `doppler login`, and check `doppler secrets --project gaugeprep --config stg --only-names` lists `DATABASE_URL`, `DJANGO_SECRET_KEY`, `KAMAL_REGISTRY_USERNAME`, `KAMAL_REGISTRY_PASSWORD` and `SERVER_HOST` (and the same for `dev`). New values go in with `doppler secrets set KEY --project gaugeprep --config <dev|stg>`, which prompts instead of taking the value on the command line. Deploy as your logged-in Doppler user with `DOPPLER_TOKEN` unset: with a service token Kamal ignores the config named in the secrets file, so the Kamal config refuses to load. If `kamal` fails with `servers/web/hosts/0: should be a string or a hash`, Doppler is logged out or `SERVER_HOST` is missing.
+1. `doppler login`, and check `doppler secrets --project gaugeprep --config stg --only-names` lists `DATABASE_URL`, `MIGRATION_DATABASE_URL`, `DJANGO_SECRET_KEY`, `KAMAL_REGISTRY_USERNAME`, `KAMAL_REGISTRY_PASSWORD` and `SERVER_HOST` (and the same for `dev`). New values go in with `doppler secrets set KEY --project gaugeprep --config <dev|stg>`, which prompts instead of taking the value on the command line. Deploy as your logged-in Doppler user with `DOPPLER_TOKEN` unset: with a service token Kamal ignores the config named in the secrets file, so the Kamal config refuses to load. If `kamal` fails with `servers/web/hosts/0: should be a string or a hash`, Doppler is logged out or `SERVER_HOST` is missing.
 2. Kamal 2.12.0 and arm64 emulation, since an x86 machine builds arm64 images:
 
    ```bash
@@ -98,6 +98,34 @@ git switch - && git branch -D scratch/failing-migration
 ```
 
 The deploy exits non-zero, staging still answers 200 on the previous version, and the migration's transaction leaves nothing to undo.
+
+### Database roles
+
+Each database has two roles. The migration role owns the schemas and tables and is the only one that can change them; its URL is `MIGRATION_DATABASE_URL`, used only by the migrate step at container start (gunicorn starts without it). The serving role is the app's `DATABASE_URL`: select, insert, update and delete on ordinary tables, select and insert only on append-only ones, no right to create, alter or drop anything. A migration makes a table append-only with `append_only("<schema>.<table>")` from `config.append_only`. Neon roles are shared by every branch of a project, so dev and staging each get a pair: `gaugeprep_dev_migrator` and `gaugeprep_dev_app`, `gaugeprep_stg_migrator` and `gaugeprep_stg_app`.
+
+Trigger: first setup of an environment, or a password rotation.
+
+Steps, per environment (shown for dev; `$OWNER_URL` is the Neon owner's URL for that branch, pasted into the shell with `read -rs`, never written to a file):
+
+```bash
+psql "$OWNER_URL" -c 'CREATE ROLE gaugeprep_dev_migrator LOGIN' -c 'CREATE ROLE gaugeprep_dev_app LOGIN'
+psql "$OWNER_URL" -c '\password gaugeprep_dev_migrator'
+psql "$OWNER_URL" -c '\password gaugeprep_dev_app'
+(cd backend && uv run python -m config.db_roles gaugeprep_dev_migrator gaugeprep_dev_app) | psql "$OWNER_URL" -v ON_ERROR_STOP=1
+```
+
+Then set `DATABASE_URL` (serving role) and `MIGRATION_DATABASE_URL` (migration role), same database, in the Doppler config (`doppler secrets set <KEY> --project gaugeprep --config dev`) and deploy. To rotate a password, run `\password <role>` as the owner, update that role's Doppler key and redeploy; rotate one role at a time.
+
+Verify, with the serving role's URL in `$APP_URL`:
+
+```bash
+psql "$APP_URL" -c 'CREATE TABLE t (i int)'                          # permission denied
+psql "$APP_URL" -c 'ALTER TABLE django_migrations ADD COLUMN x int'  # must be owner
+psql "$APP_URL" -c 'SELECT count(*) FROM procrastinate_jobs'         # works
+curl -s https://dev.gaugeprep.com/api/v1/health                      # {"status":"ok","database":"ok"}
+```
+
+Rollback: set `DATABASE_URL` in Doppler back to the migration role's URL and redeploy; the app runs as owner again, as before the split. The role SQL can be re-run at any time.
 
 ### Warning
 
