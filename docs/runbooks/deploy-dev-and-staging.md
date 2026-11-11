@@ -21,7 +21,7 @@ A version needs to reach dev or staging, or the last deploy broke one and the pr
 
 ### One-time setup
 
-1. `doppler login`, and check `doppler secrets --project gaugeprep --config stg --only-names` lists `DATABASE_URL`, `DJANGO_SECRET_KEY`, `KAMAL_REGISTRY_USERNAME`, `KAMAL_REGISTRY_PASSWORD` and `SERVER_HOST` (and the same for `dev`). New values go in with `doppler secrets set KEY --project gaugeprep --config <dev|stg>`, which prompts instead of taking the value on the command line.
+1. `doppler login`, and check `doppler secrets --project gaugeprep --config stg --only-names` lists `DATABASE_URL`, `DJANGO_SECRET_KEY`, `KAMAL_REGISTRY_USERNAME`, `KAMAL_REGISTRY_PASSWORD` and `SERVER_HOST` (and the same for `dev`). New values go in with `doppler secrets set KEY --project gaugeprep --config <dev|stg>`, which prompts instead of taking the value on the command line. Deploy as your logged-in Doppler user with `DOPPLER_TOKEN` unset: with a service token Kamal ignores the config named in the secrets file, so the Kamal config refuses to load. If `kamal` fails with `servers/web/hosts/0: should be a string or a hash`, Doppler is logged out or `SERVER_HOST` is missing.
 2. Kamal 2.12.0 and arm64 emulation, since an x86 machine builds arm64 images:
 
    ```bash
@@ -82,7 +82,7 @@ kamal app containers -c infra/kamal/deploy.yml -d staging
 kamal rollback <earlier sha> -c infra/kamal/deploy.yml -d staging
 ```
 
-Kamal keeps the last 3 versions of each environment on the server, and every version stays in the registry. A rollback does not undo migrations; they are expand-then-contract, so older code runs on the newer schema. The next deploy moves forward again.
+The server keeps the last 10 stopped containers of both environments together, so a run of dev deploys can push out staging's previous version. Every version stays in the registry, so any of them comes back with `kamal deploy -c infra/kamal/deploy.yml -d staging --skip-push --version <sha>`. A rollback does not undo migrations; they are expand-then-contract, so older code runs on the newer schema. The next deploy moves forward again.
 
 ### Failing migration
 
@@ -101,7 +101,7 @@ The deploy exits non-zero, staging still answers 200 on the previous version, an
 
 ### Warning
 
-One kamal-proxy serves both environments. Rebooting the server, or `kamal proxy reboot` or `kamal setup` from either destination, interrupts dev and staging together.
+The deploy user is in the docker group, which is root on the server: its key can read both environments' settings. Both hold synthetic data only; production gets its own server and key. One kamal-proxy serves both environments. Rebooting the server, or `kamal proxy reboot` or `kamal setup` from either destination, interrupts dev and staging together.
 
 ## Pages publish and rollback
 

@@ -5,8 +5,9 @@ image: frank-tech-org/gaugeprep-backend
 
 minimum_version: 2.12.0
 require_destination: true
-# Clean-up counts containers per service, and dev and staging share one, so 3 each.
-retain_containers: 6
+# Clean-up counts stopped containers across both environments, not per environment.
+retain_containers: 10
+<% if ENV["DOPPLER_TOKEN"] %><% raise "Unset DOPPLER_TOKEN: a service token makes Kamal ignore --from, so every destination would get that token's secrets." %><% end %>
 
 registry:
   server: ghcr.io
