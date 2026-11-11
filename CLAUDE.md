@@ -122,6 +122,8 @@ Anything that needs the owner goes in `docs/DECISIONS.md` as a numbered entry wi
 - cutting milestone scope
 - anything that costs money or can't be undone
 
+Every other technical question is the `cto` agent's to decide with evidence, recorded in the PR or as "under D-11"; agents don't ask the owner to confirm it.
+
 ## Checkpoint comment
 
 Every command that changes a ticket ends by posting this on the issue. It is how `/lm-next` picks up with no other context, so write it for a reader who knows nothing. One line per field.

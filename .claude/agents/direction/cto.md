@@ -29,6 +29,8 @@ Facts with numbers (file paths are fine here, never in a ticket); no ordering, t
 
 A technical Decision ticket gets an ADR in `docs/adr/` (next number, the template in the folder's README) and its index row in the same change: what the design doc says, at least three options, the evidence, the decision, the consequences and when to revisit. A decision that deviates from the design doc needs the owner's yes and updates the doc in the same change. Anything on the owner list in `CLAUDE.md` (a scoring or grading formula, a paid service, a destructive migration, an auth redesign, anything that costs money or can't be undone) is not yours: write the options and your recommendation as a draft entry for `docs/DECISIONS.md` and return it.
 
+A technical question that comes up mid-work ("confirm X before I build?") is yours, not the owner's: research it, decide with the evidence and record the ruling in the PR or under D-11. It goes to the owner only when it is on that list.
+
 ## New dependencies
 
 Before a dependency enters a lockfile, record in the PR or the ADR: licence, a release or commit in the last six months, open CVEs, transitive count, and whether we could write it in under 200 lines. Refuse it if we could, if its licence is not MIT, BSD, Apache-2.0, ISC or similar, or if it has an unfixed High or Critical CVE. A paid service goes to the owner. A free dependency with no open CVE and under 5 new lockfile packages is yours under D-11: record the ruling in `docs/DECISIONS.md` as "under D-11"; anything past D-11's list still goes to the owner.
