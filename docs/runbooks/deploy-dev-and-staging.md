@@ -1,6 +1,6 @@
 # Deploy dev and staging
 
-Two parts: the backend on the shared server with Kamal (dev for now, staging follows in its own ticket), then the web placeholder on Cloudflare Pages.
+Two parts: the backend on the shared server with Kamal (dev, then staging on the same machine), then the web placeholder on Cloudflare Pages.
 
 ## Backend deploy with Kamal (dev)
 
@@ -138,7 +138,100 @@ If kamal-proxy is stuck: `kamal proxy reboot -c infra/kamal/deploy.yml -d dev` (
 
 - Only kamal-proxy publishes ports (80 and 443). The web container publishes none: the proxy reaches it over the Docker network on 8000. A future accessory must publish on `127.0.0.1` only, because Docker-published ports bypass ufw.
 - No worker role yet; it comes with the first background task.
-- Staging reuses these files with its own destination, host and `STAGING_*` secrets.
+- Staging shares `deploy.yml` and `.kamal/secrets-common` with dev, and has its own destination file, secrets file, image name and host. See the next section.
+
+## Backend deploy with Kamal (staging)
+
+Staging runs on the same server as dev, behind the same kamal-proxy. Files: `infra/kamal/deploy.staging.yml` and `.kamal/secrets.staging`, which reads only `STAGING_DATABASE_URL` and `STAGING_DJANGO_SECRET_KEY`. The host is `staging.gaugeprep.com` (a DNS-only A record to the server), the service is `gaugeprep-backend-staging`, containers are `gaugeprep-backend-staging-web-...`, and the web container is capped at 320 MB like dev.
+
+The image is `ghcr.io/frank-tech-org/gaugeprep-backend-staging`, set only in the staging destination. With one name, a dev and a staging build of the same commit would push the same tag, the second would overwrite the first's service label, and a later dev redeploy or rollback to that commit would fail.
+
+### Trigger
+
+A release candidate needs checking, the owner wants the Friday demo, or the last staging deploy broke it. Staging holds synthetic data only.
+
+### Setup
+
+Same Kamal, QEMU, registry token and deploy key as the dev setup above. Export the staging keys in the shell you deploy from (`read -rs` keeps values out of shell history):
+
+```bash
+read -rs STAGING_DATABASE_URL; export STAGING_DATABASE_URL                 # Neon staging branch, direct connection (pooling off)
+read -rs STAGING_DJANGO_SECRET_KEY; export STAGING_DJANGO_SECRET_KEY       # a different key from dev's
+export STAGING_SERVER_HOST=staging.gaugeprep.com
+kamal config -c infra/kamal/deploy.yml -d staging                          # no server contact
+```
+
+Never run `kamal setup` for staging. The proxy already runs for dev, and setup would reboot it and cut dev off. Staging is always `kamal deploy`.
+
+### Steps
+
+Kamal builds from git, so commit first. Deploy the head of the branch you are on:
+
+```bash
+cd <repo root>
+time kamal deploy -c infra/kamal/deploy.yml -d staging
+```
+
+The new container runs `migrate` before gunicorn, and traffic moves only once `/api/v1/health` passes, inside the 60 s `deploy_timeout`. If `migrate` fails the container never goes healthy and the old version keeps serving. The first deploy also gets the Let's Encrypt certificate through the proxy, so the DNS record must already resolve.
+
+Redeploy: run the same command. In a second terminal, this must print only 200 while it runs:
+
+```bash
+while true; do curl -s -o /dev/null -w '%{http_code}\n' https://staging.gaugeprep.com/api/v1/health; sleep 0.5; done
+```
+
+The server allows 5 new SSH connections per 30 s. Wait 30 s between Kamal commands that open many connections (deploy, rollback, `app details`, `app containers`), and never run two at once.
+
+### Verify
+
+```bash
+cd <repo root>
+curl -s https://staging.gaugeprep.com/api/v1/health
+curl -vI https://staging.gaugeprep.com 2>&1 | grep -E "issuer|subject"
+kamal app details -c infra/kamal/deploy.yml -d staging
+```
+
+Expect `{"status":"ok","database":"ok"}`, a Let's Encrypt issuer (`-I` gets 405 on the health path, which doesn't matter for the certificate) and the container up on the git sha. On the server (`ssh deploy@$STAGING_SERVER_HOST`):
+
+```bash
+free -m
+docker stats --no-stream
+sudo ss -ltnp
+docker inspect $(docker ps -q --filter name=gaugeprep-backend-staging-web) --format '{{.HostConfig.Memory}}'
+sudo dmesg | grep -i -E "out of memory|oom" || echo "no oom"
+```
+
+Expect `used` under 1,100 MB with both environments idle, every container under its limit, only kamal-proxy on 80 and 443 (plus sshd on 22), `335544320` for the staging web container and no OOM lines. Sample `free -m` again in the middle of a deploy, when three web containers run.
+
+Check dev is untouched, after every staging deploy or rollback, and the other way round after a dev deploy:
+
+```bash
+curl -s https://dev.gaugeprep.com/api/v1/health
+kamal app details -c infra/kamal/deploy.yml -d dev
+```
+
+Dev must answer 200 on the same version as before. Run the 200-loop against dev during the staging deploy to show it never dropped.
+
+### Failing migration
+
+Same procedure as dev, with `-d staging` and the staging host. The deploy exits non-zero, the staging health call still returns 200 from the previous version, and `kamal app details` shows the old version.
+
+### Rollback
+
+```bash
+cd <repo root>
+kamal app containers -c infra/kamal/deploy.yml -d staging
+kamal rollback <previous version from that list> -c infra/kamal/deploy.yml -d staging
+curl -s https://staging.gaugeprep.com/api/v1/health
+curl -s https://dev.gaugeprep.com/api/v1/health
+kamal app details -c infra/kamal/deploy.yml -d staging
+```
+
+Staging answers 200 on the earlier version and dev keeps answering 200. Migrations are not undone (expand-then-contract). With the same commit on both environments, a dev rollback still works because it pulls `gaugeprep-backend`, never the staging image.
+
+### Warning
+
+One kamal-proxy serves both environments. Rebooting the server, or running `kamal proxy reboot` or `kamal setup` from either destination, interrupts dev and staging together.
 
 ## Pages publish and rollback
 
