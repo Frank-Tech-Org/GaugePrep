@@ -6,7 +6,14 @@ Settled architecture choices become ADRs in `docs/adr/`. This file is for open q
 
 ## Open
 
-No open entries.
+### D-16: What runs dev and staging once the free server hours end?
+- Raised: 2026-11-11 by cto on #179
+- Context: dev and staging share one AWS t4g.small in Stockholm, free under AWS's t4g.small trial until 31 Dec 2026. From January it bills by the hour, about $12 to $15 a month with its disk, unless we move.
+- Options: A, keep it and pay from January; no work · B, an Oracle Always Free ARM server; free, a rebuild with the existing script and new DNS records, but Oracle reclaims idle free servers and free capacity is often unavailable · C, a Hetzner ARM server like production will use; about €4 to €5 a month, the same rebuild.
+- Recommendation: C, because it costs about a third of A and staging runs on the same kind of server as production.
+- Cost of delay: none until mid-December; after 31 Dec about $3 a week.
+- Reversible: yes
+- Blocks: none
 
 <!-- Template:
 ### D-<n>: <question>
