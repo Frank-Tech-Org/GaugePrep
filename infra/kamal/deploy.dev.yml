@@ -1,9 +1,7 @@
-service: gaugeprep-backend-dev
-
 servers:
   web:
     hosts:
-      - <%= ENV.fetch("DEV_SERVER_HOST") %>
+      - <%= `doppler secrets get SERVER_HOST --plain -p gaugeprep -c dev`.strip %>
     options:
       memory: 320m
 

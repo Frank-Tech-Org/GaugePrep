@@ -1,19 +1,28 @@
 # Deploy dev and staging
 
-Two parts: the backend on the shared server with Kamal (dev for now, staging follows in its own ticket), then the web placeholder on Cloudflare Pages.
+Two parts: the backend on the shared server with Kamal, then the web placeholder on Cloudflare Pages.
 
-## Backend deploy with Kamal (dev)
+## Backend deploy with Kamal
 
-Config is in `infra/kamal/`: `deploy.yml` (shared) and `deploy.dev.yml` (dev); the secrets files are `.kamal/secrets-common` and `.kamal/secrets.dev` (they only read your shell, no values). Run every Kamal command from the repo root. Dev is `dev.gaugeprep.com` (a DNS-only A record in Cloudflare pointing at the server), image `ghcr.io/frank-tech-org/gaugeprep-backend`, containers named `gaugeprep-backend-dev-web-...`.
+Dev and staging run on one server (an AWS t4g.small in Stockholm) behind one kamal-proxy. They run the same image, `ghcr.io/frank-tech-org/gaugeprep-backend`, tagged with the git sha: dev builds it, staging deploys that same version, so what reaches staging is what was tested on dev, and a rollback is a version that already exists.
+
+|                   | Dev                               | Staging                               |
+| ----------------- | --------------------------------- | ------------------------------------- |
+| Host              | `dev.gaugeprep.com`               | `staging.gaugeprep.com`               |
+| Kamal destination | `-d dev`                          | `-d staging`                          |
+| Doppler config    | `gaugeprep/dev`                   | `gaugeprep/stg`                       |
+| Containers        | `gaugeprep-backend-web-dev-<sha>` | `gaugeprep-backend-web-staging-<sha>` |
+
+Config is in `infra/kamal/`. Each destination's secrets file in `.kamal/` fetches its own keys from its own Doppler config, so a staging deploy can never pick up dev's database or key. Each web container is capped at 320 MB and the proxy at 64 MB. Run every command from the repo root.
 
 ### Trigger
 
-You want a version of the backend on dev, or the last deploy broke it and you want the previous one back. Dev holds synthetic data only.
+A version needs to reach dev or staging, or the last deploy broke one and the previous version must come back. Both hold synthetic data only.
 
 ### One-time setup
 
-1. Rebuild or check the server with `docs/runbooks/staging-rebuild.md` (it adds the swapfile). `ssh deploy@$DEV_SERVER_HOST docker ps` must work with your deploy key.
-2. Install Kamal and register QEMU once, since an x86 machine builds arm64 under emulation:
+1. `doppler login`, and check `doppler secrets --project gaugeprep --config stg --only-names` lists `DATABASE_URL`, `DJANGO_SECRET_KEY`, `KAMAL_REGISTRY_USERNAME`, `KAMAL_REGISTRY_PASSWORD` and `SERVER_HOST` (and the same for `dev`). New values go in with `doppler secrets set KEY --project gaugeprep --config <dev|stg>`, which prompts instead of taking the value on the command line. Deploy as your logged-in Doppler user with `DOPPLER_TOKEN` unset: with a service token Kamal ignores the config named in the secrets file, so the Kamal config refuses to load. If `kamal` fails with `servers/web/hosts/0: should be a string or a hash`, Doppler is logged out or `SERVER_HOST` is missing.
+2. Kamal 2.12.0 and arm64 emulation, since an x86 machine builds arm64 images:
 
    ```bash
    sudo apt-get install -y ruby-full build-essential
@@ -21,124 +30,78 @@ You want a version of the backend on dev, or the last deploy broke it and you wa
    docker run --privileged --rm tonistiigi/binfmt --install arm64
    ```
 
-3. Create a GitHub personal access token (classic) from https://github.com/settings/tokens/new?scopes=write:packages, with an expiry; GitHub ticks `repo` too if you start from a blank form, and the token sits in plain text on the server. Create a Neon branch for dev and use its direct connection string (pooling off), since migrations run through it. Export the five keys in the shell you deploy from (`.env.example` says where each comes from; `read -rs` keeps values out of shell history):
-
-   ```bash
-   export KAMAL_REGISTRY_USERNAME=<your GitHub user name>
-   read -rs KAMAL_REGISTRY_PASSWORD; export KAMAL_REGISTRY_PASSWORD   # the GitHub token
-   read -rs DEV_DATABASE_URL; export DEV_DATABASE_URL                 # Neon dev branch connection string
-   read -rs DEV_DJANGO_SECRET_KEY; export DEV_DJANGO_SECRET_KEY       # python -c "import secrets; print(secrets.token_urlsafe(50))"
-   export DEV_SERVER_HOST=<server address>
-   ```
-
-   If the values are already in `.env`, load just these keys and the deploy key instead:
-
-   ```bash
-   while IFS= read -r l; do export "$l"; done < <(grep -E '^(DEV_[A-Z_]+|KAMAL_REGISTRY_[A-Z_]+)=' .env)
-   eval "$(ssh-agent -s)" && ssh-add ~/.ssh/gaugeprep-deploy
-   ```
-
-   Then check the token's scopes; it must list only `write:packages` (and `read:packages`). The token goes through stdin so it never shows in the process list:
-
-   ```bash
-   printf 'Authorization: token %s\n' "$KAMAL_REGISTRY_PASSWORD" | curl -sI -H @- https://api.github.com/user | grep -i x-oauth-scopes
-   ```
-
-4. Confirm the config reads (no server contact): `cd <repo root> && kamal config -c infra/kamal/deploy.yml -d dev`.
-5. The first time on a new server, run `kamal setup -c infra/kamal/deploy.yml -d dev` instead of `kamal deploy`: it logs the server into the registry and boots kamal-proxy before the first deploy.
+3. The deploy key: `ssh-add ~/.ssh/gaugeprep-deploy`, then `ssh deploy@dev.gaugeprep.com docker ps` must work.
+4. A new server only: rebuild it with `staging-rebuild.md`, then `kamal setup -c infra/kamal/deploy.yml -d dev` once, which logs the server into the registry and starts kamal-proxy. Never run `setup` once the proxy runs: it restarts the proxy and cuts both environments off.
 
 ### Steps
 
-Deploy the committed head of the branch you are on. Kamal builds from git, so commit first.
+Deploy dev from the committed head (Kamal builds from git, so commit first):
 
 ```bash
-cd <repo root>
 time kamal deploy -c infra/kamal/deploy.yml -d dev
 ```
 
-That builds the arm64 `production` image, pushes it, starts the new container, which runs `migrate` before gunicorn, waits for `/api/v1/health` and only then moves traffic. If `migrate` fails, the container exits, health never passes and the old version keeps serving. Kamal waits 60 s for health (`deploy_timeout` in `deploy.yml`), migrations included; raise it before deploying a migration that takes longer. The first run also boots kamal-proxy (64 MB) and requests the certificate, so the DNS record must resolve and ports 80 and 443 must be open. The first build is uncached; run it again after a small change for the cached time, and note both in the PR with "QEMU" or "native".
-
-Redeploy: run the same command. If the version is unchanged Kamal reuses the pushed image and swaps the container behind the proxy. To watch for gaps, run this in a second terminal while it deploys; it must print only 200:
+Promote the version on dev to staging without rebuilding:
 
 ```bash
-while true; do curl -s -o /dev/null -w '%{http_code}\n' https://dev.gaugeprep.com/api/v1/health; sleep 0.5; done
+kamal deploy -c infra/kamal/deploy.yml -d staging --skip-push --version <sha on dev>
 ```
+
+The new container runs `migrate`, then gunicorn. Traffic moves once `/api/v1/health` passes, within the 60 s `deploy_timeout` in `deploy.yml`, which covers migrations too; raise it before a slow one. If `migrate` fails, the container never goes healthy and the old version keeps serving.
+
+The server allows 5 new SSH connections per 30 s. Wait 30 s between Kamal commands and never run two at once.
 
 ### Verify
 
-From your machine:
-
 ```bash
-cd <repo root>
-curl -s https://dev.gaugeprep.com/api/v1/health
-curl -sv -o /dev/null https://dev.gaugeprep.com/api/v1/health 2>&1 | grep -E "issuer|HTTP/2 "
-kamal app details -c infra/kamal/deploy.yml -d dev
-docker pull ghcr.io/frank-tech-org/gaugeprep-backend:$(git rev-parse HEAD)
-docker image inspect ghcr.io/frank-tech-org/gaugeprep-backend:$(git rev-parse HEAD) --format '{{range .Config.Env}}{{println .}}{{end}}' | grep DJANGO_SETTINGS_MODULE
+curl -s https://staging.gaugeprep.com/api/v1/health                # {"status":"ok","database":"ok"}
+curl -sv -o /dev/null https://staging.gaugeprep.com/api/v1/health 2>&1 | grep -E "issuer|HTTP/2 "
+kamal app details -c infra/kamal/deploy.yml -d staging             # up, on the sha
 ```
 
-Expect `{"status":"ok","database":"ok"}`, an issuer of Let's Encrypt with `HTTP/2 200` (curl stops on a bad certificate; the endpoint answers GET only, so `-I` gets 405), the container up with the git sha as version, and `DJANGO_SETTINGS_MODULE=config.settings.production`.
-
-On the server (`ssh deploy@$DEV_SERVER_HOST`):
+To show a deploy had no gap, run this in a second terminal while it deploys, against both hosts; it must print only 200:
 
 ```bash
-sudo ss -ltnp
-free -m
-docker stats --no-stream
-swapon --show
-docker inspect $(docker ps -q --filter name=gaugeprep-backend-dev-web) --format '{{.HostConfig.Memory}}'
-sudo ufw status verbose
+while true; do curl -s -o /dev/null -w '%{http_code}\n' https://staging.gaugeprep.com/api/v1/health; sleep 0.5; done
 ```
 
-Expect: nothing on `0.0.0.0` or `[::]` except kamal-proxy on 80 and 443 (and sshd on 22, which ufw limits); `used` under 900 in `free -m`; every container under its limit (web 320 MiB, proxy 64 MiB); `/swapfile` at 2G; `335544320` (320 MiB) for the web container, which `kamal app details` does not print; `22/tcp LIMIT IN`, 80 and 443 `ALLOW IN`.
-
-SSH limit (5 new connections per 30 s), from your machine:
+On the server (`ssh deploy@dev.gaugeprep.com`; the deploy user has no sudo):
 
 ```bash
-for i in $(seq 1 8); do ssh -o ConnectTimeout=5 -o BatchMode=yes deploy@$DEV_SERVER_HOST true && echo "$i ok" || echo "$i refused"; done
+free -m                         # used under 1,100 with both idle
+docker stats --no-stream        # every container under its limit
+ss -ltnH | awk '{print $4}'     # public: only 22, 80 and 443; the rest on 127.0.0.x
+docker inspect kamal-proxy --format '{{json .HostConfig.PortBindings}}'   # 80 and 443 are the proxy's
+journalctl -k -q | grep -ciE 'out of memory|oom-kill'                     # 0
 ```
-
-The first 5 inside 30 s connect and the rest are refused until the window passes. Wait 30 s before deploying again.
-
-### Failing migration
-
-The deploy must stop before the switch. On a scratch branch add a migration that raises, deploy, then drop the branch:
-
-```bash
-cd <repo root>
-git switch -c scratch/failing-migration
-mkdir -p backend/modules/learner/migrations
-touch backend/modules/learner/migrations/__init__.py
-printf 'from django.db import migrations\n\n\ndef boom(apps, schema_editor):\n    raise RuntimeError("deliberate failure")\n\n\nclass Migration(migrations.Migration):\n    dependencies = []\n    operations = [migrations.RunPython(boom)]\n' > backend/modules/learner/migrations/0001_fail.py
-git add backend && git commit -m "test(api): failing migration"
-kamal deploy -c infra/kamal/deploy.yml -d dev
-curl -s https://dev.gaugeprep.com/api/v1/health
-git switch - && git branch -D scratch/failing-migration
-```
-
-`kamal deploy` exits non-zero because the new container never becomes healthy, the health call still returns 200 from the previous version, and `kamal app details` shows the old version. The migration runs in a transaction, so the database has nothing to undo.
 
 ### Rollback
 
-To the previous version (Kamal keeps the last 3 containers and the images are in the registry):
-
 ```bash
-cd <repo root>
-kamal app containers -c infra/kamal/deploy.yml -d dev
-kamal rollback <previous version from that list> -c infra/kamal/deploy.yml -d dev
-curl -s https://dev.gaugeprep.com/api/v1/health
-kamal app details -c infra/kamal/deploy.yml -d dev
+kamal app containers -c infra/kamal/deploy.yml -d staging
+kamal rollback <earlier sha> -c infra/kamal/deploy.yml -d staging
 ```
 
-The health call returns 200 and the details show the earlier version. A rollback does not undo migrations; they are expand-then-contract, so the older code runs on the newer schema, and anything else is fixed forward with a new deploy. The next `kamal deploy` moves dev to the branch head again.
+The server keeps the last 10 stopped containers of both environments together, so a run of dev deploys can push out staging's previous version. Every version stays in the registry, so any of them comes back with `kamal deploy -c infra/kamal/deploy.yml -d staging --skip-push --version <sha>`. A rollback does not undo migrations; they are expand-then-contract, so older code runs on the newer schema. The next deploy moves forward again.
 
-If kamal-proxy is stuck: `kamal proxy reboot -c infra/kamal/deploy.yml -d dev` (a few seconds of downtime for everything behind it).
+### Failing migration
 
-### Notes
+To check the safety net, deploy a scratch commit whose migration raises:
 
-- Only kamal-proxy publishes ports (80 and 443). The web container publishes none: the proxy reaches it over the Docker network on 8000. A future accessory must publish on `127.0.0.1` only, because Docker-published ports bypass ufw.
-- No worker role yet; it comes with the first background task.
-- Staging reuses these files with its own destination, host and `STAGING_*` secrets.
+```bash
+git switch -c scratch/failing-migration
+mkdir -p backend/modules/learner/migrations && touch backend/modules/learner/migrations/__init__.py
+printf 'from django.db import migrations\n\n\ndef boom(apps, schema_editor):\n    raise RuntimeError("deliberate failure")\n\n\nclass Migration(migrations.Migration):\n    dependencies = []\n    operations = [migrations.RunPython(boom)]\n' > backend/modules/learner/migrations/0001_fail.py
+git add backend && git commit -m "test(api): failing migration" --no-verify
+kamal deploy -c infra/kamal/deploy.yml -d staging
+git switch - && git branch -D scratch/failing-migration
+```
+
+The deploy exits non-zero, staging still answers 200 on the previous version, and the migration's transaction leaves nothing to undo.
+
+### Warning
+
+The deploy user is in the docker group, which is root on the server: its key can read both environments' settings. Both hold synthetic data only; production gets its own server and key. One kamal-proxy serves both environments. Rebooting the server, or `kamal proxy reboot` or `kamal setup` from either destination, interrupts dev and staging together.
 
 ## Pages publish and rollback
 
@@ -162,7 +125,7 @@ One-time setup, by the owner:
 
    If wrangler opens a browser login instead of using the pasted token, it did not read the token (empty paste, or not exported). The project is then created under whichever account you log in with, so check it is in the intended account, and run `npx --yes wrangler@4.153.0 logout` afterwards. Run the setup from a directory that exists: npx fails with `ENOENT uv_cwd` from a deleted one.
 
-2. Add the four repository secrets listed in `.env.example` (`DEV_` and `STAGING_` token and account ID). Tokens: Pages edit permission only. That permission covers every Pages project in the account, so keep production in a different Cloudflare account.
+2. Add four repository secrets, `DEV_CLOUDFLARE_API_TOKEN`, `DEV_CLOUDFLARE_ACCOUNT_ID` and the two `STAGING_` ones, with the values from Doppler (`CLOUDFLARE_*` in `gaugeprep/dev` and `gaugeprep/stg`). Tokens: Pages edit permission only. That permission covers every Pages project in the account, so keep production in a different Cloudflare account.
 
 The secrets are repository-wide: anyone who can push a branch can write a workflow that reads them. The `if` on the branch in the workflow is not a barrier against that. Keep write access to trusted people only; GitHub Environments with a branch rule would close it, if the plan allows them for a private repository.
 

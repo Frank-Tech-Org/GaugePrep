@@ -1,0 +1,13 @@
+servers:
+  web:
+    hosts:
+      - <%= `doppler secrets get SERVER_HOST --plain -p gaugeprep -c stg`.strip %>
+    options:
+      memory: 320m
+
+proxy:
+  host: staging.gaugeprep.com
+
+env:
+  clear:
+    DJANGO_ALLOWED_HOSTS: staging.gaugeprep.com
