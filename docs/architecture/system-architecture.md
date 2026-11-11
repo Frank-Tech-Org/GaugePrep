@@ -455,12 +455,9 @@ gaugeprep/                      private GitHub repository
   apps/web/                        Next.js PWA (pnpm)
   backend/
     config/                        Django settings per environment
-    modules/<module>/              models, services, api, tasks, public.py, tests/
-  packages/
-    examcore/                      exam rules, rule checks, Rasch maths, plug-ins (no Django)
-    api-client/                    web types generated from the OpenAPI contract (once the web calls the API)
+    modules/<module>/              models, services, api, tasks, public.py
+  packages/examcore/               exam rules, rule checks, Rasch maths, plug-ins (no Django)
   voice/                           LiveKit examiner worker
-  tooling/                         our CI checks, Semgrep rules, shared lint, type and format configs, their tests
   infra/
     docker/                        images for api, worker, voice
     kamal/                         deploy configs for staging and production
@@ -473,10 +470,7 @@ gaugeprep/                      private GitHub repository
 ```
 
 - Python managed with uv (workspace, single lockfile, pinned Python 3.14); frontend with pnpm.
-- Formatting, linting and type checks for Python and TypeScript run before commit and in CI, through one entry point, `pnpm check`.
-- Product folders hold product code and the tests of that code only; module tests sit beside their module. `tooling/` replaces `tools/` and `semgrep/` when the tooling ticket lands.
-- Names: Python modules `snake_case`, TypeScript files `kebab-case`, React components `PascalCase`, cloud resources and images `gaugeprep-<part>[-<env>]`, database roles `gaugeprep_<env>_<role>`.
-- Not adopted, compared against the common Nx and Turborepo layout: moving `backend/` and `voice/` under `apps/`, Turborepo, a separate task runner, `apps/admin` (the internal console is a Django module), a mobile app, and shared `ui`, `utils`, `database` or `validation` packages (one web app, Django owns the schema and validation).
+- Formatting, linting and type checks for Python and TypeScript run before commit and in CI.
 
 ### 13.2 Pipeline
 
