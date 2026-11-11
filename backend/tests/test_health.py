@@ -16,6 +16,18 @@ def test_health_returns_200_when_the_database_is_up(db: None, client: Client) ->
     assert response.json() == {"status": "ok", "database": "ok"}
 
 
+def test_health_answers_the_proxy_probe_on_a_container_id_host(
+    db: None, client: Client
+) -> None:
+    response = client.get("/api/v1/health", HTTP_HOST="7aac740dd7e1:8000")
+    assert response.status_code == 200
+
+
+def test_other_paths_still_refuse_an_unknown_host(client: Client) -> None:
+    response = client.get("/api/v1/openapi.json", HTTP_HOST="7aac740dd7e1:8000")
+    assert response.status_code == 400
+
+
 @pytest.fixture
 def unreachable_database(
     django_db_blocker: DjangoDbBlocker,
