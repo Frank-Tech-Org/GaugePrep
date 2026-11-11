@@ -65,13 +65,14 @@ To show a deploy had no gap, run this in a second terminal while it deploys, aga
 while true; do curl -s -o /dev/null -w '%{http_code}\n' https://staging.gaugeprep.com/api/v1/health; sleep 0.5; done
 ```
 
-On the server (`ssh deploy@dev.gaugeprep.com`):
+On the server (`ssh deploy@dev.gaugeprep.com`; the deploy user has no sudo):
 
 ```bash
 free -m                         # used under 1,100 with both idle
 docker stats --no-stream        # every container under its limit
-sudo ss -ltnp                   # only kamal-proxy on 80 and 443, sshd on 22
-sudo dmesg | grep -i oom || echo "no oom"
+ss -ltnH | awk '{print $4}'     # public: only 22, 80 and 443; the rest on 127.0.0.x
+docker inspect kamal-proxy --format '{{json .HostConfig.PortBindings}}'   # 80 and 443 are the proxy's
+journalctl -k -q | grep -ciE 'out of memory|oom-kill'                     # 0
 ```
 
 ### Rollback
