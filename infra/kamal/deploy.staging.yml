@@ -1,0 +1,17 @@
+# Own image name: dev and staging builds of one commit would otherwise share a tag and overwrite each other's labels.
+service: gaugeprep-backend-staging
+image: frank-tech-org/gaugeprep-backend-staging
+
+servers:
+  web:
+    hosts:
+      - <%= ENV.fetch("STAGING_SERVER_HOST") %>
+    options:
+      memory: 320m
+
+proxy:
+  host: staging.gaugeprep.com
+
+env:
+  clear:
+    DJANGO_ALLOWED_HOSTS: staging.gaugeprep.com
