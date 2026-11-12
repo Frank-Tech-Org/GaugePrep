@@ -16,6 +16,6 @@ ALLOWED_HOSTS = split_hosts(os.environ.get("DJANGO_ALLOWED_HOSTS", "")) or [
 DATABASES = {
     "default": parse_database_url(
         os.environ.get("DATABASE_URL")
-        or "postgres://postgres:postgres@localhost:5432/linguamentor"
+        or "postgres://postgres:postgres@localhost:5432/gaugeprep"
     )
 }

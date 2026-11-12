@@ -45,6 +45,8 @@ curl -i http://localhost:8000/api/v1/health      # 200 {"status": "ok", "databas
 docker compose down                              # add -v to drop the database volume
 ```
 
+If you ran the stack before this rename, drop the old database volume once with `docker compose down -v` (the data is synthetic), or confirm you don't need it; the new volume creates `gaugeprep`.
+
 To run Django on your machine against the compose database, start only `db`, then `uv run python apps/backend/manage.py migrate` and `runserver`.
 
 Unset settings fall back to safe local defaults. Hosted settings refuse to start without `DJANGO_SECRET_KEY`, `DJANGO_ALLOWED_HOSTS` and `DATABASE_URL`.
