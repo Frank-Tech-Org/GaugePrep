@@ -1,0 +1,148 @@
+name: develop-alarm
+
+# Free plan has no branch protection, so flag a push to develop or stage that is not a merged PR.
+on:
+  push:
+    branches: [develop, stage]
+  # WHY: a push run can be skipped with [skip ci]; the schedule rechecks recent pushes and does not.
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: develop or stage
+        default: develop
+      sha:
+        description: commit to check as if just pushed; empty rechecks recent pushes
+        default: ""
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      # SECURITY: GitHub refuses a direct push that edits or deletes this file, because the
+      # agent token lacks the workflow scope.
+      - name: Open an issue if a commit is not an allowed merged PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          EVENT: ${{ github.event_name }}
+          SHA: ${{ github.sha }}
+          BRANCH: ${{ github.ref_name }}
+          ACTOR: ${{ github.actor }}
+          FORCED: ${{ github.event.forced }}
+          IN_BRANCH: ${{ inputs.branch }}
+          IN_SHA: ${{ inputs.sha }}
+          OWNER: frankkefoueg
+        run: |
+          set +e
+          set -uo pipefail
+          TRIES=4
+          created=0
+          why=""
+
+          verdict() {
+            local branch=$1 sha=$2 forced=$3 allowed pr info head headsha merger approval files attempt
+            why=""
+            case "$branch" in
+              stage) allowed='^(develop|main)$' ;;
+              *) allowed='^((feature|chore)/[A-Za-z0-9._-]+|main)$' ;;
+            esac
+            if [ "$forced" = true ]; then why="it was a forced push or a branch change"; return; fi
+            pr=""
+            for attempt in $(seq 1 "$TRIES"); do
+              pr=$(gh api "repos/$REPO/commits/$sha/pulls" 2>/dev/null | jq -r --arg sha "$sha" --arg b "$branch" \
+                '[.[] | select(.merged_at != null and .merge_commit_sha == $sha and .base.ref == $b)] | first | .number // empty' 2>/dev/null)
+              [ -n "$pr" ] && break
+              [ "$attempt" -lt "$TRIES" ] && sleep 15
+            done
+            if [ -z "$pr" ]; then why="no merged pull request produced it"; return; fi
+            info=$(gh api "repos/$REPO/pulls/$pr" 2>/dev/null)
+            head=$(jq -r '.head.ref // ""' <<<"$info" 2>/dev/null)
+            headsha=$(jq -r '.head.sha // ""' <<<"$info" 2>/dev/null)
+            merger=$(jq -r '.merged_by.login // ""' <<<"$info" 2>/dev/null)
+            if ! [[ "$head" =~ $allowed ]]; then
+              why="PR #$pr came from ${head:-a branch that could not be read}, which may not merge into $branch"; return
+            fi
+            if [[ "$head" =~ ^(feature|chore)/ ]]; then
+              if [ "$merger" != "$OWNER" ]; then
+                approval=$(gh api --paginate "repos/$REPO/pulls/$pr/reviews?per_page=100" 2>/dev/null | jq -rs --arg o "$OWNER" \
+                  'add // [] | [.[] | select(.user.login == $o and (.state | IN("APPROVED", "CHANGES_REQUESTED", "DISMISSED")))]
+                   | sort_by(.submitted_at) | last // empty | "\(.state) \(.commit_id)"' 2>/dev/null)
+                if [ -z "$headsha" ] || [ "$approval" != "APPROVED $headsha" ]; then
+                  why="PR #$pr was merged by ${merger:-nobody} without the owner approving its last commit"; return
+                fi
+              fi
+            elif [ "$merger" != "$OWNER" ]; then
+              why="PR #$pr from $head was merged by ${merger:-nobody}, not the owner"; return
+            fi
+            if ! files=$(gh api "repos/$REPO/commits/$sha" --jq '.files[].filename' 2>/dev/null); then
+              why="its changed files could not be read"; return
+            fi
+            if grep -q '^\.github/workflows/' <<<"$files" && [ "$merger" != "$OWNER" ]; then
+              why="it changes a workflow file and the owner did not merge PR #$pr"
+            fi
+          }
+
+          report() {
+            local branch=$1 sha=$2 actor=$3 title body open=0 n events
+            title="$branch changed outside the merge step: $sha"
+            body="@$OWNER Commit $sha reached $branch (pushed by $actor). Flagged because $why. Check it, and revert if it was not intended."
+            # SECURITY: only an issue this workflow opened, with this exact title, is the alarm.
+            # SECURITY: a renamed issue does not count; bodies and titles are editable by anyone.
+            for n in $(gh issue list --repo "$REPO" --state all --author app/github-actions \
+              --search "$sha in:title" --json number,title \
+              --jq ".[] | select(.title == \"$title\") | .number" 2>/dev/null); do
+              if events=$(gh api "repos/$REPO/issues/$n/events" --paginate --jq '.[].event' 2>/dev/null) \
+                && ! grep -qx renamed <<<"$events"; then
+                open=1
+              fi
+            done
+            if [ "$open" = 0 ]; then
+              created=$((created + 1))
+              gh issue create --repo "$REPO" --assignee "$OWNER" --title "$title" --body "$body" \
+                || gh issue create --repo "$REPO" --title "$title" --body "$body"
+            fi
+          }
+
+          if [ "$EVENT" = push ]; then
+            verdict "$BRANCH" "$SHA" "$FORCED"
+            [ -z "$why" ] && exit 0
+            report "$BRANCH" "$SHA" "$ACTOR"
+            exit 1
+          fi
+
+          TRIES=1
+          if [ "$EVENT" = workflow_dispatch ] && [ -n "$IN_SHA" ]; then
+            if ! [[ "$IN_SHA" =~ ^[0-9a-f]{40}$ ]] || ! [[ "$IN_BRANCH" =~ ^(develop|stage)$ ]]; then
+              echo "branch must be develop or stage, and sha a full commit id" >&2; exit 2
+            fi
+            verdict "$IN_BRANCH" "$IN_SHA" false
+            if [ -z "$why" ]; then echo "allowed: $IN_SHA is a merged PR on $IN_BRANCH"; exit 0; fi
+            report "$IN_BRANCH" "$IN_SHA" "$ACTOR"
+            exit 1
+          fi
+
+          since=$(date -u -d "120 minutes ago" +%Y-%m-%dT%H:%M:%SZ)
+          unreadable=0
+          for b in develop stage; do
+            if ! pushes=$(gh api "repos/$REPO/activity?ref=refs/heads/$b&time_period=day&per_page=100" 2>/dev/null \
+                | jq -r --arg since "$since" '.[] | select(.timestamp >= $since) | "\(.activity_type) \(.after) \(.actor.login // "unknown")"'); then
+              echo "could not read the push log of $b" >&2; unreadable=1; continue
+            fi
+            while read -r kind after who; do
+              [ -n "$after" ] || continue
+              forced=false
+              case "$kind" in push|pr_merge) ;; *) forced=true ;; esac
+              verdict "$b" "$after" "$forced"
+              [ -z "$why" ] && continue
+              report "$b" "$after" "$who"
+            done <<<"$pushes"
+          done
+          [ "$created" = 0 ] && [ "$unreadable" = 0 ] || exit 1
