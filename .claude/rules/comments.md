@@ -60,4 +60,4 @@ STAGING_DJANGO_SECRET_KEY=
   run: .github/scripts/scan-history.sh
 ```
 
-Workflow steps with more than about 10 lines of script move to `tooling/ci/`, where they get a usage header, shellcheck and tests.
+Workflow steps stay inline in the workflow, kept short and named; the owner-only workflow files are the trusted place for CI logic.
