@@ -98,6 +98,10 @@ Settled architecture choices become ADRs in `docs/adr/`. This file is for open q
 - Decided: 2026-11-10: gunicorn 26.2, under D-11 · cto. MIT, no required dependencies, no open CVE, the standard Django WSGI server; 2 sync workers fit the 320 MB dev container. Added to the backend's dependencies below 27, whose release was a few hours old.
 - Effect: #11 (production image stage and Kamal dev deploy).
 
-<!-- Move an entry here when answered, adding:
+### D-16: Pay for GitHub Team to enforce required checks on develop?
+- Raised: 2026-11-12 by cto on #167
+- Decided: 2026-11-12: no, not yet · the owner. The repository is private on a free organization plan, so rulesets and branch protection are not enforced (checked in the settings pages). The merge step's checks, the develop alarm and the guard hook stand in for it.
+- Effect: revisit before the first production release or when more people get write access.
+
 - Decided: <YYYY-MM-DD>: <option> · <the owner's reason>
 -->
