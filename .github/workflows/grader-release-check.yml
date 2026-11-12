@@ -1,7 +1,7 @@
 name: grader release check
 
 # Runs the anchor set through the grader and fails if any release threshold is missed.
-# The grader is a stub for now: no model call, no secrets.
+# WHY: the grader is a stub for now, so there is no model call and no secret.
 on:
   pull_request:
     branches: [develop, stage, main]
@@ -9,7 +9,7 @@ on:
       - "apps/backend/modules/assessment/grader/**"
       - "tooling/ci/grader_check/**"
       - ".github/workflows/grader-release-check.yml"
-  # A manual run can pick the deliberately failing placeholder set to show the check goes red.
+  # WHY: a manual run can pick the failing placeholder set to show the check goes red.
   workflow_dispatch:
     inputs:
       anchor_set:
@@ -35,7 +35,7 @@ jobs:
         with:
           persist-credentials: false
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
-      # The tool is stdlib only, so it runs without syncing the workspace.
+      # WHY: the tool is stdlib only, so it runs without syncing the workspace.
       - name: Run the release check
         env:
           ANCHOR_SET: ${{ inputs.anchor_set || 'placeholder' }}

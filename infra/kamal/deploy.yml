@@ -1,12 +1,12 @@
-# Shared by every destination; run Kamal from the repo root with -c infra/kamal/deploy.yml -d <destination>.
-# The server host lives in the destination file, so moving to another provider is a host change.
+# Shared by every destination; run from the repo root: kamal -c infra/kamal/deploy.yml -d <env>
 service: gaugeprep-backend
 image: frank-tech-org/gaugeprep-backend
 
 minimum_version: 2.12.0
 require_destination: true
-# Clean-up counts stopped containers across both environments, not per environment.
+# WHY: clean-up counts stopped containers across both environments, not per environment.
 retain_containers: 10
+# SECURITY: a Doppler service token makes Kamal ignore --from, mixing every destination's secrets.
 <% if ENV["DOPPLER_TOKEN"] %><% raise "Unset DOPPLER_TOKEN: a service token makes Kamal ignore --from, so every destination would get that token's secrets." %><% end %>
 
 registry:
@@ -21,17 +21,17 @@ builder:
   dockerfile: infra/docker/backend.Dockerfile
   target: production
 
-# Migrations run as the container starts, inside this wait; raise it before deploying a slow one.
+# WHY: migrations run as the container starts, inside this wait; raise it for a slow one.
 deploy_timeout: 60
 
 ssh:
   user: deploy
 
-# ufw refuses the 6th new SSH connection within 30 s; keep Kamal's connections open across the build instead of reopening them.
+# WHY: ufw refuses the 6th new SSH connection within 30 s, so keep connections open.
 sshkit:
   pool_idle_timeout: 900
 
-# One kamal-proxy per server, shared by dev and staging, so its limit lives here.
+# WHY: one kamal-proxy per server serves dev and staging, so its limit lives here.
 proxy:
   ssl: true
   app_port: 8000

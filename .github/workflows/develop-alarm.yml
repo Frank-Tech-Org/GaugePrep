@@ -26,8 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      # SECURITY: GitHub refuses a direct push that edits or deletes this file, because the
-      # agent token lacks the workflow scope.
+      # SECURITY: GitHub refuses a direct push that edits or deletes this file (no workflow scope).
       - name: Open an issue if a commit is not an allowed merged PR
         env:
           GH_TOKEN: ${{ github.token }}

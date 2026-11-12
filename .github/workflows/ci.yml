@@ -1,8 +1,7 @@
 name: ci
 
-# Runs on every pull request, and when another workflow calls it (the Pages publish does, before it publishes). No secrets are used; the postgres credentials below are test-only.
-# Scanners are free open-source binaries: no Semgrep App login, no Snyk, no tokens.
-# When called from a push, the pull request context is missing: BASE is the commit before the push and the title, scanner settings and changed-lines checks are skipped (they judge a pull request, not a branch).
+# Pull request checks, also called by the Pages publish; the postgres login is test-only.
+# WHY: a push has no PR context, so BASE is the commit before it and PR-only steps skip.
 on:
   pull_request:
     branches: [develop, stage, main]
@@ -16,17 +15,15 @@ env:
   BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
   HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
 
-# A push has no pull request number, so each run gets its own group and none cancels another.
+# WHY: a push has no pull request number, so each run gets its own group.
 concurrency:
   group: ci-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
-# GitHub-hosted arm64 runners (ubuntu-24.04-arm) are free for public repositories only, so this private repo uses x64.
+# WHY: arm64 hosted runners are free for public repositories only, so this repo uses x64.
 jobs:
-  # One runner for the path filter, the secret scan, the API breaking-change check, the scanner settings check and the title and description check.
-  # A failed secret scan, API check or title check skips the jobs that need this one. A failed scanner settings step alone does not: the code and scanner jobs still run and the pull request stays red.
-  # A skipped job counts as passing for merge, so only the red gate blocks.
-  # The title script comes from the PR and runs last, after the filter, the scans and the API check have finished, so it cannot change their results.
+  # WHY: a skipped job counts as passing for merge, so only a red gate blocks.
+  # SECURITY: the title script comes from the PR and runs last, so it cannot change other results.
   gate:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
@@ -45,11 +42,10 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      # On a pull request, code checks are skipped only when every changed file is documentation or agent prompts, skill documents, rules or memory (not hooks or scripts).
-      # On a push or a manual run every code check runs: the publish must not go out over a red branch. The image build runs only when a file that feeds the backend image changed, or when the push has no usable base.
+      # WHY: code checks skip only when every changed file is docs or agent prompts; pushes run all.
       - id: filter
         run: |
-          # Separate assignment so a failing git diff stops the step instead of skipping the checks.
+          # WHY: separate assignment, so a failing git diff stops the step, not skips the checks.
           if [ -n "$BASE" ] && git cat-file -e "$BASE^{commit}" 2>/dev/null; then
             diff=$(git diff --name-only --no-renames "$BASE...$HEAD")
             other=$(printf '%s\n' "$diff" | grep -Ev '^(docs/|\.claude/(agents|rules|memory)/|\.claude/skills/.*\.md$|.*\.md$)' || true)
@@ -66,7 +62,7 @@ jobs:
           echo "backend_image=$backend_image" >> "$GITHUB_OUTPUT"
           echo "code checks: $code"
           echo "backend image: $backend_image"
-      # The MIT-licensed binary, not gitleaks/gitleaks-action, which needs a paid licence on organisations.
+      # WHY: the MIT binary, not gitleaks-action, which needs a paid licence on organisations.
       - name: Install gitleaks
         id: gitleaks-install
         run: |
@@ -74,17 +70,17 @@ jobs:
           echo "${GITLEAKS_SHA256}  $RUNNER_TEMP/gitleaks.tgz" | sha256sum --check -
           mkdir "$RUNNER_TEMP/gitleaks-bin"
           tar -xzf "$RUNNER_TEMP/gitleaks.tgz" -C "$RUNNER_TEMP/gitleaks-bin" gitleaks
-      # Scans the full history reachable from the head, not other branches. Config and ignore list come from the base commit, so a PR cannot switch off its own scan.
-      # On a push the base is the commit before the push, or its first parent when that is gone (new branch, force push, manual run).
+      # SECURITY: config and ignore list come from the base, so a PR cannot switch off its own scan.
+      # WHY: on a push the base is the commit before it, or its first parent when that is gone.
       - name: Scan the full git history
         id: gitleaks
         if: ${{ !cancelled() }}
         run: |
           if [ "$GITHUB_EVENT_NAME" != pull_request ] && ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then BASE=$(git rev-parse -q --verify "$HEAD^" || true); fi
-          # gitleaks:allow comments and the checkout's own .gitleaksignore would let a PR skip its own secret.
+          # SECURITY: allow comments and the checkout .gitleaksignore would let a PR hide a secret.
           args=(git --redact --verbose --ignore-gitleaks-allow --log-opts="HEAD")
           rm -f .gitleaksignore
-          # Always pass a config from the base, so the head's own ./.gitleaks.toml is never loaded.
+          # SECURITY: always pass a config from the base; the head .gitleaks.toml is never loaded.
           { [ -n "$BASE" ] && git show "$BASE:.gitleaks.toml" > "$RUNNER_TEMP/gl.toml" 2>/dev/null; } || printf '[extend]\nuseDefault = true\n' > "$RUNNER_TEMP/gl.toml"
           args+=(--config "$RUNNER_TEMP/gl.toml")
           { [ -n "$BASE" ] && git show "$BASE:.gitleaksignore" > "$RUNNER_TEMP/gl.ignore" 2>/dev/null; } || : > "$RUNNER_TEMP/gl.ignore"
@@ -93,7 +89,7 @@ jobs:
             echo "::error title=Secret found::gitleaks found a secret in the history; the File line in the output above names the file. Remove it from every commit and rotate it."
             exit 1
           fi
-      # Both specs come from git objects, so nothing in the checkout can touch the API check. A push with no usable base has nothing to compare.
+      # SECURITY: both specs come from git objects, so nothing in the checkout can touch the check.
       - name: API contract files
         id: oas
         if: ${{ !cancelled() }}
@@ -115,7 +111,7 @@ jobs:
             fi
           fi
           echo "compare=$compare" >> "$GITHUB_OUTPUT"
-      # Holds only the oasdiff binary we build; its hash is checked after every restore, so a poisoned entry cannot run.
+      # SECURITY: the cache holds only the oasdiff binary we build; its hash is checked on restore.
       - name: Cache the oasdiff build
         id: oas-cache
         if: ${{ !cancelled() && steps.oas.outputs.compare == 'true' }}
@@ -123,7 +119,7 @@ jobs:
         with:
           path: ${{ runner.temp }}/oasdiff-bin
           key: oasdiff-${{ env.OASDIFF_VERSION }}-go${{ env.OASDIFF_GO_VERSION }}-linux-amd64
-      # Built from source: the release binary ships a Go stdlib CVE. Output hash pinned.
+      # WHY: built from source because the release binary ships a Go stdlib CVE; hash pinned.
       - name: API breaking changes
         id: oasdiff
         if: ${{ !cancelled() && steps.oas.outputs.compare == 'true' }}
@@ -135,7 +131,7 @@ jobs:
               go install -trimpath "github.com/oasdiff/oasdiff@v${OASDIFF_VERSION}"
             echo "${OASDIFF_SHA256}  $bin" | sha256sum --check -
           fi
-          # Empty config and our own severity file: a .oasdiff.* file in the checkout is never read. External refs are refused.
+          # SECURITY: empty config and our own severity file; a checkout .oasdiff.* is never read.
           : > "$RUNNER_TEMP/oasdiff.config.yaml"
           echo 'response-optional-property-removed err' > "$RUNNER_TEMP/oasdiff.severity"
           cd "$RUNNER_TEMP"
@@ -143,8 +139,8 @@ jobs:
             echo "::error title=Breaking API change::oasdiff found a breaking change under /api/v1 (listed above). Installed copies of the web app still call the old contract: make the change additive, or keep the old field or operation until a new API version."
             exit 1
           fi
-      # Tells the jobs below whether the checks that must block them passed. Scanner settings is left out on purpose: when it is the only red step, the code and scanner jobs still run and the gate stays red.
-      # The title step runs after this one; the job output adds its result.
+      # WHY: scanner settings is left out on purpose; alone it keeps the other jobs running.
+      # WHY: the title step runs after this one; the job output adds its result.
       - name: Blocking checks passed
         id: early
         if: ${{ !cancelled() }}
@@ -160,13 +156,12 @@ jobs:
             case "$o" in success|skipped) ;; *) ok=false ;; esac
           done
           echo "ok=$ok" >> "$GITHUB_OUTPUT"
-      # Fails on added or edited scanner settings, on added inline suppressions and on a changed pnpm version or setting in a package.json; the owner merges over it when justified. Docs and the owner-only workflow are skipped because they only describe the markers.
-      # A deleted file is not flagged, except under tooling/semgrep/: removing an ignore or config only tightens a scan. pnpm-workspace.yaml is compared with its packages list removed, so any other change is flagged.
-      # Pull requests only: the owner can merge over it, and on a push it would block every publish after that merge.
+      # WHY: flags scanner settings, suppressions and pnpm changes; the owner may merge over it.
+      # WHY: pull requests only; on a push it would block every publish after a merge-over.
       - name: Scanner settings
         if: ${{ !cancelled() && github.event_name == 'pull_request' }}
         run: |
-          # Separate files so a failing git diff stops the step. Only file names, field names and line numbers are printed, never values or line contents.
+          # WHY: separate files, so a failing git diff stops the step; only names and lines print.
           d=(git -c core.quotepath=off diff --no-renames --diff-filter=d "$BASE...$HEAD")
           "${d[@]}" -z --name-only > "$RUNNER_TEMP/scanner.names"
           "${d[@]}" -U0 --text --no-textconv --no-ext-diff -- . ':!*.md' ':!.github/workflows/ci.yml' ':!.claude/proposed/ci.yml' > "$RUNNER_TEMP/scanner.diff"
@@ -180,12 +175,12 @@ jobs:
             esac
             files+="  $(printf %s "$f" | tr -d '[:cntrl:]')"$'\n'
           done < "$RUNNER_TEMP/scanner.names"
-          # The local Semgrep rules are read from the base, so a merged edit or deletion becomes the next base: flag every change under tooling/semgrep/, deletions included.
+          # WHY: local rules are read from the base, so a merged edit becomes the next base.
           git -c core.quotepath=off diff --no-renames -z --name-only "$BASE...$HEAD" -- tooling/semgrep/ > "$RUNNER_TEMP/semgrep.names"
           while IFS= read -r -d '' f; do
             files+="  $(printf %s "$f" | tr -d '[:cntrl:]')"$'\n'
           done < "$RUNNER_TEMP/semgrep.names"
-          # A package.json that changes packageManager, devEngines, pnpm or resolutions is named with the field. A new file counts as changed from nothing; one that is not valid JSON, or not an object, is named without a field.
+          # WHY: names a package.json that changes packageManager, devEngines, pnpm or resolutions.
           pkg=
           mb=$(git merge-base "$BASE" "$HEAD")
           while IFS= read -r -d '' f; do
@@ -211,8 +206,7 @@ jobs:
             echo "::error title=Scanner settings::This pull request changes scanner settings, the pnpm version or its settings, or adds a suppression (listed above). The code and scanner jobs still run. Remove it, or the owner merges over this check when it is justified."
             exit 1
           fi
-      # The script comes from the PR; the template is read from the base commit, so a PR cannot loosen the template it is checked against.
-      # Title and body reach the script only through env, never inside the run text. Pull requests only: a push has no title.
+      # SECURITY: the template is read from the base; title and body reach the script only by env.
       - name: PR title and description
         id: title
         if: ${{ !cancelled() && github.event_name == 'pull_request' }}
@@ -245,7 +239,7 @@ jobs:
     env:
       DATABASE_URL: postgres://postgres:postgres@localhost:5432/gaugeprep
     steps:
-      # Full history so the changed-lines step can find the merge base with the pull request's base commit.
+      # WHY: full history so the changed-lines step finds the merge base with the PR's base commit.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
@@ -258,7 +252,7 @@ jobs:
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
-      # The pnpm version comes from the packageManager field in package.json.
+      # WHY: the pnpm version comes from the packageManager field in package.json.
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
@@ -267,14 +261,14 @@ jobs:
       - run: uv sync --frozen
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
-      # Pull requests only: the 90% threshold judges the lines one pull request adds, and a push has no such diff.
+      # WHY: the 90% threshold judges the lines one PR adds, and a push has no such diff.
       - name: Changed backend lines are covered
         if: ${{ github.event_name == 'pull_request' }}
         run: |
           uv run coverage json --rcfile=apps/backend/pyproject.toml -o "$RUNNER_TEMP/coverage.json"
           uv run python tooling/ci/changed_lines_coverage/changed_lines_coverage.py --base "$BASE" --coverage "$RUNNER_TEMP/coverage.json" --threshold 90
 
-  # Not part of check: it runs only when an image input changed, and a skipped job counts as passing for merge.
+  # WHY: not part of check; it runs only when an image input changed, and a skip counts as passing.
   backend-image:
     name: backend image
     needs: gate
@@ -288,7 +282,7 @@ jobs:
       - name: Build the backend image
         run: docker build -f infra/docker/backend.Dockerfile .
 
-  # Runs on every pull request, docs included.
+  # WHY: runs on every pull request, docs included.
   semgrep:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
@@ -301,8 +295,8 @@ jobs:
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
-      # Semgrep reads .semgrepignore in every folder, so drop all of them and restore only those at the base commit.
-      # On a push the base is the commit before it, or its first parent; with neither, none are restored and the scan is stricter.
+      # SECURITY: Semgrep reads .semgrepignore in every folder; drop all and restore the base's.
+      # WHY: on a push the base is the commit before it or its first parent; else none return.
       - name: Use the base ignore files
         run: |
           if [ "$GITHUB_EVENT_NAME" != pull_request ] && ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then BASE=$(git rev-parse -q --verify "$HEAD^" || true); fi
@@ -313,9 +307,8 @@ jobs:
               git show "$BASE:$f" > "$f"
             done
           fi
-      # Rules are the community repo pinned to a commit (Semgrep Rules License v1.0 allows internal CI use); no login, metrics off.
-      # Our own rules (tooling/semgrep/*.yaml) are read from the base commit, so a PR cannot weaken them. The first PR that adds them is scanned without them; the test step below covers it.
-      # The test snippets hold the unsafe calls on purpose, so that one file is excluded from the scan.
+      # WHY: community rules pinned to a commit (Semgrep Rules License v1.0 allows CI); metrics off.
+      # SECURITY: our rules in tooling/semgrep come from the base, so a PR cannot weaken them.
       - name: Semgrep
         env:
           RULES_SHA: 16b9e6d45f10649f6a531ec4838ed9924372c3bc
@@ -339,7 +332,7 @@ jobs:
           fi
           uvx --no-config --exclude-newer 2026-10-30 semgrep==1.183.0 scan --max-target-bytes 0 --metrics=off --disable-nosem --error --severity ERROR --quiet --exclude .claude/skills/semgrep/scripts --exclude .claude/skills/webapp-testing/scripts/with_server.py --exclude tooling/semgrep/request-eval-exec.py \
             "${args[@]}" .
-      # Runs this pull request's rules against its own snippets, so an edited rule that stops matching fails here. The scan above still uses the base copy.
+      # WHY: runs this PR's own rules against its snippets; the scan above still uses the base copy.
       - name: Local rule tests
         run: |
           if [ -d tooling/semgrep ]; then
@@ -361,7 +354,7 @@ jobs:
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
-      # pip-audit has no severity filter, so any known advisory fails this check.
+      # WHY: pip-audit has no severity filter, so any known advisory fails this check.
       - name: Audit the uv lockfile
         run: |
           uv export --no-config --frozen --no-hashes --no-emit-project --no-emit-workspace -o "$RUNNER_TEMP/requirements.txt"
@@ -376,7 +369,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      # Audit a rebuilt copy: the lockfile (parsed with yq, top-level fields allowlisted) plus fresh package.json and workspace files, so no PR setting, hook or .npmrc is read.
+      # SECURITY: audit a rebuilt copy (allowlisted lockfile fields, fresh manifests).
       - name: Rebuild a clean audit directory
         run: |
           set -euo pipefail
@@ -391,7 +384,7 @@ jobs:
             mv "$d/$dir/package.json.tmp" "$d/$dir/package.json"
             if [ "$dir" != . ]; then printf '  - "%s"\n' "$dir" >> "$d/pnpm-workspace.yaml"; fi
           done
-      # The pnpm version comes from the packageManager field in package.json.
+      # WHY: the pnpm version comes from the packageManager field in package.json.
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
@@ -413,7 +406,7 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      # Trivy ignore files and config come from the base commit, so a PR cannot switch off its own scan. On a push the base is the commit before it, or its first parent; with neither, none are used.
+      # SECURITY: Trivy ignore files and config come from the base, not the PR.
       - name: Use the base Trivy ignore files
         run: |
           if [ "$GITHUB_EVENT_NAME" != pull_request ] && ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then BASE=$(git rev-parse -q --verify "$HEAD^" || true); fi
@@ -421,9 +414,9 @@ jobs:
             rm -f "$f"
             if [ -n "$BASE" ]; then git show "$BASE:$f" > "$f" 2>/dev/null || rm -f "$f"; fi
           done
-          # Rewrite the markers so Trivy no longer reads them as ignores. git grep exits 1 on no match, absorbed by || true.
+          # WHY: rewrite markers so Trivy reads no ignores; git grep exits 1 on no match.
           { git grep -lzE '(trivy|tfsec):(ignore|exp)' || true; } | xargs -0 -r sed -i -E 's/(trivy|tfsec):(ignore|exp)/\1-\2/g'
-      # The Apache-2.0 binary, not aquasecurity/trivy-action.
+      # WHY: the Apache-2.0 binary, not aquasecurity/trivy-action.
       - name: Install Trivy
         run: |
           curl -sSfL -o "$RUNNER_TEMP/trivy.tgz" "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz"
