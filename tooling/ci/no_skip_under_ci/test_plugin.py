@@ -23,7 +23,8 @@ def _run(
     if ci is not None:
         env["CI"] = ci
     env["PYTHONPATH"] = str(HERE.parent)
-    return subprocess.run(
+    # WHY: fixed argv list from our own interpreter; no shell and no external input.
+    return subprocess.run(  # nosemgrep: dangerous-subprocess-use-audit
         [
             sys.executable,
             "-m",
