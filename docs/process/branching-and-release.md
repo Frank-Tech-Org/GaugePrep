@@ -167,24 +167,46 @@ For an urgent production bug: a Bug ticket with priority Urgent and the `hotfix`
 | `stage` | PR required, CI green, no direct pushes, only PRs from `develop` and `main` |
 | `develop` | PR required, CI green, owner's approval, squash merge only (merge commit for a back-merge from `main`); the develop alarm checks it after the fact |
 
+Status: the helper-script, alias and `bash -c` guard rules, the wider edit denials and the develop alarm are staged in `.claude/proposed/` and take effect when the owner runs the installer there. Until then `develop` has the older guard and no develop alarm. Delete this paragraph once the installer has run and its files are merged.
+
 GitHub doesn't enforce these on the free plan for a private organisation repository: the API returns 403, and we stay on the free plan. The protection is built from parts:
 
 - Agents are held by the deny list in `.claude/settings.json` and the guard hook: no raw push, `gh pr merge`, tag, release, `--amend` or `reset --hard`. They push only with `.claude/scripts/push.sh`, and `/lm-next` merges only with `.claude/scripts/merge.sh`.
 - A write-access account can still change `main` or `stage`. A workflow on every push to `main` alerts the owner when the commit did not come from an allowed PR. The production deploy runs only from a tag, and the workflow checks that the owner pushed it, so a bad change on `main` cannot reach users.
 - A second workflow, the develop alarm, does the same for `develop` and `stage`. A push opens an issue assigned to the owner unless the commit is the merge commit of a merged PR. Allowed into `develop`: from `feature/*` or `chore/*`, merged by the owner or carrying the owner's approval of the PR's last commit (what `merge.sh` requires), and from `main`, merged by the owner. Allowed into `stage`: from `develop` or `main`, merged by the owner. A forced push, a deleted branch, and any commit that changes a workflow file without the owner's merge always raise it. `[skip ci]` can skip the push run, so a scheduled run every hour rechecks the last two hours of pushes (taken from GitHub's push log, not commit dates) and scheduled runs ignore `[skip ci]`. It opens one issue per commit, even if the issue was closed. To prove it fires, run it by hand with a commit that is not a merged PR: `gh workflow run develop-alarm.yml -f branch=develop -f sha=<commit>`. The agents' token lacks the workflow scope, so GitHub refuses a push that edits or deletes the alarm file. It detects; it does not block.
 - Two accounts, both organisation owners. Agents work as `KefouegFrank`, the owner's main account, so the commits count on it. The owner approves as `frankkefoueg`, the only account used for `stage`, `main`, tags and releases. GitHub won't let the account that opened a PR approve it, so the approval on a `develop` PR always comes from the other account, and `merge.sh` checks it.
-- Because the agents' account is an owner, its only GitHub-side limit is its token: on the agents' machine it is logged in to `gh` with the fine-grained token below and nothing broader.
+- Because the agents' account is an owner, its only GitHub-side limit is its token: on the agents' machine it is logged in to `gh` with a token. Today that is a classic token with the scopes `gist`, `project`, `read:org` and `repo`; the fine-grained token below is the target.
 
 Setting up the agents' account:
 
 1. In the organisation's Settings → Personal access tokens, fine-grained tokens are allowed (approval required is fine).
 2. Signed in as that account, create a fine-grained token: resource owner `Frank-Tech-Org`, only `GaugePrep`, 90 days. Read and write: Contents, Pull requests, Issues. Read: Metadata, Actions, Commit statuses (fine-grained tokens can't have Checks, so tools read CI from Actions runs). Leave Workflows out, so the account can't push workflow changes. Organisation permission Projects: read and write.
 3. Approve the token request as organisation owner if GitHub asks.
-4. On the machine running the agents: `gh auth logout -u <account>` for any broader login of that account, then `gh auth login --with-token` (paste the token), `gh auth setup-git` and `gh auth status`. The owner approves in the browser as `frankkefoueg`, and switches `gh` to it with `gh auth switch` only to merge into `stage` or `main`, tag or release.
+4. On the machine running the agents: `gh auth logout -u <account>` for any broader login of that account, then `gh auth login --with-token` (paste the token), `gh auth setup-git` and `gh auth status`. The owner account `frankkefoueg` is never logged in to `gh` on this machine: the owner approves, merges into `stage` or `main`, tags and releases in the browser or as another OS user.
 
 Files that control these limits change only by the owner's hand: the guard hook and the other hooks, `.claude/settings*`, every script in `.claude/scripts/` (`push.sh`, `merge.sh`, `board.sh`, `env-check.sh`), the git hooks in `.husky/`, and `.github/workflows/`. The agents' edit tools are denied on them, the guard refuses shell writes to them, and `merge.sh` refuses a PR that touches them, so the owner merges it. A script the agents run without a prompt must not be one they can edit, or a push could be hidden inside it.
 
-The guard is a speed bump; the develop alarm is the net. It reads through `bash -c`, `sh -c`, `eval`, `env`, `sudo`, `timeout`, `xargs`, `find -exec`, `$(...)`, newline-separated commands, a full path to `git`, git aliases (defined or already in the config) and `git -c` settings that can run commands. Known gaps: a script, test file or package script the agents write and then run goes unprompted, as does a `core.hooksPath` in the owner's global git config; split-string tricks such as `$(echo git) push` are not caught.
+The guard is a speed bump; the develop alarm is the net. It reads through `bash -c`, `sh -c`, `eval`, `env`, `sudo`, `timeout`, `xargs`, `find -exec`, `$(...)`, newline-separated commands, a full path to `git`, git aliases and `git -c` settings that can run commands. It refuses:
+
+- git options and environment variables that name a program to run, including abbreviated ones such as `--exe=`, and exported editor, pager and `GIT_*` variables
+- text piped or fed into a shell, function and `trap` bodies, `git-*` programs, `git subtree`, and `uv run`, `pnpm exec` or `doppler run` wrapping git
+- GitHub calls that read a query from a file, switch workflows off, change repository settings or send a GraphQL mutation, and `curl` or `wget` writes to GitHub, including combined flags such as `-sXPUT`
+- `git credential`, `gh auth` printing a token, writes under `~/.config/gh`, any `secret-tool` or keyring access, `cd` it cannot follow, and writes over a whole folder that holds owner-only files
+
+The guard is a tripwire against ordinary and accidental pushes, not a sandbox, and the alarm is the backstop. Accepted gaps:
+
+- a script, test file or package script the agents write and then run goes unprompted, as does a `core.hooksPath` in the owner's global git config
+- split-string tricks such as `$(echo git) push`, python-built command strings and a helper path assembled from pieces
+- wrappers such as `strace`, `unbuffer`, `parallel` and `make -f -`
+- `gh repo sync --force` from a fork; the alarm still flags the commit
+- `gh run cancel` on an alarm run; the hourly recheck covers it
+- `gh variable delete` and `gh secret delete`
+- uppercase API paths; GitHub answers them with a 404, so they do nothing
+- reading the `gh` hosts file
+
+The owner account is not logged in to `gh` on the machine running the agents, so nothing there holds its login. The refusals on `~/.config/gh` and the keyring stay as the guard against someone logging it back in. Step 4 above says the same.
+
+Open gap: the agents' account token is broader than needed until the owner replaces it with a fine-grained token limited to this repository; any shell past the guard could use it for repository-admin calls.
 
 ## Weekly demo and scorecards
 
