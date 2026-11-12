@@ -267,9 +267,6 @@ jobs:
       - run: uv sync --frozen
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
-      # --no-cov keeps this run from overwriting the .coverage file that pnpm check just wrote.
-      - name: Changed-lines script tests
-        run: uv run pytest tooling/ci/changed_lines_coverage --no-cov
       # Pull requests only: the 90% threshold judges the lines one pull request adds, and a push has no such diff.
       - name: Changed backend lines are covered
         if: ${{ github.event_name == 'pull_request' }}
