@@ -15,6 +15,6 @@ def test_openapi_document_is_served(client: Client) -> None:
 def test_committed_openapi_file_matches_the_api(client: Client) -> None:
     served = client.get("/api/v1/openapi.json").json()
     assert json.loads(COMMITTED.read_text()) == served, (
-        "run: uv run python backend/manage.py export_openapi_schema "
-        "--api config.api.api --indent 2 --output backend/openapi.json"
+        "run: uv run python apps/backend/manage.py export_openapi_schema "
+        "--api config.api.api --indent 2 --output apps/backend/openapi.json"
     )

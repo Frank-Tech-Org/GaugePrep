@@ -9,7 +9,7 @@ dependencies = ["examcore", "gaugeprep-backend", "gaugeprep-voice"]
 package = false
 
 [tool.uv.workspace]
-members = ["backend", "packages/examcore", "voice"]
+members = ["apps/backend", "packages/examcore", "apps/voice"]
 
 [tool.uv.sources]
 examcore = { workspace = true }
@@ -31,68 +31,27 @@ dev = [
 ]
 
 [tool.ruff]
-target-version = "py314"
-extend-exclude = [".venv"]
-
-[tool.ruff.lint]
-select = ["E", "F", "I", "B", "UP"]
+extend = "tooling/python/ruff.toml"
 
 [tool.mypy]
 python_version = "3.14"
 strict = true
-files = ["packages/examcore/src", "backend", "voice", "tools"]
+files = ["packages/examcore/src", "apps/backend", "apps/voice", "tooling/ci"]
 explicit_package_bases = true
-mypy_path = ["packages/examcore/src", "backend", "tools/changed_lines_coverage", "tools"]
+mypy_path = ["packages/examcore/src", "apps/backend", "tooling/ci/changed_lines_coverage", "tooling/ci"]
 plugins = ["mypy_django_plugin.main"]
 
 [tool.django-stubs]
 django_settings_module = "config.settings.test"
 
 [tool.pytest.ini_options]
-testpaths = ["backend", "packages", "voice", "tools"]
-pythonpath = ["backend", "tools"]
+testpaths = ["apps/backend", "packages", "apps/voice"]
+pythonpath = ["apps/backend", "tooling/ci"]
 # --ds beats a DJANGO_SETTINGS_MODULE left in the shell, so tests always use the test settings.
-addopts = "--ds=config.settings.test -p conftest --strict-markers -rsx --cov --cov-branch --cov-report="
+addopts = "--ds=config.settings.test -p conftest -p no_skip_under_ci.plugin --strict-markers -rsx --cov --cov-branch --cov-report="
 timeout = 30
 
 [tool.coverage.run]
-source = ["packages/examcore/src/examcore", "backend"]
+source = ["packages/examcore/src/examcore", "apps/backend"]
 patch = ["subprocess"]
-omit = ["*/backend/tests/*", "*/conftest.py", "*/manage.py", "*/migrations/*"]
-
-[tool.importlinter]
-root_packages = ["examcore", "modules"]
-include_external_packages = true
-
-[[tool.importlinter.contracts]]
-name = "Modules import only each other's public"
-type = "independence"
-modules = [
-    "modules.identity",
-    "modules.learner",
-    "modules.curriculum",
-    "modules.content",
-    "modules.exammodels",
-    "modules.practice",
-    "modules.simulation",
-    "modules.assessment",
-    "modules.prediction",
-    "modules.calibration",
-    "modules.billing",
-    "modules.engagement",
-    "modules.reporting",
-    "modules.admin",
-]
-ignore_imports = ["modules.** -> modules.*.public"]
-unmatched_ignore_imports_alerting = "none"
-
-[[tool.importlinter.contracts]]
-name = "examcore never imports Django"
-type = "forbidden"
-source_modules = ["examcore"]
-forbidden_modules = ["django"]
-
-[[tool.importlinter.contracts]]
-name = "No import cycles between modules"
-type = "acyclic_siblings"
-ancestors = ["modules"]
+omit = ["*/apps/backend/tests/*", "*/conftest.py", "*/manage.py", "*/migrations/*"]

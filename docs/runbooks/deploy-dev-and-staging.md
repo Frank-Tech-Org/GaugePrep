@@ -90,8 +90,8 @@ To check the safety net, deploy a scratch commit whose migration raises:
 
 ```bash
 git switch -c scratch/failing-migration
-mkdir -p backend/modules/learner/migrations && touch backend/modules/learner/migrations/__init__.py
-printf 'from django.db import migrations\n\n\ndef boom(apps, schema_editor):\n    raise RuntimeError("deliberate failure")\n\n\nclass Migration(migrations.Migration):\n    dependencies = []\n    operations = [migrations.RunPython(boom)]\n' > backend/modules/learner/migrations/0001_fail.py
+mkdir -p apps/backend/modules/learner/migrations && touch apps/backend/modules/learner/migrations/__init__.py
+printf 'from django.db import migrations\n\n\ndef boom(apps, schema_editor):\n    raise RuntimeError("deliberate failure")\n\n\nclass Migration(migrations.Migration):\n    dependencies = []\n    operations = [migrations.RunPython(boom)]\n' > apps/backend/modules/learner/migrations/0001_fail.py
 git add backend && git commit -m "test(api): failing migration" --no-verify
 kamal deploy -c infra/kamal/deploy.yml -d staging
 git switch - && git branch -D scratch/failing-migration

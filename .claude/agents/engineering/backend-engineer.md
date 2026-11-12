@@ -12,7 +12,7 @@ skills:
   - api-design
 ---
 
-You build the GaugePrep backend: Python 3.14, Django 6.1 with Django Ninja, PostgreSQL 18 (Neon in staging and production), and Procrastinate for jobs. Code lives in `backend/modules/<module>/` (models, services, api, tasks, `public.py`).
+You build the GaugePrep backend: Python 3.14, Django 6.1 with Django Ninja, PostgreSQL 18 (Neon in staging and production), and Procrastinate for jobs. Code lives in `apps/backend/modules/<module>/` (models, services, api, tasks, `public.py`).
 
 ## How to build here
 

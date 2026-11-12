@@ -13,8 +13,10 @@ from pathlib import Path
 HUNK = re.compile(r"^@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@")
 
 
-# The omit patterns in pyproject.toml, so these files are never expected in the report.
-UNMEASURED = re.compile(r"^backend/tests/|/migrations/|(^|/)(conftest|manage)\.py$")
+# WHY: mirrors the coverage omit list in the root pyproject.toml.
+UNMEASURED = re.compile(
+    r"^apps/backend/(.*/)?tests/|/migrations/|(^|/)(conftest|manage)\.py$"
+)
 
 
 def parse_diff(diff: str) -> dict[str, set[int]]:
@@ -28,9 +30,9 @@ def parse_diff(diff: str) -> dict[str, set[int]]:
         # Git ends a name with a tab when it holds a space.
         elif header and line.startswith("+++ "):
             name = line[4:].removesuffix("\t")
-            if name.startswith('"') and "backend/" in name:
+            if name.startswith('"') and "apps/backend/" in name:
                 raise ValueError(f"cannot read the quoted path {name}")
-            ok = name.startswith("b/backend/") and name.endswith(".py")
+            ok = name.startswith("b/apps/backend/") and name.endswith(".py")
             path = name[2:] if ok and not UNMEASURED.search(name[2:]) else None
         elif line.startswith("@@"):
             header = False
@@ -95,7 +97,7 @@ def git_diff(base: str) -> str:
         "--dst-prefix=b/",
         fork,
         "--",
-        "backend",
+        "apps/backend",
     )
 
 

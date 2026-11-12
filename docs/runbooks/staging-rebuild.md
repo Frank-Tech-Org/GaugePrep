@@ -8,13 +8,13 @@ The Oracle Always Free ARM server is lost, reclaimed or changed by Oracle, or yo
 
 1. Create an Ubuntu 24.04 LTS arm64 server (Oracle: Ampere A1, 2 OCPU, 12 GB; AWS: t4g.small, 30 GB gp3, the imported `gaugeprep-deploy` key pair), with a public IP and your admin SSH key. In the provider network rules allow inbound TCP 22, 80 and 443 only (Oracle: the VCN security list; AWS: the instance's security group).
 2. Note the start time. Log in with the admin key (Oracle: user `ubuntu`, not root).
-3. Get the script onto the server: `git clone` the repository, or `scp infra/staging/bootstrap.sh`.
+3. Get the script onto the server: `git clone` the repository, or `scp infra/server/bootstrap.sh`.
 4. Preview, then apply (the deploy public key is `ssh-keygen -y -f <deploy private key>`; `SERVER_DEPLOY_USER` is optional and defaults to `deploy`):
 
    ```bash
    export SERVER_DEPLOY_PUBLIC_KEY="ssh-ed25519 AAAA..."
-   DRY_RUN=1 sudo --preserve-env=SERVER_DEPLOY_PUBLIC_KEY,SERVER_DEPLOY_USER,DRY_RUN ./infra/staging/bootstrap.sh
-   sudo --preserve-env=SERVER_DEPLOY_PUBLIC_KEY,SERVER_DEPLOY_USER ./infra/staging/bootstrap.sh
+   DRY_RUN=1 sudo --preserve-env=SERVER_DEPLOY_PUBLIC_KEY,SERVER_DEPLOY_USER,DRY_RUN ./infra/server/bootstrap.sh
+   sudo --preserve-env=SERVER_DEPLOY_PUBLIC_KEY,SERVER_DEPLOY_USER ./infra/server/bootstrap.sh
    ```
 
 5. Run it a second time. It must print `no changes` and exit 0.

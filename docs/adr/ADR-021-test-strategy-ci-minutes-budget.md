@@ -17,9 +17,9 @@ Measured on 30 October to 2 November 2026: 42 `ci.yml` runs for 21 PRs, about 2 
 |---|---|---|---|
 | `examcore` | pytest and Hypothesis property tests | Every exam rule: fixed answers from each table of the exam specification, plus properties (bounds, monotonicity, round trips) | Every PR with code |
 | Backend | pytest-django against PostgreSQL 18, never SQLite | Module services and views, idempotency, append-only enforcement, authorisation; every endpoint has success, not-found and other-learner-refused tests | Every PR with code |
-| API contract | Schemathesis, in-process, against `backend/openapi.json` | Documented statuses only, no 5xx on bad input, responses match their schemas | Every PR with code |
+| API contract | Schemathesis, in-process, against `apps/backend/openapi.json` | Documented statuses only, no 5xx on bad input, responses match their schemas | Every PR with code |
 | Web | Vitest and React Testing Library | Components and hooks, as the learner uses them | Every PR with code |
-| End to end, smoke | Playwright at 375 px with slow-3G throttling, axe-core | About 5 happy-path flows; zero serious or critical axe-core violations | Every PR touching `apps/` or `backend/` |
+| End to end, smoke | Playwright at 375 px with slow-3G throttling, axe-core | About 5 happy-path flows; zero serious or critical axe-core violations | Every PR touching `apps/` |
 | End to end, full | Playwright at 375 px and 1440 px with slow-3G throttling, axe-core | All flows, plus a server error, offline, session expiry, another learner's URL refused | The `develop` to `stage` promotion PR |
 | Mutation | mutmut on `examcore` and scoring code | Mutation score at least 80% | The `develop` to `stage` promotion PR |
 | Scoring recovery | pytest on simulated data | Full recovery and reference comparison (a small set runs with the backend tests) | The `develop` to `stage` promotion PR |
@@ -48,7 +48,7 @@ Two changes to `ci.yml` keep the budget: the `changes`, `pr-title` and `gitleaks
 
 Assumptions:
 
-- 100 PRs a month at 2 runs each; 85% of runs touch code; 60% touch `apps/` or `backend/`.
+- 100 PRs a month at 2 runs each; 85% of runs touch code; 60% touch `apps/`.
 - 3 promotions a month (sprint end plus feature releases), each run twice.
 - 70 deploy pushes a month: about 65 merges into `develop` and 5 into `stage`, 4 minutes each, 280 minutes.
 - Measured: `gate` and `check` per-run minutes (the current jobs). Estimated, since no Playwright, mutmut or deploy workflow exists yet: smoke 3 minutes (about 5 flows on 2 workers, with the browser install cached); full end to end 25 (about 60 tests, all flows at two widths, at about 40 s each on 2 workers, plus build and install); mutmut with scoring recovery 25; deploy 4 (ARM image build on a cached layer, Kamal switch). Each estimate becomes the job or step `timeout-minutes`, so a run never bills more than its line.

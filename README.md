@@ -7,12 +7,11 @@ Exam preparation platform. This repository holds the web app, the backend, the v
 | Folder              | What it is                                                                            |
 | ------------------- | ------------------------------------------------------------------------------------- |
 | `apps/web`          | Next.js progressive web app (pnpm workspace)                                          |
-| `backend`           | Django application; each module is a package under `backend/modules/`                 |
+| `apps/backend`      | Django application; each module is a package under `apps/backend/modules/`            |
+| `apps/voice`        | Voice examiner worker                                                                 |
 | `packages/examcore` | Exam rules, rule checks and scoring maths. No Django dependency                       |
-| `voice`             | Voice examiner worker                                                                 |
-| `infra`             | `docker` images, `kamal` deploy configs, `staging` server rebuild script              |
-| `tools`             | Our own checks run by CI (changed-lines coverage, grader release check)               |
-| `semgrep`           | Custom Semgrep rules for the pull request scan                                        |
+| `tooling`           | Shared lint and type configs, our own CI checks with their tests, Semgrep rules       |
+| `infra`             | `docker` images, `kamal` deploy configs, `server` rebuild script                      |
 | `docs`              | Product, architecture, decision records, exam specs, content guide, process, runbooks |
 | `.github`           | CI workflows, their helper scripts, issue and PR templates                            |
 | `.kamal`            | Kamal secrets files; they read values from the deploying shell, never hold them       |
@@ -46,7 +45,7 @@ curl -i http://localhost:8000/api/v1/health      # 200 {"status": "ok", "databas
 docker compose down                              # add -v to drop the database volume
 ```
 
-To run Django on your machine against the compose database, start only `db`, then `uv run python backend/manage.py migrate` and `runserver`.
+To run Django on your machine against the compose database, start only `db`, then `uv run python apps/backend/manage.py migrate` and `runserver`.
 
 Unset settings fall back to safe local defaults. Hosted settings refuse to start without `DJANGO_SECRET_KEY`, `DJANGO_ALLOWED_HOSTS` and `DATABASE_URL`.
 

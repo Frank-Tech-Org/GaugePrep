@@ -1,0 +1,36 @@
+[tool.importlinter]
+root_packages = ["examcore", "modules"]
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "Modules import only each other's public"
+type = "independence"
+modules = [
+    "modules.identity",
+    "modules.learner",
+    "modules.curriculum",
+    "modules.content",
+    "modules.exammodels",
+    "modules.practice",
+    "modules.simulation",
+    "modules.assessment",
+    "modules.prediction",
+    "modules.calibration",
+    "modules.billing",
+    "modules.engagement",
+    "modules.reporting",
+    "modules.admin",
+]
+ignore_imports = ["modules.** -> modules.*.public"]
+unmatched_ignore_imports_alerting = "none"
+
+[[tool.importlinter.contracts]]
+name = "examcore never imports Django"
+type = "forbidden"
+source_modules = ["examcore"]
+forbidden_modules = ["django"]
+
+[[tool.importlinter.contracts]]
+name = "No import cycles between modules"
+type = "acyclic_siblings"
+ancestors = ["modules"]

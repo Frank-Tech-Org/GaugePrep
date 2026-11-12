@@ -6,8 +6,8 @@ on:
   pull_request:
     branches: [develop, stage, main]
     paths:
-      - "backend/modules/assessment/grader/**"
-      - "tools/grader_check/**"
+      - "apps/backend/modules/assessment/grader/**"
+      - "tooling/ci/grader_check/**"
       - ".github/workflows/grader-release-check.yml"
   # A manual run can pick the deliberately failing placeholder set to show the check goes red.
   workflow_dispatch:
@@ -39,10 +39,10 @@ jobs:
       - name: Run the release check
         env:
           ANCHOR_SET: ${{ inputs.anchor_set || 'placeholder' }}
-          PYTHONPATH: tools
+          PYTHONPATH: tooling/ci
         run: |
           uv run --no-project --python 3.14 python -m grader_check \
-            --anchors "tools/grader_check/anchors/$ANCHOR_SET" \
+            --anchors "tooling/ci/grader_check/anchors/$ANCHOR_SET" \
             --report "$RUNNER_TEMP/grader-check-report.json"
       - name: Upload the report
         if: ${{ !cancelled() }}
