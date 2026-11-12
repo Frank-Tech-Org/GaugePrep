@@ -167,8 +167,6 @@ For an urgent production bug: a Bug ticket with priority Urgent and the `hotfix`
 | `stage` | PR required, CI green, no direct pushes, only PRs from `develop` and `main` |
 | `develop` | PR required, CI green, owner's approval, squash merge only (merge commit for a back-merge from `main`); the develop alarm checks it after the fact |
 
-Status: the helper-script, alias and `bash -c` guard rules, the wider edit denials and the develop alarm are staged in `.claude/proposed/` and take effect when the owner runs the installer there. Until then `develop` has the older guard and no develop alarm. Delete this paragraph once the installer has run and its files are merged.
-
 GitHub doesn't enforce these on the free plan for a private organisation repository: the API returns 403, and we stay on the free plan. The protection is built from parts:
 
 - Agents are held by the deny list in `.claude/settings.json` and the guard hook: no raw push, `gh pr merge`, tag, release, `--amend` or `reset --hard`. They push only with `.claude/scripts/push.sh`, and `/lm-next` merges only with `.claude/scripts/merge.sh`.
