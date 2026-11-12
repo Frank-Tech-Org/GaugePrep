@@ -12,6 +12,9 @@ def _fail_skips(report: pytest.TestReport | pytest.CollectReport, what: str) -> 
     if report.outcome == "passed" and not hasattr(report, "wasxfail"):
         return
     kind = "xfail" if hasattr(report, "wasxfail") else "skipped"
+    # WHY: pytest does not count a failed report that still carries wasxfail.
+    if hasattr(report, "wasxfail"):
+        del report.wasxfail
     report.outcome = "failed"
     report.longrepr = f"{what} is {kind}: no skips or xfail allowed under CI"
 
