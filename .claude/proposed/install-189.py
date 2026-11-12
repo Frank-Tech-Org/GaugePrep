@@ -92,7 +92,7 @@ def install() -> None:
     extra = "".join(f'      "{tool}(/{common}/**)",\n' for tool in ("Edit", "Write", "MultiEdit"))
     settings.write_text(text.replace(anchor, anchor + extra))
     json.loads(settings.read_text())
-    GIT_PATHS = ["./.husky/**", "./.git/**", f"/{common}/**", "~/.gitconfig", "~/.config/git/**"]
+    GIT_PATHS = ["./.husky/**", "./.git/**", f"/{common}/**", "~/.gitconfig", "~/.config/git/**", "~/.config/gh/**"]
     tmp = pathlib.Path(tempfile.mkdtemp())
     gitcfg = tmp / "gitconfig"
     gitcfg.write_text("[alias]\n\tzz = push\n\tyy = !git push origin HEAD:develop\n")
@@ -215,6 +215,10 @@ def install() -> None:
         ('rebase abbreviated --exe', "git rebase --exe='git push origin HEAD:develop' HEAD~1"),
         ('fetch abbreviated --upload-pac', "git fetch --upload-pac='git push origin HEAD:develop' ."),
         ('difftool abbreviated --extc', "git difftool --extc='git push origin HEAD:develop' HEAD~1"),
+        ('write gh hosts file', "echo x >> ~/.config/gh/hosts.yml"),
+        ('copy over gh config dir', "cp -r /tmp/x ~/.config/gh"),
+        ('secret-tool lookup', "secret-tool lookup service gh:github.com"),
+        ('python keyring', "python3 -c 'import keyring; print(keyring.get_password(1,2))'"),
         ('git subtree push', "git subtree push --prefix=a origin develop"),
         ('curl -sXPUT', "curl -sXPUT https://api.github.com/repos/o/r/pulls/1/merge"),
         ('curl -sX PUT', "curl -sX PUT https://api.github.com/repos/o/r/pulls/1/merge"),
@@ -381,6 +385,11 @@ def install() -> None:
     (fake / "gh").write_text(
         "#!/usr/bin/env bash\n"
         'fail() { case ",${GH_FAIL:-}," in *",$1,"*) exit 1 ;; esac; }\n'
+        "events_for() {\n"
+        '  local q="" prev=""\n'
+        '  for x in "$@"; do [ "$prev" = --jq ] && q=$x; prev=$x; done\n'
+        '  jq "$q" "$FX/events.json"\n'
+        "}\n"
         "issue_list() {\n"
         '  local a="" q="" prev=""\n'
         '  for x in "$@"; do\n'
@@ -391,6 +400,7 @@ def install() -> None:
         '  jq --arg a "$a" "[.[] | select(.author.login == \\$a)]" "$FX/issues.json" | jq "$q"\n'
         "}\n"
         'case "$*" in\n'
+        '  *"/issues/"*"/events"*) fail events; events_for "$@" ;;\n'
         '  *"/activity"*"heads/stage"*) fail activity; cat "$FX/activity-stage.json" ;;\n'
         '  *"/activity"*) fail activity; cat "$FX/activity-develop.json" ;;\n'
         '  *"/commits/"*"/pulls"*) fail pulls; cat "$FX/pulls.json" ;;\n'
@@ -540,13 +550,16 @@ def install() -> None:
         **GOOD,
     )
     def issue(title, login):
-        return [{"title": title, "author": {"login": login}}]
+        return [{"number": 7, "title": title, "author": {"login": login}}]
 
 
     TITLE = f"develop changed outside the merge step: {SHA}"
     ALARM_ISSUE = issue(TITLE, "github-actions")
     case("existing issue is not opened twice", False, 1, issues=ALARM_ISSUE, pl=[], prj=None, rv=[])
 
+    case("renamed bot issue", True, 1, issues=ALARM_ISSUE, events=[{"event": "renamed"}], pl=[], prj=None, rv=[])
+    case("bot issue with unrelated events", False, 1, issues=ALARM_ISSUE, events=[{"event": "assigned"}], pl=[], prj=None, rv=[])
+    case("events lookup fails", True, 1, issues=ALARM_ISSUE, fail="events", pl=[], prj=None, rv=[])
     case("issue with the title made by a person", True, 1, issues=issue(TITLE, "someone"), pl=[], prj=None, rv=[])
     case("bot issue whose title only holds the sha", True, 1, issues=issue(f"note {SHA}", "github-actions"), pl=[], prj=None, rv=[])
     case("pre-made issue with the sha in the title", True, 1, issues=issue(f"x {TITLE}", "someone"), pl=[], prj=None, rv=[])
@@ -677,6 +690,7 @@ def install() -> None:
         (fx / "pr.json").write_text(json.dumps(kw.get("prj")))
         (fx / "reviews.json").write_text(json.dumps(kw.get("rv", [])))
         (fx / "files.txt").write_text(kw.get("files", "backend/a.py\n"))
+        (fx / "events.json").write_text(json.dumps(kw.get("events", [])))
         (fx / "issues.json").write_text(json.dumps(kw.get("issues", [])))
         (fx / "activity-develop.json").write_text(json.dumps(kw.get("dev", [])))
         (fx / "activity-stage.json").write_text(json.dumps(kw.get("stg", [])))

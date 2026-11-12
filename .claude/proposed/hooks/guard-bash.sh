@@ -18,7 +18,7 @@ def block(why):
     sys.exit(2)
 
 # WHY: newlines split commands and only a quoted heredoc body is dropped as data.
-# The word after ">|" is kept as a written file because the lexer reads | as a pipe.
+# WHY: the word after ">|" is kept as a written file because the lexer reads | as a pipe.
 CODE_LINE = re.compile(r"\b(bash|sh|dash|zsh|ksh|python3?|node|perl|ruby|eval|xargs|source)\b")
 HEREDOC_HEAD = re.compile(r"<<-?[ \t]*(?:([\x22\x27])\\?(\w+)\1|\\(\w+))")
 
@@ -215,8 +215,8 @@ def gh_api(rest):
         block("a merge, ref, tag or release write through the GitHub API (use .claude/scripts/merge.sh)")
 
 # WHY: a hook, script or workflow an agent can edit and run unprompted can hide a push.
-# merge.sh sends PRs that touch these to the owner.
-OWNER_ONLY = re.compile(r"\.claude/(hooks/|settings(\.local)?\.json|scripts/)|\.github/workflows/|\.husky/|\.git/(config|hooks/)|\.gitconfig|\.config/git/")
+# WHY: merge.sh sends PRs that touch these to the owner.
+OWNER_ONLY = re.compile(r"\.claude/(hooks/|settings(\.local)?\.json|scripts/)|\.github/workflows/|\.husky/|\.git/(config|hooks/)|\.gitconfig|\.config/git/|\.config/gh/")
 READ_ONLY = {"cat", "head", "tail", "less", "more", "ls", "diff", "cmp", "grep", "rg", "wc", "sha256sum",
              "md5sum", "stat", "file", "echo", "printf", "jq", "test", "[", "shellcheck"}
 GIT_READ = {"diff", "log", "show", "status", "add", "commit", "ls-files", "blame", "grep"}
@@ -686,6 +686,8 @@ for w in segments:
             if (meth is not None and meth.upper() not in ("GET", "HEAD")) or re.match(
                     r"(-d|-F|-T|--data|--form|--upload-file|--post-data|--post-file|--json)", x):
                 block("writing to GitHub with curl or wget (use gh, which the other rules cover)")
+    elif prog in ("secret-tool", "keyctl", "kwallet-query", "kwalletcli") or "keyring" in prog:
+        block("reading the system keyring (it holds the gh login)")
     elif prog == "rm":
         flags = "".join(a for a in w[1:] if a.startswith("-"))
         targets = [a for a in w[1:] if not a.startswith("-")]
@@ -698,6 +700,8 @@ for w in segments:
 flat = cmd.replace("\n", " ")
 if re.search(r"(curl|wget)[^|]*\|\s*(ba|z)?sh\b", flat):
     block("piping a download into a shell")
+if re.search(r"\b(import|from) keyring\b|\bsecret-tool\b", flat):
+    block("reading the system keyring (it holds the gh login)")
 if re.search(r"\bDROP\s+(TABLE|DATABASE|SCHEMA)\b", flat, re.I):
     block("destructive SQL")
 '

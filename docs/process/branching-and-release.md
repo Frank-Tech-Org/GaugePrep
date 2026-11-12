@@ -191,7 +191,7 @@ The guard is a speed bump; the develop alarm is the net. It reads through `bash 
 - git options and environment variables that name a program to run, including abbreviated ones such as `--exe=`, and exported editor, pager and `GIT_*` variables
 - text piped or fed into a shell, function and `trap` bodies, `git-*` programs, `git subtree`, and `uv run`, `pnpm exec` or `doppler run` wrapping git
 - GitHub calls that read a query from a file, switch workflows off, change repository settings or send a GraphQL mutation, and `curl` or `wget` writes to GitHub, including combined flags such as `-sXPUT`
-- `git credential`, `gh auth` printing a token, `cd` it cannot follow, and writes over a whole folder that holds owner-only files
+- `git credential`, `gh auth` printing a token, writes under `~/.config/gh`, any `secret-tool` or keyring access, `cd` it cannot follow, and writes over a whole folder that holds owner-only files
 
 The guard is a tripwire against ordinary and accidental pushes, not a sandbox, and the alarm is the backstop. Accepted gaps:
 
@@ -200,6 +200,11 @@ The guard is a tripwire against ordinary and accidental pushes, not a sandbox, a
 - wrappers such as `strace`, `unbuffer`, `parallel` and `make -f -`
 - `gh repo sync --force` from a fork; the alarm still flags the commit
 - `gh run cancel` on an alarm run; the hourly recheck covers it
+- `gh variable delete` and `gh secret delete`
+- uppercase API paths; GitHub answers them with a 404, so they do nothing
+- reading the `gh` hosts file
+
+Open gap until the owner acts: the owner's own `gh` login on the machine running the agents. Whoever can run `gh` there holds that login, and no guard rule changes that. The owner logs it out of that machine; until then the alarm is the only net for what that login can do. Step 4 above is unchanged.
 
 ## Weekly demo and scorecards
 
