@@ -1,7 +1,8 @@
 # ADR-008: Speech recognition chosen by a measured accent test
 
-- Status: Accepted
+- Status: Superseded by [ADR-026](ADR-026-speech-recognition-corpus-benchmark.md) on 2026-11-12
 - Date: 2026-10-22
+- Replaced by: [ADR-026](ADR-026-speech-recognition-corpus-benchmark.md), speech recognition chosen by a public-corpus benchmark
 
 ## Context
 
