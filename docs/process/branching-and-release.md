@@ -57,7 +57,7 @@ Three long-lived branches, each deployed to its own environment. Code only moves
 |---|---|---|---|
 | `main` | Production. Every commit on it is a tagged release. | Owner, merge commit, from `stage` or `hotfix/*` | Production (on a version tag) |
 | `stage` | The release candidate: what is about to ship. | Owner, merge commit, from `develop` (promotion) or `main` (hotfix back-merge) | Staging (on push) |
-| `develop` | Integration branch and the repository default. Holds QA-passed work plus the tickets in QA. | `/lm-next` via `merge.sh`, squash, from `feature/*` or `chore/*` (the owner for PRs that touch the guard hook, settings, CI workflows or the push and merge scripts); owner, merge commit, from `main` after a hotfix | Dev (on push) |
+| `develop` | Integration branch and the repository default. Holds QA-passed work plus the tickets in QA. | `/lm-next` via `merge.sh`, squash, from `feature/*` or `chore/*` (the owner for PRs that touch the guard hook, settings, CI workflows, the git hooks or any helper script); owner, merge commit, from `main` after a hotfix | Dev (on push) |
 | `feature/<n>-<slug>` | One ticket of any type except a production hotfix | — | — |
 | `chore/<slug>` | Repository and workflow housekeeping, and the changelog commit of a release | — | — |
 | `hotfix/<version>-<slug>` | Urgent production fix, branched from `main` | — | Staging (manual run) |
@@ -165,12 +165,13 @@ For an urgent production bug: a Bug ticket with priority Urgent and the `hotfix`
 |---|---|
 | `main` | PR required, CI green, no direct pushes, only PRs from `stage` and `hotfix/*` |
 | `stage` | PR required, CI green, no direct pushes, only PRs from `develop` and `main` |
-| `develop` | PR required, CI green, owner's approval, squash merge only (merge commit for a back-merge from `main`) |
+| `develop` | PR required, CI green, owner's approval, squash merge only (merge commit for a back-merge from `main`); the develop alarm checks it after the fact |
 
 GitHub doesn't enforce these on the free plan for a private organisation repository: the API returns 403, and we stay on the free plan. The protection is built from parts:
 
 - Agents are held by the deny list in `.claude/settings.json` and the guard hook: no raw push, `gh pr merge`, tag, release, `--amend` or `reset --hard`. They push only with `.claude/scripts/push.sh`, and `/lm-next` merges only with `.claude/scripts/merge.sh`.
-- A write-access account can still change `main` or `stage`. A workflow on every push to either alerts the owner when the commit did not come from an allowed PR. The production deploy runs only from a tag, and the workflow checks that the owner pushed it, so a bad change on `main` cannot reach users.
+- A write-access account can still change `main` or `stage`. A workflow on every push to `main` alerts the owner when the commit did not come from an allowed PR. The production deploy runs only from a tag, and the workflow checks that the owner pushed it, so a bad change on `main` cannot reach users.
+- A second workflow, the develop alarm, does the same for `develop` and `stage`. A push opens an issue assigned to the owner unless the commit is the merge commit of a merged PR. Allowed into `develop`: from `feature/*` or `chore/*`, merged by the owner or carrying the owner's approval of the PR's last commit (what `merge.sh` requires), and from `main`, merged by the owner. Allowed into `stage`: from `develop` or `main`, merged by the owner. A forced push, a deleted branch, and any commit that changes a workflow file without the owner's merge always raise it. `[skip ci]` can skip the push run, so a scheduled run every hour rechecks the last two hours of pushes (taken from GitHub's push log, not commit dates) and scheduled runs ignore `[skip ci]`. It opens one issue per commit, even if the issue was closed. To prove it fires, run it by hand with a commit that is not a merged PR: `gh workflow run develop-alarm.yml -f branch=develop -f sha=<commit>`. The agents' token lacks the workflow scope, so GitHub refuses a push that edits or deletes the alarm file. It detects; it does not block.
 - Two accounts, both organisation owners. Agents work as `KefouegFrank`, the owner's main account, so the commits count on it. The owner approves as `frankkefoueg`, the only account used for `stage`, `main`, tags and releases. GitHub won't let the account that opened a PR approve it, so the approval on a `develop` PR always comes from the other account, and `merge.sh` checks it.
 - Because the agents' account is an owner, its only GitHub-side limit is its token: on the agents' machine it is logged in to `gh` with the fine-grained token below and nothing broader.
 
@@ -181,7 +182,9 @@ Setting up the agents' account:
 3. Approve the token request as organisation owner if GitHub asks.
 4. On the machine running the agents: `gh auth logout -u <account>` for any broader login of that account, then `gh auth login --with-token` (paste the token), `gh auth setup-git` and `gh auth status`. The owner approves in the browser as `frankkefoueg`, and switches `gh` to it with `gh auth switch` only to merge into `stage` or `main`, tag or release.
 
-Files that control these limits (`.claude/hooks/`, `.claude/settings*`, `.claude/scripts/push.sh` and `merge.sh`, `.github/workflows/`) change only by the owner's hand, and `merge.sh` refuses a PR that touches them.
+Files that control these limits change only by the owner's hand: the guard hook and the other hooks, `.claude/settings*`, every script in `.claude/scripts/` (`push.sh`, `merge.sh`, `board.sh`, `env-check.sh`), the git hooks in `.husky/`, and `.github/workflows/`. The agents' edit tools are denied on them, the guard refuses shell writes to them, and `merge.sh` refuses a PR that touches them, so the owner merges it. A script the agents run without a prompt must not be one they can edit, or a push could be hidden inside it.
+
+The guard is a speed bump; the develop alarm is the net. It reads through `bash -c`, `sh -c`, `eval`, `env`, `sudo`, `timeout`, `xargs`, `find -exec`, `$(...)`, newline-separated commands, a full path to `git`, git aliases (defined or already in the config) and `git -c` settings that can run commands. Known gaps: a script, test file or package script the agents write and then run goes unprompted, as does a `core.hooksPath` in the owner's global git config; split-string tricks such as `$(echo git) push` are not caught.
 
 ## Weekly demo and scorecards
 
