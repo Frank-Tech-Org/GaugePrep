@@ -186,3 +186,35 @@ The environment is `dev` or `staging` and the commit equals `git rev-parse origi
 Cloudflare dashboard, Workers & Pages, the project, Deployments: open the previous good deployment, then Rollback to this deployment (production deployments only). Run the verify curl; it shows the earlier commit. The next push publishes a new deployment over it, so to keep the rollback revert the commit on the branch. To see a rollback work, the previous deployment must have a different commit from the current one. A rollback is undone by the next publish.
 
 To undo the gate itself (the checks keep blocking publishes and the cause cannot be fixed quickly), revert the commit that added it on `develop`, then promote to `stage`; the publish goes back to running without the checks.
+
+## CI workflows
+
+### Trigger
+
+A workflow in `.github/workflows/` or a script in `tooling/ci/` changes. Workflow files are owner-only: a pull request stages the new file and the owner copies it in before merge.
+
+### Steps
+
+Workflow steps with more than about ten lines of shell call a script in `tooling/ci/<name>/<name>.sh`, which has a usage header, passes shellcheck and has tests beside it (`pnpm run check:pytest-tooling`). Job names stay as they are (`gate`, `check`, `semgrep`, `pip-audit`, `pnpm-audit`, `trivy`, and `checks / ...` in the Pages run), since they are the checks the merge reads.
+
+Security reasoning that used to sit in workflow comments:
+
+- Scanners are free binaries or pinned packages, no token or account. The gitleaks and Trivy binaries are used instead of their actions (the gitleaks action needs a paid licence on organisations). Semgrep rules are the community repo pinned to a commit (Semgrep Rules License v1.0 allows internal CI use), metrics off.
+- The `gate` job runs the path filter, secret scan, API check and scanner settings first; the PR title script comes from the pull request, so it runs last and cannot change their results. A failed secret scan, API check or title check skips the jobs that need `gate`; a failed scanner settings step alone does not, so the code and scanner jobs still run and the pull request stays red. A skipped job counts as passing for merge, so only the red `gate` blocks.
+- Secret scan: the history reachable from the head, not other branches. The config and ignore list come from the base commit, the checkout's `.gitleaksignore` is removed and allow comments are off, so a pull request cannot switch off its own scan.
+- API check: both specs come from git objects, so nothing in the checkout touches it. oasdiff is built from source because the release binary ships a Go standard library CVE; its output hash is pinned and checked after every cache restore, so a poisoned cache entry cannot run. It runs with an empty config and our own severity file, and external references refused.
+- Scanner settings: pull requests only, because on a push it would block every publish after the owner merges over it. Docs, the owner-only workflow and its own script are not searched, since they describe the markers. The local Semgrep rules come from the base, so every change under `tooling/semgrep/` is flagged, deletions included. The step prints file names, field names and line numbers, never values.
+- Semgrep and Trivy: ignore files and config come from the base commit (Semgrep drops every `.semgrepignore` and restores the base's; Trivy's inline markers are rewritten). The first pull request that adds local rules is scanned without them; the `Local rule tests` step covers it. The test snippets hold unsafe calls on purpose, so that one file is excluded from the scan.
+- pnpm audit: runs on a rebuilt directory (the lockfile with top-level fields allowlisted, plus fresh manifests and a workspace file), so no pull request setting, hook or `.npmrc` is read.
+- Pull request title check: the template is read from the base commit, and the title and body reach the script only through environment variables, never inside the run text.
+- `ci` has no secrets; the test PostgreSQL credentials are test-only. Called from the Pages run, it gets none of the Pages tokens, and each Pages job reads only its own prefix's secrets.
+- The alarm workflows: GitHub refuses a direct push that edits or deletes `develop-alarm.yml` because the agent token lacks the workflow scope. Only an issue the workflow opened with the exact title counts as the alarm, and a renamed one does not, since titles and bodies are editable by anyone.
+- Runners: arm64 GitHub-hosted runners are free for public repositories only, so this private repository uses x64.
+
+### Verify
+
+Open a pull request with a planted failure (a secret-shaped string, a changed scanner ignore file, a breaking `/api/v1` change) and read that the same job goes red as before the change: `gate` for the secret scan, API check and scanner settings, `semgrep`, `pip-audit`, `pnpm-audit` or `trivy` for their scans. Close the pull request without merging.
+
+### Rollback
+
+Revert the commit that changed the workflow or script, and copy the previous workflow file back in (the owner commits it); the scripts return with the revert.
