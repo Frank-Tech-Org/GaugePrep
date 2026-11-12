@@ -29,49 +29,51 @@ def score(diff: str, rep: dict[str, object]) -> tuple[int, int, dict[str, list[i
 
 
 def test_below_threshold_lists_the_uncovered_lines() -> None:
-    diff = diff_for("backend/a.py", "-0,0 +1,10")
+    diff = diff_for("apps/backend/a.py", "-0,0 +1,10")
     covered, executable, uncovered = score(
-        diff, report("backend/a.py", list(range(1, 9)), [9, 10])
+        diff, report("apps/backend/a.py", list(range(1, 9)), [9, 10])
     )
     assert (covered, executable) == (8, 10)
     assert 100 * covered / executable < 90
-    assert uncovered == {"backend/a.py": [9, 10]}
+    assert uncovered == {"apps/backend/a.py": [9, 10]}
 
 
 def test_exactly_at_threshold_passes() -> None:
-    diff = diff_for("backend/a.py", "-0,0 +1,10")
+    diff = diff_for("apps/backend/a.py", "-0,0 +1,10")
     covered, executable, _ = score(
-        diff, report("backend/a.py", list(range(1, 10)), [10])
+        diff, report("apps/backend/a.py", list(range(1, 10)), [10])
     )
     assert 100 * covered / executable == 90
 
 
 def test_no_changed_lines() -> None:
     assert clc.parse_diff("") == {}
-    assert score("", report("backend/a.py", [1], [2])) == (0, 0, {})
+    assert score("", report("apps/backend/a.py", [1], [2])) == (0, 0, {})
 
 
 def test_deleted_only_hunk_has_no_lines_to_cover() -> None:
-    diff = diff_for("backend/a.py", "-5,3 +4,0")
-    assert clc.parse_diff(diff) == {"backend/a.py": set()}
-    assert score(diff, report("backend/a.py", [1], [4])) == (0, 0, {})
+    diff = diff_for("apps/backend/a.py", "-5,3 +4,0")
+    assert clc.parse_diff(diff) == {"apps/backend/a.py": set()}
+    assert score(diff, report("apps/backend/a.py", [1], [4])) == (0, 0, {})
 
 
 def test_blank_comment_and_unmeasured_lines_do_not_count() -> None:
-    diff = diff_for("backend/a.py", "-0,0 +1,3") + diff_for(
-        "backend/tests/t.py", "-0,0 +1,2"
+    diff = diff_for("apps/backend/a.py", "-0,0 +1,3") + diff_for(
+        "apps/backend/tests/t.py", "-0,0 +1,2"
     )
     # Line 2 is a comment: in neither list. The tests file is omitted from the report.
-    assert score(diff, report("backend/a.py", [1, 3], [])) == (2, 2, {})
+    assert score(diff, report("apps/backend/a.py", [1, 3], [])) == (2, 2, {})
 
 
 def test_single_line_hunk_has_an_implied_count_of_one() -> None:
-    assert clc.parse_diff(diff_for("backend/a.py", "-7 +7")) == {"backend/a.py": {7}}
+    assert clc.parse_diff(diff_for("apps/backend/a.py", "-7 +7")) == {
+        "apps/backend/a.py": {7}
+    }
 
 
 def test_files_outside_backend_python_are_ignored() -> None:
     diff = diff_for("apps/web/x.py", "-0,0 +1,2") + diff_for(
-        "backend/readme.md", "-0,0 +1,2"
+        "apps/backend/readme.md", "-0,0 +1,2"
     )
     assert clc.parse_diff(diff) == {}
 
@@ -92,41 +94,41 @@ def git(repo: Path, *args: str) -> None:
 def test_renamed_file_counts_only_its_edited_lines(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    (tmp_path / "backend").mkdir()
-    old = tmp_path / "backend" / "old.py"
+    (tmp_path / "apps" / "backend").mkdir(parents=True)
+    old = tmp_path / "apps" / "backend" / "old.py"
     old.write_text("".join(f"x{i} = {i}\n" for i in range(1, 11)))
     git(tmp_path, "init", "-q", "-b", "main")
     git(tmp_path, "add", ".")
     git(tmp_path, "commit", "-q", "-m", "base")
-    git(tmp_path, "mv", "backend/old.py", "backend/new.py")
-    new = tmp_path / "backend" / "new.py"
+    git(tmp_path, "mv", "apps/backend/old.py", "apps/backend/new.py")
+    new = tmp_path / "apps" / "backend" / "new.py"
     new.write_text(new.read_text().replace("x4 = 4", "x4 = 40"))
     git(tmp_path, "add", ".")
     git(tmp_path, "commit", "-q", "-m", "rename and edit line 4")
     (tmp_path / "coverage.json").write_text(
-        json.dumps(report("backend/new.py", list(range(1, 11)), []))
+        json.dumps(report("apps/backend/new.py", list(range(1, 11)), []))
     )
     monkeypatch.chdir(tmp_path)
-    assert clc.parse_diff(clc.git_diff("HEAD~1")) == {"backend/new.py": {4}}
+    assert clc.parse_diff(clc.git_diff("HEAD~1")) == {"apps/backend/new.py": {4}}
     assert clc.main(["--base", "HEAD~1"]) == 0
 
 
 def test_main_fails_and_names_uncovered_lines(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    (tmp_path / "backend").mkdir()
+    (tmp_path / "apps" / "backend").mkdir(parents=True)
     git(tmp_path, "init", "-q", "-b", "main")
     git(tmp_path, "commit", "-q", "--allow-empty", "-m", "base")
-    (tmp_path / "backend" / "a.py").write_text("a = 1\nb = 2\n")
+    (tmp_path / "apps" / "backend" / "a.py").write_text("a = 1\nb = 2\n")
     git(tmp_path, "add", ".")
     git(tmp_path, "commit", "-q", "-m", "add")
     (tmp_path / "coverage.json").write_text(
-        json.dumps(report("backend/a.py", [1], [2]))
+        json.dumps(report("apps/backend/a.py", [1], [2]))
     )
     monkeypatch.chdir(tmp_path)
     assert clc.main(["--base", "HEAD~1"]) == 1
     out = capsys.readouterr().out
-    assert "backend/a.py: 2" in out
+    assert "apps/backend/a.py: 2" in out
     assert "1/2" in out
 
 
@@ -145,10 +147,10 @@ def test_no_changed_backend_lines_passes(
 
 
 def repo_with_change(tmp_path: Path, name: str = "a.py") -> Path:
-    (tmp_path / "backend").mkdir()
+    (tmp_path / "apps" / "backend").mkdir(parents=True)
     git(tmp_path, "init", "-q", "-b", "main")
     git(tmp_path, "commit", "-q", "--allow-empty", "-m", "base")
-    (tmp_path / "backend" / name).write_text("a = 1\nb = 2\n")
+    (tmp_path / "apps" / "backend" / name).write_text("a = 1\nb = 2\n")
     git(tmp_path, "add", ".")
     git(tmp_path, "commit", "-q", "-m", "add")
     return tmp_path
@@ -199,7 +201,7 @@ def test_unresolvable_base_exits_2(
 
 @pytest.mark.parametrize(
     "text",
-    ["{}", '{"files": []}', '{"files": {"backend/a.py": {"missing_lines": [2]}}}'],
+    ["{}", '{"files": []}', '{"files": {"apps/backend/a.py": {"missing_lines": [2]}}}'],
 )
 def test_malformed_report_exits_2(
     tmp_path: Path,
@@ -219,19 +221,19 @@ def test_changed_file_missing_from_report_exits_2(
 ) -> None:
     repo = repo_with_change(tmp_path)
     code, _, err = run_main(
-        repo, monkeypatch, capsys, '{"files": {"backend/other.py": {}}}'
+        repo, monkeypatch, capsys, '{"files": {"apps/backend/other.py": {}}}'
     )
     assert code == 2
-    assert "backend/a.py" in err
+    assert "apps/backend/a.py" in err
 
 
 def test_tests_only_change_still_passes(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    (tmp_path / "backend" / "tests").mkdir(parents=True)
+    (tmp_path / "apps" / "backend" / "tests").mkdir(parents=True)
     git(tmp_path, "init", "-q", "-b", "main")
     git(tmp_path, "commit", "-q", "--allow-empty", "-m", "base")
-    (tmp_path / "backend" / "tests" / "t.py").write_text("a = 1\n")
+    (tmp_path / "apps" / "backend" / "tests" / "t.py").write_text("a = 1\n")
     git(tmp_path, "add", ".")
     git(tmp_path, "commit", "-q", "-m", "add")
     code, _, _ = run_main(tmp_path, monkeypatch, capsys, '{"files": {}}')
@@ -240,22 +242,22 @@ def test_tests_only_change_still_passes(
 
 def test_added_line_starting_with_plus_plus_does_not_end_the_file() -> None:
     diff = (
-        "diff --git a/backend/a.py b/backend/a.py\n"
-        "--- a/backend/a.py\n+++ b/backend/a.py\n"
+        "diff --git a/apps/backend/a.py b/apps/backend/a.py\n"
+        "--- a/apps/backend/a.py\n+++ b/apps/backend/a.py\n"
         "@@ -0,0 +1,2 @@\n+x = 1\n+++ y\n"
         "@@ -9,0 +10,1 @@\n+z = 2\n"
     )
-    assert clc.parse_diff(diff) == {"backend/a.py": {1, 2, 10}}
+    assert clc.parse_diff(diff) == {"apps/backend/a.py": {1, 2, 10}}
 
 
 def test_path_with_a_space(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     repo = repo_with_change(tmp_path, "my file.py")
-    text = json.dumps(report("backend/my file.py", [1], [2]))
+    text = json.dumps(report("apps/backend/my file.py", [1], [2]))
     code, out, _ = run_main(repo, monkeypatch, capsys, text)
     assert code == 1
-    assert "backend/my file.py: 2" in out
+    assert "apps/backend/my file.py: 2" in out
 
 
 def test_quoted_path_exits_2(
@@ -271,22 +273,23 @@ def test_one_changed_file_absent_from_report_exits_2(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     repo = repo_with_change(tmp_path)
-    (repo / "backend" / "b.py").write_text("c = 3\n")
+    (repo / "apps" / "backend" / "b.py").write_text("c = 3\n")
     git(repo, "add", ".")
     git(repo, "commit", "-q", "-m", "second file")
-    text = json.dumps(report("backend/a.py", [1, 2], []))
+    text = json.dumps(report("apps/backend/a.py", [1, 2], []))
     code, _, err = run_main(repo, monkeypatch, capsys, text, base="HEAD~2")
     assert code == 2
-    assert "backend/b.py" in err
+    assert "apps/backend/b.py" in err
 
 
-def test_only_the_backend_tests_directory_is_unmeasured() -> None:
+def test_test_folders_and_migrations_are_unmeasured() -> None:
     def changed(path: str) -> dict[str, set[int]]:
         diff = (
             f"diff --git a/{path} b/{path}\n--- a/{path}\n+++ b/{path}\n@@ -0,0 +1 @@\n"
         )
         return clc.parse_diff(diff)
 
-    assert changed("backend/tests/t.py") == {}
-    assert changed("backend/modules/x/migrations/0001_a.py") == {}
-    assert changed("backend/modules/x/tests/t.py") != {}
+    assert changed("apps/backend/tests/t.py") == {}
+    assert changed("apps/backend/modules/x/migrations/0001_a.py") == {}
+    assert changed("apps/backend/modules/x/tests/t.py") == {}
+    assert changed("apps/backend/modules/x/contests.py") != {}

@@ -344,8 +344,8 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "examcore", editable = "packages/examcore" },
-    { name = "gaugeprep-backend", virtual = "backend" },
-    { name = "gaugeprep-voice", virtual = "voice" },
+    { name = "gaugeprep-backend", virtual = "apps/backend" },
+    { name = "gaugeprep-voice", virtual = "apps/voice" },
 ]
 
 [package.metadata.requires-dev]
@@ -365,7 +365,7 @@ dev = [
 [[package]]
 name = "gaugeprep-backend"
 version = "0.0.0"
-source = { virtual = "backend" }
+source = { virtual = "apps/backend" }
 dependencies = [
     { name = "django" },
     { name = "django-ninja" },
@@ -386,7 +386,7 @@ requires-dist = [
 [[package]]
 name = "gaugeprep-voice"
 version = "0.0.0"
-source = { virtual = "voice" }
+source = { virtual = "apps/voice" }
 
 [[package]]
 name = "graphql-core"

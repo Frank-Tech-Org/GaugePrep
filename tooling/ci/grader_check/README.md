@@ -9,9 +9,9 @@ Right now it runs a **stub grader** on a **placeholder anchor set**. The stub ma
 From the repository root (Python 3.14, standard library only):
 
 ```bash
-PYTHONPATH=tools python -m grader_check                       # placeholder set, should pass
-PYTHONPATH=tools python -m grader_check \
-  --anchors tools/grader_check/anchors/placeholder-failing    # fails every threshold
+PYTHONPATH=tooling/ci python -m grader_check                       # placeholder set, should pass
+PYTHONPATH=tooling/ci python -m grader_check \
+  --anchors tooling/ci/grader_check/anchors/placeholder-failing    # fails every threshold
 ```
 
 Options: `--anchors DIR` (default: the placeholder set), `--report FILE` (default `grader-check-report.json`), `--repeats N` (runs per anchor for the consistency check, default 3, minimum 2).
@@ -38,7 +38,7 @@ A grader output that isn't valid JSON matching `{"level": "<A1..C2>", "evidence"
 
 ## Adding the real anchor set
 
-1. Create a directory for it, for example `tools/grader_check/anchors/tcf-writing-v1/`, with an `anchors.json` in the same shape as `anchors/placeholder/anchors.json`:
+1. Create a directory for it, for example `tooling/ci/grader_check/anchors/tcf-writing-v1/`, with an `anchors.json` in the same shape as `anchors/placeholder/anchors.json`:
    - `name`, `version`
    - `tasks`: `id`, `skill` (`writing` or `speaking`), `task_type` (`task_1` to `task_3`), `prompt`, `min_words`, `max_words` (null for speaking)
    - `anchors`: `id`, `task`, `level` (the agreed human level, A1 to C2), `text`
@@ -54,6 +54,6 @@ A grader output that isn't valid JSON matching `{"level": "<A1..C2>", "evidence"
 
 ## Grader files and the trigger
 
-The workflow runs when a pull request changes `backend/modules/assessment/grader/**` or this tool. The grader's prompt, rubric and model settings should live under that path when they are written; if they land elsewhere, add the path to the workflow trigger.
+The workflow runs when a pull request changes `apps/backend/modules/assessment/grader/**` or this tool. The grader's prompt, rubric and model settings should live under that path when they are written; if they land elsewhere, add the path to the workflow trigger.
 
 The CEFR level list and the rule checks live here for now because `examcore` doesn't define them yet. Move them to `examcore` when it does and import them from there.

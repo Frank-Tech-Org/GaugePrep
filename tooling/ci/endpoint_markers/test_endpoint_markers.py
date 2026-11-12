@@ -6,8 +6,7 @@ from pathlib import Path
 
 import pytest
 
-HERE = Path(__file__).resolve().parent
-BACKEND = HERE.parent
+BACKEND = Path(__file__).resolve().parents[3] / "apps" / "backend"
 KINDS = ("success", "not_found", "refused")
 DISABLING = {"skip", "skipif", "xfail"}
 EXEMPT = {"GET /api/v1/health", "GET /api/v1/openapi.json"}
@@ -77,7 +76,7 @@ def marked(root: Path, skip: Path) -> tuple[dict[str, set[str]], list[str]]:
     """Operation names per kind, plus malformed markers as `file:line` errors."""
     names: dict[str, set[str]] = {kind: set() for kind in KINDS}
     errors: list[str] = []
-    for file in sorted(root.glob("test_*.py")):
+    for file in sorted(root.rglob("test_*.py")):
         if file == skip:
             continue
         for func, inherited in _tests(ast.parse(file.read_text())):
@@ -118,7 +117,7 @@ def missing(spec_path: Path, root: Path, skip: Path) -> list[str]:
 
 
 def test_every_operation_has_success_not_found_and_refused_tests() -> None:
-    gaps = missing(BACKEND / "openapi.json", HERE, Path(__file__).resolve())
+    gaps = missing(BACKEND / "openapi.json", BACKEND, Path(__file__).resolve())
     assert not gaps, "\n".join(gaps)
 
 

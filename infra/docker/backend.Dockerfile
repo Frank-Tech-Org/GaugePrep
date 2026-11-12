@@ -5,13 +5,13 @@ WORKDIR /app
 
 # uv needs every workspace member's pyproject to resolve the lock.
 COPY pyproject.toml uv.lock ./
-COPY backend/pyproject.toml backend/pyproject.toml
+COPY apps/backend/pyproject.toml apps/backend/pyproject.toml
 COPY packages/examcore/pyproject.toml packages/examcore/pyproject.toml
-COPY voice/pyproject.toml voice/pyproject.toml
+COPY apps/voice/pyproject.toml apps/voice/pyproject.toml
 RUN uv sync --frozen --no-dev --package gaugeprep-backend
 
-COPY backend backend
-WORKDIR /app/backend
+COPY apps/backend apps/backend
+WORKDIR /app/apps/backend
 RUN useradd --system --no-create-home app
 USER app
 

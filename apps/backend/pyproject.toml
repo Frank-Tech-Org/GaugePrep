@@ -15,6 +15,6 @@ dependencies = [
 package = false
 
 [tool.coverage.report]
-include = ["*/backend/*"]
+include = ["*/apps/backend/*"]
 fail_under = 85
 show_missing = true
