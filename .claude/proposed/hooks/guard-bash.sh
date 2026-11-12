@@ -10,7 +10,7 @@ CMD=$(jq -r '.tool_input.command // empty')
 [ -z "$CMD" ] && exit 0
 
 printf '%s' "$CMD" | python3 -I -c '
-import re, shlex, subprocess, sys
+import glob, os, re, shlex, subprocess, sys
 
 cmd = sys.stdin.read()
 
@@ -24,16 +24,17 @@ HEREDOC = re.compile(
     r"(?<!<)(<<-?[ \t]*([\x22\x27])(\w+)\2[^\n]*)\n(?:.*?\n)??[ \t]*\3[ \t]*(?=\n|\)|$)", re.S
 )
 CODE_LINE = re.compile(r"\b(bash|sh|dash|zsh|ksh|python3?|node|perl|ruby|eval|xargs|source)\b")
-SUBST = re.compile(r"\$\(([^()]*)\)|`([^`]*)`")
+SUBST = re.compile(r"[$<>]\(([^()]*)\)|`([^`]*)`")
 
 def heredoc_head(m):
     line = m.string[m.string.rfind("\n", 0, m.start()) + 1:m.start()]
     return m.group(0) if CODE_LINE.search(line) else m.group(1)
 
 def split(text):
-    text = HEREDOC.sub(heredoc_head, text)
+    text = HEREDOC.sub(heredoc_head, text.replace("\\\n", ""))
     lexer = shlex.shlex(text, posix=True, punctuation_chars=";&|\n")
     lexer.whitespace = " \t\r"
+    lexer.commenters = ""
     lexer.whitespace_split = True
     words, segs, clob, after_clobber = [], [], [], False
     for tok in lexer:
@@ -70,7 +71,9 @@ def sub(words):
 # gh api: the endpoint and whether the call writes (an explicit method, or a body, which makes gh POST).
 API_VALUE_OPTS = {"-X", "--method", "-f", "-F", "--field", "--raw-field", "-H", "--header", "--input",
                   "-q", "--jq", "-t", "--template", "--hostname", "--cache", "-p", "--preview"}
-API_PROTECTED = re.compile(r"/pulls/\d+/merge|/merges\b|/git/(refs|tags)|/releases|/tags/protection|/contents/")
+API_PROTECTED = re.compile(r"/pulls/\d+/merge|/merges\b|/git/(refs|tags|commits|trees|blobs)|/releases|/protection"
+                           r"|/contents/|/actions/(permissions|workflows/[^/]+/(disable|enable))"
+                           r"|/branches/[^/]+/rename|/rulesets|/hooks\b|/collaborators|/keys\b")
 GRAPHQL_PROTECTED = re.compile(r"\b(mergePullRequest|enablePullRequestAutoMerge|mergeBranch|createRef|updateRefs?|deleteRef|createCommitOnBranch)\b")
 
 def gh_api(rest):
@@ -91,19 +94,44 @@ def gh_api(rest):
     writes = method in ("POST", "PUT", "PATCH", "DELETE") or (body and method in ("", "POST"))
     if method == "DELETE":
         block("a DELETE through the GitHub API")
-    if endpoint == "graphql" and GRAPHQL_PROTECTED.search(" ".join(rest)):
-        block("a merge or ref change through the GraphQL API")
+    if endpoint == "graphql":
+        if GRAPHQL_PROTECTED.search(" ".join(rest)):
+            block("a merge or ref change through the GraphQL API")
+        if any(a.startswith("--input") or re.match(r"query=(@|.*(\$\(|`))", a) for a in rest):
+            block("a GraphQL query read from a file or built by the shell")
+    if writes and re.fullmatch(r"/?repos/[^/]+/[^/]+/?", endpoint):
+        block("changing the repository settings through the GitHub API")
     if writes and API_PROTECTED.search(endpoint):
         block("a merge, ref, tag or release write through the GitHub API (use .claude/scripts/merge.sh)")
 
 # WHY: a hook, script or workflow an agent can edit and run unprompted can hide a push in it.
 # Scanner and npm config may change on a branch; merge.sh sends those PRs to the owner.
-OWNER_ONLY = re.compile(r"\.claude/(hooks/|settings(\.local)?\.json|scripts/)|\.github/workflows/|\.husky/|\.git/(config|hooks/)")
+OWNER_ONLY = re.compile(r"\.claude/(hooks/|settings(\.local)?\.json|scripts/)|\.github/workflows/|\.husky/|\.git/(config|hooks/)|\.gitconfig|\.config/git/")
 READ_ONLY = {"cat", "head", "tail", "less", "more", "ls", "diff", "cmp", "grep", "rg", "wc", "sha256sum",
              "md5sum", "stat", "file", "echo", "printf", "jq", "test", "[", "shellcheck"}
 GIT_READ = {"diff", "log", "show", "status", "add", "commit", "ls-files", "blame", "grep"}
 
-if any(OWNER_ONLY.search(t) for t in clobbered):
+try:
+    ROOT = subprocess.run(["git", "rev-parse", "--show-toplevel"], capture_output=True, text=True,
+                          timeout=5).stdout.strip()
+except (OSError, subprocess.SubprocessError):
+    ROOT = ""
+cwd = os.getcwd()
+
+def owner_hit(a):
+    # WHY: a double slash, a dot segment, a glob or an earlier cd all name the same owner-only file.
+    if OWNER_ONLY.search(a):
+        return True
+    for c in {a, a.split("=", 1)[-1]}:
+        if not c or "$" in c or "`" in c:
+            continue
+        p = os.path.normpath(os.path.join(cwd, os.path.expanduser(c)))
+        for q in [p] + (glob.glob(p) if re.search(r"[*?\[]", p) else []):
+            if OWNER_ONLY.search(q + "/"):
+                return True
+    return False
+
+if any(owner_hit(t) for t in clobbered):
     block("writing to an owner-only file")
 
 # Secret files: .env and .env.<anything> except .env.example, and keys.
@@ -114,11 +142,14 @@ READERS = {"cat", "less", "more", "head", "tail", "sed", "awk", "grep", "rg", "c
 
 ASSIGN = re.compile(r"[A-Za-z_]\w*=")
 WRAPPERS = {"sudo", "doas", "env", "command", "builtin", "time", "nohup", "exec", "timeout", "nice",
-            "ionice", "setsid", "stdbuf", "xargs", "find", "watch", "flock", "parallel", "busybox"}
-SHELLS = {"bash", "sh", "dash", "zsh", "ksh", "ash", "fish"}
-INTERPRETERS = {"python", "python3", "node", "perl", "ruby"}
-GIT_ENV = re.compile(r"(GIT_CONFIG\w*|GIT_EXEC_PATH|HOME|XDG_CONFIG_HOME)=")
-PUSH_IN_CODE = re.compile(r"\bgit\b.{0,80}?\b(push|send-pack)\b")
+            "ionice", "setsid", "stdbuf", "xargs", "find", "watch", "flock", "parallel", "busybox",
+            "uv", "uvx", "pnpm", "npm", "npx", "yarn", "doppler", "poetry"}
+SHELLS = {"bash", "sh", "dash", "zsh", "ksh", "ash", "fish", "script", "su"}
+INTERPRETERS = {"python", "python3", "node", "perl", "ruby", "awk", "gawk", "mawk", "lua", "php", "expect"}
+GIT_ENV = re.compile(r"(GIT_\w*(EDITOR|PAGER|SSH\w*|EXTERNAL_DIFF|ASKPASS|PROXY\w*|CONFIG\w*|EXEC_PATH"
+                     r"|TEMPLATE_DIR)|SSH_ASKPASS|EDITOR|VISUAL|PAGER|HOME|XDG_CONFIG_HOME)=")
+PUSH_IN_CODE = re.compile(r"\bgit\b.{0,80}?\b(push|send-pack)\b", re.S)
+FLAT = re.sub(r"[\x22\x27\\]", "", cmd)
 GIT_C_OK = re.compile(r"(user\.(name|email)|core\.quotepath|color\.[\w.-]+|advice\.\w+|safe\.directory"
                       r"|commit\.gpgsign|pull\.rebase)(=|$)", re.I)
 GIT_CONFIG_FLAGS = {"--get", "--get-all", "--get-regexp", "--list", "-l", "--show-origin", "--show-scope",
@@ -148,7 +179,7 @@ def nested(text):
         segs, clob = split(text)
     except ValueError:
         block("a nested command I cannot read safely (unbalanced quotes)")
-    if any(OWNER_ONLY.search(t) for t in clob):
+    if any(owner_hit(t) for t in clob):
         block("writing to an owner-only file")
     segments.extend(segs)
 
@@ -159,13 +190,59 @@ def alias_of(name):
         block("cannot read the git aliases")
     return r.stdout.strip() if r.returncode == 0 else None
 
+def as_git(a):
+    name = program(a)
+    if name == "git":
+        return ["git"]
+    if name.startswith("git-") and len(name) > 4:
+        return ["git", name[4:]]
+    return None
+
+def strip_prefix(w):
+    # WHY: function bodies, case arms and coproc put the real command after a few shell words.
+    while w:
+        h = w[0]
+        if h in KEYWORDS or h == "coproc":
+            w = w[1:]
+        elif h == "function":
+            w = w[2:]
+        elif h == "case":
+            w = w[w.index("in") + 1:] if "in" in w else []
+        elif h == "()" or re.fullmatch(r"[\w.:-]*\(\)", h):
+            w = w[1:]
+        elif len(w) > 1 and w[1] == "()":
+            w = w[2:]
+        elif re.fullmatch(r"\(?[^\s$(`]*\)", h):
+            w = w[1:]
+        else:
+            break
+    return w
+
+def norm_text(a):
+    return re.sub(r"[\x22\x27\\]", "", a)
+
+def reads_stdin(cmdw):
+    for k, a in enumerate(cmdw[:4]):
+        if program(a) in SHELLS | INTERPRETERS:
+            rest, skip = [], False
+            for b in cmdw[k + 1:]:
+                if b.startswith("<("):
+                    return True
+                if skip:
+                    skip = False
+                elif re.fullmatch(r"\d*(<<<|<<-?|<|>>?)", b):
+                    skip = True
+                elif not b.startswith(("-", "<", ">")):
+                    rest.append(b)
+            return not rest
+    return False
+
 budget = 300
 for w in segments:
     budget -= 1
     if budget < 0:
         block("a command nested too deeply to check")
-    while w and w[0] in KEYWORDS:
-        w = w[1:]
+    w = strip_prefix(w)
     if not w:
         continue
     full = [lead(w[0])] + w[1:]
@@ -178,20 +255,63 @@ for w in segments:
     if dynamic(re.sub(r"^(\$\(|\(|\{|!|`)", "", w[start])):
         block("a command name built from a variable or substitution")
     head = program(cmdw[0])
+    if head in ("cd", "pushd"):
+        target = cmdw[1] if len(cmdw) > 1 else "~"
+        if "rev-parse --show-toplevel" in target:
+            cwd = ROOT or cwd
+        elif dynamic(target):
+            block("cd into a directory built by the shell")
+        else:
+            cwd = os.path.normpath(os.path.join(cwd, os.path.expanduser(target)))
+            if re.search(r"(^|/)\.git(/|$)", cwd):
+                block("cd into a .git directory (its config and hooks can run commands)")
+        continue
+    if head == "trap" and len(cmdw) > 1:
+        nested(cmdw[1])
+    if head == "alias":
+        for x in cmdw[1:]:
+            if "=" in x:
+                nested(x.split("=", 1)[1])
+    if head in ("cp", "mv", "ln", "install", "rsync") and any(program(x) == "git" for x in cmdw[1:]):
+        block("copying or linking the git program")
     gitw = None
-    if head == "git":
-        gitw = cmdw
+    via_xargs = False
+    first = as_git(cmdw[0])
+    if first:
+        gitw = first + cmdw[1:]
     elif head in WRAPPERS or head in SHELLS or head == "eval":
         for k, a in enumerate(cmdw):
             name = program(a)
-            if gitw is None and name == "git":
-                gitw = [lead(a)] + cmdw[k + 1:]
+            g = as_git(a)
+            if gitw is None and g:
+                gitw = g + cmdw[k + 1:]
+            if name == "xargs":
+                via_xargs = True
             if name in SHELLS:
-                for m in range(k + 1, len(cmdw) - 1):
+                for m in range(k + 1, len(cmdw)):
                     if re.fullmatch(r"-[a-zA-Z]*c[a-zA-Z]*", cmdw[m]):
-                        nested(cmdw[m + 1]); break
+                        n = m + 1
+                        while n < len(cmdw) and cmdw[n].startswith("-"):
+                            n += 1
+                        if n < len(cmdw):
+                            nested(cmdw[n])
+                        break
             elif name == "eval":
                 nested(" ".join(cmdw[k + 1:]))
+            elif name == "env":
+                for m in range(k + 1, len(cmdw)):
+                    s = cmdw[m]
+                    if s in ("-S", "--split-string") and m + 1 < len(cmdw):
+                        nested(cmdw[m + 1])
+                    elif s.startswith("--split-string="):
+                        nested(s.split("=", 1)[1])
+                    elif s.startswith("-S") and len(s) > 2:
+                        nested(s[2:])
+    if reads_stdin(cmdw) and PUSH_IN_CODE.search(FLAT):
+        block("a shell or interpreter reading text that contains a git push")
+    if (head in WRAPPERS or head in INTERPRETERS) and any(program(x) in INTERPRETERS for x in cmdw[:8]) \
+            and any(PUSH_IN_CODE.search(norm_text(x)) for x in cmdw[1:]):
+        block("a git push written inside interpreter code")
     w = cmdw
     while w and (w[0] in ("sudo", "env", "command", "time", "nohup", "exec") or ASSIGN.match(w[0])):
         w = w[1:]
@@ -200,19 +320,17 @@ for w in segments:
     if not w:
         continue
     prog = w[0].rsplit("/", 1)[-1]
-    if prog in INTERPRETERS and any(PUSH_IN_CODE.search(a) for a in w[1:]):
-        block("a git push written inside interpreter code")
 
     if any(SECRET.search(a) for a in w) and (prog in READERS or any(a.startswith("<") for a in w)):
         block("reading secret files (.env, .pem, .key)")
 
     # WHY: helper scripts run as they are; any other command may only read an owner-only file.
-    owner_args = [a for a in w[1:] if OWNER_ONLY.search(a)]
+    owner_args = [a for a in w[1:] if owner_hit(a)]
     if prog not in ("git", "gh"):  # their messages may contain ">" as text
         for i, a in enumerate(w):
             if ">" in a:
                 target = a.split(">")[-1].lstrip("|&") or (w[i + 1] if i + 1 < len(w) else "")
-                if OWNER_ONLY.search(target):
+                if owner_hit(target):
                     block("writing to an owner-only file")
     if owner_args:
         if prog == "git":
@@ -231,6 +349,8 @@ for w in segments:
                 block("sed that edits an owner-only file")
         elif prog not in READ_ONLY and prog != "gh":
             block("changing an owner-only file (the owner copies it from .claude/proposed/)")
+    if prog == "patch":
+        block("patch can change owner-only files")
 
     if gitw:
         if any(GIT_ENV.match(a) for a in full):
@@ -260,6 +380,22 @@ for w in segments:
         verb = lead(verb)
         if verb in ("push", "send-pack", "http-push"):
             block("a raw git push (use .claude/scripts/push.sh)")
+        if via_xargs and (not verb or "{" in verb):
+            block("xargs supplying the git subcommand")
+        if any(x.startswith("ext::") for x in gitw):
+            block("a git remote that runs a command (ext::)")
+        if verb in ("fetch", "pull", "clone", "ls-remote") and any(
+                x.startswith(("--upload-pack", "--receive-pack", "--exec")) or x == "-u"
+                or (x.startswith("-u") and not x.startswith("--")) for x in rest):
+            block("a git option that names a program to run")
+        if verb == "difftool" and any(x in ("-x", "--extcmd") or x.startswith(("--extcmd=", "-x")) for x in rest):
+            block("difftool with a command to run")
+        if verb == "bisect" and "run" in rest:
+            nested(shlex.join(rest[rest.index("run") + 1:]))
+        if verb in ("apply", "am") and not set(rest) & {"--check", "--stat", "--numstat", "--summary"}:
+            block("applying a patch can change owner-only files")
+        if verb in GIT_READ and any(x.startswith("--output") for x in rest):
+            block("git writing its output to a file")
         if verb == "config":
             flags = [a for a in rest if a.startswith("-")]
             if not set(flags) <= GIT_CONFIG_FLAGS or len(rest) - len(flags) > 1:
@@ -271,7 +407,10 @@ for w in segments:
                 elif a.startswith("--exec="):
                     nested(a[7:])
         if verb == "submodule" and "foreach" in rest:
-            nested(" ".join(rest[rest.index("foreach") + 1:]))
+            args = rest[rest.index("foreach") + 1:]
+            while args and args[0].startswith("-"):
+                args = args[1:]
+            nested(" ".join(args))
         if verb == "tag" and any(not a.startswith("-") or a in ("-a", "-s", "-f", "-d") for a in rest):
             block("creating or deleting a tag")
         if verb == "commit" and "--amend" in rest:
@@ -295,6 +434,12 @@ for w in segments:
             block("deleting a repository or issue")
         if verb == "api":
             gh_api(rest)
+        if verb == "workflow" and action in ("disable", "enable"):
+            block("switching a workflow on or off")
+        if verb == "repo" and action in ("edit", "rename", "archive", "unarchive"):
+            block("changing the repository settings")
+        if verb == "auth" and action != "status":
+            block("gh auth can print the token or switch to the owner account")
         if verb == "alias" and action in ("set", "import"):
             block("creating a gh alias (it can run shell commands)")
         if verb == "extension" and action in ("install", "exec"):
