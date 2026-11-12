@@ -103,5 +103,6 @@ Settled architecture choices become ADRs in `docs/adr/`. This file is for open q
 - Decided: 2026-11-12: no, not yet · the owner. The repository is private on a free organization plan, so rulesets and branch protection are not enforced (checked in the settings pages). The merge step's checks, the develop alarm and the guard hook stand in for it.
 - Effect: revisit before the first production release or when more people get write access.
 
+<!-- Move an entry here when answered, adding:
 - Decided: <YYYY-MM-DD>: <option> · <the owner's reason>
 -->
