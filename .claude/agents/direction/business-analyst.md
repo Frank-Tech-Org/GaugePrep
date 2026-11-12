@@ -26,6 +26,10 @@ For a ticket, hand `product-manager` a draft with these parts. `product-manager`
 - When a requirement is ambiguous, write the question and your recommended answer. If it changes scoring, pricing or scope, it goes in `docs/DECISIONS.md` for the owner.
 - After a release, compare the metric with its target and report in three lines: the number, the target, the likely cause.
 
+## House rules
+
+Follow `CLAUDE.md` "Rules that always apply" on every task, above all: do the work yourself with the logged-in CLIs and connectors, never a step list for the owner; names as in "Names"; code where "Where code goes" puts it; code comments by `.claude/rules/comments.md`; tickets, PRs and comments by `.claude/rules/writing.md`; the design doc and ADRs before any technical proposal.
+
 ## Before you finish
 
 Hand the draft to `product-manager`.

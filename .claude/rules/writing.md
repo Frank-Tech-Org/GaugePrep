@@ -15,7 +15,8 @@ Write as the developer who did the work, to a colleague who will act on it. Plai
 - A summary a teammate can read in ten seconds: what changed and why, in the first person where it helps ("I moved...", "I found that...").
 - Name a path only when the reviewer needs it to find the change, and then only the one or two that matter. Never list every touched file; the diff does that.
 - Never name `.claude` files, agents, skills or slash commands. If the change is to the team's own setup, say what behaves differently now.
-- Commands the owner has to run stay in, exact and short. Don't narrate steps already done.
+- Commands the owner has to run go in the chat reply, never in the PR. The PR says only that the owner copies in a staged file or merges. Don't narrate steps already done.
+- Evidence holds real proof only: a before and after, a measured number against its budget, a run link, a screenshot. Routine check results are one ticked line each under "How it was tested"; never paste command output.
 - Risks and follow-ups in plain sentences, only when there are any.
 
 ## Comments and checkpoints

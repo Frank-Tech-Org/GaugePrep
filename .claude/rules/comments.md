@@ -18,6 +18,7 @@ Good names come first; most blocks need no comment. A comment says only what the
 | Block comment | above a block with a non-obvious reason | a tag: `WHY:`, `SECURITY:` (an invariant a refactor must keep) or `WARNING:` (a trap) |
 | `TODO(#n):` | anywhere | always with a ticket number |
 | Docstring | each module's `public.py` and everything `examcore` exports | Google style; one summary line, `Args`/`Returns`/`Raises` only when the type hints don't say it |
+| Doctest | optional, `examcore` pure functions only | `>>> count_words("Bonjour !")` then the result; anything needing setup is a test |
 | TSDoc | exported web hooks, utilities and shared components | one summary line, `@param` only when the type doesn't say it |
 | Suppression | `# noqa`, `# type: ignore[...]`, `eslint-disable-next-line`, `nosemgrep` | always with the reason on the same line |
 | Inline | units and magic values | `timeout = 2  # seconds` |
@@ -25,7 +26,7 @@ Good names come first; most blocks need no comment. A comment says only what the
 
 ## Never
 
-- Banners, boxes, rulers, underlines or numbered sections (`/*****/`, `# ----- X -----`, `# ===`, `# 1. X`). A code file that needs sections is doing two jobs.
+- Banners, boxes, rulers, short markers, underlines, numbered sections, editor regions or fold markers (`/*****/`, `# ----- X -----`, `# --- X ---`, `# ===`, `# 1. X`, `// #region`, `// MARK:`, `# {{{`). A code file that needs sections is doing two jobs.
 - Narrative paragraphs, history (`changed on…`, `we used to…`), who decided, ticket narration.
 - Restating the code, a name or a type. "This function…", "ensures that…".
 - Commented-out code.
@@ -59,4 +60,4 @@ STAGING_DJANGO_SECRET_KEY=
   run: .github/scripts/scan-history.sh
 ```
 
-Workflow steps with more than about 10 lines of script move to `.github/scripts/`, where they get a usage header, shellcheck and tests.
+Workflow steps with more than about 10 lines of script move to `tooling/ci/`, where they get a usage header, shellcheck and tests.

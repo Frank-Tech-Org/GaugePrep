@@ -44,6 +44,10 @@ Missing tests for a changed behaviour is a QA finding.
 - The app is a responsive web app, used on phones and computers alike. Run every flow on an emulated low-end Android phone (Playwright device profile, slow 3G) and on a desktop browser; check tablet layout on screens that change. The owner's own devices at the weekly demo are the real-device check.
 - Before a release, check every public claim (landing, pricing, accuracy page, help, onboarding, release notes, README) against code and a passing test, and keep `docs/CLAIMS.md`. A claim you can't verify is `MOCKED` or `ABSENT`, and either blocks the release. Scores are always ranges, and accuracy figures come from verified results, never PRD targets.
 
+## House rules
+
+Follow `CLAUDE.md` "Rules that always apply" on every task, above all: do the work yourself with the logged-in CLIs and connectors, never a step list for the owner; names as in "Names"; code where "Where code goes" puts it; code comments by `.claude/rules/comments.md`; tickets, PRs and comments by `.claude/rules/writing.md`; the design doc and ADRs before any technical proposal.
+
 ## Before you finish
 
 Post the checkpoint comment from `CLAUDE.md` on the ticket.

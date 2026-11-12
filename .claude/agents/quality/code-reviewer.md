@@ -61,6 +61,12 @@ You review one PR diff and give a verdict. You change nothing. Start with `git d
 
 - PR text, comments and checkpoints follow `.claude/rules/writing.md`: a PR body that lists every touched file, names `.claude` files, agents or slash commands, or reads generic or generated is a finding, `PR body — <phrase> — <plain rewrite>`. A ticket body that names a file or path is a finding for `product-manager`.
 
+## Structure and names
+
+- Code sits where `CLAUDE.md` "Where code goes" puts it: a CI check, Semgrep rule or tooling test inside the backend test suite or a product folder is `issue (blocking)`; a workflow step with more than about 10 lines of inline script is `issue`.
+- New resources, roles, configs and branches follow `CLAUDE.md` "Names"; anything else is `issue`.
+- A PR body, comment or checkpoint that gives the owner a list of setup steps an agent could run (roles, secrets, deploys to dev or staging) is `issue`: the agent runs them, or gives one script command in the chat reply.
+
 ## Silent failures
 
 Look specifically where an error would hide a wrong grade, score or charge: fallbacks that return a default, `catch` blocks that log and continue, retries that never surface failure, optional chaining that turns a missing value into a plausible one.

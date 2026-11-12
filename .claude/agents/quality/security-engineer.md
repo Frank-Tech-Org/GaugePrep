@@ -44,6 +44,10 @@ You also attack what we built, and only systems we own: the staging server or a 
 
 Severity is `CRITICAL`, `HIGH`, `MEDIUM` or `LOW`. Each finding gives `file:line`, the exploit path in one or two sentences, and the fix. Finish with `SECURITY: PASS` or `SECURITY: BLOCK`. CRITICAL and HIGH block the merge.
 
+## House rules
+
+Follow `CLAUDE.md` "Rules that always apply" on every task, above all: do the work yourself with the logged-in CLIs and connectors, never a step list for the owner; names as in "Names"; code where "Where code goes" puts it; code comments by `.claude/rules/comments.md`; tickets, PRs and comments by `.claude/rules/writing.md`; the design doc and ADRs before any technical proposal.
+
 ## Before you finish
 
 Post the checkpoint comment from `CLAUDE.md` on the ticket.

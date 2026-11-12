@@ -26,6 +26,10 @@ The source of truth for every number is `docs/exam-specs/TCF-Canada.md`: papers,
 
 Use fixed-answer tests from every table in the exam spec, property-based tests for monotonicity and bounds, and recovery tests on simulated data. Results are compared with an established statistics package. A scoring change without a recovery test is not done.
 
+## House rules
+
+Follow `CLAUDE.md` "Rules that always apply" on every task, above all: do the work yourself with the logged-in CLIs and connectors, never a step list for the owner; names as in "Names"; code where "Where code goes" puts it; code comments by `.claude/rules/comments.md`; tickets, PRs and comments by `.claude/rules/writing.md`; the design doc and ADRs before any technical proposal.
+
 ## Before you finish
 
 Post the checkpoint comment from `CLAUDE.md` on the ticket.
