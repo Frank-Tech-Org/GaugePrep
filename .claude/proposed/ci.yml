@@ -1,0 +1,433 @@
+name: ci
+
+# Pull request checks, also called by the Pages publish; the postgres login is test-only.
+# WHY: a push has no PR context, so BASE is the commit before it and PR-only steps skip.
+on:
+  pull_request:
+    branches: [develop, stage, main]
+    types: [opened, synchronize, reopened, edited]
+  workflow_call:
+
+permissions:
+  contents: read
+
+env:
+  BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+  HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+
+# WHY: a push has no pull request number, so each run gets its own group.
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+# WHY: arm64 hosted runners are free for public repositories only, so this repo uses x64.
+jobs:
+  # WHY: a skipped job counts as passing for merge, so only a red gate blocks.
+  # SECURITY: the title script comes from the PR and runs last, so it cannot change other results.
+  gate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      code: ${{ steps.filter.outputs.code }}
+      backend_image: ${{ steps.filter.outputs.backend_image }}
+      ok: ${{ steps.early.outputs.ok == 'true' && (steps.title.outcome == 'success' || github.event_name != 'pull_request') }}
+    env:
+      GITLEAKS_VERSION: 8.30.1
+      GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+      OASDIFF_VERSION: 1.35.0
+      OASDIFF_GO_VERSION: 1.27.3
+      OASDIFF_SHA256: 0183d4d74308201752a025bffddb4fad020916824bcb7fd3a5db2d1444bc5116
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      # WHY: code checks skip only when every changed file is docs or agent prompts; pushes run all.
+      - id: filter
+        run: |
+          # WHY: separate assignment, so a failing git diff stops the step, not skips the checks.
+          if [ -n "$BASE" ] && git cat-file -e "$BASE^{commit}" 2>/dev/null; then
+            diff=$(git diff --name-only --no-renames "$BASE...$HEAD")
+            other=$(printf '%s\n' "$diff" | grep -Ev '^(docs/|\.claude/(agents|rules|memory)/|\.claude/skills/.*\.md$|.*\.md$)' || true)
+            if [ -n "$other" ]; then code=true; else code=false; fi
+            image=$(printf '%s\n' "$diff" | grep -E '^(infra/docker/|uv\.lock$|\.dockerignore$|(.*/)?pyproject\.toml$)' || true)
+            if [ -n "$image" ]; then backend_image=true; else backend_image=false; fi
+          else
+            echo "no usable base commit, running everything"
+            code=true
+            backend_image=true
+          fi
+          if [ "$GITHUB_EVENT_NAME" != pull_request ]; then code=true; fi
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          echo "backend_image=$backend_image" >> "$GITHUB_OUTPUT"
+          echo "code checks: $code"
+          echo "backend image: $backend_image"
+      # WHY: the MIT binary, not gitleaks-action, which needs a paid licence on organisations.
+      - name: Install gitleaks
+        id: gitleaks-install
+        run: |
+          curl -sSfL -o "$RUNNER_TEMP/gitleaks.tgz" "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          echo "${GITLEAKS_SHA256}  $RUNNER_TEMP/gitleaks.tgz" | sha256sum --check -
+          mkdir "$RUNNER_TEMP/gitleaks-bin"
+          tar -xzf "$RUNNER_TEMP/gitleaks.tgz" -C "$RUNNER_TEMP/gitleaks-bin" gitleaks
+      # SECURITY: config and ignore list come from the base, so a PR cannot switch off its own scan.
+      # WHY: on a push the base is the commit before it, or its first parent when that is gone.
+      - name: Scan the full git history
+        id: gitleaks
+        if: ${{ !cancelled() }}
+        run: |
+          if [ "$GITHUB_EVENT_NAME" != pull_request ] && ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then BASE=$(git rev-parse -q --verify "$HEAD^" || true); fi
+          # SECURITY: allow comments and the checkout .gitleaksignore would let a PR hide a secret.
+          args=(git --redact --verbose --ignore-gitleaks-allow --log-opts="HEAD")
+          rm -f .gitleaksignore
+          # SECURITY: always pass a config from the base; the head .gitleaks.toml is never loaded.
+          { [ -n "$BASE" ] && git show "$BASE:.gitleaks.toml" > "$RUNNER_TEMP/gl.toml" 2>/dev/null; } || printf '[extend]\nuseDefault = true\n' > "$RUNNER_TEMP/gl.toml"
+          args+=(--config "$RUNNER_TEMP/gl.toml")
+          { [ -n "$BASE" ] && git show "$BASE:.gitleaksignore" > "$RUNNER_TEMP/gl.ignore" 2>/dev/null; } || : > "$RUNNER_TEMP/gl.ignore"
+          args+=(--gitleaks-ignore-path "$RUNNER_TEMP/gl.ignore")
+          if ! "$RUNNER_TEMP/gitleaks-bin/gitleaks" "${args[@]}"; then
+            echo "::error title=Secret found::gitleaks found a secret in the history; the File line in the output above names the file. Remove it from every commit and rotate it."
+            exit 1
+          fi
+      # SECURITY: both specs come from git objects, so nothing in the checkout can touch the check.
+      - name: API contract files
+        id: oas
+        if: ${{ !cancelled() }}
+        run: |
+          compare=false
+          if [ -z "$BASE" ] || ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then
+            echo "no usable base commit, skipping the API comparison"
+          else
+            changed=$(git diff --name-only --no-renames "$BASE...$HEAD" -- apps/backend/openapi.json)
+            if [ -z "$changed" ]; then
+              echo "apps/backend/openapi.json unchanged, skipping"
+            elif ! git show "$BASE:apps/backend/openapi.json" > "$RUNNER_TEMP/openapi.base.json" 2>/dev/null; then
+              echo "apps/backend/openapi.json is new on this PR, nothing to compare"
+            elif ! git show "$HEAD:apps/backend/openapi.json" > "$RUNNER_TEMP/openapi.head.json" 2>/dev/null; then
+              echo "::error title=API contract removed::apps/backend/openapi.json exists on the base branch and is missing on this PR. Restore it."
+              exit 1
+            else
+              compare=true
+            fi
+          fi
+          echo "compare=$compare" >> "$GITHUB_OUTPUT"
+      # SECURITY: the cache holds only the oasdiff binary we build; its hash is checked on restore.
+      - name: Cache the oasdiff build
+        id: oas-cache
+        if: ${{ !cancelled() && steps.oas.outputs.compare == 'true' }}
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/oasdiff-bin
+          key: oasdiff-${{ env.OASDIFF_VERSION }}-go${{ env.OASDIFF_GO_VERSION }}-linux-amd64
+      # WHY: built from source because the release binary ships a Go stdlib CVE; hash pinned.
+      - name: API breaking changes
+        id: oasdiff
+        if: ${{ !cancelled() && steps.oas.outputs.compare == 'true' }}
+        run: |
+          bin="$RUNNER_TEMP/oasdiff-bin/oasdiff"
+          if ! { [ -f "$bin" ] && echo "${OASDIFF_SHA256}  $bin" | sha256sum --check --quiet -; }; then
+            rm -rf "$RUNNER_TEMP/oasdiff-bin"
+            GOTOOLCHAIN="go${OASDIFF_GO_VERSION}" CGO_ENABLED=0 GOFLAGS= GOWORK=off GOPATH="$RUNNER_TEMP/gopath" GOBIN="$RUNNER_TEMP/oasdiff-bin" \
+              go install -trimpath "github.com/oasdiff/oasdiff@v${OASDIFF_VERSION}"
+            echo "${OASDIFF_SHA256}  $bin" | sha256sum --check -
+          fi
+          # SECURITY: empty config and our own severity file; a checkout .oasdiff.* is never read.
+          : > "$RUNNER_TEMP/oasdiff.config.yaml"
+          echo 'response-optional-property-removed err' > "$RUNNER_TEMP/oasdiff.severity"
+          cd "$RUNNER_TEMP"
+          if ! "$bin" breaking openapi.base.json openapi.head.json --config oasdiff.config.yaml --severity-levels oasdiff.severity --allow-external-refs=false --match-path '^/api/v1/' --fail-on ERR; then
+            echo "::error title=Breaking API change::oasdiff found a breaking change under /api/v1 (listed above). Installed copies of the web app still call the old contract: make the change additive, or keep the old field or operation until a new API version."
+            exit 1
+          fi
+      # WHY: scanner settings is left out on purpose; alone it keeps the other jobs running.
+      # WHY: the title step runs after this one; the job output adds its result.
+      - name: Blocking checks passed
+        id: early
+        if: ${{ !cancelled() }}
+        env:
+          FILTER: ${{ steps.filter.outcome }}
+          INSTALL: ${{ steps.gitleaks-install.outcome }}
+          SECRETS: ${{ steps.gitleaks.outcome }}
+          OAS_FILES: ${{ steps.oas.outcome }}
+          OAS_BREAKING: ${{ steps.oasdiff.outcome }}
+        run: |
+          ok=true
+          for o in "$FILTER" "$INSTALL" "$SECRETS" "$OAS_FILES" "$OAS_BREAKING"; do
+            case "$o" in success|skipped) ;; *) ok=false ;; esac
+          done
+          echo "ok=$ok" >> "$GITHUB_OUTPUT"
+      # WHY: flags scanner settings, suppressions and pnpm changes; the owner may merge over it.
+      # WHY: pull requests only; on a push it would block every publish after a merge-over.
+      - name: Scanner settings
+        if: ${{ !cancelled() && github.event_name == 'pull_request' }}
+        run: |
+          # WHY: separate files, so a failing git diff stops the step; only names and lines print.
+          d=(git -c core.quotepath=off diff --no-renames --diff-filter=d "$BASE...$HEAD")
+          "${d[@]}" -z --name-only > "$RUNNER_TEMP/scanner.names"
+          "${d[@]}" -U0 --text --no-textconv --no-ext-diff -- . ':!*.md' ':!.github/workflows/ci.yml' ':!.claude/proposed/ci.yml' > "$RUNNER_TEMP/scanner.diff"
+          strip() { awk '/^[[:space:]]*(#|$)/ {next} /^packages:[[:space:]]*$/ {s=1; next} s && /^[[:space:]]*-/ {next} {s=0; print}'; }
+          files=
+          while IFS= read -r -d '' f; do
+            case "${f##*/}" in
+              .semgrepignore|.trivyignore*|trivy.yaml|trivy.yml|.gitleaks.toml|.gitleaksignore|.npmrc|.pnpmfile.*) ;;
+              pnpm-workspace.yaml) [ "$(git ls-tree "$HEAD" -- "$f" | cut -c1-6)" = 100644 ] && [ "$(git show "$BASE:$f" 2>/dev/null | strip)" = "$(git show "$HEAD:$f" | strip)" ] && continue ;;
+              *) continue ;;
+            esac
+            files+="  $(printf %s "$f" | tr -d '[:cntrl:]')"$'\n'
+          done < "$RUNNER_TEMP/scanner.names"
+          # WHY: local rules are read from the base, so a merged edit becomes the next base.
+          git -c core.quotepath=off diff --no-renames -z --name-only "$BASE...$HEAD" -- tooling/semgrep/ > "$RUNNER_TEMP/semgrep.names"
+          while IFS= read -r -d '' f; do
+            files+="  $(printf %s "$f" | tr -d '[:cntrl:]')"$'\n'
+          done < "$RUNNER_TEMP/semgrep.names"
+          # WHY: names a package.json that changes packageManager, devEngines, pnpm or resolutions.
+          pkg=
+          mb=$(git merge-base "$BASE" "$HEAD")
+          while IFS= read -r -d '' f; do
+            [ "${f##*/}" = package.json ] || continue
+            if git cat-file -e "$mb:$f" 2>/dev/null; then git show "$mb:$f" > "$RUNNER_TEMP/pkg.base"; else echo '{}' > "$RUNNER_TEMP/pkg.base"; fi
+            git show "$HEAD:$f" > "$RUNNER_TEMP/pkg.head"
+            name=$(printf %s "$f" | tr -d '[:cntrl:]')
+            if ! changed=$(jq -nr --slurpfile b "$RUNNER_TEMP/pkg.base" --slurpfile h "$RUNNER_TEMP/pkg.head" 'if ($b[0]|type) == "object" and ($h[0]|type) == "object" then ["packageManager","devEngines","pnpm","resolutions"][] | select($b[0][.] != $h[0][.]) else error("not an object") end' 2>/dev/null); then
+              pkg+="  $name: not readable as a JSON object"$'\n'
+              continue
+            fi
+            for field in $changed; do pkg+="  $name: $field"$'\n'; done
+          done < "$RUNNER_TEMP/scanner.names"
+          hits=$(tr '\0' ' ' < "$RUNNER_TEMP/scanner.diff" | awk '
+            /^diff / { hdr = 1; next }
+            hdr && /^\+\+\+ / { f = substr($0, 5); sub(/^"?b\//, "", f); next }
+            /^@@ / { hdr = 0; match($0, /\+[0-9]+/); n = substr($0, RSTART + 1, RLENGTH - 1); next }
+            !hdr && /^\+/ { if (tolower($0) ~ /nosem|trivy:|tfsec:|--ignore-vuln|gitleaks:allow/) print "  " f ":" n; n++ }' | tr -d '\000-\011\013-\037')
+          if [ -n "$files$pkg$hits" ]; then
+            [ -z "$files" ] || printf 'Scanner or package-manager settings changed (pnpm-workspace.yaml: anything beyond the packages list):\n%s' "$files"
+            [ -z "$pkg" ] || printf 'pnpm version or settings changed in package.json (file: field):\n%s' "$pkg"
+            [ -z "$hits" ] || printf 'Inline suppression added at file:line:\n%s\n' "$hits"
+            echo "::error title=Scanner settings::This pull request changes scanner settings, the pnpm version or its settings, or adds a suppression (listed above). The code and scanner jobs still run. Remove it, or the owner merges over this check when it is justified."
+            exit 1
+          fi
+      # SECURITY: the template is read from the base; title and body reach the script only by env.
+      - name: PR title and description
+        id: title
+        if: ${{ !cancelled() && github.event_name == 'pull_request' }}
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          git show "$BASE:.github/pull_request_template.md" > "$RUNNER_TEMP/pull_request_template.md"
+          bash .github/scripts/check-pr-description.sh "$RUNNER_TEMP/pull_request_template.md"
+
+  check:
+    needs: gate
+    if: ${{ !cancelled() && needs.gate.outputs.ok == 'true' && needs.gate.outputs.code == 'true' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: gaugeprep
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d gaugeprep"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/gaugeprep
+    steps:
+      # WHY: full history so the changed-lines step finds the merge base with the PR's base commit.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      # WHY: the runner's preinstalled shellcheck; the .husky hooks have no extension.
+      - name: Lint shell scripts
+        run: |
+          shellcheck --version
+          git ls-files -z '*.sh' '.husky/*' | xargs -0 shellcheck -S warning
+      - name: Show the database is reachable
+        run: |
+          pg_isready -h localhost -p 5432 -U postgres -d gaugeprep
+          psql "$DATABASE_URL" -tAc 'select version()'
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+      # WHY: the pnpm version comes from the packageManager field in package.json.
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: uv sync --frozen
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+      # WHY: the 90% threshold judges the lines one PR adds, and a push has no such diff.
+      - name: Changed backend lines are covered
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          uv run coverage json --rcfile=apps/backend/pyproject.toml -o "$RUNNER_TEMP/coverage.json"
+          uv run python tooling/ci/changed_lines_coverage/changed_lines_coverage.py --base "$BASE" --coverage "$RUNNER_TEMP/coverage.json" --threshold 90
+
+  # WHY: not part of check; it runs only when an image input changed, and a skip counts as passing.
+  backend-image:
+    name: backend image
+    needs: gate
+    if: ${{ !cancelled() && needs.gate.outputs.ok == 'true' && needs.gate.outputs.backend_image == 'true' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build the backend image
+        run: docker build -f infra/docker/backend.Dockerfile .
+
+  # WHY: runs on every pull request, docs included.
+  semgrep:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+      # SECURITY: Semgrep reads .semgrepignore in every folder; drop all and restore the base's.
+      # WHY: on a push the base is the commit before it or its first parent; else none return.
+      - name: Use the base ignore files
+        run: |
+          if [ "$GITHUB_EVENT_NAME" != pull_request ] && ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then BASE=$(git rev-parse -q --verify "$HEAD^" || true); fi
+          find . -name .semgrepignore -not -path './.git/*' -delete
+          if [ -n "$BASE" ]; then
+            git ls-tree -r -z --name-only "$BASE" | { grep -zE '(^|/)\.semgrepignore$' || true; } | while IFS= read -r -d '' f; do
+              mkdir -p "$(dirname "$f")"
+              git show "$BASE:$f" > "$f"
+            done
+          fi
+      # WHY: community rules pinned to a commit (Semgrep Rules License v1.0 allows CI); metrics off.
+      # SECURITY: our rules in tooling/semgrep come from the base, so a PR cannot weaken them.
+      - name: Semgrep
+        env:
+          RULES_SHA: 16b9e6d45f10649f6a531ec4838ed9924372c3bc
+        run: |
+          if [ "$GITHUB_EVENT_NAME" != pull_request ] && ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then BASE=$(git rev-parse -q --verify "$HEAD^" || true); fi
+          git init -q "$RUNNER_TEMP/semgrep-rules"
+          git -C "$RUNNER_TEMP/semgrep-rules" fetch -q --depth 1 https://github.com/semgrep/semgrep-rules "$RULES_SHA"
+          git -C "$RUNNER_TEMP/semgrep-rules" checkout -q FETCH_HEAD
+          r="$RUNNER_TEMP/semgrep-rules"
+          mkdir "$RUNNER_TEMP/local-rules"
+          if [ -n "$BASE" ]; then
+            git ls-tree -r -z --name-only "$BASE" -- tooling/semgrep | { grep -zE '^tooling/semgrep/[^/]+\.yaml$' || true; } | while IFS= read -r -d '' f; do
+              git show "$BASE:$f" > "$RUNNER_TEMP/local-rules/${f##*/}"
+            done
+          fi
+          args=(--config "$r/python" --config "$r/typescript" --config "$r/generic")
+          if [ -n "$(ls -A "$RUNNER_TEMP/local-rules")" ]; then
+            args+=(--config "$RUNNER_TEMP/local-rules")
+          else
+            echo "::notice title=Local rules::No tooling/semgrep/*.yaml on the base commit; scanning with the pinned community rules only."
+          fi
+          uvx --no-config --exclude-newer 2026-10-30 semgrep==1.183.0 scan --max-target-bytes 0 --metrics=off --disable-nosem --error --severity ERROR --quiet --exclude .claude/skills/semgrep/scripts --exclude .claude/skills/webapp-testing/scripts/with_server.py --exclude tooling/semgrep/request-eval-exec.py \
+            "${args[@]}" .
+      # WHY: runs this PR's own rules against its snippets; the scan above still uses the base copy.
+      - name: Local rule tests
+        run: |
+          if [ -d tooling/semgrep ]; then
+            uvx --no-config --exclude-newer 2026-10-30 semgrep==1.183.0 --metrics=off --test tooling/semgrep/
+          else
+            echo "No tooling/semgrep/ directory, nothing to test."
+          fi
+
+  pip-audit:
+    needs: gate
+    if: ${{ !cancelled() && needs.gate.outputs.ok == 'true' && needs.gate.outputs.code == 'true' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+      # WHY: pip-audit has no severity filter, so any known advisory fails this check.
+      - name: Audit the uv lockfile
+        run: |
+          uv export --no-config --frozen --no-hashes --no-emit-project --no-emit-workspace -o "$RUNNER_TEMP/requirements.txt"
+          uvx --no-config --exclude-newer 2026-10-30 pip-audit==2.10.1 --no-deps --disable-pip -r "$RUNNER_TEMP/requirements.txt"
+
+  pnpm-audit:
+    needs: gate
+    if: ${{ !cancelled() && needs.gate.outputs.ok == 'true' && needs.gate.outputs.code == 'true' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # SECURITY: audit a rebuilt copy (allowlisted lockfile fields, fresh manifests).
+      - name: Rebuild a clean audit directory
+        run: |
+          set -euo pipefail
+          d="$RUNNER_TEMP/audit"
+          mkdir "$d"
+          yq '{"lockfileVersion": .lockfileVersion, "settings": .settings, "importers": .importers, "packages": .packages, "snapshots": .snapshots}' pnpm-lock.yaml > "$d/pnpm-lock.yaml"
+          printf 'packages:\n' > "$d/pnpm-workspace.yaml"
+          git ls-files -z '*package.json' | while IFS= read -r -d '' f; do
+            dir=$(dirname "$f")
+            mkdir -p "$d/$dir"
+            jq '{dependencies, devDependencies, optionalDependencies}' "$f" > "$d/$dir/package.json.tmp"
+            mv "$d/$dir/package.json.tmp" "$d/$dir/package.json"
+            if [ "$dir" != . ]; then printf '  - "%s"\n' "$dir" >> "$d/pnpm-workspace.yaml"; fi
+          done
+      # WHY: the pnpm version comes from the packageManager field in package.json.
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - name: pnpm audit
+        working-directory: ${{ runner.temp }}/audit
+        run: pnpm audit --ignore-pnpmfile --audit-level high --registry https://registry.npmjs.org/
+
+  trivy:
+    needs: gate
+    if: ${{ !cancelled() && needs.gate.outputs.ok == 'true' && needs.gate.outputs.code == 'true' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      TRIVY_VERSION: 0.76.1
+      TRIVY_SHA256: c7cbe3137fb8a48a17574bede3dd6beb16742d1e9772929940fc90082c39d9c0
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      # SECURITY: Trivy ignore files and config come from the base, not the PR.
+      - name: Use the base Trivy ignore files
+        run: |
+          if [ "$GITHUB_EVENT_NAME" != pull_request ] && ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then BASE=$(git rev-parse -q --verify "$HEAD^" || true); fi
+          for f in .trivyignore .trivyignore.yaml .trivyignore.yml trivy.yaml trivy.yml; do
+            rm -f "$f"
+            if [ -n "$BASE" ]; then git show "$BASE:$f" > "$f" 2>/dev/null || rm -f "$f"; fi
+          done
+          # WHY: rewrite markers so Trivy reads no ignores; git grep exits 1 on no match.
+          { git grep -lzE '(trivy|tfsec):(ignore|exp)' || true; } | xargs -0 -r sed -i -E 's/(trivy|tfsec):(ignore|exp)/\1-\2/g'
+      # WHY: the Apache-2.0 binary, not aquasecurity/trivy-action.
+      - name: Install Trivy
+        run: |
+          curl -sSfL -o "$RUNNER_TEMP/trivy.tgz" "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz"
+          echo "${TRIVY_SHA256}  $RUNNER_TEMP/trivy.tgz" | sha256sum --check -
+          mkdir "$RUNNER_TEMP/trivy-bin"
+          tar -xzf "$RUNNER_TEMP/trivy.tgz" -C "$RUNNER_TEMP/trivy-bin" trivy
+      - name: Trivy filesystem scan
+        run: |
+          "$RUNNER_TEMP/trivy-bin/trivy" fs --severity HIGH,CRITICAL --exit-code 1 --scanners vuln,misconfig .
