@@ -182,7 +182,7 @@ Setting up the agents' account:
 1. In the organisation's Settings → Personal access tokens, fine-grained tokens are allowed (approval required is fine).
 2. Signed in as that account, create a fine-grained token: resource owner `Frank-Tech-Org`, only `GaugePrep`, 90 days. Read and write: Contents, Pull requests, Issues. Read: Metadata, Actions, Commit statuses (fine-grained tokens can't have Checks, so tools read CI from Actions runs). Leave Workflows out, so the account can't push workflow changes. Organisation permission Projects: read and write.
 3. Approve the token request as organisation owner if GitHub asks.
-4. On the machine running the agents: `gh auth logout -u <account>` for any broader login of that account, then `gh auth login --with-token` (paste the token), `gh auth setup-git` and `gh auth status`. The owner approves in the browser as `frankkefoueg`, and switches `gh` to it with `gh auth switch` only to merge into `stage` or `main`, tag or release.
+4. On the machine running the agents: `gh auth logout -u <account>` for any broader login of that account, then `gh auth login --with-token` (paste the token), `gh auth setup-git` and `gh auth status`. The owner account `frankkefoueg` is never logged in to `gh` on this machine: the owner approves, merges into `stage` or `main`, tags and releases in the browser or as another OS user.
 
 Files that control these limits change only by the owner's hand: the guard hook and the other hooks, `.claude/settings*`, every script in `.claude/scripts/` (`push.sh`, `merge.sh`, `board.sh`, `env-check.sh`), the git hooks in `.husky/`, and `.github/workflows/`. The agents' edit tools are denied on them, the guard refuses shell writes to them, and `merge.sh` refuses a PR that touches them, so the owner merges it. A script the agents run without a prompt must not be one they can edit, or a push could be hidden inside it.
 
@@ -204,7 +204,7 @@ The guard is a tripwire against ordinary and accidental pushes, not a sandbox, a
 - uppercase API paths; GitHub answers them with a 404, so they do nothing
 - reading the `gh` hosts file
 
-Open gap until the owner acts: the owner's own `gh` login on the machine running the agents. Whoever can run `gh` there holds that login, and no guard rule changes that. The owner logs it out of that machine; until then the alarm is the only net for what that login can do. Step 4 above is unchanged.
+The owner account is not logged in to `gh` on the machine running the agents, so nothing there holds its login. The refusals on `~/.config/gh` and the keyring stay as the guard against someone logging it back in. Step 4 above says the same.
 
 ## Weekly demo and scorecards
 
