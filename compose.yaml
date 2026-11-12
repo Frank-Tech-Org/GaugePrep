@@ -1,4 +1,5 @@
-# Local only: the credentials here are not secrets.
+# Local development stack.
+# WARNING: these database credentials are for local use only; hosted ones live in Doppler.
 services:
   db:
     image: postgres:18
