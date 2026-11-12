@@ -20,18 +20,122 @@ def block(why):
 
 # WHY: newlines split commands and only a quoted heredoc body is dropped as data; the lexer
 # reads the "|" of ">|" as a pipe, so the word after it is kept as a written file.
-HEREDOC = re.compile(
-    r"(?<!<)(<<-?[ \t]*([\x22\x27])(\w+)\2[^\n]*)\n(?:.*?\n)??[ \t]*\3[ \t]*(?=\n|\)|$)", re.S
-)
 CODE_LINE = re.compile(r"\b(bash|sh|dash|zsh|ksh|python3?|node|perl|ruby|eval|xargs|source)\b")
-SUBST = re.compile(r"[$<>]\(([^()]*)\)|`([^`]*)`")
+HEREDOC_HEAD = re.compile(r"<<-?[ \t]*(?:([\x22\x27])\\?(\w+)\1|\\(\w+))")
 
-def heredoc_head(m):
-    line = m.string[m.string.rfind("\n", 0, m.start()) + 1:m.start()]
-    return m.group(0) if CODE_LINE.search(line) else m.group(1)
+def prep(text):
+    # WHY: quotes and comments decide what a heredoc marker or a line break means, so read them first.
+    out, line, pending, stack = [], [], [], [["p", 0]]
+    prev, i, n = [""], 0, len(text)
+
+    def emit(s):
+        out.append(s); line.append(s); prev[0] = s[-1:] or prev[0]
+
+    while i < n:
+        c, frame = text[i], stack[-1]
+        if frame[0] == "d":
+            if c == "\\" and i + 1 < n:
+                if text[i + 1] != "\n":
+                    emit(text[i:i + 2])
+                i += 2
+            elif c == "\x22":
+                stack.pop(); emit(c); i += 1
+            elif text.startswith("$(", i):
+                stack.append(["p", 0]); emit("$("); i += 2
+            else:
+                emit(c); i += 1
+            continue
+        if c == "\\" and i + 1 < n:
+            if text[i + 1] != "\n":
+                emit(text[i:i + 2])
+            i += 2
+        elif c in ("\x27", "`"):
+            j = text.find(c, i + 1)
+            j = n - 1 if j < 0 else j
+            emit(text[i:j + 1]); i = j + 1
+        elif c == "\x22":
+            stack.append(["d", 0]); emit(c); i += 1
+        elif c == "#" and (prev[0] == "" or prev[0] in " \t\n;&|("):
+            j = text.find("\n", i)
+            j = n if j < 0 else j
+            emit(text[i:j].replace("\\", "")); i = j
+        elif text.startswith(("$(", "<(", ">("), i):
+            stack.append(["p", 0]); emit(text[i:i + 2]); i += 2
+        elif c == "(":
+            frame[1] += 1; emit(c); i += 1
+        elif c == ")":
+            if frame[1] > 0:
+                frame[1] -= 1
+            elif len(stack) > 1:
+                stack.pop()
+            emit(c); i += 1
+        elif text.startswith("<<<", i):
+            emit("<<<"); i += 3
+        elif text.startswith("<<", i) and HEREDOC_HEAD.match(text, i):
+            m = HEREDOC_HEAD.match(text, i)
+            pending.append(m.group(2) or m.group(3)); emit(m.group(0)); i = m.end()
+        elif c == "\n":
+            feeds = bool(CODE_LINE.search("".join(line)))
+            line.clear(); emit(c); i += 1
+            for k, tag in enumerate(pending):
+                pos, end, rest_of = i, -1, ""
+                while pos <= n:
+                    nl = text.find("\n", pos)
+                    e = n if nl < 0 else nl
+                    s = text[pos:e].strip()
+                    if s == tag or s.startswith(tag + ")"):
+                        end, rest_of = e, s[len(tag):]
+                        break
+                    if nl < 0:
+                        break
+                    pos = nl + 1
+                if end < 0:
+                    break
+                emit(text[i:end] if feeds else rest_of)
+                i = end
+                if k + 1 < len(pending):
+                    emit("\n"); i = min(end + 1, n)
+            pending.clear()
+        else:
+            emit(c); i += 1
+    return "".join(out)
+
+def substs(text):
+    found, i, n, dq = [], 0, len(text), False
+    while i < n:
+        c = text[i]
+        if c == "\\":
+            i += 2
+        elif c == "\x27" and not dq:
+            j = text.find("\x27", i + 1)
+            i = n if j < 0 else j + 1
+        elif c == "\x22":
+            dq = not dq; i += 1
+        elif text.startswith(("$(", "<(", ">("), i) and not (c in "<>" and dq):
+            depth, j, q = 1, i + 2, ""
+            while j < n and depth:
+                d = text[j]
+                if d == "\\":
+                    j += 2
+                    continue
+                if q:
+                    q = "" if d == q else q
+                elif d in ("\x27", "\x22"):
+                    q = d
+                elif d == "(":
+                    depth += 1
+                elif d == ")":
+                    depth -= 1
+                j += 1
+            found.append(text[i + 2:j - 1 if depth == 0 else j])
+            i = j
+        else:
+            i += 1
+    found += [m.group(1) for m in re.finditer(r"`([^`]*)`", text)]
+    return found
 
 def split(text):
-    text = HEREDOC.sub(heredoc_head, text.replace("\\\n", ""))
+    text = prep(text)
     lexer = shlex.shlex(text, posix=True, punctuation_chars=";&|\n")
     lexer.whitespace = " \t\r"
     lexer.commenters = ""
@@ -46,9 +150,9 @@ def split(text):
                 clob.append(tok); after_clobber = False
             words.append(tok)
     segs.append(words)
-    for m in SUBST.finditer(text):
-        inner, inner_clob = split(m.group(1) or m.group(2) or "")
-        segs += inner; clob += inner_clob
+    for inner in substs(text):
+        inner_segs, inner_clob = split(inner)
+        segs += inner_segs; clob += inner_clob
     return segs, clob
 
 try:
@@ -91,14 +195,21 @@ def gh_api(rest):
         if not a.startswith("-") and not endpoint:
             endpoint = a
         i += 1
+    endpoint = re.sub(r"^https?://[^/]+/", "", endpoint).split("?")[0].lstrip("/")
     writes = method in ("POST", "PUT", "PATCH", "DELETE") or (body and method in ("", "POST"))
     if method == "DELETE":
         block("a DELETE through the GitHub API")
     if endpoint == "graphql":
         if GRAPHQL_PROTECTED.search(" ".join(rest)):
             block("a merge or ref change through the GraphQL API")
-        if any(a.startswith("--input") or re.match(r"query=(@|.*(\$\(|`))", a) for a in rest):
-            block("a GraphQL query read from a file or built by the shell")
+        if re.search(r"\bmutation\b", " ".join(rest), re.I):
+            block("a GraphQL mutation (agents change the board through the board helper)")
+        if any(a.startswith("--input") for a in rest):
+            block("a GraphQL query read from a file")
+        for a in rest:
+            m = re.search(r"query=(.*)", a, re.S)
+            if m and re.search(r"[@$`]", m.group(1)):
+                block("a GraphQL query read from a file or built by the shell")
     if writes and re.fullmatch(r"/?repos/[^/]+/[^/]+/?", endpoint):
         block("changing the repository settings through the GitHub API")
     if writes and API_PROTECTED.search(endpoint):
@@ -117,18 +228,40 @@ try:
 except (OSError, subprocess.SubprocessError):
     ROOT = ""
 cwd = os.getcwd()
+cwds = {cwd}
+
+OWNER_ABS = [ROOT + s for s in ("/.claude/hooks", "/.claude/scripts", "/.github/workflows", "/.husky",
+                                 "/.git", "/.claude/settings.json", "/.claude/settings.local.json")]
+
+def resolved(a):
+    out = []
+    for c in cwds:
+        q = os.path.normpath(os.path.join(c, os.path.expanduser(a)))
+        out += [q] + (glob.glob(q) if re.search(r"[*?\[]", q) else [])
+    return out
 
 def owner_hit(a):
     # WHY: a double slash, a dot segment, a glob or an earlier cd all name the same owner-only file.
     if OWNER_ONLY.search(a):
         return True
     for c in {a, a.split("=", 1)[-1]}:
-        if not c or "$" in c or "`" in c:
-            continue
-        p = os.path.normpath(os.path.join(cwd, os.path.expanduser(c)))
-        for q in [p] + (glob.glob(p) if re.search(r"[*?\[]", p) else []):
-            if OWNER_ONLY.search(q + "/"):
+        if c and "$" not in c and "`" not in c:
+            if any(OWNER_ONLY.search(q + "/") for q in resolved(c)):
                 return True
+    return False
+
+def parent_hit(a, broad):
+    # WHY: writing a whole folder (cp -r, rsync, tar -x, checkout) also writes the owner-only files in it.
+    if re.search(r"(^|/)\.(claude|github|git|husky)/?$", a):
+        return True
+    if not ROOT or not a or "$" in a or "`" in a:
+        return False
+    for q in resolved(a):
+        if q == ROOT or ROOT.startswith(q.rstrip("/") + "/"):
+            if broad:
+                return True
+        elif any(d == q or d.startswith(q + "/") for d in OWNER_ABS):
+            return True
     return False
 
 if any(owner_hit(t) for t in clobbered):
@@ -148,6 +281,13 @@ SHELLS = {"bash", "sh", "dash", "zsh", "ksh", "ash", "fish", "script", "su"}
 INTERPRETERS = {"python", "python3", "node", "perl", "ruby", "awk", "gawk", "mawk", "lua", "php", "expect"}
 GIT_ENV = re.compile(r"(GIT_\w*(EDITOR|PAGER|SSH\w*|EXTERNAL_DIFF|ASKPASS|PROXY\w*|CONFIG\w*|EXEC_PATH"
                      r"|TEMPLATE_DIR)|SSH_ASKPASS|EDITOR|VISUAL|PAGER|HOME|XDG_CONFIG_HOME)=")
+BAD_ENV = re.compile(r"(GIT_(?!AUTHOR_|COMMITTER_|TERMINAL_PROMPT=|OPTIONAL_LOCKS=)\w*|EDITOR|VISUAL|PAGER"
+                     r"|SSH_ASKPASS|CDPATH|BASH_ENV|ENV|PROMPT_COMMAND|LD_PRELOAD)=")
+ASSIGNERS = {"export", "declare", "typeset", "readonly", "local", "env", "sudo", "doas", "command", "exec",
+             "nohup", "time", "timeout", "nice", "xargs", "setsid", "stdbuf"}
+STDIN_PATH = re.compile(r"^/(dev/(stdin|fd/\d+)|proc/self/fd/\d+)$")
+GIT_RUNNERS = {"filter-branch", "send-email", "instaweb", "web--browse", "daemon", "imap-send", "upload-pack",
+               "receive-pack", "shell", "checkout-index", "read-tree", "credential"}
 PUSH_IN_CODE = re.compile(r"\bgit\b.{0,80}?\b(push|send-pack)\b", re.S)
 FLAT = re.sub(r"[\x22\x27\\]", "", cmd)
 GIT_C_OK = re.compile(r"(user\.(name|email)|core\.quotepath|color\.[\w.-]+|advice\.\w+|safe\.directory"
@@ -202,8 +342,14 @@ def strip_prefix(w):
     # WHY: function bodies, case arms and coproc put the real command after a few shell words.
     while w:
         h = w[0]
-        if h in KEYWORDS or h == "coproc":
+        if h == "time":
             w = w[1:]
+            while w and w[0].startswith("-"):
+                w = w[1:]
+        elif h in KEYWORDS or h == "coproc":
+            w = w[1:]
+            if h == "coproc" and len(w) > 1 and re.fullmatch(r"\w+", w[0]) and w[1] in ("{", "("):
+                w = w[1:]
         elif h == "function":
             w = w[2:]
         elif h == "case":
@@ -223,10 +369,11 @@ def norm_text(a):
 
 def reads_stdin(cmdw):
     for k, a in enumerate(cmdw[:4]):
-        if program(a) in SHELLS | INTERPRETERS:
+        name = program(a)
+        if name in SHELLS | INTERPRETERS | {"source", "."}:
             rest, skip = [], False
             for b in cmdw[k + 1:]:
-                if b.startswith("<("):
+                if b.startswith("<(") or STDIN_PATH.match(b):
                     return True
                 if skip:
                     skip = False
@@ -234,8 +381,27 @@ def reads_stdin(cmdw):
                     skip = True
                 elif not b.startswith(("-", "<", ">")):
                     rest.append(b)
-            return not rest
+            return not rest and name not in ("source", ".")
     return False
+
+def long_hit(args, names):
+    for x in args:
+        if x.startswith("--") and x[2:].split("=", 1)[0]:
+            stem = x[2:].split("=", 1)[0]
+            if any(n.startswith(stem) for n in names):
+                return True
+    return False
+
+def gh_action(rest):
+    i = 0
+    while i < len(rest):
+        if rest[i] in ("-R", "--repo"):
+            i += 2
+        elif rest[i].startswith("-"):
+            i += 1
+        else:
+            return rest[i]
+    return ""
 
 budget = 300
 for w in segments:
@@ -250,21 +416,35 @@ for w in segments:
     while start < len(full) and ASSIGN.match(full[start]):
         start += 1
     cmdw = full[start:]
+    if any(BAD_ENV.match(x) for x in full[:start]):
+        block("setting git, editor, pager or shell-startup variables that name a program")
     if not cmdw:
         continue
     if dynamic(re.sub(r"^(\$\(|\(|\{|!|`)", "", w[start])):
         block("a command name built from a variable or substitution")
     head = program(cmdw[0])
-    if head in ("cd", "pushd"):
-        target = cmdw[1] if len(cmdw) > 1 else "~"
-        if "rev-parse --show-toplevel" in target:
-            cwd = ROOT or cwd
+    name = re.sub(r"^(\$\(|\(|!|`)", "", w[start])
+    if re.search(r"[*?]", name) or (name not in ("[", "[[") and "[" in name) or (
+            "{" in name and re.search(r",|\.\.", name)):
+        block("a command name with a glob or brace pattern")
+    if head in ASSIGNERS and any(BAD_ENV.match(x) for x in cmdw[1:]):
+        block("setting git, editor, pager or shell-startup variables that name a program")
+    if head == "hash" and any(x.startswith("-") and "p" in x for x in cmdw[1:]):
+        block("hash -p points a command name at another program")
+    if head in ("cd", "pushd", "popd"):
+        args = [x for x in cmdw[1:] if x == "-" or not x.startswith("-")]
+        target = args[0] if args else "~"
+        if head == "popd" or target == "-":
+            block("cd to a directory the guard cannot work out (cd -, popd)")
+        elif "rev-parse --show-toplevel" in target:
+            cwds.add(ROOT or cwd)
         elif dynamic(target):
             block("cd into a directory built by the shell")
         else:
-            cwd = os.path.normpath(os.path.join(cwd, os.path.expanduser(target)))
-            if re.search(r"(^|/)\.git(/|$)", cwd):
+            moved = {os.path.normpath(os.path.join(c, os.path.expanduser(target))) for c in cwds}
+            if any(re.search(r"(^|/)\.git(/|$)", c) for c in moved):
                 block("cd into a .git directory (its config and hooks can run commands)")
+            cwds.update(moved)
         continue
     if head == "trap" and len(cmdw) > 1:
         nested(cmdw[1])
@@ -351,6 +531,21 @@ for w in segments:
             block("changing an owner-only file (the owner copies it from .claude/proposed/)")
     if prog == "patch":
         block("patch can change owner-only files")
+    if ROOT and prog in ("cp", "mv", "rm", "rsync", "ln", "install", "tar", "unzip", "chmod", "chown",
+                         "touch", "truncate"):
+        shorts = "".join(a for a in w[1:] if re.match(r"-[a-zA-Z]", a) and not a.startswith("--"))
+        recursive = prog in ("rsync", "tar", "unzip") or bool(re.search(r"[rRa]", shorts)) or any(
+            a in ("--recursive", "--archive") for a in w[1:])
+        args = [a for a in w[1:] if not a.startswith("-")]
+        if prog in ("cp", "rsync", "install"):
+            tdir = next((w[k + 1] for k, a in enumerate(w) if a in ("-t", "--target-directory")
+                         and k + 1 < len(w)), None)
+            args = [tdir] if tdir else args[-1:]
+        elif prog == "tar" and not (re.match(r"-?[a-zA-Z]*x", w[1] if len(w) > 1 else "") or any(
+                a in ("--extract", "--get") for a in w)):
+            args = []
+        if any(parent_hit(a, recursive) for a in args):
+            block("writing over a folder that holds owner-only files")
 
     if gitw:
         if any(GIT_ENV.match(a) for a in full):
@@ -384,12 +579,36 @@ for w in segments:
             block("xargs supplying the git subcommand")
         if any(x.startswith("ext::") for x in gitw):
             block("a git remote that runs a command (ext::)")
-        if verb in ("fetch", "pull", "clone", "ls-remote") and any(
-                x.startswith(("--upload-pack", "--receive-pack", "--exec")) or x == "-u"
-                or (x.startswith("-u") and not x.startswith("--")) for x in rest):
+        if verb in GIT_RUNNERS and not verb.startswith(("credential", "checkout-index", "read-tree")):
+            block("a git command that runs another program")
+        if verb.startswith("credential"):
+            block("git credential prints stored tokens")
+        if verb in ("checkout-index", "read-tree"):
+            block("writing the working tree from the index can overwrite owner-only files")
+        if re.search(r"[*?\[{]", verb):
+            block("a git subcommand with a glob or brace pattern")
+        if (verb in ("fetch", "pull", "clone", "ls-remote", "archive")
+                and long_hit(rest, ("upload-pack", "receive-pack", "exec"))) or (
+                verb in ("fetch", "pull", "clone", "ls-remote") and any(
+                    re.match(r"-[a-zA-Z]*u", x) for x in rest if not x.startswith("--"))):
             block("a git option that names a program to run")
-        if verb == "difftool" and any(x in ("-x", "--extcmd") or x.startswith(("--extcmd=", "-x")) for x in rest):
+        if verb in ("clone", "init") and long_hit(rest, ("template",)):
+            block("a git template directory can carry hooks")
+        if verb == "difftool" and (long_hit(rest, ("extcmd",)) or any(
+                re.match(r"-[a-zA-Z]*x", x) for x in rest if not x.startswith("--"))):
             block("difftool with a command to run")
+        if verb == "grep" and (long_hit(rest, ("open-files-in-pager",)) or any(
+                re.match(r"-[a-zA-Z]*O", x) for x in rest if not x.startswith("--"))):
+            block("git grep with a pager command to run")
+        if verb in ("checkout", "restore"):
+            before = rest[:rest.index("--")] if "--" in rest else rest
+            after = rest[rest.index("--") + 1:] if "--" in rest else []
+            refs = [x for x in before if not x.startswith("-")]
+            sourced = any(x.startswith(("--source", "-s")) for x in before)
+            paths = after if "--" in rest else (refs[1:] if verb == "checkout" else [])
+            if (sourced or refs or "--" in rest) and any(parent_hit(x, True) or owner_hit(x) for x in paths) \
+                    and (sourced or (verb == "checkout" and refs)):
+                block("restoring files from another ref can overwrite owner-only files")
         if verb == "bisect" and "run" in rest:
             nested(shlex.join(rest[rest.index("run") + 1:]))
         if verb in ("apply", "am") and not set(rest) & {"--check", "--stat", "--numstat", "--summary"}:
@@ -401,11 +620,22 @@ for w in segments:
             if not set(flags) <= GIT_CONFIG_FLAGS or len(rest) - len(flags) > 1:
                 block("changing git config (aliases and hooks can hide a push)")
         if verb == "rebase":
-            for k, a in enumerate(rest):
-                if a in ("-x", "--exec") and k + 1 < len(rest):
-                    nested(rest[k + 1])
-                elif a.startswith("--exec="):
-                    nested(a[7:])
+            k = 0
+            while k < len(rest):
+                a, val = rest[k], None
+                if a.startswith("--"):
+                    nm, eq, v = a[2:].partition("=")
+                    if nm and "exec".startswith(nm):
+                        val = v if eq else (rest[k + 1] if k + 1 < len(rest) else "")
+                        k += 0 if eq else 1
+                elif re.match(r"-[a-zA-Z]*x", a):
+                    val = a[a.index("x") + 1:]
+                    if not val:
+                        val = rest[k + 1] if k + 1 < len(rest) else ""
+                        k += 1
+                if val is not None:
+                    nested(val)
+                k += 1
         if verb == "submodule" and "foreach" in rest:
             args = rest[rest.index("foreach") + 1:]
             while args and args[0].startswith("-"):
@@ -425,7 +655,7 @@ for w in segments:
                 nested(expansion[1:] if expansion.startswith("!") else "git " + expansion)
     elif prog == "gh":
         verb, rest = sub(w)
-        action = rest[0] if rest else ""
+        action = gh_action(rest)
         if verb == "pr" and action == "merge":
             block("merging a PR (use .claude/scripts/merge.sh)")
         if verb == "release" and action in ("create", "delete", "edit", "upload"):
@@ -438,12 +668,25 @@ for w in segments:
             block("switching a workflow on or off")
         if verb == "repo" and action in ("edit", "rename", "archive", "unarchive"):
             block("changing the repository settings")
-        if verb == "auth" and action != "status":
+        if verb == "auth" and (action != "status" or any(
+                x == "--show-token" or re.fullmatch(r"-[a-zA-Z]*t[a-zA-Z]*", x) for x in rest)):
             block("gh auth can print the token or switch to the owner account")
         if verb == "alias" and action in ("set", "import"):
             block("creating a gh alias (it can run shell commands)")
         if verb == "extension" and action in ("install", "exec"):
             block("installing or running a gh extension")
+    elif prog in ("curl", "wget") and any(re.search(r"github(usercontent)?\.com|ghcr\.io", x) for x in w[1:]):
+        for k, x in enumerate(w[1:], 1):
+            meth = None
+            if x in ("-X", "--request", "--method"):
+                meth = w[k + 1] if k + 1 < len(w) else ""
+            elif x.startswith(("--request=", "--method=")):
+                meth = x.split("=", 1)[1]
+            elif x.startswith("-X") and len(x) > 2:
+                meth = x[2:]
+            if (meth is not None and meth.upper() not in ("GET", "HEAD")) or re.match(
+                    r"(-d|-F|-T|--data|--form|--upload-file|--post-data|--post-file|--json)", x):
+                block("writing to GitHub with curl or wget (use gh, which the other rules cover)")
     elif prog == "rm":
         flags = "".join(a for a in w[1:] if a.startswith("-"))
         targets = [a for a in w[1:] if not a.startswith("-")]
