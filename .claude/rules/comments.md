@@ -54,10 +54,10 @@ STAGING_DJANGO_SECRET_KEY=
 # Bad: narrative, one long line per thought
 # Scans the full history reachable from the head, not other branches. Config and ignore list come from the base commit, so a PR cannot switch off its own scan.
 
-# Good: tagged, short, the script holds the detail
+# Good: tagged, short, the step holds the detail
 # SECURITY: gitleaks config and ignore list come from the base commit.
 - name: Scan the full git history
-  run: .github/scripts/scan-history.sh
+  run: git log --all -p | gitleaks stdin --config "$BASE_CONFIG"
 ```
 
 Workflow steps stay inline in the workflow, kept short and named; the owner-only workflow files are the trusted place for CI logic.

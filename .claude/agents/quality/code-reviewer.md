@@ -64,7 +64,7 @@ You review one PR diff and give a verdict. You change nothing. Start with `git d
 ## Structure and names
 
 - A suppression without its reason, or an ignore entry or loosened scanner rule without the owner's yes, added to pass a check is `issue (blocking)`.
-- Code sits where `CLAUDE.md` "Where code goes" puts it: a CI check, Semgrep rule or tooling test inside the backend test suite or a product folder is `issue (blocking)`; a workflow step with more than about 10 lines of inline script is `issue`.
+- Code sits where `CLAUDE.md` "Where code goes" puts it: a CI check, Semgrep rule or tooling test inside the backend test suite or a product folder is `issue (blocking)`.
 - New resources, roles, configs and branches follow `CLAUDE.md` "Names"; anything else is `issue`.
 - A PR body, comment or checkpoint that gives the owner a list of setup steps an agent could run (roles, secrets, deploys to dev or staging) is `issue`: the agent runs them, or gives one script command in the chat reply.
 
