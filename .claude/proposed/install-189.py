@@ -53,6 +53,8 @@ def install() -> None:
                 target.chmod(0o755)
     except OSError as e:
         rollback(f"copy failed ({e})")
+    if not os.access(guard, os.X_OK):
+        rollback("guard is not executable")
 
     for sh in (guard, root / ".claude/scripts/merge.sh"):
         if subprocess.run(["bash", "-n", str(sh)]).returncode:

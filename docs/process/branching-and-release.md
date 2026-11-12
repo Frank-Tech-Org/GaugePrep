@@ -175,7 +175,7 @@ GitHub doesn't enforce these on the free plan for a private organisation reposit
 - A write-access account can still change `main` or `stage`. A workflow on every push to `main` alerts the owner when the commit did not come from an allowed PR. The production deploy runs only from a tag, and the workflow checks that the owner pushed it, so a bad change on `main` cannot reach users.
 - A second workflow, the develop alarm, does the same for `develop` and `stage`. A push opens an issue assigned to the owner unless the commit is the merge commit of a merged PR. Allowed into `develop`: from `feature/*` or `chore/*`, merged by the owner or carrying the owner's approval of the PR's last commit (what `merge.sh` requires), and from `main`, merged by the owner. Allowed into `stage`: from `develop` or `main`, merged by the owner. A forced push, a deleted branch, and any commit that changes a workflow file without the owner's merge always raise it. `[skip ci]` can skip the push run, so a scheduled run every hour rechecks the last two hours of pushes (taken from GitHub's push log, not commit dates) and scheduled runs ignore `[skip ci]`. It opens one issue per commit, even if the issue was closed. To prove it fires, run it by hand with a commit that is not a merged PR: `gh workflow run develop-alarm.yml -f branch=develop -f sha=<commit>`. The agents' token lacks the workflow scope, so GitHub refuses a push that edits or deletes the alarm file. It detects; it does not block.
 - Two accounts, both organisation owners. Agents work as `KefouegFrank`, the owner's main account, so the commits count on it. The owner approves as `frankkefoueg`, the only account used for `stage`, `main`, tags and releases. GitHub won't let the account that opened a PR approve it, so the approval on a `develop` PR always comes from the other account, and `merge.sh` checks it.
-- Because the agents' account is an owner, its only GitHub-side limit is its token: on the agents' machine it is logged in to `gh` with the fine-grained token below and nothing broader.
+- Because the agents' account is an owner, its only GitHub-side limit is its token: on the agents' machine it is logged in to `gh` with a token. Today that is a classic token with the scopes `gist`, `project`, `read:org` and `repo`; the fine-grained token below is the target.
 
 Setting up the agents' account:
 
@@ -205,6 +205,8 @@ The guard is a tripwire against ordinary and accidental pushes, not a sandbox, a
 - reading the `gh` hosts file
 
 The owner account is not logged in to `gh` on the machine running the agents, so nothing there holds its login. The refusals on `~/.config/gh` and the keyring stay as the guard against someone logging it back in. Step 4 above says the same.
+
+Open gap: the agents' account token is broader than needed until the owner replaces it with a fine-grained token limited to this repository; any shell past the guard could use it for repository-admin calls.
 
 ## Weekly demo and scorecards
 
