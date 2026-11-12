@@ -47,6 +47,7 @@ Settled architecture choices become ADRs in `docs/adr/`. This file is for open q
 - Raised: 2026-10-30 by product-manager on the build pack intake
 - Decided: 2026-10-30: follow the pack · the owner. 204 anchors: 34 exemplars, one per level per task type, used in the grader prompt, and 170 evaluation anchors never in the prompt, instead of 180. The level two independent human raters agree on wins over the target level an item was written for. Two raters, plus a third on a one-level disagreement, instead of one reviewer.
 - Effect: `docs/exam-specs/TCF-Canada.md` updated and ADR-020 written by `cto` in #53; raters recruited in #57.
+- Addendum, decided 2026-11-12 · the owner: with no recruited speakers (#14 closed), the first speaking anchors are scripted transcripts that `exam-content-lead` writes per level and task, levelled by the two raters (#57) and stored append-only with a source tag. Rated attempts from consenting learners replace them after launch. LANGSNAP and FLLOC can never be anchors: CC BY-NC-SA forbids commercial use and would carry share-alike into our content. Effect: speech recognition is chosen on public corpora instead (ADR-026).
 
 ### D-5: How does the human reviewer approve content batches?
 - Raised: 2026-10-30 by product-manager on the build pack intake
