@@ -15,7 +15,7 @@ The need has not changed: one provider serves live and batch transcription, nobo
 - **Do nothing (keep ADR-008):** wait for 20 recruited speakers. Highest fidelity, but recruitment is closed, so the voice examiner (M4) and speaking grading have no provider and no date.
 - **Self-host Whisper large-v3 everywhere, no comparison:** no vendor spend, and the open weights stay ours. It has no streaming mode, so the live examiner needs a chunking wrapper and a GPU server that the cost model and D-7 don't plan for. Whisper adds phrases that were never spoken in about 1% of transcripts, which is a grading risk. We'd still have no number on accented French. Undo: swap the adapter.
 - **Public-corpus benchmark (chosen):** run the candidates on public accented and learner French, plus a synthetic planted-error set, under ADR-008's rule. Free within the providers' free allowances, a few days of work, no personal data. It says nothing about anglophone Cameroonians, spontaneous A2 to C1 speech or phone microphones on slow networks. Undo: rerun on new data; providers sit behind the speech-to-text interface.
-- **Corpus plus 3 to 5 volunteers as fallback:** the chosen option, with a handful of recorded volunteers for the anglophone Cameroonian gap. Five speakers can't separate engines that sit within a WER point of each other, and it brings back the consent, transcription and data handling the owner just closed. The 20 consenting beta learners before launch cover the same gap with four times the speakers.
+- **Corpus plus 3 to 5 volunteers:** the corpus benchmark plus a handful of recorded volunteers for the anglophone Cameroonian gap. Not chosen; held as the fallback if the beta recruitment below finds no anglophone Cameroonians, because it is then the only route to any signal on them. Five speakers can't separate engines that sit within a WER point of each other, and it brings back the consent, transcription and data handling the owner just closed. The 20 consenting beta learners before launch cover the same gap with four times the speakers.
 
 ## Evidence
 
@@ -47,7 +47,7 @@ Public wording is "tested on Central African and English-speaking learner French
 
 - Good: a provider in milestone 0 without recruitment, consent forms or transcription costs; no personal data collected; the benchmark can be rerun on every provider or model change.
 - Bad: the M0 choice rests mostly on read speech from adult Central African speakers and on British learners, not on our learners in exam conditions. Two engines close on the corpus may swap places on real learners.
-- The launch criterion stays: before launch, the first 20 consenting beta learners, including anglophone Cameroonians, record the speaking tasks and the benchmark reruns on their answers. If the winner then fails the 90% grading bar, the provider changes before launch.
+- The launch criterion stays: before launch, the first 20 consenting beta learners record the speaking tasks and the benchmark reruns on their answers. The gate holds only if some of them are anglophone Cameroonians; if recruitment misses them, the launch criterion stays unmet and the volunteers fallback applies. If the winner then fails the 90% grading bar, the provider changes before launch.
 - Design doc: sections 1, 8.5, 8.6, 18 and 19 and Appendices A and B changed in the same PR.
 
 ## Revisit when

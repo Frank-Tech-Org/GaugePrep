@@ -382,7 +382,7 @@ The learner is told they look ready to book the real exam when, in two consecuti
 | Gaming | Keyword-stuffed, template-based and off-topic texts in rich vocabulary never rated above the level the rules allow |
 | Injection | Instructions hidden in a response never change the result |
 
-- Speech recognition check: at least 20 Cameroonian speakers (francophone and anglophone, A2 to C1) each record the three speaking tasks; transcripts are judged accurate enough to grade for at least 90% of answers; errors are analysed by sound and fed back to the speaking feedback.
+- Speech recognition check: at least 20 Cameroonian speakers (francophone and anglophone, A2 to C1) each record the three speaking tasks; transcripts are judged accurate enough to grade for at least 90% of answers; errors are analysed by sound and fed back to the speaking feedback. The speakers are the first 20 consenting beta learners, run through the benchmark in ADR-026.
 
 ### 9.2 After launch: item calibration from learner responses
 
@@ -466,7 +466,7 @@ Feedback is written in the learner's interface language, with French examples. I
 
 ## 12. Fairness and accessibility
 
-- Accent fairness: speaking is rated on intelligibility, never on closeness to a Parisian accent; the speech recognition check in 9.1 covers Cameroonian speakers before launch and is repeated with each change of speech technology.
+- Accent fairness: speaking is rated on intelligibility, never on closeness to a Parisian accent; the speech recognition check in 9.1 covers Cameroonian speakers before launch (the first 20 consenting beta learners, ADR-026) and is repeated with each change of speech technology.
 - Item fairness: items whose statistics show a large difference in difficulty between learners of the same ability from different countries or first languages are reviewed and revised or retired.
 - Accessibility: adjustable text size for reading; keyboard operation on desktop; transcripts after every listening item outside simulation mode.
 

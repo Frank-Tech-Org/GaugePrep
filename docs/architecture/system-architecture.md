@@ -662,7 +662,7 @@ Content production (items, prompts, lessons, anchors) runs in parallel from M1 u
 | LiveKit Cloud | Build free: 1,000 agent minutes, 5 concurrent sessions | livekit.com pricing |
 | Claude Sonnet 5.5, Haiku 5.5 | $2/$10 and $0.10/$0.50 per million tokens; no retirement before September and October 2027 | Anthropic pricing and model deprecations pages |
 | GPT-6.1 Sol | $2/$10 per million tokens | OpenAI pricing page |
-| Deepgram Nova-3 Multilingual | $0.0058 per minute streaming (promotional) | deepgram.com pricing |
+| Deepgram Nova-3 Multilingual | $0.0092 per minute streaming, $0.0052 batch, list price (12 November 2026) | deepgram.com pricing |
 | Mistral Voxtral Realtime | $0.006 per minute; open weights Apache 2.0 | AI Business, February 2026 |
 | ElevenLabs | Flash $0.04 and v3 $0.08 per 1,000 characters; Scribe v3 $0.20 per hour, v3 Live $0.22 per hour (12 November 2026) | elevenlabs.io API pricing |
 | Cloudflare R2 | 10 GB free; $0.015 per GB-month; no egress fees | Cloudflare R2 pricing |
