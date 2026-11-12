@@ -101,7 +101,7 @@ def install() -> None:
 
     def guard_exit(cmd: str) -> int:
         return subprocess.run(
-            [str(guard)],
+            ["bash", str(guard)],
             input=json.dumps({"tool_input": {"command": cmd}}),
             text=True,
             capture_output=True,
@@ -388,7 +388,7 @@ def install() -> None:
         "events_for() {\n"
         '  local q="" prev=""\n'
         '  for x in "$@"; do [ "$prev" = --jq ] && q=$x; prev=$x; done\n'
-        '  jq "$q" "$FX/events.json"\n'
+        '  jq -r "$q" "$FX/events.json"\n'
         "}\n"
         "issue_list() {\n"
         '  local a="" q="" prev=""\n'
