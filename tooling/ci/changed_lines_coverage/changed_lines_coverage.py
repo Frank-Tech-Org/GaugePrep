@@ -13,7 +13,7 @@ from pathlib import Path
 HUNK = re.compile(r"^@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@")
 
 
-# The omit patterns in pyproject.toml, so these files are never expected in the report.
+# WHY: mirrors the coverage omit list in the root pyproject.toml.
 UNMEASURED = re.compile(
     r"^apps/backend/(.*/)?tests/|/migrations/|(^|/)(conftest|manage)\.py$"
 )

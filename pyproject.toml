@@ -54,4 +54,4 @@ timeout = 30
 [tool.coverage.run]
 source = ["packages/examcore/src/examcore", "apps/backend"]
 patch = ["subprocess"]
-omit = ["*/tests/*", "*/conftest.py", "*/manage.py", "*/migrations/*"]
+omit = ["*/apps/backend/tests/*", "*/conftest.py", "*/manage.py", "*/migrations/*"]

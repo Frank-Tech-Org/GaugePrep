@@ -41,6 +41,6 @@
       "uv run ruff format",
       "uv run ruff check"
     ],
-    "*.{ts,tsx,js,mjs,json}": "prettier --write"
+    "{apps/web/**/*.{ts,tsx,js,mjs,json},tooling/**/*.{js,mjs,json},package.json}": "prettier --write"
   }
 }

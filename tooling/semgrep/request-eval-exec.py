@@ -1,4 +1,4 @@
-# Test snippets for request-eval-exec.yaml; run with `semgrep --test semgrep/`.
+# Test snippets for request-eval-exec.yaml; run with `semgrep --test tooling/semgrep/`.
 import ast
 import builtins
 
