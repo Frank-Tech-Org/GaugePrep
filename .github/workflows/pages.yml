@@ -1,13 +1,13 @@
 name: pages
 
-# Publishes the web placeholder to Cloudflare Pages by direct upload, after the pull request checks pass. Each job reads only its own prefix's secrets.
-# Run it by hand from develop or stage to republish the current head.
+# Publishes the web placeholder to Cloudflare Pages by direct upload, after the PR checks pass.
+# SECURITY: each job reads only its own prefix's secrets; the checks never see the Pages tokens.
 on:
   push:
     branches: [develop, stage]
   workflow_dispatch:
 
-# Every job states its own permissions below.
+# WHY: every job states its own permissions below.
 permissions: {}
 
 env:
@@ -15,7 +15,6 @@ env:
   WRANGLER_SEND_METRICS: "false"
 
 jobs:
-  # The same workflow pull requests run. No secrets are passed: the checks never see the Pages tokens.
   checks:
     if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/stage'
     permissions:
@@ -33,7 +32,7 @@ jobs:
       group: pages-dev
       cancel-in-progress: false
     steps:
-      # Two pushes in a row queue their publishes; if a newer commit has landed since this run started, its run publishes and this one stops.
+      # WHY: if a newer commit landed since this run started, its run publishes and this one stops.
       - name: Check this is still the branch head
         id: head
         env:
@@ -50,7 +49,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      # The pnpm version comes from the packageManager field in package.json.
+      # WHY: the pnpm version comes from the packageManager field in package.json.
       - if: steps.head.outputs.publish == 'true'
         uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
       - if: steps.head.outputs.publish == 'true'
@@ -60,7 +59,7 @@ jobs:
       - name: Build the placeholder
         if: steps.head.outputs.publish == 'true'
         run: node apps/web/scripts/build-placeholder.mjs dev "$GITHUB_SHA"
-      # Pages production branch is main on both projects; --branch main makes this the live deployment.
+      # WHY: the Pages production branch is main on both projects; --branch main goes live.
       - name: Publish to gaugeprep-dev
         if: steps.head.outputs.publish == 'true'
         env:
@@ -95,7 +94,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      # The pnpm version comes from the packageManager field in package.json.
+      # WHY: the pnpm version comes from the packageManager field in package.json.
       - if: steps.head.outputs.publish == 'true'
         uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
       - if: steps.head.outputs.publish == 'true'
