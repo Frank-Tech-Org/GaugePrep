@@ -24,7 +24,8 @@ def _run(
         env["CI"] = ci
     env["PYTHONPATH"] = str(HERE.parent)
     # WHY: fixed argv list from our own interpreter; no shell and no external input.
-    return subprocess.run(  # nosemgrep: dangerous-subprocess-use-audit
+    # nosemgrep: python.lang.security.audit.dangerous-subprocess-use-audit
+    return subprocess.run(
         [
             sys.executable,
             "-m",
