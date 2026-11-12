@@ -1,0 +1,121 @@
+{
+  "env": {
+    "GIT_AUTHOR_NAME": "kefouegFrank",
+    "GIT_AUTHOR_EMAIL": "kefoueg@gmail.com",
+    "GIT_COMMITTER_NAME": "kefouegFrank",
+    "GIT_COMMITTER_EMAIL": "kefoueg@gmail.com"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(.claude/scripts/board.sh:*)",
+      "Bash(.claude/scripts/push.sh:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(git branch:*)",
+      "Bash(git switch:*)",
+      "Bash(git fetch:*)",
+      "Bash(git pull:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git worktree:*)",
+      "Bash(gh pr create:*)",
+      "Bash(gh pr comment:*)",
+      "Bash(gh pr edit:*)",
+      "Bash(gh issue comment:*)",
+      "Bash(gh issue edit:*)",
+      "Bash(gh issue view:*)",
+      "Bash(gh issue list:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr list:*)",
+      "Bash(gh pr diff:*)",
+      "Bash(gh pr checks:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh run view:*)",
+      "Bash(gh project item-list:*)",
+      "Bash(gh project field-list:*)",
+      "Bash(uv sync:*)",
+      "Bash(uv run pytest:*)",
+      "Bash(pnpm install:*)",
+      "Bash(pnpm check:*)",
+      "Bash(pnpm test:*)",
+      "Bash(.claude/scripts/env-check.sh:*)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./**/.env)",
+      "Read(./**/.env.local)",
+      "Read(./**/.env.*.local)",
+      "Read(./**/.env.development)",
+      "Read(./**/.env.test)",
+      "Read(./**/.env.staging)",
+      "Read(./**/.env.production)",
+      "Read(./**/*.pem)",
+      "Read(./**/*.key)",
+      "Bash(git push:*)",
+      "Bash(gh pr merge:*)",
+      "Bash(gh release create:*)",
+      "Bash(gh release edit:*)",
+      "Bash(gh release delete:*)",
+      "Edit(./.claude/hooks/**)",
+      "Write(./.claude/hooks/**)",
+      "MultiEdit(./.claude/hooks/**)",
+      "Edit(./.claude/scripts/**)",
+      "Write(./.claude/scripts/**)",
+      "MultiEdit(./.claude/scripts/**)",
+      "Edit(./.claude/settings.json)",
+      "Write(./.claude/settings.json)",
+      "MultiEdit(./.claude/settings.json)",
+      "Edit(./.claude/settings.local.json)",
+      "Write(./.claude/settings.local.json)",
+      "MultiEdit(./.claude/settings.local.json)",
+      "Edit(./.github/workflows/**)",
+      "Write(./.github/workflows/**)",
+      "MultiEdit(./.github/workflows/**)",
+      "Edit(./.husky/**)",
+      "Write(./.husky/**)",
+      "MultiEdit(./.husky/**)",
+      "Edit(./.git/**)",
+      "Write(./.git/**)",
+      "MultiEdit(./.git/**)",
+      "Edit(//home/user/Frank-workspace/linguamentor-v3/.git/**)",
+      "Write(//home/user/Frank-workspace/linguamentor-v3/.git/**)",
+      "MultiEdit(//home/user/Frank-workspace/linguamentor-v3/.git/**)",
+      "Edit(~/.gitconfig)",
+      "Write(~/.gitconfig)",
+      "MultiEdit(~/.gitconfig)",
+      "Edit(~/.config/git/**)",
+      "Write(~/.config/git/**)",
+      "MultiEdit(~/.config/git/**)",
+      "Edit(./.env)",
+      "Write(./.env)",
+      "Edit(./.env.*.local)",
+      "Write(./.env.*.local)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-bash.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/format-and-lint.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
