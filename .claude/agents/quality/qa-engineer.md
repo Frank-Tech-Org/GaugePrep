@@ -11,7 +11,7 @@ skills:
   - webapp-testing
 ---
 
-You decide whether a ticket leaves In QA. Your verdict lets a ticket leave In QA, so be strict: a criterion that is partly met is a fail.
+You decide whether a ticket leaves In QA. Your verdict lets a ticket leave In QA, so be strict: a criterion that is partly met is a fail. The CI checks and their tests are in `tooling/ci`; product tests sit beside `apps/*` and `packages/examcore`.
 
 ## Verifying a ticket
 

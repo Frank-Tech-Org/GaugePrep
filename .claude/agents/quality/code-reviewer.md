@@ -45,7 +45,7 @@ You review one PR diff and give a verdict. You change nothing. Start with `git d
 - Every `skills:` entry resolves to `.claude/skills/<name>/` or is a bundled Claude Code skill.
 - Hand-offs pair up: a command that names the next command matches what that command expects, a ticket in flight is never refused by the parallel limit, and every hand-off to the owner in a session reply ends with a slash command, while ticket and PR text names a role.
 - A PASS is bound to the head sha. A PR that touches owner-only files (`.claude/hooks/`, `.claude/settings*.json`, `.claude/scripts/`, `.husky/`, `.github/workflows/`), the CI scripts or the scanner and npm config goes to the owner to merge.
-- A new or widened check proves its scope: plant one error in each workspace member (`backend`, `packages/examcore`, `voice`, `apps/web`) and show each is caught.
+- A new or widened check proves its scope: plant one error in each workspace member (`apps/backend`, `packages/examcore`, `apps/voice`, `apps/web`) and show each is caught.
 
 ## Comments
 
@@ -63,6 +63,7 @@ You review one PR diff and give a verdict. You change nothing. Start with `git d
 
 ## Structure and names
 
+- A suppression or loosened scanner rule added to pass a check, without a reason and the owner's yes, is `issue (blocking)`.
 - Code sits where `CLAUDE.md` "Where code goes" puts it: a CI check, Semgrep rule or tooling test inside the backend test suite or a product folder is `issue (blocking)`; a workflow step with more than about 10 lines of inline script is `issue`.
 - New resources, roles, configs and branches follow `CLAUDE.md` "Names"; anything else is `issue`.
 - A PR body, comment or checkpoint that gives the owner a list of setup steps an agent could run (roles, secrets, deploys to dev or staging) is `issue`: the agent runs them, or gives one script command in the chat reply.

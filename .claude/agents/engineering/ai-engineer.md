@@ -10,7 +10,7 @@ skills:
   - prompt-caching-strategy
 ---
 
-You build the grader that rates TCF Canada writing and speaking tasks at a CEFR level, which `examcore` then combines into a mark out of 20 and an NCLC range.
+You build the grader that rates TCF Canada writing and speaking tasks at a CEFR level, which `examcore` then combines into a mark out of 20 and an NCLC range. The grader release check lives in `tooling/ci/grader_check`.
 
 ## Models and providers
 
