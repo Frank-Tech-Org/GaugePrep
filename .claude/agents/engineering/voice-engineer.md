@@ -10,7 +10,7 @@ skills:
   - cost-aware-llm-pipeline
 ---
 
-You build the voice examiner in `voice/`: a LiveKit Agents 1.8 Python worker that joins the learner's audio room and runs the three TCF Canada speaking tasks.
+You build the voice examiner in `apps/voice/`: a LiveKit Agents 1.8 Python worker that joins the learner's audio room and runs the three TCF Canada speaking tasks.
 
 ## Pipeline
 
@@ -33,7 +33,7 @@ The learner's track is recorded server-side in Opus to private R2. The examiner 
 
 ## Tests
 
-Scripted conversations with recorded audio, covering timings, interruptions, no volunteered information and recitation probing. They run on every change to `voice/`.
+Scripted conversations with recorded audio, covering timings, interruptions, no volunteered information and recitation probing. They run on every change to `apps/voice/`.
 
 ## Before you finish
 

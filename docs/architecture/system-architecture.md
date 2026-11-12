@@ -452,16 +452,21 @@ The chained pipeline is used instead of a speech-to-speech model because grading
 
 ```
 gaugeprep/                      private GitHub repository
-  apps/web/                        Next.js PWA (pnpm)
-  backend/
-    config/                        Django settings per environment
-    modules/<module>/              models, services, api, tasks, public.py
+  apps/
+    web/                           Next.js PWA (pnpm)
+    backend/
+      config/                      Django settings per environment
+      modules/<module>/            models, services, api, tasks, public.py
+    voice/                         LiveKit examiner worker
   packages/examcore/               exam rules, rule checks, Rasch maths, plug-ins (no Django)
-  voice/                           LiveKit examiner worker
+  tooling/
+    eslint/ typescript/ python/    shared lint, type and format configs
+    ci/                            our own CI checks and their tests
+    semgrep/                       custom Semgrep rules and their tests
   infra/
     docker/                        images for api, worker, voice
     kamal/                         deploy configs for staging and production
-    staging/                       rebuild scripts for the staging server
+    server/                        rebuild script for the shared dev and staging server
   docs/
     architecture/                  this document
     adr/                           decision records
@@ -476,7 +481,7 @@ gaugeprep/                      private GitHub repository
 
 | Trigger | Steps |
 |---|---|
-| Pull request | One `gate` job (changed paths, PR title, gitleaks); then, unless the PR is docs only, `pnpm check`: lint, types, Import Linter contracts, unit and integration tests with PostgreSQL 18, API contract check, frontend tests, coverage floors and 90% on changed lines; plus the smoke end-to-end set when `apps/` or `backend/` changed (ADR-021) |
+| Pull request | One `gate` job (changed paths, PR title, gitleaks); then, unless the PR is docs only, `pnpm check`: lint, types, Import Linter contracts, unit and integration tests with PostgreSQL 18, API contract check, frontend tests, coverage floors and 90% on changed lines; plus the smoke end-to-end set when `apps/` changed (ADR-021) |
 | Promotion PR, `develop` into `stage` | The pull request checks, plus the full end-to-end suite, mutmut on `examcore` and scoring code, and the full scoring engine recovery tests (ADR-021) |
 | Push to develop | Build ARM images on GitHub's arm64 runners, push to GitHub Container Registry, deploy to dev with Kamal, publish the static PWA to Cloudflare dev |
 | Push to stage (or a manual run on `hotfix/*`) | The same images, deployed to staging with Kamal, and the PWA published to Cloudflare staging |
@@ -549,9 +554,9 @@ The strategy, the minutes budget and when each layer starts are in ADR-021.
 | examcore | pytest fixed-answer tests from every table of the exam specification; Hypothesis property tests; mutmut, mutation score at least 80% | Every pull request with code; mutmut on the promotion PR |
 | Scoring engine | Recovery on simulated data; comparison with an established statistics package; mutmut, at least 80% | Pull request (small set), promotion PR (full, and mutmut) |
 | Backend modules | pytest-django against PostgreSQL 18, never SQLite; idempotency of answers and webhooks; append-only enforcement; authorisation; every endpoint has success, not-found and other-learner-refused tests | Every pull request with code |
-| API | Schemathesis in-process against `backend/openapi.json`: documented statuses, no 5xx on bad input, schema-valid responses | Every pull request with code |
+| API | Schemathesis in-process against `apps/backend/openapi.json`: documented statuses, no 5xx on bad input, schema-valid responses | Every pull request with code |
 | Frontend | Vitest and React Testing Library | Every pull request with code |
-| End to end | Playwright with slow 3G throttling and axe-core (zero serious or critical violations). Smoke: about 5 happy paths at 375 px. Full: 375 px and 1440 px, all flows, a server error, offline, session expiry, another learner's URL refused, interrupted and resumed simulations | Smoke on pull requests touching `apps/` or `backend/`; full on the promotion PR |
+| End to end | Playwright with slow 3G throttling and axe-core (zero serious or critical violations). Smoke: about 5 happy paths at 375 px. Full: 375 px and 1440 px, all flows, a server error, offline, session expiry, another learner's URL refused, interrupted and resumed simulations | Smoke on pull requests touching `apps/`; full on the promotion PR |
 | Voice examiner | Scripted conversations with recorded audio: timings, interruptions, no volunteered information, recitation probing | Every change to voice |
 | Grader | Release check on the anchor set with the real model | Every grader change; blocks release |
 | Load | API and queue at twice expected peak; concurrent speaking sessions to size the voice server | Before launch and before infrastructure changes |
