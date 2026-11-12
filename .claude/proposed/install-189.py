@@ -215,6 +215,9 @@ def install() -> None:
         ('rebase abbreviated --exe', "git rebase --exe='git push origin HEAD:develop' HEAD~1"),
         ('fetch abbreviated --upload-pac', "git fetch --upload-pac='git push origin HEAD:develop' ."),
         ('difftool abbreviated --extc', "git difftool --extc='git push origin HEAD:develop' HEAD~1"),
+        ('git subtree push', "git subtree push --prefix=a origin develop"),
+        ('curl -sXPUT', "curl -sXPUT https://api.github.com/repos/o/r/pulls/1/merge"),
+        ('curl -sX PUT', "curl -sX PUT https://api.github.com/repos/o/r/pulls/1/merge"),
         ('filter-branch', "git filter-branch --tree-filter 'git push origin HEAD:develop' HEAD~1..HEAD"),
         ('grep -O pager', "git grep -O'git push origin HEAD:develop' foo"),
         ('grep open-files-in-pager', "git grep --open-files-in-pager='git push origin HEAD:develop' foo"),
@@ -378,6 +381,15 @@ def install() -> None:
     (fake / "gh").write_text(
         "#!/usr/bin/env bash\n"
         'fail() { case ",${GH_FAIL:-}," in *",$1,"*) exit 1 ;; esac; }\n'
+        "issue_list() {\n"
+        '  local a="" q="" prev=""\n'
+        '  for x in "$@"; do\n'
+        '    [ "$prev" = --author ] && a=${x#app/}\n'
+        '    [ "$prev" = --jq ] && q=$x\n'
+        '    prev=$x\n'
+        "  done\n"
+        '  jq --arg a "$a" "[.[] | select(.author.login == \\$a)]" "$FX/issues.json" | jq "$q"\n'
+        "}\n"
         'case "$*" in\n'
         '  *"/activity"*"heads/stage"*) fail activity; cat "$FX/activity-stage.json" ;;\n'
         '  *"/activity"*) fail activity; cat "$FX/activity-develop.json" ;;\n'
@@ -385,7 +397,7 @@ def install() -> None:
         '  *"/reviews"*) fail reviews; cat "$FX/reviews.json" ;;\n'
         '  "api repos/"*"/commits/"*) fail files; cat "$FX/files.txt" ;;\n'
         '  "api repos/"*"/pulls/"*) fail pr; cat "$FX/pr.json" ;;\n'
-        '  "issue list"*) fail issuelist; cat "$FX/open.txt" ;;\n'
+        '  "issue list"*) fail issuelist; issue_list "$@" ;;\n'
         '  "issue create"*) echo "$*" >> "$FX/issues.log" ;;\n'
         "esac\n"
     )
@@ -527,7 +539,17 @@ def install() -> None:
         files="a.py\n.github/workflows/ci.yml\n",
         **GOOD,
     )
-    case("existing issue is not opened twice", False, 1, open_n="1", pl=[], prj=None, rv=[])
+    def issue(title, login):
+        return [{"title": title, "author": {"login": login}}]
+
+
+    TITLE = f"develop changed outside the merge step: {SHA}"
+    ALARM_ISSUE = issue(TITLE, "github-actions")
+    case("existing issue is not opened twice", False, 1, issues=ALARM_ISSUE, pl=[], prj=None, rv=[])
+
+    case("issue with the title made by a person", True, 1, issues=issue(TITLE, "someone"), pl=[], prj=None, rv=[])
+    case("bot issue whose title only holds the sha", True, 1, issues=issue(f"note {SHA}", "github-actions"), pl=[], prj=None, rv=[])
+    case("pre-made issue with the sha in the title", True, 1, issues=issue(f"x {TITLE}", "someone"), pl=[], prj=None, rv=[])
 
     for step in ("pulls", "pr", "reviews", "files"):
         case(f"{step} lookup fails", True, 1, fail=step, **GOOD)
@@ -633,7 +655,7 @@ def install() -> None:
         0,
         event="schedule",
         dev=push_log(),
-        open_n="1",
+        issues=ALARM_ISSUE,
         pl=[],
         prj=None,
         rv=[],
@@ -655,7 +677,7 @@ def install() -> None:
         (fx / "pr.json").write_text(json.dumps(kw.get("prj")))
         (fx / "reviews.json").write_text(json.dumps(kw.get("rv", [])))
         (fx / "files.txt").write_text(kw.get("files", "backend/a.py\n"))
-        (fx / "open.txt").write_text(kw.get("open_n", "0") + "\n")
+        (fx / "issues.json").write_text(json.dumps(kw.get("issues", [])))
         (fx / "activity-develop.json").write_text(json.dumps(kw.get("dev", [])))
         (fx / "activity-stage.json").write_text(json.dumps(kw.get("stg", [])))
         r = subprocess.run(

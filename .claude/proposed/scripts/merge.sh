@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
-# The only way an agent merges, and only the CTO (the main Claude Code session) runs it. It squash-merges a reviewed work-branch PR into develop.
-#   .claude/scripts/merge.sh <pr-number>
-# Releases, tags and anything into main stay with the owner. The review verdict is the last line of a PR comment:
-#   REVIEW: PASS <full head sha>      or      REVIEW: CHANGES <full head sha>
-# The owner's GitHub approval of that same commit is required too.
+# The only way an agent merges: squash-merges a reviewed work-branch PR into develop.
+# Usage: .claude/scripts/merge.sh <pr-number>
 set -euo pipefail
 
 pr=${1:-}
@@ -14,7 +11,7 @@ owner=frankkefoueg
   || { echo "merge.sh: origin is not $repo" >&2; exit 2; }
 
 fail() { echo "merge.sh: refused, $1" >&2; exit 1; }
-# gh --paginate prints one JSON array per page; slurp and join them so no page is skipped.
+# WHY: --paginate prints one JSON array per page, so join them to skip no page.
 all() { gh api --paginate "$1" | jq -s 'map(if type == "array" then . else [.] end) | add // []'; }
 
 info=$(gh api "repos/$repo/pulls/$pr")
@@ -28,7 +25,7 @@ head=$(field .head.ref)
 [ "$(field .head.repo.full_name)" = "$repo" ] || fail "the branch comes from a fork"
 sha=$(field .head.sha)
 
-# Mergeability is computed lazily by GitHub, so ask a few times before giving up.
+# WHY: GitHub computes mergeability lazily, so ask a few times.
 for _ in 1 2 3 4 5; do
   [ "$(field .mergeable)" != null ] && break
   sleep 2; info=$(gh api "repos/$repo/pulls/$pr")
@@ -40,20 +37,20 @@ done
 owner_files=$(all "repos/$repo/pulls/$pr/files?per_page=100" | jq -r '[.[] | .filename, (.previous_filename // "") | select(test("^\\.claude/(hooks/|settings|scripts/)|^\\.husky/|^\\.github/(workflows|scripts)/|^tooling/semgrep/|(^|/)(\\.semgrepignore|\\.trivyignore[^/]*|trivy\\.ya?ml|\\.gitleaks\\.toml|\\.gitleaksignore|\\.npmrc|\\.pnpmfile\\.[^/]*|pnpm-workspace\\.yaml)$"))] | join(", ")')
 [ -z "$owner_files" ] || fail "it changes owner-only files ($owner_files); the owner merges this one"
 
-# CI fails closed: at least one check must exist on the head commit and all must have passed.
-# Workflow runs, not check runs: the agent's fine-grained token cannot be given the Checks permission.
+# WHY: CI fails closed; workflow runs are read because the agent token has no Checks access.
 runs=$(all "repos/$repo/actions/runs?head_sha=$sha&per_page=100" | jq '[.[] | .workflow_runs[]?]')
 statuses=$(gh api "repos/$repo/commits/$sha/status")
 [ "$(printf '%s' "$runs" | jq length)" -gt 0 ] || [ "$(printf '%s' "$statuses" | jq '.statuses | length')" -gt 0 ] \
   || fail "no CI checks exist on this commit; the owner merges until CI is in place"
-# A run cancelled because a newer run of the same workflow superseded it is not a failure: only the newest run of each workflow counts.
+
+# WHY: a run cancelled by a newer run of the same workflow is not a failure; only the newest counts.
 bad=$(printf '%s' "$runs" | jq -r 'group_by(.workflow_id) | map(max_by(.run_number)) | [.[] | select(.status != "completed" or (.conclusion | IN("success","neutral","skipped") | not)) | .name] | join(", ")')
 [ -z "$bad" ] || fail "checks not green: $bad"
 if [ "$(printf '%s' "$statuses" | jq '.statuses | length')" -gt 0 ]; then
   [ "$(printf '%s' "$statuses" | jq -r .state)" = success ] || fail "commit statuses are not all success"
 fi
 
-# The newest verdict must be PASS for this exact commit. A verdict is the final line of a comment, nothing quoted.
+# WHY: only the final line of a comment is a verdict, so a quoted one is ignored.
 verdict=$(all "repos/$repo/issues/$pr/comments?per_page=100" | jq -r '
   [.[] | {t: .created_at, last: (.body | rtrimstr("\n") | split("\n") | last // "" | gsub("\\s+$"; ""))}
        | select(.last | test("^REVIEW: (PASS|CHANGES) [0-9a-f]{40}$"))]
@@ -61,20 +58,20 @@ verdict=$(all "repos/$repo/issues/$pr/comments?per_page=100" | jq -r '
 [ -n "$verdict" ] || fail "no review verdict comment; run /lm-next"
 [ "$verdict" = "REVIEW: PASS $sha" ] || fail "the latest verdict is '$verdict', not a PASS for $sha; review again"
 
-# The owner's latest decisive review must approve this exact commit; a later push makes it stale.
+# WHY: a later push makes the owner approval stale, so it must name this exact commit.
 approval=$(all "repos/$repo/pulls/$pr/reviews?per_page=100" | jq -r --arg o "$owner" '
   [.[] | select(.user.login == $o and (.state | IN("APPROVED", "CHANGES_REQUESTED", "DISMISSED")))]
   | sort_by(.submitted_at) | last // empty | "\(.state) \(.commit_id)"')
 [ "$approval" = "APPROVED $sha" ] || fail "the owner has not approved $sha; ask them to approve PR #$pr"
 
-# The squash commit carries the PR body's ticket refs, so `git log --grep "#<n>"` finds every change of a ticket.
+# WHY: refs in the squash body let git log --grep find every change of a ticket.
 refs=$(field .body | grep -oE 'Refs #[0-9]+' | sort -u || true)
 msg=(-f commit_title="$(field .title) (#$pr)")
 [ -z "$refs" ] || msg+=(-f commit_message="$refs")
 
-# Merge exactly the reviewed commit; GitHub rejects it if the branch moved since.
+# WHY: merging the reviewed sha means GitHub rejects it if the branch moved.
 gh api -X PUT "repos/$repo/pulls/$pr/merge" -f merge_method=squash -f sha="$sha" "${msg[@]}" --jq .message
-# The repository may delete merged branches itself; after a failed delete, only a 404 for the branch confirms it is gone.
+# WHY: the repo may delete merged branches itself; only a 404 confirms the branch is gone.
 if ! gh api -X DELETE "repos/$repo/git/refs/heads/$head" >/dev/null 2>&1; then
   err=$(gh api "repos/$repo/branches/$head" 2>&1 >/dev/null) \
     && { echo "merge.sh: merged #$pr but could not delete $head" >&2; exit 1; }

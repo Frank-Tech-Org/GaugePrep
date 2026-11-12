@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-# PreToolUse(Bash): blocks the few destructive or release actions agents must never take. Everything else passes.
-# It parses the command into real words, so a commit message that mentions "push" or a "$" in a script is fine.
-# The strong limits are the deny rules in settings.json and the GitHub workflows; this hook is a second net.
+# PreToolUse(Bash): refuses pushes, merges, releases and writes to owner-only files.
+# WARNING: a tripwire, not a sandbox; the deny rules and the alarm are the real limits.
 set -uo pipefail
 
 command -v jq >/dev/null 2>&1 || { echo "guard-bash: jq is required (sudo apt install -y jq)" >&2; exit 2; }
@@ -18,13 +17,13 @@ def block(why):
     print(f"Blocked: {why}. The owner runs this; hand it over instead.", file=sys.stderr)
     sys.exit(2)
 
-# WHY: newlines split commands and only a quoted heredoc body is dropped as data; the lexer
-# reads the "|" of ">|" as a pipe, so the word after it is kept as a written file.
+# WHY: newlines split commands and only a quoted heredoc body is dropped as data.
+# The word after ">|" is kept as a written file because the lexer reads | as a pipe.
 CODE_LINE = re.compile(r"\b(bash|sh|dash|zsh|ksh|python3?|node|perl|ruby|eval|xargs|source)\b")
 HEREDOC_HEAD = re.compile(r"<<-?[ \t]*(?:([\x22\x27])\\?(\w+)\1|\\(\w+))")
 
 def prep(text):
-    # WHY: quotes and comments decide what a heredoc marker or a line break means, so read them first.
+    # WHY: quotes and comments decide what a heredoc marker or a line break means.
     out, line, pending, stack = [], [], [], [["p", 0]]
     prev, i, n = [""], 0, len(text)
 
@@ -172,7 +171,7 @@ def sub(words):
         return w, words[i + 1:]
     return "", []
 
-# gh api: the endpoint and whether the call writes (an explicit method, or a body, which makes gh POST).
+# WHY: gh api posts when given a body, so the endpoint and whether the call writes both matter.
 API_VALUE_OPTS = {"-X", "--method", "-f", "-F", "--field", "--raw-field", "-H", "--header", "--input",
                   "-q", "--jq", "-t", "--template", "--hostname", "--cache", "-p", "--preview"}
 API_PROTECTED = re.compile(r"/pulls/\d+/merge|/merges\b|/git/(refs|tags|commits|trees|blobs)|/releases|/protection"
@@ -215,8 +214,8 @@ def gh_api(rest):
     if writes and API_PROTECTED.search(endpoint):
         block("a merge, ref, tag or release write through the GitHub API (use .claude/scripts/merge.sh)")
 
-# WHY: a hook, script or workflow an agent can edit and run unprompted can hide a push in it.
-# Scanner and npm config may change on a branch; merge.sh sends those PRs to the owner.
+# WHY: a hook, script or workflow an agent can edit and run unprompted can hide a push.
+# merge.sh sends PRs that touch these to the owner.
 OWNER_ONLY = re.compile(r"\.claude/(hooks/|settings(\.local)?\.json|scripts/)|\.github/workflows/|\.husky/|\.git/(config|hooks/)|\.gitconfig|\.config/git/")
 READ_ONLY = {"cat", "head", "tail", "less", "more", "ls", "diff", "cmp", "grep", "rg", "wc", "sha256sum",
              "md5sum", "stat", "file", "echo", "printf", "jq", "test", "[", "shellcheck"}
@@ -241,7 +240,7 @@ def resolved(a):
     return out
 
 def owner_hit(a):
-    # WHY: a double slash, a dot segment, a glob or an earlier cd all name the same owner-only file.
+    # WHY: a double slash, dot segment, glob or earlier cd names the same owner-only file.
     if OWNER_ONLY.search(a):
         return True
     for c in {a, a.split("=", 1)[-1]}:
@@ -251,7 +250,7 @@ def owner_hit(a):
     return False
 
 def parent_hit(a, broad):
-    # WHY: writing a whole folder (cp -r, rsync, tar -x, checkout) also writes the owner-only files in it.
+    # WHY: writing a whole folder (cp -r, rsync, tar -x, checkout) writes the owner files in it.
     if re.search(r"(^|/)\.(claude|github|git|husky)/?$", a):
         return True
     if not ROOT or not a or "$" in a or "`" in a:
@@ -267,7 +266,7 @@ def parent_hit(a, broad):
 if any(owner_hit(t) for t in clobbered):
     block("writing to an owner-only file")
 
-# Secret files: .env and .env.<anything> except .env.example, and keys.
+# WHY: .env and .env.<name> are secrets except .env.example; so are keys.
 SECRET = re.compile(r"(^|[\s/\"\x27=@<])\.env(\.(?!example\b)[\w-]+)?($|[\s\"\x27])|\.(pem|key)\b")
 READERS = {"cat", "less", "more", "head", "tail", "sed", "awk", "grep", "rg", "cp", "mv", "base64", "xxd",
            "od", "hexdump", "strings", "source", ".", "nl", "tac", "rev", "dd", "tee", "python", "python3",
@@ -287,7 +286,7 @@ ASSIGNERS = {"export", "declare", "typeset", "readonly", "local", "env", "sudo",
              "nohup", "time", "timeout", "nice", "xargs", "setsid", "stdbuf"}
 STDIN_PATH = re.compile(r"^/(dev/(stdin|fd/\d+)|proc/self/fd/\d+)$")
 GIT_RUNNERS = {"filter-branch", "send-email", "instaweb", "web--browse", "daemon", "imap-send", "upload-pack",
-               "receive-pack", "shell", "checkout-index", "read-tree", "credential"}
+               "receive-pack", "shell", "subtree", "checkout-index", "read-tree", "credential"}
 PUSH_IN_CODE = re.compile(r"\bgit\b.{0,80}?\b(push|send-pack)\b", re.S)
 FLAT = re.sub(r"[\x22\x27\\]", "", cmd)
 GIT_C_OK = re.compile(r"(user\.(name|email)|core\.quotepath|color\.[\w.-]+|advice\.\w+|safe\.directory"
@@ -302,7 +301,7 @@ GIT_BUILTIN = {"status", "diff", "log", "show", "add", "commit", "branch", "swit
                "notes", "archive", "bundle", "diff-tree"}
 
 def lead(a):
-    # WHY: a subshell or substitution glues ( $( or a backtick to a word, so they are stripped.
+    # WHY: a subshell or substitution glues ( $( or a backtick to a word; strip them.
     return a.lstrip("$({`!").rstrip(")}`")
 
 def program(a):
@@ -314,7 +313,7 @@ def dynamic(a):
     return "$" in a or "`" in a
 
 def nested(text):
-    # WHY: a command string given to a shell, eval, rebase --exec or an alias is read like the rest.
+    # WHY: a string given to a shell, eval, rebase --exec or an alias is read like the rest.
     try:
         segs, clob = split(text)
     except ValueError:
@@ -339,7 +338,7 @@ def as_git(a):
     return None
 
 def strip_prefix(w):
-    # WHY: function bodies, case arms and coproc put the real command after a few shell words.
+    # WHY: function bodies, case arms and coproc put the command after a few shell words.
     while w:
         h = w[0]
         if h == "time":
@@ -682,8 +681,8 @@ for w in segments:
                 meth = w[k + 1] if k + 1 < len(w) else ""
             elif x.startswith(("--request=", "--method=")):
                 meth = x.split("=", 1)[1]
-            elif x.startswith("-X") and len(x) > 2:
-                meth = x[2:]
+            elif re.match(r"-[a-zA-Z]*X", x):
+                meth = x[x.index("X") + 1:] or (w[k + 1] if k + 1 < len(w) else "")
             if (meth is not None and meth.upper() not in ("GET", "HEAD")) or re.match(
                     r"(-d|-F|-T|--data|--form|--upload-file|--post-data|--post-file|--json)", x):
                 block("writing to GitHub with curl or wget (use gh, which the other rules cover)")
@@ -695,7 +694,7 @@ for w in segments:
                 if t in ("/", "~", "$HOME", "/*", "~/*") or re.fullmatch(r"/home/[^/]+/?", t):
                     block("recursive delete of / or home")
 
-# Whole-line checks that need the raw text.
+# WHY: these checks need the raw text, not the split words.
 flat = cmd.replace("\n", " ")
 if re.search(r"(curl|wget)[^|]*\|\s*(ba|z)?sh\b", flat):
     block("piping a download into a shell")
