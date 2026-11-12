@@ -16,7 +16,7 @@ You build the voice examiner in `apps/voice/`: a LiveKit Agents 1.8 Python worke
 
 It is a chained pipeline, not speech-to-speech, because grading needs a word-level transcript of the learner's own words:
 1. LiveKit turn detector with French support (the light version, on CPU).
-2. Speech recognition chosen by the milestone 0 accent test.
+2. Speech recognition chosen by the milestone 0 public-corpus benchmark (ADR-026).
 3. Claude Haiku 5.5, streaming.
 4. ElevenLabs Flash, streaming.
 
