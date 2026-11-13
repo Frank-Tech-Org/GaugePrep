@@ -7,6 +7,7 @@ from pathlib import Path
 
 from asr_benchmark.corpora import Clip
 from asr_benchmark.engines import Engine, EngineError, Transcript
+from asr_benchmark.guard import EngineStopped
 from asr_benchmark.metrics import (
     Edits,
     contains_run,
@@ -37,6 +38,7 @@ class EngineResult:
     real_time_factor: float | None = None
     clips_scored: int = 0
     missing: dict[str, str] = field(default_factory=dict)
+    stopped: str | None = None
 
     @property
     def wer(self) -> float | None:
@@ -76,6 +78,10 @@ def evaluate(
     for clip in clips:
         try:
             transcript = engine.transcribe(Path(clip.path))
+        except EngineStopped as exc:
+            result.missing[clip.id] = str(exc)[:200]
+            result.stopped = str(exc)[:200]
+            continue
         except (EngineError, OSError) as exc:
             result.missing[clip.id] = str(exc)[:200]
             continue

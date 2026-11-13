@@ -15,7 +15,9 @@ REQUEST_TIMEOUT = 120
 
 
 class EngineError(RuntimeError):
-    pass
+    def __init__(self, message: str, status: int | None = None) -> None:
+        super().__init__(message)
+        self.status = status
 
 
 @dataclass(frozen=True)
@@ -52,7 +54,7 @@ def _post(url: str, body: bytes, headers: Mapping[str, str]) -> dict[str, Any]:
             return payload
     except urllib.error.HTTPError as exc:
         detail = exc.read().decode("utf-8", "replace")[:300]
-        raise EngineError(f"{url} answered {exc.code}: {detail}") from exc
+        raise EngineError(f"{url} answered {exc.code}: {detail}", exc.code) from exc
     except (urllib.error.URLError, TimeoutError) as exc:
         raise EngineError(f"{url} unreachable: {exc}") from exc
 
@@ -142,7 +144,7 @@ def _get(url: str, headers: Mapping[str, str]) -> dict[str, Any]:
             return payload
     except urllib.error.HTTPError as exc:
         detail = exc.read().decode("utf-8", "replace")[:300]
-        raise EngineError(f"{url} answered {exc.code}: {detail}") from exc
+        raise EngineError(f"{url} answered {exc.code}: {detail}", exc.code) from exc
     except (urllib.error.URLError, TimeoutError) as exc:
         raise EngineError(f"{url} unreachable: {exc}") from exc
 
@@ -236,6 +238,20 @@ PRICED: dict[str, tuple[str | None, float | None, str]] = {
         "Enhanced batch $0.75 an hour ($0.80 real time); Melia 1 batch $0.24",
     ),
     "whisper-large-v3": (None, 0.0, "open weights run locally; compute is ours"),
+}
+
+# WHY: free allowances in audio minutes, from the same pages as the prices.
+ALLOWANCE_MINUTES: dict[str, float] = {
+    "deepgram-nova-3": 200 / 0.0043,
+    "elevenlabs-scribe": 270.0,
+    "speechmatics": 100 / 0.75 * 60,
+}
+
+MODELS: dict[str, str] = {
+    "deepgram-nova-3": "nova-3-fr",
+    "elevenlabs-scribe": "scribe_v3",
+    "speechmatics": "enhanced",
+    "whisper-large-v3": "large-v3",
 }
 
 REMOTE: dict[str, Callable[[Path], Transcript]] = {

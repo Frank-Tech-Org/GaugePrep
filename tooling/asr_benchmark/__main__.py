@@ -13,7 +13,13 @@ from asr_benchmark.corpora import (
     read_manifest,
     write_manifest,
 )
-from asr_benchmark.engines import PRICED, available_engines
+from asr_benchmark.engines import (
+    ALLOWANCE_MINUTES,
+    MODELS,
+    PRICED,
+    available_engines,
+)
+from asr_benchmark.guard import UNKNOWN_CLIP_MINUTES, Guard
 from asr_benchmark.planted import PLANTED_CLIPS
 from asr_benchmark.runner import (
     choose_winner,
@@ -49,14 +55,23 @@ def synth(voice_path: Path, directory: Path) -> None:
 
 
 def run(
-    manifests: list[Path], planted_dir: Path, out: Path, whisper_dir: Path | None
+    manifests: list[Path],
+    planted_dir: Path,
+    out: Path,
+    whisper_dir: Path | None,
+    limit: int | None = None,
 ) -> int:
-    clips = [c for m in manifests for c in read_manifest(m)]
-    clips += planted_as_clips(planted_dir)
+    clips = [c for m in manifests for c in read_manifest(m)[:limit]]
+    clips += planted_as_clips(planted_dir)[:limit]
     durations = {
         c.id: d for c in clips if (d := c.seconds or wav_seconds(Path(c.path)))
     }
     engines, skipped = available_engines(whisper_dir, os.environ)
+    minutes = {
+        c.path: durations.get(c.id, UNKNOWN_CLIP_MINUTES * 60) / 60 for c in clips
+    }
+    guard = Guard(out / "cache", ALLOWANCE_MINUTES, minutes)
+    engines = [guard.wrap(e, MODELS[e.name]) if e.key_env else e for e in engines]
     for line in skipped:
         print(line)
     results = []
@@ -66,6 +81,10 @@ def run(
         result, hyp = evaluate(engine, clips, durations)
         results.append(result)
         hypotheses[engine.name] = hyp
+        if engine.key_env:
+            print(guard.usage_line(engine.name))
+        if result.stopped:
+            print(f"STOPPED {result.stopped}", file=sys.stderr)
     if not results:
         print("no engine could run", file=sys.stderr)
         return 1
@@ -114,6 +133,7 @@ def main(argv: list[str]) -> int:
     go.add_argument("--planted-dir", type=Path, required=True)
     go.add_argument("--out", type=Path, required=True)
     go.add_argument("--whisper-dir", type=Path)
+    go.add_argument("--limit", type=int, help="clips per manifest and planted")
     live = sub.add_parser("stream")
     live.add_argument("--manifest", type=Path, action="append", default=[])
     live.add_argument("--count", type=int, default=20)
@@ -132,7 +152,9 @@ def main(argv: list[str]) -> int:
     elif args.command == "stream":
         return stream(args.manifest, args.count, args.out)
     else:
-        return run(args.manifest, args.planted_dir, args.out, args.whisper_dir)
+        return run(
+            args.manifest, args.planted_dir, args.out, args.whisper_dir, args.limit
+        )
     return 0
 
 
