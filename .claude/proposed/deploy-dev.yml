@@ -1,0 +1,32 @@
+name: deploy-dev
+
+# Deploys the backend to dev on every push to develop, after the pull request checks pass.
+# SECURITY: this file reads only DEV_ secrets.
+on:
+  push:
+    branches: [develop]
+
+# WHY: every job states its own permissions below.
+permissions: {}
+
+# WHY: a newer push waits for the running deploy and replaces any older waiting one.
+concurrency:
+  group: deploy-dev
+  cancel-in-progress: false
+
+jobs:
+  checks:
+    permissions:
+      contents: read
+    uses: ./.github/workflows/ci.yml
+
+  deploy:
+    needs: checks
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/deploy-backend.yml
+    with:
+      environment: dev
+    secrets:
+      DOPPLER_TOKEN: ${{ secrets.DEV_DOPPLER_TOKEN }}
