@@ -1,7 +1,7 @@
 name: deploy-backend
 
 # Builds, scans and pushes the backend image, then deploys it to one environment with Kamal.
-# SECURITY: the caller passes only its own environment's Doppler token, so a job sees one prefix.
+# SECURITY: the job's GitHub environment holds the Doppler token and sets who may run it.
 on:
   workflow_call:
     inputs:
@@ -9,16 +9,12 @@ on:
         description: dev or staging
         required: true
         type: string
-    secrets:
-      DOPPLER_TOKEN:
-        required: true
 
 # WHY: every job states its own permissions below.
 permissions: {}
 
 env:
   IMAGE: ghcr.io/frank-tech-org/gaugeprep-backend
-  KAMAL_VERSION: 2.12.0
   DOPPLER_VERSION: 3.77.1
   DOPPLER_SHA256: a7f4be5b30295921dfe1cdc34f905cd017210ec3264a47d46e315ab09cb03e1c
   TRIVY_VERSION: 0.76.1
@@ -26,9 +22,10 @@ env:
 
 jobs:
   deploy:
-    # WHY: public repositories get arm64 hosted runners free; the image builds natively, no emulation.
+    # WHY: arm64 hosted runners are free for public repositories, so no emulation.
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 15
+    environment: ${{ inputs.environment }}
     permissions:
       contents: read
       packages: write
@@ -59,8 +56,25 @@ jobs:
           echo "${TRIVY_SHA256}  $RUNNER_TEMP/trivy.tgz" | sha256sum --check -
           tar -xzf "$RUNNER_TEMP/trivy.tgz" -C "$RUNNER_TEMP/bin" trivy
           echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+      # SECURITY: Kamal's config and Gemfile.lock come from the branch's trusted head, not this ref.
+      - name: Check out the trusted deploy config
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.environment == 'dev' && 'develop' || 'stage' }}
+          path: trusted
+          persist-credentials: false
+      # WHY: frozen install checks every gem against the checksums in the committed Gemfile.lock.
       - name: Install Kamal
-        run: sudo gem install kamal -v "$KAMAL_VERSION" --no-document
+        run: |
+          gem install bundler -v "$BUNDLER_VERSION" --no-document --user-install
+          gem_bin=$(ruby -r rubygems -e 'puts Gem.user_dir')/bin
+          export PATH="$gem_bin:$PATH"
+          bundle "_${BUNDLER_VERSION}_" install
+        env:
+          BUNDLER_VERSION: 2.7.2
+          BUNDLE_FROZEN: "true"
+          BUNDLE_GEMFILE: ${{ github.workspace }}/trusted/infra/kamal/Gemfile
+          BUNDLE_PATH: ${{ runner.temp }}/gems
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
       - uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
         with:
@@ -103,9 +117,17 @@ jobs:
           printf '%s %s\n' "$(doppler secrets get SERVER_HOST --plain)" "$(doppler secrets get SERVER_HOST_KEY --plain)" > ~/.ssh/known_hosts
       # WHY: the image is already built and pushed, so Kamal only rolls it out.
       - name: Deploy with Kamal
+        working-directory: trusted
         env:
           DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
-        run: kamal deploy -c infra/kamal/deploy.yml -d "$ENVIRONMENT" --skip-push --version "$GITHUB_SHA"
+          BUNDLER_VERSION: 2.7.2
+          BUNDLE_FROZEN: "true"
+          BUNDLE_GEMFILE: ${{ github.workspace }}/trusted/infra/kamal/Gemfile
+          BUNDLE_PATH: ${{ runner.temp }}/gems
+        run: |
+          gem_bin=$(ruby -r rubygems -e 'puts Gem.user_dir')/bin
+          export PATH="$gem_bin:$PATH"
+          bundle "_${BUNDLER_VERSION}_" exec kamal deploy -c infra/kamal/deploy.yml -d "$ENVIRONMENT" --skip-push --version "$GITHUB_SHA"
       - name: Check the health endpoint
         run: |
           body=$(curl -sS --fail --retry 10 --retry-delay 3 --retry-all-errors "https://$HOST/api/v1/health")

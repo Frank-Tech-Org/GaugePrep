@@ -6,7 +6,7 @@ minimum_version: 2.12.0
 require_destination: true
 # WHY: clean-up counts stopped containers across both environments, not per environment.
 retain_containers: 10
-# SECURITY: a Doppler service token makes Kamal ignore --from; only CI sets one, one per job.
+# SECURITY: a Doppler token overrides --from; this guard catches mistakes, scope limits the token.
 <% if ENV["DOPPLER_TOKEN"] && !ENV["GITHUB_ACTIONS"] %><% raise "Unset DOPPLER_TOKEN: a service token makes Kamal ignore --from, so every destination would get that token's secrets." %><% end %>
 
 registry:

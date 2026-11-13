@@ -1,0 +1,4 @@
+# Pins Kamal and its gems for CI; install with bundle install --frozen.
+source "https://rubygems.org"
+
+gem "kamal", "2.12.0"

@@ -1,7 +1,7 @@
 name: deploy-dev
 
 # Deploys the backend to dev on every push to develop, after the pull request checks pass.
-# SECURITY: this file reads only DEV_ secrets.
+# SECURITY: the dev environment holds the token and limits which branches may deploy.
 on:
   push:
     branches: [develop]
@@ -28,5 +28,3 @@ jobs:
     uses: ./.github/workflows/deploy-backend.yml
     with:
       environment: dev
-    secrets:
-      DOPPLER_TOKEN: ${{ secrets.DEV_DOPPLER_TOKEN }}

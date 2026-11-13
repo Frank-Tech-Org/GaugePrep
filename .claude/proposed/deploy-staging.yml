@@ -1,7 +1,7 @@
 name: deploy-staging
 
 # Deploys the backend to staging on a push to stage, or by hand from stage or a hotfix branch.
-# SECURITY: this file reads only STAGING_ secrets.
+# SECURITY: the staging environment holds the token and limits which branches may deploy.
 on:
   push:
     branches: [stage]
@@ -30,5 +30,3 @@ jobs:
     uses: ./.github/workflows/deploy-backend.yml
     with:
       environment: staging
-    secrets:
-      DOPPLER_TOKEN: ${{ secrets.STAGING_DOPPLER_TOKEN }}
