@@ -1,0 +1,118 @@
+import csv
+import hashlib
+import json
+import tarfile
+import urllib.request
+from collections.abc import Iterator
+from dataclasses import asdict, dataclass
+from pathlib import Path
+
+COMMON_VOICE_BASE = (
+    "https://huggingface.co/datasets/fsicoli/common_voice_22_0/resolve/main"
+)
+# Bytes of an MP3 clip worth testing: roughly 2 to 8 seconds of speech.
+CLIP_BYTES = (20_000, 90_000)
+
+
+@dataclass(frozen=True)
+class Clip:
+    id: str
+    corpus: str
+    group: str
+    path: str
+    reference: str
+    seconds: float | None = None
+
+
+def write_manifest(clips: list[Clip], target: Path) -> None:
+    target.write_text(
+        "".join(json.dumps(asdict(c), ensure_ascii=False) + "\n" for c in clips),
+        encoding="utf-8",
+    )
+
+
+def read_manifest(source: Path) -> list[Clip]:
+    return [
+        Clip(**json.loads(line))
+        for line in source.read_text(encoding="utf-8").splitlines()
+        if line
+    ]
+
+
+def keep_clip(name: str, seed: int, share: float) -> bool:
+    """Seeded pick that depends only on the clip name, not on stream order."""
+    digest = hashlib.sha256(f"{seed}:{name}".encode()).digest()
+    return digest[0] / 256 < share
+
+
+def _open(url: str) -> Iterator[bytes]:
+    with urllib.request.urlopen(url, timeout=60) as response:  # noqa: S310  # fixed https dataset URL
+        yield from iter(lambda: response.read(1 << 16), b"")
+
+
+def fetch_common_voice(dest: Path, count: int, seed: int) -> list[Clip]:
+    """Stream the French test split and keep a seeded sample of `count` clips."""
+    dest.mkdir(parents=True, exist_ok=True)
+    tsv = dest / "test.tsv"
+    if not tsv.exists():
+        tsv.write_bytes(b"".join(_open(f"{COMMON_VOICE_BASE}/transcript/fr/test.tsv")))
+    with tsv.open(encoding="utf-8", newline="") as handle:
+        sentences = {
+            row["path"]: row["sentence"]
+            for row in csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)
+        }
+    clips: list[Clip] = []
+    request = urllib.request.Request(f"{COMMON_VOICE_BASE}/audio/fr/test/fr_test_0.tar")
+    with urllib.request.urlopen(request, timeout=300) as response:  # noqa: S310  # fixed https dataset URL
+        with tarfile.open(fileobj=response, mode="r|") as archive:
+            for member in archive:
+                name = Path(member.name).name
+                if name not in sentences or not (
+                    CLIP_BYTES[0] <= member.size <= CLIP_BYTES[1]
+                ):
+                    continue
+                if not keep_clip(name, seed, 0.2):
+                    continue
+                audio = archive.extractfile(member)
+                if audio is None:
+                    continue
+                target = dest / name
+                target.write_bytes(audio.read())
+                clips.append(
+                    Clip(
+                        f"cv-{target.stem[-8:]}",
+                        "common-voice-fr",
+                        "scripted",
+                        str(target),
+                        sentences[name],
+                    )
+                )
+                if len(clips) == count:
+                    break
+    return clips
+
+
+def extract_parquet_sample(
+    parquet: Path, dest: Path, count: int, seed: int, group: str
+) -> list[Clip]:
+    """Seeded sample from a parquet mirror of OpenSLR 57."""
+    import pyarrow.parquet as pq  # type: ignore[import-not-found]  # run-time extra, not a repo dependency
+
+    dest.mkdir(parents=True, exist_ok=True)
+    rows = pq.read_table(parquet).to_pylist()
+    rows = [r for r in rows if r["sentence"].strip() and r["audio"]["bytes"]]
+    rows.sort(key=lambda r: hashlib.sha256(f"{seed}:{r['path']}".encode()).digest())
+    clips: list[Clip] = []
+    for row in rows[:count]:
+        target = dest / Path(row["path"]).name
+        target.write_bytes(row["audio"]["bytes"])
+        clips.append(
+            Clip(
+                f"slr57-{target.stem}",
+                "openslr57",
+                group,
+                str(target),
+                row["sentence"].strip(),
+            )
+        )
+    return clips

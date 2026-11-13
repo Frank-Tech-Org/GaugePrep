@@ -1,0 +1,100 @@
+# Usage: python -m asr_benchmark fetch-cv|synth|run; audio and text stay out of git
+import argparse
+import os
+import sys
+import wave
+from pathlib import Path
+
+from asr_benchmark.corpora import fetch_common_voice, read_manifest, write_manifest
+from asr_benchmark.engines import available_engines
+from asr_benchmark.planted import PLANTED_CLIPS
+from asr_benchmark.runner import (
+    choose_winner,
+    evaluate,
+    planted_as_clips,
+    save,
+    table,
+)
+
+SEED = 15
+_UNREADABLE = (wave.Error, EOFError)
+
+
+def wav_seconds(path: Path) -> float | None:
+    try:
+        with wave.open(str(path)) as handle:
+            return float(handle.getnframes() / handle.getframerate())
+    except _UNREADABLE:
+        return None
+
+
+def synth(voice_path: Path, directory: Path) -> None:
+    from piper import PiperVoice  # type: ignore[import-not-found]  # run-time extra, not a repo dependency
+
+    directory.mkdir(parents=True, exist_ok=True)
+    voice = PiperVoice.load(str(voice_path))
+    for clip in PLANTED_CLIPS:
+        with wave.open(str(directory / f"{clip.id}.wav"), "wb") as handle:
+            voice.synthesize_wav(clip.spoken, handle)
+
+
+def run(
+    manifests: list[Path], planted_dir: Path, out: Path, whisper_dir: Path | None
+) -> int:
+    clips = [c for m in manifests for c in read_manifest(m)]
+    clips += planted_as_clips(planted_dir)
+    durations = {
+        c.id: d for c in clips if (d := c.seconds or wav_seconds(Path(c.path)))
+    }
+    engines, skipped = available_engines(whisper_dir, os.environ)
+    for line in skipped:
+        print(line)
+    results = []
+    hypotheses = {}
+    for engine in engines:
+        print(f"running {engine.name} on {len(clips)} clips")
+        result, hyp = evaluate(engine, clips, durations)
+        results.append(result)
+        hypotheses[engine.name] = hyp
+    if not results:
+        print("no engine could run", file=sys.stderr)
+        return 1
+    save(results, hypotheses, out)
+    print(table(results))
+    winner = choose_winner(results) or "none of the engines that ran"
+    print(f"winner by the selection rule: {winner}")
+    for r in results:
+        for clip_id, reason in r.missing.items():
+            print(f"{r.name} missing {clip_id}: {reason}")
+    return 0
+
+
+def main(argv: list[str]) -> int:
+    parser = argparse.ArgumentParser(prog="asr_benchmark")
+    sub = parser.add_subparsers(dest="command", required=True)
+    cv = sub.add_parser("fetch-cv")
+    cv.add_argument("dest", type=Path)
+    cv.add_argument("--count", type=int, default=60)
+    tts = sub.add_parser("synth")
+    tts.add_argument("voice", type=Path)
+    tts.add_argument("dest", type=Path)
+    go = sub.add_parser("run")
+    go.add_argument("--manifest", type=Path, action="append", default=[])
+    go.add_argument("--planted-dir", type=Path, required=True)
+    go.add_argument("--out", type=Path, required=True)
+    go.add_argument("--whisper-dir", type=Path)
+    args = parser.parse_args(argv)
+    if args.command == "fetch-cv":
+        write_manifest(
+            fetch_common_voice(args.dest, args.count, SEED),
+            args.dest / "manifest.jsonl",
+        )
+    elif args.command == "synth":
+        synth(args.voice, args.dest)
+    else:
+        return run(args.manifest, args.planted_dir, args.out, args.whisper_dir)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))
