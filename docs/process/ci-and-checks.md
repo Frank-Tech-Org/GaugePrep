@@ -39,6 +39,10 @@ uv run python tooling/ci/changed_lines_coverage/changed_lines_coverage.py --base
 
 The script's own tests run with `uv run pytest tooling/ci/changed_lines_coverage --no-cov` (without `--no-cov` they overwrite the `.coverage` file from your last run).
 
+## Shell lint (CI)
+
+The `check` job runs a `Lint shell scripts` step before the tests. It prints the runner's preinstalled shellcheck version, then runs `shellcheck -S warning` over every tracked `*.sh` file and the Git hooks in `.husky/`. A warning fails the step and shellcheck names the file and line. Hooks need a shebang so shellcheck knows the shell. Shell inside workflow `run:` blocks is not linted. `pnpm check` does not run it, so a machine without shellcheck still passes; run `pnpm run check:shellcheck` locally (install shellcheck first).
+
 ## Gate job in CI
 
 One `gate` job runs first on every pull request, in this order: the path filter (which decides whether the code jobs, pip-audit, pnpm audit, Trivy and the backend image run), the gitleaks secret scan over the full git history, the API breaking-change check, the scanner settings check, and last the title and description check (its script comes from the pull request, so it runs after the scan and the API check and cannot change them). Every step fails red with a message naming the bad title or description rule, the file holding the secret, the breaking API change or the changed setting.

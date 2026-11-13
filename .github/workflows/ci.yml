@@ -244,6 +244,11 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
+      # WHY: the runner's preinstalled shellcheck; the .husky hooks have no extension.
+      - name: Lint shell scripts
+        run: |
+          shellcheck --version
+          git ls-files -z '*.sh' '.husky/*' | xargs -0 shellcheck -S warning
       - name: Show the database is reachable
         run: |
           pg_isready -h localhost -p 5432 -U postgres -d gaugeprep

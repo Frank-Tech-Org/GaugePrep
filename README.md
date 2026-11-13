@@ -56,6 +56,7 @@ Unset settings fall back to safe local defaults. Hosted settings refuse to start
 ```sh
 pnpm check                    # everything the hooks and CI run; stops at the first failure
 pnpm run check:mypy           # one tool
+pnpm run check:shellcheck     # the CI "Lint shell scripts" step; needs shellcheck installed
 uv run ruff format backend packages voice
 pnpm exec prettier --write <file>
 ```
