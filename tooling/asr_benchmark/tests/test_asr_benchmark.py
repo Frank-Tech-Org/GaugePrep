@@ -259,3 +259,10 @@ def test_evaluate_counts_the_clips_it_was_given() -> None:
     scored, _ = evaluate(fake_engine({"c1": "bonjour"}), [clip, gone], {})
     assert (scored.clips_scored, scored.clips_total) == (1, 2)
     assert not scored.complete
+
+
+def test_synth_without_piper_fails_with_the_uvx_command(tmp_path: Path) -> None:
+    from asr_benchmark.__main__ import synth
+
+    with pytest.raises(SystemExit, match="uvx --with piper-tts"):
+        synth(tmp_path / "voice.onnx", tmp_path)

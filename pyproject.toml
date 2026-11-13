@@ -20,7 +20,6 @@ gaugeprep-voice = { workspace = true }
 asr-benchmark = [
     "av>=14.0",
     "faster-whisper>=1.1",
-    "piper-tts>=1.2",
     "pyarrow>=14.0.1",
     "websockets>=14.0",
 ]
