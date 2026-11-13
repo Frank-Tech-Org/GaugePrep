@@ -200,7 +200,7 @@ def test_engines_without_a_key_are_skipped_and_named() -> None:
     engines, skipped = available_engines(None, {"DEEPGRAM_API_KEY": "set"})
     assert [e.name for e in engines] == ["deepgram-nova-3"]
     assert any("elevenlabs-scribe" in s and "ELEVENLABS_API_KEY" in s for s in skipped)
-    assert any("mistral-voxtral" in s and "MISTRAL_API_KEY" in s for s in skipped)
+    assert any("speechmatics" in s and "SPEECHMATICS_API_KEY" in s for s in skipped)
     assert any("whisper-large-v3" in s for s in skipped)
 
 
@@ -221,3 +221,11 @@ def test_speaker_country_comes_from_the_file_name() -> None:
     assert speaker_country("congo_m_001_001.wav") == "chad-congo"
     assert speaker_country("niger_sys1_3_44.wav") == "niger"
     assert speaker_country("mystery.wav") == "other"
+    assert speaker_country("ctell4-65-1015.wav") == "yaounde"
+
+
+def test_parquet_row_name_falls_back_to_the_audio_path() -> None:
+    from asr_benchmark.corpora import _name
+
+    assert _name({"path": "x/gabon_1.wav"}) == "gabon_1.wav"
+    assert _name({"audio": {"path": "ctell4-65-1015.wav"}}) == "ctell4-65-1015.wav"

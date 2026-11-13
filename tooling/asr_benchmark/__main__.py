@@ -26,7 +26,7 @@ from asr_benchmark.streaming import STREAMING, stream_clip, summarise
 
 SEED = 15
 # Every Cameroon clip in the mirror's test split, then seeded samples of the others.
-OPENSLR_QUOTAS = {"cameroon": 47, "gabon": 20, "chad-congo": 16}
+OPENSLR_QUOTAS = {"cameroon": 47, "gabon": 20, "chad-congo": 16, "yaounde": 60}
 _UNREADABLE = (wave.Error, EOFError)
 
 

@@ -6,6 +6,7 @@ import urllib.request
 from collections.abc import Iterator
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from typing import Any
 
 COMMON_VOICE_BASE = (
     "https://huggingface.co/datasets/fsicoli/common_voice_22_0/resolve/main"
@@ -93,12 +94,21 @@ def fetch_common_voice(dest: Path, count: int, seed: int) -> list[Clip]:
 
 
 def speaker_country(filename: str) -> str:
-    """Country group from an OpenSLR 57 file name such as `cameroon_m_099_019.wav`."""
+    """Group from an OpenSLR 57 file name such as `cameroon_m_099_019.wav`.
+
+    Files named `ctell` are the 2003 Yaounde recordings, not CA16.
+    """
     stem = filename.removeprefix("afc-")
+    if stem.startswith("ctell"):
+        return "yaounde"
     for country in ("cameroon", "gabon", "niger"):
         if stem.startswith(country):
             return country
     return "chad-congo" if stem.startswith(("chad", "congo")) else "other"
+
+
+def _name(row: dict[str, Any]) -> str:
+    return Path(row.get("path") or row["audio"]["path"]).name
 
 
 def extract_parquet_sample(
@@ -113,11 +123,11 @@ def extract_parquet_sample(
         for r in pq.read_table(parquet).to_pylist()
         if r["sentence"].strip() and r["audio"]["bytes"]
     ]
-    rows.sort(key=lambda r: hashlib.sha256(f"{seed}:{r['path']}".encode()).digest())
+    rows.sort(key=lambda r: hashlib.sha256(f"{seed}:{_name(r)}".encode()).digest())
     taken: dict[str, int] = {}
     clips: list[Clip] = []
     for row in rows:
-        name = Path(row["path"]).name
+        name = _name(row)
         group = speaker_country(name)
         if taken.get(group, 0) >= quotas.get(group, 0):
             continue

@@ -134,30 +134,61 @@ def elevenlabs_scribe(path: Path) -> Transcript:
     return Transcript(data.get("text", ""), words, seconds)
 
 
-def mistral_voxtral(path: Path) -> Transcript:
-    # WHY: the API rejects `language` together with word timestamps.
-    fields = {
-        "model": os.environ.get("MISTRAL_STT_MODEL", "voxtral-mini-latest"),
-        "timestamp_granularities": "word",
+def _get(url: str, headers: Mapping[str, str]) -> dict[str, Any]:
+    request = urllib.request.Request(url, headers=dict(headers), method="GET")
+    try:
+        with urllib.request.urlopen(request, timeout=REQUEST_TIMEOUT) as response:  # noqa: S310  # fixed https provider URLs
+            payload: dict[str, Any] = json.load(response)
+            return payload
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", "replace")[:300]
+        raise EngineError(f"{url} answered {exc.code}: {detail}") from exc
+    except (urllib.error.URLError, TimeoutError) as exc:
+        raise EngineError(f"{url} unreachable: {exc}") from exc
+
+
+# Seconds between job status checks, and how many checks before giving up.
+SPEECHMATICS_POLL = 1.0
+SPEECHMATICS_POLLS = 300
+
+
+def speechmatics(path: Path) -> Transcript:
+    base = "https://eu1.asr.api.speechmatics.com/v2"
+    config = {
+        "type": "transcription",
+        "transcription_config": {
+            "language": "fr",
+            "operating_point": "enhanced",
+        },
     }
-    body, content_type = _multipart(fields, "file", path)
-    headers = {
-        "Authorization": f"Bearer {os.environ['MISTRAL_API_KEY']}",
-        "Content-Type": content_type,
-    }
+    body, content_type = _multipart({"config": json.dumps(config)}, "data_file", path)
+    auth = {"Authorization": f"Bearer {os.environ['SPEECHMATICS_API_KEY']}"}
     started = time.perf_counter()
-    data = _post("https://api.mistral.ai/v1/audio/transcriptions", body, headers)
+    job = _post(f"{base}/jobs", body, {**auth, "Content-Type": content_type})
+    job_id = job["id"]
+    for _ in range(SPEECHMATICS_POLLS):
+        state = _get(f"{base}/jobs/{job_id}", auth)
+        status = state.get("job", state).get("status")
+        if status == "done":
+            break
+        if status == "rejected":
+            raise EngineError(f"speechmatics job {job_id} was rejected")
+        time.sleep(SPEECHMATICS_POLL)
+    else:
+        raise EngineError(f"speechmatics job {job_id} did not finish")
+    data = _get(f"{base}/jobs/{job_id}/transcript", auth)
     seconds = time.perf_counter() - started
     words = tuple(
         Word(
-            str(w.get("word") or w.get("text") or ""),
-            optional_float(w.get("start")),
-            optional_float(w.get("end")),
-            optional_float(w.get("confidence")),
+            str(item["alternatives"][0]["content"]),
+            optional_float(item.get("start_time")),
+            optional_float(item.get("end_time")),
+            optional_float(item["alternatives"][0].get("confidence")),
         )
-        for w in data.get("words") or data.get("segments") or []
+        for item in data.get("results", [])
+        if item.get("type") == "word"
     )
-    return Transcript(data.get("text", ""), words, seconds)
+    return Transcript(" ".join(w.text for w in words), words, seconds)
 
 
 def whisper_local(model_dir: Path) -> Callable[[Path], Transcript]:
@@ -199,10 +230,10 @@ PRICED: dict[str, tuple[str | None, float | None, str]] = {
         0.20,
         "Scribe v3 batch $0.20 an hour; Scribe v3 Live $0.22 an hour",
     ),
-    "mistral-voxtral": (
-        "MISTRAL_API_KEY",
-        0.003 * 60,
-        "batch $0.003 a minute; realtime $0.006 a minute",
+    "speechmatics": (
+        "SPEECHMATICS_API_KEY",
+        0.75,
+        "Enhanced batch $0.75 an hour ($0.80 real time); Melia 1 batch $0.24",
     ),
     "whisper-large-v3": (None, 0.0, "open weights run locally; compute is ours"),
 }
@@ -210,7 +241,7 @@ PRICED: dict[str, tuple[str | None, float | None, str]] = {
 REMOTE: dict[str, Callable[[Path], Transcript]] = {
     "deepgram-nova-3": deepgram,
     "elevenlabs-scribe": elevenlabs_scribe,
-    "mistral-voxtral": mistral_voxtral,
+    "speechmatics": speechmatics,
 }
 
 

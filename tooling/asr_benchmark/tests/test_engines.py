@@ -3,7 +3,6 @@ from typing import Any
 
 import pytest
 from asr_benchmark import engines
-from asr_benchmark.engines import Transcript
 
 
 def stub_post(
@@ -79,17 +78,52 @@ def test_scribe_keeps_words_only_and_sends_verbatim_options(
     assert seen["headers"]["xi-api-key"] == "k"
 
 
-def test_voxtral_without_confidence_is_reported_as_missing(
+def test_speechmatics_runs_a_job_and_reads_word_confidence(
     monkeypatch: pytest.MonkeyPatch, clip: Path
 ) -> None:
-    monkeypatch.setenv("MISTRAL_API_KEY", "k")
-    stub_post(
-        monkeypatch,
-        {"text": "bonjour", "words": [{"word": "bonjour", "start": 0, "end": 1}]},
+    monkeypatch.setenv("SPEECHMATICS_API_KEY", "k")
+    seen = stub_post(monkeypatch, {"id": "job1"})
+    calls: list[str] = []
+
+    def get(url: str, headers: dict[str, str]) -> dict[str, Any]:
+        calls.append(url)
+        if url.endswith("/transcript"):
+            return {
+                "results": [
+                    {
+                        "type": "word",
+                        "start_time": 0.5,
+                        "end_time": 0.9,
+                        "alternatives": [{"content": "bonjour", "confidence": 0.97}],
+                    },
+                    {
+                        "type": "punctuation",
+                        "alternatives": [{"content": ".", "confidence": 1.0}],
+                    },
+                ]
+            }
+        return {"job": {"status": "done"}}
+
+    monkeypatch.setattr(engines, "_get", get)
+    result = engines.speechmatics(clip)
+    assert result.text == "bonjour"
+    assert result.words[0].confidence == 0.97 and result.words[0].start == 0.5
+    assert calls[-1].endswith("/jobs/job1/transcript")
+    assert seen["headers"]["Authorization"] == "Bearer k"
+    assert b'"language": "fr"' in seen["body"]
+    assert b'"operating_point": "enhanced"' in seen["body"]
+
+
+def test_speechmatics_rejected_job_is_an_error(
+    monkeypatch: pytest.MonkeyPatch, clip: Path
+) -> None:
+    monkeypatch.setenv("SPEECHMATICS_API_KEY", "k")
+    stub_post(monkeypatch, {"id": "job1"})
+    monkeypatch.setattr(
+        engines, "_get", lambda url, headers: {"job": {"status": "rejected"}}
     )
-    result: Transcript = engines.mistral_voxtral(clip)
-    assert result.words[0].confidence is None
-    assert result.words[0].start == 0
+    with pytest.raises(engines.EngineError):
+        engines.speechmatics(clip)
 
 
 def test_multipart_body_has_fields_and_file(clip: Path) -> None:
@@ -100,17 +134,7 @@ def test_multipart_body_has_fields_and_file(clip: Path) -> None:
     assert body.endswith(f"--{boundary}--\r\n".encode())
 
 
-def test_mistral_sends_no_language_with_word_timestamps(
-    monkeypatch: pytest.MonkeyPatch, clip: Path
-) -> None:
-    monkeypatch.setenv("MISTRAL_API_KEY", "k")
-    seen = stub_post(monkeypatch, {"text": "x", "words": []})
-    engines.mistral_voxtral(clip)
-    assert b'name="timestamp_granularities"' in seen["body"]
-    assert b'name="language"' not in seen["body"]
-
-
 def test_every_engine_has_a_price() -> None:
     assert all(price is not None for _, price, _ in engines.PRICED.values())
-    assert engines.PRICED["mistral-voxtral"][1] == pytest.approx(0.18)
+    assert engines.PRICED["speechmatics"][1] == pytest.approx(0.75)
     assert engines.PRICED["deepgram-nova-3"][1] == pytest.approx(0.258)

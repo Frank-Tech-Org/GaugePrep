@@ -24,7 +24,6 @@ ELEVENLABS_LIVE = (
     "&audio_format=pcm_16000&language_code=fra&commit_strategy=manual"
     "&include_timestamps=true&no_verbatim=false"
 )
-MISTRAL_LIVE_MODEL = "voxtral-mini-transcribe-realtime-2602"
 
 
 @dataclass(frozen=True)
@@ -198,7 +197,7 @@ async def deepgram_session() -> AsyncIterator[StreamSession]:
 
 @asynccontextmanager
 async def elevenlabs_session() -> AsyncIterator[StreamSession]:
-    from websockets.asyncio.client import connect  # run-time extra
+    from websockets.asyncio.client import connect
 
     def chunk(audio: bytes, commit: bool = False) -> str:
         return json.dumps(
@@ -221,55 +220,9 @@ async def elevenlabs_session() -> AsyncIterator[StreamSession]:
         )
 
 
-class _MistralSession:
-    """Voxtral Realtime through the provider SDK, which sends text deltas only."""
-
-    def __init__(self) -> None:
-        self._queue: asyncio.Queue[bytes | None] = asyncio.Queue()
-
-    async def send(self, chunk: bytes) -> None:
-        await self._queue.put(chunk)
-
-    async def finish(self) -> None:
-        await self._queue.put(None)
-
-    async def _audio(self) -> AsyncIterator[bytes]:
-        while (chunk := await self._queue.get()) is not None:
-            yield chunk
-
-    async def events(self) -> AsyncIterator[StreamEvent]:
-        from mistralai.client import Mistral  # type: ignore[import-not-found]  # run-time extra
-        from mistralai.client.models import (  # type: ignore[import-not-found]  # run-time extra
-            AudioFormat,
-            TranscriptionStreamDone,
-            TranscriptionStreamTextDelta,
-        )
-
-        client = Mistral(api_key=os.environ["MISTRAL_API_KEY"])
-        audio_format = AudioFormat(encoding="pcm_s16le", sample_rate=16000)
-        heard = ""
-        async for event in client.audio.realtime.transcribe_stream(
-            audio_stream=self._audio(),
-            model=MISTRAL_LIVE_MODEL,
-            audio_format=audio_format,
-        ):
-            now = time.perf_counter()
-            if isinstance(event, TranscriptionStreamTextDelta):
-                heard += event.text
-                yield StreamEvent("partial", event.text, now)
-            elif isinstance(event, TranscriptionStreamDone):
-                yield StreamEvent("final", heard, now)
-
-
-@asynccontextmanager
-async def mistral_session() -> AsyncIterator[StreamSession]:
-    yield _MistralSession()
-
-
 STREAMING: dict[str, Callable[[], AbstractAsyncContextManager[StreamSession]]] = {
     "deepgram-nova-3": deepgram_session,
     "elevenlabs-scribe": elevenlabs_session,
-    "mistral-voxtral": mistral_session,
 }
 
 
