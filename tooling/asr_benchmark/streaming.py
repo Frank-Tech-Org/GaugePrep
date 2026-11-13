@@ -182,7 +182,7 @@ def _elevenlabs_events(message: Any, now: float) -> list[StreamEvent]:
 
 @asynccontextmanager
 async def deepgram_session() -> AsyncIterator[StreamSession]:
-    from websockets.asyncio.client import connect  # type: ignore[import-not-found]  # run-time extra
+    from websockets.asyncio.client import connect  # type: ignore[import-not-found]  # asr extra
 
     headers = {"Authorization": f"Token {os.environ['DEEPGRAM_API_KEY']}"}
     async with connect(DEEPGRAM_LIVE, additional_headers=headers) as socket:
@@ -232,11 +232,14 @@ async def stream_clip(engine: str, path: Path) -> StreamTiming:
         return await measure(session, pcm)
 
 
-def summarise(timings: list[StreamTiming]) -> dict[str, float | None]:
-    """Median and p95 of first-token and final latency."""
+def summarise(timings: list[StreamTiming]) -> dict[str, float | int | None]:
+    """Median and p95 of first-token and final latency, with the clips behind them."""
     firsts = [t.first_token_s for t in timings if t.first_token_s is not None]
     finals = [t.final_s for t in timings if t.final_s is not None]
     return {
+        "clips": len(timings),
+        "first_token_timed": len(firsts),
+        "final_timed": len(finals),
         "first_token_p50": percentile(firsts, 50) if firsts else None,
         "first_token_p95": percentile(firsts, 95) if firsts else None,
         "final_p50": percentile(finals, 50) if finals else None,

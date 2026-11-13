@@ -17,9 +17,11 @@ from asr_benchmark.engines import (
     ALLOWANCE_MINUTES,
     MODELS,
     PRICED,
+    SETTINGS,
+    EngineError,
     available_engines,
 )
-from asr_benchmark.guard import UNKNOWN_CLIP_MINUTES, Guard
+from asr_benchmark.guard import UNKNOWN_CLIP_MINUTES, EngineStopped, Guard
 from asr_benchmark.planted import PLANTED_CLIPS
 from asr_benchmark.runner import (
     choose_winner,
@@ -45,7 +47,7 @@ def wav_seconds(path: Path) -> float | None:
 
 
 def synth(voice_path: Path, directory: Path) -> None:
-    from piper import PiperVoice  # type: ignore[import-not-found]  # run-time extra, not a repo dependency
+    from piper import PiperVoice  # type: ignore[import-not-found]  # asr extra
 
     directory.mkdir(parents=True, exist_ok=True)
     voice = PiperVoice.load(str(voice_path))
@@ -74,7 +76,11 @@ def run(
     }
     guard = Guard(out / "cache", ALLOWANCE_MINUTES, minutes)
     engines = [
-        guard.wrap(e, MODELS[e.name] + os.environ.get("ASR_VARIANT", ""))
+        guard.wrap(
+            e,
+            MODELS[e.name] + os.environ.get("ASR_VARIANT", ""),
+            SETTINGS[e.name](),
+        )
         if e.key_env
         else e
         for e in engines
@@ -105,17 +111,36 @@ def run(
     return 0
 
 
-def stream(manifests: list[Path], count: int, out: Path) -> int:
+def stream(manifests: list[Path], count: int, out: Path, cache_dir: Path) -> int:
     clips = [c for m in manifests for c in read_manifest(m)][:count]
-    report: dict[str, dict[str, float | None]] = {}
+    report: dict[str, dict[str, float | int | None]] = {}
+    guard = Guard(cache_dir, ALLOWANCE_MINUTES, {})
     for name in STREAMING:
         key = PRICED[name][0]
         if not key or not os.environ.get(key):
             print(f"skipped {name}: {key} is not set")
             continue
-        timings = [asyncio.run(stream_clip(name, Path(c.path))) for c in clips]
-        report[name] = summarise(timings)
-        print(name, report[name])
+        timings = []
+        for clip in clips:
+            seconds = clip.seconds or wav_seconds(Path(clip.path))
+            minutes = seconds / 60 if seconds else UNKNOWN_CLIP_MINUTES
+            try:
+                guard.charge(name, clip.id, minutes)
+                timings.append(asyncio.run(stream_clip(name, Path(clip.path))))
+            except EngineStopped as exc:
+                print(f"STOPPED {exc}", file=sys.stderr)
+                break
+            except (EngineError, OSError, TimeoutError) as exc:
+                print(f"{name} failed on {clip.id}: {str(exc)[:200]}", file=sys.stderr)
+        summary = summarise(timings)
+        summary["clips_planned"] = len(clips)
+        report[name] = summary
+        short = (
+            summary["clips_planned"] != summary["first_token_timed"]
+            or summary["clips_planned"] != summary["final_timed"]
+        )
+        print(name, summary, "SHORT" if short else "")
+        print(guard.usage_line(name))
     if not report:
         print("no streaming engine could run", file=sys.stderr)
         return 1
@@ -145,6 +170,7 @@ def main(argv: list[str]) -> int:
     live.add_argument("--manifest", type=Path, action="append", default=[])
     live.add_argument("--count", type=int, default=20)
     live.add_argument("--out", type=Path, required=True)
+    live.add_argument("--cache-dir", type=Path, required=True)
     args = parser.parse_args(argv)
     if args.command == "fetch-cv":
         write_manifest(
@@ -157,7 +183,7 @@ def main(argv: list[str]) -> int:
     elif args.command == "synth":
         synth(args.voice, args.dest)
     elif args.command == "stream":
-        return stream(args.manifest, args.count, args.out)
+        return stream(args.manifest, args.count, args.out, args.cache_dir)
     else:
         return run(
             args.manifest, args.planted_dir, args.out, args.whisper_dir, args.limit

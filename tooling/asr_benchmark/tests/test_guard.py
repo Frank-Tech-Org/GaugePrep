@@ -89,3 +89,44 @@ def test_evaluate_stops_at_the_first_quota_error(tmp_path: Path) -> None:
     result, _ = evaluate(engine, clips, {})
     assert backend.calls == 1
     assert len(result.missing) == 4 and result.stopped
+
+
+def test_every_billed_attempt_counts_including_retries(tmp_path: Path) -> None:
+    backend = Counting([EngineError("down")] * 5)
+    engine, audio, guard = make(tmp_path, backend)
+    with pytest.raises(EngineError):
+        engine.transcribe(audio)
+    assert backend.calls == 3 and guard.used["fake"] == 3.0
+
+
+def test_retries_stop_when_the_budget_runs_out(tmp_path: Path) -> None:
+    backend = Counting([EngineError("down")] * 5)
+    engine, audio, _ = make(tmp_path, backend, allowance=3.0, minutes=1.0)
+    with pytest.raises(EngineStopped):
+        engine.transcribe(audio)
+    assert backend.calls == 2
+
+
+def test_streaming_minutes_count_against_the_same_cap(tmp_path: Path) -> None:
+    guard = Guard(tmp_path / "cache", {"fake": 10.0}, {}, sleep=lambda _: None)
+    guard.charge("fake", "a.wav", 6.0)
+    assert guard.used["fake"] == 6.0
+    with pytest.raises(EngineStopped):
+        guard.charge("fake", "b.wav", 2.0)
+    later = Guard(tmp_path / "cache", {"fake": 10.0}, {}, sleep=lambda _: None)
+    assert later.used["fake"] == 6.0
+
+
+def test_changed_request_options_never_reuse_a_cached_transcript(
+    tmp_path: Path,
+) -> None:
+    backend = Counting()
+    audio = tmp_path / "a.wav"
+    audio.write_bytes(b"audio")
+    guard = Guard(tmp_path / "cache", {"fake": 100.0}, {}, sleep=lambda _: None)
+    base = Engine("fake", "K", 1.0, "", backend)
+    guard.wrap(base, "m1", {"language": "fr"}).transcribe(audio)
+    guard.wrap(base, "m1", {"language": "fr"}).transcribe(audio)
+    assert backend.calls == 1
+    guard.wrap(base, "m1", {"language": "fr", "temperature": 0}).transcribe(audio)
+    assert backend.calls == 2

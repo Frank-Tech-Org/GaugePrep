@@ -229,3 +229,33 @@ def test_parquet_row_name_falls_back_to_the_audio_path() -> None:
 
     assert _name({"path": "x/gabon_1.wav"}) == "gabon_1.wav"
     assert _name({"audio": {"path": "ctell4-65-1015.wav"}}) == "ctell4-65-1015.wav"
+
+
+def test_stopped_or_partial_engine_cannot_win() -> None:
+    best = result("a", 3.0, 99.0, 0.1)
+    best.stopped = "a: stopped, 429"
+    partial = result("b", 4.0, 99.0, 0.1)
+    partial.clips_total = 12
+    partial.missing = {"c1": "408"}
+    short = result("c", 5.0, 99.0, 0.1)
+    short.clips_total = 12
+    whole = result("d", 9.0, 99.0, 0.9)
+    assert choose_winner([best, partial, short, whole]) == "d"
+    assert choose_winner([best, partial, short]) is None
+
+
+def test_table_shows_scored_over_total_and_marks_a_short_engine() -> None:
+    whole = EngineResult("a", None, "", clips_scored=225, clips_total=225)
+    short = EngineResult("b", None, "", clips_scored=224, clips_total=225)
+    short.missing = {"c1": "408"}
+    rows = table([whole, short]).splitlines()
+    assert "| 225/225 |" in rows[2] and "SHORT" not in rows[2]
+    assert "| 224/225 SHORT |" in rows[3]
+
+
+def test_evaluate_counts_the_clips_it_was_given() -> None:
+    clip = Clip("c1", "x", "g", "/none/c1.wav", "bonjour", None)
+    gone = Clip("c2", "x", "g", "/none/c2.wav", "bonjour", None)
+    scored, _ = evaluate(fake_engine({"c1": "bonjour"}), [clip, gone], {})
+    assert (scored.clips_scored, scored.clips_total) == (1, 2)
+    assert not scored.complete

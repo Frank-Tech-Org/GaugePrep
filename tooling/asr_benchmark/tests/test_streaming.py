@@ -137,3 +137,14 @@ def test_elevenlabs_message_parsing() -> None:
     assert streaming._elevenlabs_events(partial, 1.0)[0].kind == "partial"
     [event] = streaming._elevenlabs_events(final, 2.0)
     assert event.kind == "final" and len(event.words) == 1
+
+
+def test_summarise_counts_the_clips_behind_each_number() -> None:
+    timings = [
+        StreamTiming(0.5, 1.0, "", ()),
+        StreamTiming(None, 2.0, "", ()),
+        StreamTiming(0.7, None, "", ()),
+    ]
+    summary = summarise(timings)
+    assert (summary["clips"], summary["first_token_timed"]) == (3, 2)
+    assert summary["final_timed"] == 2

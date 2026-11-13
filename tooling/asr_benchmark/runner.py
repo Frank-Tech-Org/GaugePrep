@@ -37,8 +37,18 @@ class EngineResult:
     latency_p95_s: float | None = None
     real_time_factor: float | None = None
     clips_scored: int = 0
+    clips_total: int = 0
     missing: dict[str, str] = field(default_factory=dict)
     stopped: str | None = None
+
+    @property
+    def complete(self) -> bool:
+        """True when the engine was never stopped and scored every clip."""
+        return (
+            self.stopped is None
+            and not self.missing
+            and self.clips_scored >= self.clips_total
+        )
 
     @property
     def wer(self) -> float | None:
@@ -69,6 +79,7 @@ def evaluate(
 ) -> tuple[EngineResult, dict[str, str]]:
     """Run one engine on every clip; returns scores and hypotheses by clip id."""
     result = EngineResult(engine.name, engine.price_per_hour_usd, engine.price_note)
+    result.clips_total = len(clips)
     edits: dict[str, list[Edits]] = defaultdict(list)
     transcripts: list[Transcript] = []
     hypotheses: dict[str, str] = {}
@@ -116,7 +127,7 @@ def evaluate(
 def choose_winner(
     results: Sequence[EngineResult], control: str = "whisper-large-v3"
 ) -> str | None:
-    """The selection rule: lowest WER among engines that keep errors and give word data.
+    """The rule: lowest WER among complete engines that keep errors and give word data.
 
     Engines within WER_TIE points of the best are ranked by price.
     The control never wins.
@@ -125,6 +136,7 @@ def choose_winner(
         r
         for r in results
         if r.name != control
+        and r.complete
         and r.wer is not None
         and r.preservation is not None
         and r.preservation >= PRESERVATION_MIN
@@ -147,6 +159,7 @@ def table(results: Sequence[EngineResult]) -> str:
     groups = sorted({g for r in results for g in r.wer_by_group})
     head = [
         "Engine",
+        "Clips scored",
         *[f"WER {g} (%)" for g in groups],
         "Errors kept (%)",
         "Word timing",
@@ -166,6 +179,7 @@ def table(results: Sequence[EngineResult]) -> str:
         price = "n/a" if r.price_per_hour_usd is None else f"{r.price_per_hour_usd:.2f}"
         cells = [
             r.name,
+            f"{r.clips_scored}/{r.clips_total}" + ("" if r.complete else " SHORT"),
             *[
                 f"{r.wer_by_group[g]:.1f}" if g in r.wer_by_group else "n/a"
                 for g in groups

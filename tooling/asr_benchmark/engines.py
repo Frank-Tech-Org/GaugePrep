@@ -8,8 +8,9 @@ import urllib.request
 import uuid
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
+from email.message import Message
 from pathlib import Path
-from typing import Any
+from typing import IO, Any
 
 # Seconds before one provider request gives up.
 REQUEST_TIMEOUT = 120
@@ -45,12 +46,28 @@ class Engine:
     transcribe: Callable[[Path], Transcript]
 
 
-def _post(url: str, body: bytes, headers: Mapping[str, str]) -> dict[str, Any]:
-    request = urllib.request.Request(
-        url, data=body, headers=dict(headers), method="POST"
-    )
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    """A 3xx is an error: a redirect could send the API key to another host."""
+
+    def redirect_request(
+        self,
+        req: urllib.request.Request,
+        fp: IO[bytes],
+        code: int,
+        msg: str,
+        headers: Message,
+        newurl: str,
+    ) -> urllib.request.Request | None:
+        return None
+
+
+_OPENER = urllib.request.build_opener(_NoRedirect)
+
+
+def _send(request: urllib.request.Request) -> dict[str, Any]:
+    url = request.full_url
     try:
-        with urllib.request.urlopen(request, timeout=REQUEST_TIMEOUT) as response:  # noqa: S310  # fixed https provider URLs
+        with _OPENER.open(request, timeout=REQUEST_TIMEOUT) as response:
             payload: dict[str, Any] = json.load(response)
             return payload
     except urllib.error.HTTPError as exc:
@@ -60,9 +77,18 @@ def _post(url: str, body: bytes, headers: Mapping[str, str]) -> dict[str, Any]:
         raise EngineError(f"{url} unreachable: {exc}") from exc
 
 
+def _post(url: str, body: bytes, headers: Mapping[str, str]) -> dict[str, Any]:
+    request = urllib.request.Request(
+        url, data=body, headers=dict(headers), method="POST"
+    )
+    return _send(request)
+
+
 def _multipart(
     fields: Mapping[str, str], file_field: str, path: Path
 ) -> tuple[bytes, str]:
+    if any(c in path.name for c in '"\r\n'):
+        raise EngineError(f"clip name {path.name!r} has a quote or a line break")
     boundary = uuid.uuid4().hex
     parts: list[bytes] = []
     for name, value in fields.items():
@@ -93,15 +119,42 @@ def extra_settings(env_name: str) -> dict[str, Any]:
     return loaded
 
 
-def deepgram(path: Path) -> Transcript:
-    query = {
+def deepgram_query() -> dict[str, str]:
+    return {
         "model": "nova-3",
         "language": "fr",
         "punctuate": "false",
         "smart_format": "false",
-        **extra_settings("ASR_EXTRA_DEEPGRAM"),
+        **{k: str(v) for k, v in extra_settings("ASR_EXTRA_DEEPGRAM").items()},
     }
-    url = "https://api.deepgram.com/v1/listen?" + urllib.parse.urlencode(query)
+
+
+def elevenlabs_fields() -> dict[str, str]:
+    return {
+        "model_id": os.environ.get("ELEVENLABS_STT_MODEL", "scribe_v3"),
+        "language_code": "fra",
+        "timestamps_granularity": "word",
+        "tag_audio_events": "false",
+        "no_verbatim": "false",
+        **{k: str(v) for k, v in extra_settings("ASR_EXTRA_ELEVENLABS").items()},
+    }
+
+
+def speechmatics_config() -> dict[str, Any]:
+    return {
+        "type": "transcription",
+        "transcription_config": {
+            "language": "fr",
+            "operating_point": "enhanced",
+            **extra_settings("ASR_EXTRA_SPEECHMATICS"),
+        },
+    }
+
+
+def deepgram(path: Path) -> Transcript:
+    url = "https://api.deepgram.com/v1/listen?" + urllib.parse.urlencode(
+        deepgram_query()
+    )
     mime = mimetypes.guess_type(path.name)[0] or "application/octet-stream"
     headers = {
         "Authorization": f"Token {os.environ['DEEPGRAM_API_KEY']}",
@@ -124,15 +177,7 @@ def deepgram(path: Path) -> Transcript:
 
 
 def elevenlabs_scribe(path: Path) -> Transcript:
-    fields = {
-        "model_id": os.environ.get("ELEVENLABS_STT_MODEL", "scribe_v3"),
-        "language_code": "fra",
-        "timestamps_granularity": "word",
-        "tag_audio_events": "false",
-        "no_verbatim": "false",
-        **{k: str(v) for k, v in extra_settings("ASR_EXTRA_ELEVENLABS").items()},
-    }
-    body, content_type = _multipart(fields, "file", path)
+    body, content_type = _multipart(elevenlabs_fields(), "file", path)
     headers = {
         "xi-api-key": os.environ["ELEVENLABS_API_KEY"],
         "Content-Type": content_type,
@@ -154,16 +199,7 @@ def elevenlabs_scribe(path: Path) -> Transcript:
 
 
 def _get(url: str, headers: Mapping[str, str]) -> dict[str, Any]:
-    request = urllib.request.Request(url, headers=dict(headers), method="GET")
-    try:
-        with urllib.request.urlopen(request, timeout=REQUEST_TIMEOUT) as response:  # noqa: S310  # fixed https provider URLs
-            payload: dict[str, Any] = json.load(response)
-            return payload
-    except urllib.error.HTTPError as exc:
-        detail = exc.read().decode("utf-8", "replace")[:300]
-        raise EngineError(f"{url} answered {exc.code}: {detail}", exc.code) from exc
-    except (urllib.error.URLError, TimeoutError) as exc:
-        raise EngineError(f"{url} unreachable: {exc}") from exc
+    return _send(urllib.request.Request(url, headers=dict(headers), method="GET"))
 
 
 # Seconds between job status checks, and how many checks before giving up.
@@ -173,15 +209,8 @@ SPEECHMATICS_POLLS = 300
 
 def speechmatics(path: Path) -> Transcript:
     base = "https://eu1.asr.api.speechmatics.com/v2"
-    config = {
-        "type": "transcription",
-        "transcription_config": {
-            "language": "fr",
-            "operating_point": "enhanced",
-            **extra_settings("ASR_EXTRA_SPEECHMATICS"),
-        },
-    }
-    body, content_type = _multipart({"config": json.dumps(config)}, "data_file", path)
+    config = json.dumps(speechmatics_config())
+    body, content_type = _multipart({"config": config}, "data_file", path)
     auth = {"Authorization": f"Bearer {os.environ['SPEECHMATICS_API_KEY']}"}
     started = time.perf_counter()
     job = _post(f"{base}/jobs", body, {**auth, "Content-Type": content_type})
@@ -213,7 +242,7 @@ def speechmatics(path: Path) -> Transcript:
 
 def whisper_local(model_dir: Path) -> Callable[[Path], Transcript]:
     """Whisper large-v3 on the CPU through faster-whisper."""
-    from faster_whisper import WhisperModel  # type: ignore[import-not-found]  # run-time extra, not a repo dependency
+    from faster_whisper import WhisperModel  # type: ignore[import-not-found]  # asr extra
 
     model = WhisperModel(str(model_dir), device="cpu", compute_type="int8")
 
@@ -270,6 +299,13 @@ MODELS: dict[str, str] = {
     "elevenlabs-scribe": "scribe_v3",
     "speechmatics": "enhanced",
     "whisper-large-v3": "large-v3",
+}
+
+# The request options of each engine, part of the cache key.
+SETTINGS: dict[str, Callable[[], Mapping[str, Any]]] = {
+    "deepgram-nova-3": deepgram_query,
+    "elevenlabs-scribe": elevenlabs_fields,
+    "speechmatics": speechmatics_config,
 }
 
 REMOTE: dict[str, Callable[[Path], Transcript]] = {

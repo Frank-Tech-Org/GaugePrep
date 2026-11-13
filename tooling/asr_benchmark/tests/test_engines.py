@@ -1,4 +1,6 @@
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
+from threading import Thread
 from typing import Any
 
 import pytest
@@ -157,3 +159,61 @@ def test_extra_settings_must_be_an_object(monkeypatch: pytest.MonkeyPatch) -> No
     monkeypatch.setenv("ASR_EXTRA_DEEPGRAM", "[1]")
     with pytest.raises(ValueError):
         engines.extra_settings("ASR_EXTRA_DEEPGRAM")
+
+
+def serve(handler: type[BaseHTTPRequestHandler]) -> tuple[HTTPServer, int]:
+    server = HTTPServer(("127.0.0.1", 0), handler)
+    Thread(target=server.serve_forever, daemon=True).start()
+    return server, int(server.server_address[1])
+
+
+def test_a_redirect_is_an_error_and_never_reaches_a_second_host() -> None:
+    hits: list[str] = []
+
+    class Target(BaseHTTPRequestHandler):
+        def do_POST(self) -> None:
+            hits.append(self.headers.get("xi-api-key", ""))
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b"{}")
+
+        do_GET = do_POST
+
+        def log_message(self, *args: Any) -> None:
+            return
+
+    target, target_port = serve(Target)
+
+    class Bounce(BaseHTTPRequestHandler):
+        def do_POST(self) -> None:
+            self.send_response(302)
+            self.send_header("Location", f"http://127.0.0.1:{target_port}/steal")
+            self.end_headers()
+
+        do_GET = do_POST
+
+        def log_message(self, *args: Any) -> None:
+            return
+
+    bounce, bounce_port = serve(Bounce)
+    url = f"http://127.0.0.1:{bounce_port}/v1"
+    try:
+        with pytest.raises(engines.EngineError) as post_error:
+            engines._post(url, b"x", {"xi-api-key": "k"})
+        with pytest.raises(engines.EngineError):
+            engines._get(url, {"xi-api-key": "k"})
+    finally:
+        bounce.shutdown()
+        target.shutdown()
+    assert post_error.value.status == 302
+    assert hits == []
+
+
+@pytest.mark.parametrize("name", ['a"b.wav', "a\rb.wav", "a\nb.wav"])
+def test_clip_names_with_quotes_or_line_breaks_are_refused(
+    tmp_path: Path, name: str
+) -> None:
+    path = tmp_path / name
+    path.write_bytes(b"RIFF")
+    with pytest.raises(engines.EngineError):
+        engines._multipart({}, "file", path)

@@ -47,7 +47,7 @@ def keep_clip(name: str, seed: int, share: float) -> bool:
 
 
 def _open(url: str) -> Iterator[bytes]:
-    with urllib.request.urlopen(url, timeout=60) as response:  # noqa: S310  # fixed https dataset URL
+    with urllib.request.urlopen(url, timeout=60) as response:  # noqa: S310  # fixed https URL
         yield from iter(lambda: response.read(1 << 16), b"")
 
 
@@ -64,7 +64,7 @@ def fetch_common_voice(dest: Path, count: int, seed: int) -> list[Clip]:
         }
     clips: list[Clip] = []
     request = urllib.request.Request(f"{COMMON_VOICE_BASE}/audio/fr/test/fr_test_0.tar")
-    with urllib.request.urlopen(request, timeout=300) as response:  # noqa: S310  # fixed https dataset URL
+    with urllib.request.urlopen(request, timeout=300) as response:  # noqa: S310  # fixed https URL
         with tarfile.open(fileobj=response, mode="r|") as archive:
             for member in archive:
                 name = Path(member.name).name
@@ -115,7 +115,7 @@ def extract_parquet_sample(
     parquet: Path, dest: Path, quotas: dict[str, int], seed: int
 ) -> list[Clip]:
     """Seeded sample per country group from a parquet mirror of OpenSLR 57."""
-    import pyarrow.parquet as pq  # type: ignore[import-not-found]  # run-time extra, not a repo dependency
+    import pyarrow.parquet as pq  # type: ignore[import-not-found]  # asr extra
 
     dest.mkdir(parents=True, exist_ok=True)
     rows = [
