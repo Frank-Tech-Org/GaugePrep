@@ -29,12 +29,8 @@ PLANTED_CLIPS: tuple[PlantedClip, ...] = tuple(
                 "elle a tombé",
                 "elle est tombée",
             ),
-            (
-                "Pendant les vacances, je suis visité ma famille.",
-                "je suis visité",
-                "j'ai rendu visite à",
-            ),
-            ("Ils ont devenu de très bons amis.", "ils ont devenu", "ils sont devenus"),
+            ("Hier soir, je suis mangé du poisson.", "je suis mangé", "j'ai mangé"),
+            ("Elles ont parti hier soir.", "elles ont parti", "elles sont parties"),
             ("J'ai prendu le bus pour aller au travail.", "j'ai prendu", "j'ai pris"),
             (
                 "Si j'aurais le temps, je viendrais avec toi.",
@@ -60,7 +56,7 @@ PLANTED_CLIPS: tuple[PlantedClip, ...] = tuple(
             ("Ma sœur et moi, nous aimons le musique.", "le musique", "la musique"),
             ("Mon mère est professeur dans une école.", "mon mère", "ma mère"),
             ("Mon voiture est tombé en panne hier soir.", "mon voiture", "ma voiture"),
-            ("Tu peux me donner le adresse de ton ami ?", "le adresse", "l'adresse"),
+            ("Tu peux fermer le fenêtre, s'il te plaît ?", "le fenêtre", "la fenêtre"),
             (
                 "Elle a une grand sœur qui habite à Paris.",
                 "une grand sœur",
@@ -77,9 +73,9 @@ PLANTED_CLIPS: tuple[PlantedClip, ...] = tuple(
                 "une belle journée",
             ),
             (
-                "Je pense que c'est une bon idée de commencer tôt.",
-                "une bon idée",
-                "une bonne idée",
+                "Nous cherchons un nouveau maison près du centre.",
+                "un nouveau maison",
+                "une nouvelle maison",
             ),
             (
                 "Elle est gentil avec tous les enfants du quartier.",
