@@ -27,7 +27,7 @@ GaugePrep prepares learners for high-stakes language exams. It places the learne
 
 | Driver | Source | What it forces in the design |
 |---|---|---|
-| Live speaking examiner, reply under 2.5 s, French with Cameroonian accents | PRD PRA-4, SIM-5, Section 14 | A dedicated real-time process, a voice framework with turn detection, a speech recognition service chosen by a measured accent test |
+| Live speaking examiner, reply under 2.5 s, French with Cameroonian accents | PRD PRA-4, SIM-5, Section 14 | A dedicated real-time process, a voice framework with turn detection, a speech recognition service chosen by a measured benchmark on accented and learner French |
 | Writing and speaking results in under 30 s and 60 s | PRD PRA-3, PRA-4 | Asynchronous grading on a job queue, never inside a web request |
 | Predictions in the exam's own terms with confidence | PRD Section 9, exam specification Section 8 | A statistics engine (Rasch model), versioned scale mappings and combination models |
 | Every prediction reproducible | PRD PRE-4, exam specification Section 13 | Versioned content and rules, append-only results that store every version used |
@@ -353,19 +353,22 @@ Switching provider is a configuration change. There is no silent fallback: if th
 | Framework | LiveKit Agents 1.8 (Python) |
 | Transport | LiveKit media server, WebRTC over UDP with built-in TURN over UDP and TLS on port 443 |
 | Turn detection | LiveKit turn detector with French support; light version on CPU |
-| Speech recognition | Chosen by the milestone 0 accent test |
+| Speech recognition | Chosen by the milestone 0 benchmark (8.6) |
 | Dialogue | Claude Haiku 5.5, streaming |
 | Voice | ElevenLabs Flash, streaming |
 | Recording | Server-side capture of the learner's track, Opus, stored in private R2 |
 
-The chained pipeline is used instead of a speech-to-speech model because grading needs a word-level transcript of the learner's own words, the recognition service must be chosen for Cameroonian accents, and the examiner rules are easier to enforce and test as text (ADR-006).
+The chained pipeline is used instead of a speech-to-speech model because grading needs a word-level transcript of the learner's own words, the recognition service must be chosen on accented and learner French, and the examiner rules are easier to enforce and test as text (ADR-006).
 
 ### 8.6 Speech recognition selection (milestone 0)
 
-- Candidates: Deepgram Nova-3 Multilingual, Mistral Voxtral Realtime, ElevenLabs Scribe v2 Realtime, each with its batch counterpart.
-- Data: 20 Cameroonian speakers, francophone and anglophone, A2 to C1, recording the three TCF speaking tasks, with signed consent; verbatim human transcripts.
+- Candidates: Deepgram Nova-3 Multilingual, Mistral Voxtral Realtime, ElevenLabs Scribe v3 Live, each with its batch counterpart. Whisper large-v3 runs as a control and cannot win.
+- Data, all public (ADR-026): OpenSLR 57 African Accented French (Apache-2.0, 232 speakers from Cameroon, Chad, Congo, Gabon and Niger, mostly read), with Cameroonian speakers reported separately; LANGSNAP and FLLOC learner French from English speakers (CC BY-NC-SA, internal measurement only, never in the repository, a model or the product); Common Voice French (CC0) as control; a synthetic planted-error set for error preservation only.
+- A fixed, seeded subset inside each provider's free allowance; one text normaliser for every engine; results by corpus and speaker code only.
 - Measures: word error rate; preservation of the learner's grammatical errors (at least 95%); word-level timing and confidence available; latency; price.
 - Rule: the lowest word error rate among candidates that meet the preservation and word-level requirements; within one point, the cheaper wins.
+- Limits: no claim for anglophone Cameroonians, spontaneous A2 to C1 speech or phone microphones on slow networks. Public wording: "tested on Central African and English-speaking learner French".
+- Before launch, the first 20 consenting beta learners, including anglophone Cameroonians, record the speaking tasks and the benchmark reruns on their answers; this is the launch check. It also reruns on any provider or model change, and when the top two engines finish within 1 point.
 
 ### 8.7 Cost controls
 
@@ -618,7 +621,7 @@ Prices are those published by providers in October 2026 and are tracked monthly 
 
 | Risk | Mitigation |
 |---|---|
-| No recognition service is accurate enough on Cameroonian accents | Measured selection in milestone 0; visible transcripts; intelligibility, not accent, is assessed; providers swappable |
+| No recognition service is accurate enough on Cameroonian accents | Public-corpus benchmark in milestone 0, rerun on 20 consenting beta learners before launch; visible transcripts; intelligibility, not accent, is assessed; providers swappable |
 | Grader below release thresholds | Prompt and rubric iteration on anchors; backup grader evaluated under the same checks; launch blocked until passed |
 | Provider price or policy change | Provider interfaces; monthly cost review; pinned model IDs with published retirement dates |
 | Free-tier change in staging | Staging scripted and rebuildable in under an hour on any provider |
@@ -631,7 +634,7 @@ Prices are those published by providers in October 2026 and are tracked monthly 
 
 | Milestone | Delivers | Done when |
 |---|---|---|
-| M0 Foundations and checks | Repository, CI/CD, environments (local, dev, staging, production), deploy pipeline; accent test; latency test from Douala; Notch Pay confirmation; grader release-check pipeline skeleton | Dev deploys from develop and staging from stage; recognition provider chosen; region confirmed |
+| M0 Foundations and checks | Repository, CI/CD, environments (local, dev, staging, production), deploy pipeline; speech recognition benchmark; latency test from Douala; Notch Pay confirmation; grader release-check pipeline skeleton | Dev deploys from develop and staging from stage; recognition provider chosen; region confirmed |
 | M1 Accounts and content | Sign-up, consents, goals; content bank with review workflow, versions and audio pipeline | A reviewer publishes an item with audio; a learner signs up and sets a goal |
 | M2 Listening and reading | Practice for both papers; scoring engine v0; diagnostic | A learner receives a predicted 699-scale range from the diagnostic |
 | M3 Writing | Rule checks, grader, anchors, release checks, feedback | The grader passes every release check |
@@ -659,9 +662,9 @@ Content production (items, prompts, lessons, anchors) runs in parallel from M1 u
 | LiveKit Cloud | Build free: 1,000 agent minutes, 5 concurrent sessions | livekit.com pricing |
 | Claude Sonnet 5.5, Haiku 5.5 | $2/$10 and $0.10/$0.50 per million tokens; no retirement before September and October 2027 | Anthropic pricing and model deprecations pages |
 | GPT-6.1 Sol | $2/$10 per million tokens | OpenAI pricing page |
-| Deepgram Nova-3 Multilingual | $0.0058 per minute streaming (promotional) | deepgram.com pricing |
+| Deepgram Nova-3 Multilingual | $0.0092 per minute streaming, $0.0052 batch, list price (12 November 2026) | deepgram.com pricing |
 | Mistral Voxtral Realtime | $0.006 per minute; open weights Apache 2.0 | AI Business, February 2026 |
-| ElevenLabs | Flash $0.04 and v3 $0.08 per 1,000 characters; Scribe v2 $0.22 per hour, Realtime $0.39 per hour | elevenlabs.io API pricing |
+| ElevenLabs | Flash $0.04 and v3 $0.08 per 1,000 characters; Scribe v3 $0.20 per hour, v3 Live $0.22 per hour (12 November 2026) | elevenlabs.io API pricing |
 | Cloudflare R2 | 10 GB free; $0.015 per GB-month; no egress fees | Cloudflare R2 pricing |
 | Hetzner Cloud | ARM CAX11 €5.99, CAX41 €40.99 after June 2026 repricing | privatedevops.com report |
 | Oracle Always Free | 2 OCPU and 12 GB ARM since 15 June 2026 | InfoQ, July 2026 |
@@ -684,7 +687,7 @@ Content production (items, prompts, lessons, anchors) runs in parallel from M1 u
 | ADR-005 | Session cookie authentication |
 | ADR-006 | Chained voice pipeline on LiveKit Agents instead of a speech-to-speech model |
 | ADR-007 | Claude Sonnet 5.5 as the grader, Haiku 5.5 for light tasks, GPT-6.1 Sol as backup |
-| ADR-008 | Speech recognition chosen by a measured accent test |
+| ADR-008 | Speech recognition chosen by a measured accent test (superseded by ADR-026) |
 | ADR-009 | ElevenLabs for examiner and content voices |
 | ADR-010 | In-house Rasch scoring engine verified against a reference |
 | ADR-011 | Versioned content and append-only results |
@@ -701,6 +704,7 @@ Content production (items, prompts, lessons, anchors) runs in parallel from M1 u
 | ADR-022 | PR security scanners catch accidents, not a deliberate bypass |
 | ADR-023 | Email verification only, no SMS sign-up |
 | ADR-024 | Resend for transactional email, Mailpit locally and in dev |
+| ADR-026 | Speech recognition chosen by a public-corpus benchmark |
 
 ## Appendix C: Glossary
 

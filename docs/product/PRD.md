@@ -481,6 +481,7 @@ Release 1 launches only when all of these are true:
 2. Content volumes in Section 11 are published and reviewer-approved.
 3. The grader passes every release check in 10.2 for writing and speaking.
 4. Speech recognition tested with at least 20 Cameroonian speakers (francophone and anglophone) across levels, with transcripts judged accurate enough to grade on at least 90% of test answers.
+   The check runs on the first 20 consenting beta learners, by the benchmark in ADR-026.
 5. Mobile money payments work in production with real MTN and Orange accounts, including renewal and refund.
 6. The security baseline in Section 15 is met, and backups have been restored once in a test.
 

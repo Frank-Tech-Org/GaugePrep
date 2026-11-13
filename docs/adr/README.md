@@ -9,7 +9,7 @@
 | [ADR-005](ADR-005-session-cookie-authentication.md) | Session cookie authentication | Accepted |
 | [ADR-006](ADR-006-chained-voice-pipeline-livekit-agents.md) | Chained voice pipeline on LiveKit Agents instead of a speech-to-speech model | Accepted |
 | [ADR-007](ADR-007-claude-grader-gpt-backup.md) | Claude Sonnet 5.5 as the grader, Haiku 5.5 for light tasks, GPT-6.1 Sol as backup | Accepted |
-| [ADR-008](ADR-008-speech-recognition-accent-test.md) | Speech recognition chosen by a measured accent test | Accepted |
+| [ADR-008](ADR-008-speech-recognition-accent-test.md) | Speech recognition chosen by a measured accent test | Superseded by ADR-026 |
 | [ADR-009](ADR-009-elevenlabs-examiner-content-voices.md) | ElevenLabs for examiner and content voices | Accepted |
 | [ADR-010](ADR-010-in-house-rasch-scoring-engine.md) | In-house Rasch scoring engine verified against a reference | Accepted |
 | [ADR-011](ADR-011-versioned-content-append-only-results.md) | Versioned content and append-only results | Accepted |
@@ -27,6 +27,7 @@
 | [ADR-023](ADR-023-email-verification-only.md) | Email verification only, no SMS sign-up | Accepted |
 | [ADR-024](ADR-024-resend-transactional-email-mailpit.md) | Resend for transactional email, Mailpit locally and in dev | Accepted |
 | [ADR-025](ADR-025-content-as-validated-files.md) | Content authored as validated files, imported into the content module | Proposed |
+| [ADR-026](ADR-026-speech-recognition-corpus-benchmark.md) | Speech recognition chosen by a public-corpus benchmark | Accepted |
 
 ## Template
 
