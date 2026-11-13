@@ -1,6 +1,10 @@
 FROM ghcr.io/astral-sh/uv:python3.14-trixie-slim@sha256:e80c05a310400cfc90af00b5b7271ef9ad24816e3265e1162af8a678e1aad099 AS base
 
 ENV UV_LINK_MODE=copy PYTHONUNBUFFERED=1 PATH="/app/.venv/bin:$PATH"
+
+# WHY: the pinned base lags Debian fixes; the app runs from the uv venv, so pip is dropped.
+RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /usr/local/lib/python3.14/site-packages/pip* /usr/local/bin/pip*
 WORKDIR /app
 
 # uv needs every workspace member's pyproject to resolve the lock.
