@@ -3,6 +3,7 @@ import mimetypes
 import os
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 import uuid
 from collections.abc import Callable, Mapping
@@ -84,8 +85,23 @@ def optional_float(value: Any) -> float | None:
     return float(value) if isinstance(value, int | float) else None
 
 
+def extra_settings(env_name: str) -> dict[str, Any]:
+    """Provider options to try on top of the defaults, as a JSON object in the env."""
+    loaded = json.loads(os.environ.get(env_name) or "{}")
+    if not isinstance(loaded, dict):
+        raise ValueError(f"{env_name} must hold a JSON object")
+    return loaded
+
+
 def deepgram(path: Path) -> Transcript:
-    url = "https://api.deepgram.com/v1/listen?model=nova-3&language=fr&punctuate=false&smart_format=false"
+    query = {
+        "model": "nova-3",
+        "language": "fr",
+        "punctuate": "false",
+        "smart_format": "false",
+        **extra_settings("ASR_EXTRA_DEEPGRAM"),
+    }
+    url = "https://api.deepgram.com/v1/listen?" + urllib.parse.urlencode(query)
     mime = mimetypes.guess_type(path.name)[0] or "application/octet-stream"
     headers = {
         "Authorization": f"Token {os.environ['DEEPGRAM_API_KEY']}",
@@ -114,6 +130,7 @@ def elevenlabs_scribe(path: Path) -> Transcript:
         "timestamps_granularity": "word",
         "tag_audio_events": "false",
         "no_verbatim": "false",
+        **{k: str(v) for k, v in extra_settings("ASR_EXTRA_ELEVENLABS").items()},
     }
     body, content_type = _multipart(fields, "file", path)
     headers = {
@@ -161,6 +178,7 @@ def speechmatics(path: Path) -> Transcript:
         "transcription_config": {
             "language": "fr",
             "operating_point": "enhanced",
+            **extra_settings("ASR_EXTRA_SPEECHMATICS"),
         },
     }
     body, content_type = _multipart({"config": json.dumps(config)}, "data_file", path)

@@ -138,3 +138,22 @@ def test_every_engine_has_a_price() -> None:
     assert all(price is not None for _, price, _ in engines.PRICED.values())
     assert engines.PRICED["speechmatics"][1] == pytest.approx(0.75)
     assert engines.PRICED["deepgram-nova-3"][1] == pytest.approx(0.258)
+
+
+def test_extra_settings_reach_the_deepgram_url(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    clip = tmp_path / "a.wav"
+    clip.write_bytes(b"x")
+    seen = stub_post(monkeypatch, {"results": {"channels": [{"alternatives": [{}]}]}})
+    monkeypatch.setenv("DEEPGRAM_API_KEY", "k")
+    monkeypatch.setenv("ASR_EXTRA_DEEPGRAM", '{"filler_words": "true"}')
+    engines.deepgram(clip)
+    assert "filler_words=true" in seen["url"]
+    assert "smart_format=false" in seen["url"]
+
+
+def test_extra_settings_must_be_an_object(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("ASR_EXTRA_DEEPGRAM", "[1]")
+    with pytest.raises(ValueError):
+        engines.extra_settings("ASR_EXTRA_DEEPGRAM")

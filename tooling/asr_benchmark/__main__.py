@@ -67,11 +67,18 @@ def run(
         c.id: d for c in clips if (d := c.seconds or wav_seconds(Path(c.path)))
     }
     engines, skipped = available_engines(whisper_dir, os.environ)
+    if only := os.environ.get("ASR_ONLY"):
+        engines = [e for e in engines if e.name == only]
     minutes = {
         c.path: durations.get(c.id, UNKNOWN_CLIP_MINUTES * 60) / 60 for c in clips
     }
     guard = Guard(out / "cache", ALLOWANCE_MINUTES, minutes)
-    engines = [guard.wrap(e, MODELS[e.name]) if e.key_env else e for e in engines]
+    engines = [
+        guard.wrap(e, MODELS[e.name] + os.environ.get("ASR_VARIANT", ""))
+        if e.key_env
+        else e
+        for e in engines
+    ]
     for line in skipped:
         print(line)
     results = []
