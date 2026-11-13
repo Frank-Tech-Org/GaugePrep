@@ -43,6 +43,22 @@ ADR-008's rule picks the winner, unchanged: the lowest word error rate among can
 
 Public wording is "tested on Central African and English-speaking learner French". We make no claim for anglophone Cameroonians, spontaneous A2 to C1 speech, or phone microphones on slow networks.
 
+## Results
+
+Run 2026-11-13 with `tooling/asr_benchmark` (seed 15, batch mode, one normaliser for every engine). Only Whisper large-v3 has run: the other three engines are skipped until their API keys exist, so no provider is chosen yet.
+
+| Engine | WER Common Voice FR (%) | WER OpenSLR 57 Cameroon (%) | WER OpenSLR 57 Gabon (%) | WER OpenSLR 57 Chad and Congo (%) | Planted errors kept (%) | Word timing | Word confidence | USD per audio hour |
+|---|---|---|---|---|---|---|---|---|
+| Whisper large-v3 (control, local CPU) | 8.2 | 11.8 | 7.7 | 4.7 | 68 | yes | yes | 0 (own compute) |
+| Deepgram Nova-3 | not run | not run | not run | not run | not run | not run | not run | 0.31 list |
+| ElevenLabs Scribe v3 | not run | not run | not run | not run | not run | not run | not run | 0.20 list |
+| Mistral Voxtral | not run | not run | not run | not run | not run | not run | not run | not checked |
+
+- Sets: 60 Common Voice FR clips (CC0, test split, mirror `fsicoli/common_voice_22_0`), 83 OpenSLR 57 clips (Apache-2.0, from the `BrunoHays/small_african_accented_french_test` mirror of its test split, grouped by the country in the file name: all 47 Cameroon clips, 20 Gabon, 16 Chad and Congo), 22 planted-error sentences spoken by the Piper `fr_FR-siwis-medium` voice (CC BY 4.0). Clip lists are rebuilt from the seed; no audio or transcript is stored in the repository.
+- Whisper kept 15 of 22 planted errors; the other seven were corrected in the transcript, which is the failure ADR-008 warns about. Streaming latency is not measured: the script runs batch only, and the local CPU time (median 17 s a clip, on a shared, loaded machine) says nothing about the providers.
+- Cameroon is 47 clips from the CA16 recordings, a few speakers, so its rate is indicative only. Not covered yet: the Yaoundé recordings (end of the 1.8 GB archive), LANGSNAP and FLLOC (access not requested), streaming mode for the candidates.
+- To finish: set `DEEPGRAM_API_KEY`, `ELEVENLABS_API_KEY` and `MISTRAL_API_KEY`, rerun, then add the rows and the choice here.
+
 ## Consequences
 
 - Good: a provider in milestone 0 without recruitment, consent forms or transcription costs; no personal data collected; the benchmark can be rerun on every provider or model change.
