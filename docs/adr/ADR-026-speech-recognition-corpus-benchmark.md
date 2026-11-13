@@ -25,7 +25,7 @@ The need has not changed: one provider serves live and batch transcription, nobo
 - FLLOC: five corpora of instructed English-speaking learners of French, beginners to final-year undergraduates, CHAT transcripts, audio on request, CC BY-NC-SA 3.0 Unported. https://ota.bodleian.ox.ac.uk/repository/xmlui/handle/20.500.12024/2495 (now https://llds.ling-phil.ox.ac.uk/llds/xmlui/handle/20.500.14106/2495)
 - Synthetic speech is no stand-in for real speakers: Whisper large-v3 scored 3.7% WER on synthetic child speech and 21.7% on real child speech (https://arxiv.org/abs/2603.25727, section 5), and TTS speech that recognisers find easy tends to "lose distinctive qualities like strong accent" (https://arxiv.org/abs/2410.16726). A planted error is still in the audio whatever the voice, so a synthetic set can test error preservation.
 - Whisper large-v3: 30-second window, "cannot be used for real-time transcription out of the box" (https://huggingface.co/openai/whisper-large-v3); hallucinated phrases in about 1% of transcripts (https://arxiv.org/abs/2402.08021).
-- Engines and free allowances, checked 2026-11-12: Deepgram Nova-3 Multilingual, $200 credit for new accounts, $0.0092 a minute streaming and $0.0052 batch at list price (https://deepgram.com/pricing). ElevenLabs Scribe v3 at $0.20 an hour and Scribe v3 Live at $0.22, with 4 h 30 min batch and 2 h 30 min live a month free (https://elevenlabs.io/pricing/api). Mistral Voxtral Mini 4B Realtime, open weights under Apache-2.0 (https://huggingface.co/mistralai/Voxtral-Mini-4B-Realtime-2602).
+- Engines and free allowances, checked 2026-11-12: Deepgram Nova-3 monolingual French (`language=fr`), $200 credit for new accounts, $0.0048 a minute streaming and $0.0043 batch at list price (https://deepgram.com/pricing). ElevenLabs Scribe v3 at $0.20 an hour and Scribe v3 Live at $0.22, with 4 h 30 min batch and 2 h 30 min live a month free (https://elevenlabs.io/pricing/api). Mistral Voxtral: batch `voxtral-mini-latest` at $0.003 a minute ($0.18 an hour) and realtime `voxtral-mini-transcribe-realtime-2602` at $0.006 a minute ($0.36 an hour), the realtime weights open under Apache-2.0 (https://docs.mistral.ai/capabilities/audio_transcription, https://huggingface.co/mistralai/Voxtral-Mini-4B-Realtime-2602). Mistral documents no word confidence, so Voxtral may fail the confidence requirement; the run will say.
 
 ## Decision
 
@@ -35,7 +35,7 @@ The provider is chosen by a benchmark on public corpora, run once in milestone 0
 - Learner French from English speakers: LANGSNAP and FLLOC, for internal measurement only. Their audio and transcripts never enter the repository, a model, a prompt or the product, and only aggregate numbers are published. If TalkBank or Oxford refuse a company's evaluation use, that set is dropped and the claim below narrows to Central African French.
 - Control: Common Voice French scripted and spontaneous speech.
 - Error preservation: scripted learner sentences with planted grammatical errors, spoken by a synthetic voice. This set measures preservation only, never accent accuracy.
-- Candidates, each streaming and batch: Deepgram Nova-3 Multilingual, ElevenLabs Scribe v3 Live and Scribe v3, Mistral Voxtral Realtime. Whisper large-v3 runs as a control and cannot win.
+- Candidates, each streaming and batch: Deepgram Nova-3 (monolingual French), ElevenLabs Scribe v3 Live and Scribe v3, Mistral Voxtral Mini and Voxtral Realtime. Whisper large-v3 runs as a control and cannot win.
 - A fixed, seeded subset sized to stay inside each provider's free allowance; any paid spend goes to the owner first.
 - One text normaliser for every engine; results by corpus and speaker code only.
 
@@ -45,17 +45,18 @@ Public wording is "tested on Central African and English-speaking learner French
 
 ## Results
 
-Run 2026-11-13 with `tooling/asr_benchmark` (seed 15, batch mode, one normaliser for every engine). Only Whisper large-v3 has run: the other three engines are skipped until their API keys exist, so no provider is chosen yet.
+Run 2026-11-13 with `tooling/asr_benchmark` (seed 15, batch mode, one normaliser for every engine; the streaming harness has not run live). Only Whisper large-v3 has run: the other three engines are skipped until their API keys exist, so no provider is chosen yet.
 
 | Engine | WER Common Voice FR (%) | WER OpenSLR 57 Cameroon (%) | WER OpenSLR 57 Gabon (%) | WER OpenSLR 57 Chad and Congo (%) | Planted errors kept (%) | Word timing | Word confidence | USD per audio hour |
 |---|---|---|---|---|---|---|---|---|
-| Whisper large-v3 (control, local CPU) | 8.2 | 11.8 | 7.7 | 4.7 | 68 | yes | yes | 0 (own compute) |
-| Deepgram Nova-3 | not run | not run | not run | not run | not run | not run | not run | 0.31 list |
-| ElevenLabs Scribe v3 | not run | not run | not run | not run | not run | not run | not run | 0.20 list |
-| Mistral Voxtral | not run | not run | not run | not run | not run | not run | not run | not checked |
+| Whisper large-v3 (control, local CPU) | 8.2 | 11.8 | 7.7 | 4.7 | 82 | yes | yes | 0 (own compute) |
+| Deepgram Nova-3 | not run | not run | not run | not run | not run | not run | not run | 0.26 list (0.29 streaming) |
+| ElevenLabs Scribe v3 | not run | not run | not run | not run | not run | not run | not run | 0.20 list (0.22 live) |
+| Mistral Voxtral | not run | not run | not run | not run | not run | not run | not run | 0.18 list (0.36 realtime) |
 
 - Sets: 60 Common Voice FR clips (CC0, test split, mirror `fsicoli/common_voice_22_0`), 83 OpenSLR 57 clips (Apache-2.0, from the `BrunoHays/small_african_accented_french_test` mirror of its test split, grouped by the country in the file name: all 47 Cameroon clips, 20 Gabon, 16 Chad and Congo), 22 planted-error sentences spoken by the Piper `fr_FR-siwis-medium` voice (CC BY 4.0). Clip lists are rebuilt from the seed; no audio or transcript is stored in the repository.
-- Whisper kept 15 of 22 planted errors; the other seven were corrected in the transcript, which is the failure ADR-008 warns about. Streaming latency is not measured: the script runs batch only, and the local CPU time (median 17 s a clip, on a shared, loaded machine) says nothing about the providers.
+- Planted errors: the first run kept 15 of 22. Four of the seven losses were the test, not Whisper: errors that sound the same as the correct form (`visité` and `visitée`, `devenu` and `devenus`) or hide in an elision or liaison (`le adresse`, `une bon idée`). I replaced those four sentences with errors that change the sound (`je suis mangé`, `elles ont parti`, `le fenêtre`, `un nouveau maison`), re-synthesised and reran Whisper on the planted clips only: 18 of 22 kept (82%). The four still lost are the model: `un belle` and `elle est gentil` and `que tu viens` were rewritten to the standard form, and `un nouveau maison` was heard as `à nouveau maison`. Verdict: the test was part of the gap (15 to 18 once fixed), but Whisper still rewrites learner grammar, which is why it stays a control. The set was changed after looking at Whisper's output, so providers are scored on the revised set and the 15 of 22 stays on record.
+- Latency is unmeasured. The local Whisper run took a median of 17 s a clip on a machine loaded with other jobs, which says nothing about a provider, so no latency number is reported. `python -m asr_benchmark stream` sends each clip at real-time pace over each provider's live endpoint and reports first-token and final latency (p50 and p95); it runs only when the key is set, and only on an idle machine.
 - Cameroon is 47 clips from the CA16 recordings, a few speakers, so its rate is indicative only. Not covered yet: the Yaoundé recordings (end of the 1.8 GB archive), LANGSNAP and FLLOC (access not requested), streaming mode for the candidates.
 - To finish: set `DEEPGRAM_API_KEY`, `ELEVENLABS_API_KEY` and `MISTRAL_API_KEY`, rerun, then add the rows and the choice here.
 
