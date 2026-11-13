@@ -1,7 +1,13 @@
 from pathlib import Path
 
 import pytest
-from asr_benchmark.corpora import Clip, keep_clip, read_manifest, write_manifest
+from asr_benchmark.corpora import (
+    Clip,
+    keep_clip,
+    read_manifest,
+    speaker_country,
+    write_manifest,
+)
 from asr_benchmark.engines import (
     Engine,
     EngineError,
@@ -206,3 +212,12 @@ def test_skip_message_never_contains_the_key_value() -> None:
 def test_table_marks_missing_numbers_as_n_a() -> None:
     row = EngineResult("x", None, "", {}, None, False, False)
     assert "n/a" in table([row])
+
+
+def test_speaker_country_comes_from_the_file_name() -> None:
+    assert speaker_country("cameroon_m_099_019.wav") == "cameroon"
+    assert speaker_country("afc-gabon_16.06.22_123_read_0734.wav") == "gabon"
+    assert speaker_country("gabon_f_001_002.wav") == "gabon"
+    assert speaker_country("congo_m_001_001.wav") == "chad-congo"
+    assert speaker_country("niger_sys1_3_44.wav") == "niger"
+    assert speaker_country("mystery.wav") == "other"

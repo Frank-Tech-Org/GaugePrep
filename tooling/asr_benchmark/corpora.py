@@ -92,19 +92,37 @@ def fetch_common_voice(dest: Path, count: int, seed: int) -> list[Clip]:
     return clips
 
 
+def speaker_country(filename: str) -> str:
+    """Country group from an OpenSLR 57 file name such as `cameroon_m_099_019.wav`."""
+    stem = filename.removeprefix("afc-")
+    for country in ("cameroon", "gabon", "niger"):
+        if stem.startswith(country):
+            return country
+    return "chad-congo" if stem.startswith(("chad", "congo")) else "other"
+
+
 def extract_parquet_sample(
-    parquet: Path, dest: Path, count: int, seed: int, group: str
+    parquet: Path, dest: Path, quotas: dict[str, int], seed: int
 ) -> list[Clip]:
-    """Seeded sample from a parquet mirror of OpenSLR 57."""
+    """Seeded sample per country group from a parquet mirror of OpenSLR 57."""
     import pyarrow.parquet as pq  # type: ignore[import-not-found]  # run-time extra, not a repo dependency
 
     dest.mkdir(parents=True, exist_ok=True)
-    rows = pq.read_table(parquet).to_pylist()
-    rows = [r for r in rows if r["sentence"].strip() and r["audio"]["bytes"]]
+    rows = [
+        r
+        for r in pq.read_table(parquet).to_pylist()
+        if r["sentence"].strip() and r["audio"]["bytes"]
+    ]
     rows.sort(key=lambda r: hashlib.sha256(f"{seed}:{r['path']}".encode()).digest())
+    taken: dict[str, int] = {}
     clips: list[Clip] = []
-    for row in rows[:count]:
-        target = dest / Path(row["path"]).name
+    for row in rows:
+        name = Path(row["path"]).name
+        group = speaker_country(name)
+        if taken.get(group, 0) >= quotas.get(group, 0):
+            continue
+        taken[group] = taken.get(group, 0) + 1
+        target = dest / name
         target.write_bytes(row["audio"]["bytes"])
         clips.append(
             Clip(

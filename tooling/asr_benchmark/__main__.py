@@ -1,11 +1,16 @@
-# Usage: python -m asr_benchmark fetch-cv|synth|run; audio and text stay out of git
+# Usage: python -m asr_benchmark fetch-cv|fetch-openslr|synth|run (no data in git)
 import argparse
 import os
 import sys
 import wave
 from pathlib import Path
 
-from asr_benchmark.corpora import fetch_common_voice, read_manifest, write_manifest
+from asr_benchmark.corpora import (
+    extract_parquet_sample,
+    fetch_common_voice,
+    read_manifest,
+    write_manifest,
+)
 from asr_benchmark.engines import available_engines
 from asr_benchmark.planted import PLANTED_CLIPS
 from asr_benchmark.runner import (
@@ -17,6 +22,8 @@ from asr_benchmark.runner import (
 )
 
 SEED = 15
+# Every Cameroon clip in the mirror's test split, then seeded samples of the others.
+OPENSLR_QUOTAS = {"cameroon": 47, "gabon": 20, "chad-congo": 16}
 _UNREADABLE = (wave.Error, EOFError)
 
 
@@ -75,6 +82,9 @@ def main(argv: list[str]) -> int:
     cv = sub.add_parser("fetch-cv")
     cv.add_argument("dest", type=Path)
     cv.add_argument("--count", type=int, default=60)
+    slr = sub.add_parser("fetch-openslr")
+    slr.add_argument("parquet", type=Path)
+    slr.add_argument("dest", type=Path)
     tts = sub.add_parser("synth")
     tts.add_argument("voice", type=Path)
     tts.add_argument("dest", type=Path)
@@ -89,6 +99,9 @@ def main(argv: list[str]) -> int:
             fetch_common_voice(args.dest, args.count, SEED),
             args.dest / "manifest.jsonl",
         )
+    elif args.command == "fetch-openslr":
+        clips = extract_parquet_sample(args.parquet, args.dest, OPENSLR_QUOTAS, SEED)
+        write_manifest(clips, args.dest / "manifest.jsonl")
     elif args.command == "synth":
         synth(args.voice, args.dest)
     else:
