@@ -1,5 +1,7 @@
-# Usage: python -m asr_benchmark fetch-cv|fetch-openslr|synth|run (no data in git)
+# Usage: python -m asr_benchmark fetch-cv|fetch-openslr|synth|run|stream
 import argparse
+import asyncio
+import json
 import os
 import sys
 import wave
@@ -11,7 +13,7 @@ from asr_benchmark.corpora import (
     read_manifest,
     write_manifest,
 )
-from asr_benchmark.engines import available_engines
+from asr_benchmark.engines import PRICED, available_engines
 from asr_benchmark.planted import PLANTED_CLIPS
 from asr_benchmark.runner import (
     choose_winner,
@@ -20,6 +22,7 @@ from asr_benchmark.runner import (
     save,
     table,
 )
+from asr_benchmark.streaming import STREAMING, stream_clip, summarise
 
 SEED = 15
 # Every Cameroon clip in the mirror's test split, then seeded samples of the others.
@@ -76,6 +79,24 @@ def run(
     return 0
 
 
+def stream(manifests: list[Path], count: int, out: Path) -> int:
+    clips = [c for m in manifests for c in read_manifest(m)][:count]
+    report: dict[str, dict[str, float | None]] = {}
+    for name in STREAMING:
+        key = PRICED[name][0]
+        if not key or not os.environ.get(key):
+            print(f"skipped {name}: {key} is not set")
+            continue
+        timings = [asyncio.run(stream_clip(name, Path(c.path))) for c in clips]
+        report[name] = summarise(timings)
+        print(name, report[name])
+    if not report:
+        print("no streaming engine could run", file=sys.stderr)
+        return 1
+    out.write_text(json.dumps(report, indent=2))
+    return 0
+
+
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(prog="asr_benchmark")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -93,6 +114,10 @@ def main(argv: list[str]) -> int:
     go.add_argument("--planted-dir", type=Path, required=True)
     go.add_argument("--out", type=Path, required=True)
     go.add_argument("--whisper-dir", type=Path)
+    live = sub.add_parser("stream")
+    live.add_argument("--manifest", type=Path, action="append", default=[])
+    live.add_argument("--count", type=int, default=20)
+    live.add_argument("--out", type=Path, required=True)
     args = parser.parse_args(argv)
     if args.command == "fetch-cv":
         write_manifest(
@@ -104,6 +129,8 @@ def main(argv: list[str]) -> int:
         write_manifest(clips, args.dest / "manifest.jsonl")
     elif args.command == "synth":
         synth(args.voice, args.dest)
+    elif args.command == "stream":
+        return stream(args.manifest, args.count, args.out)
     else:
         return run(args.manifest, args.planted_dir, args.out, args.whisper_dir)
     return 0

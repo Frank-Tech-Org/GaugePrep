@@ -78,7 +78,7 @@ def _multipart(
     return b"".join(parts), f"multipart/form-data; boundary={boundary}"
 
 
-def _optional_float(value: Any) -> float | None:
+def optional_float(value: Any) -> float | None:
     return float(value) if isinstance(value, int | float) else None
 
 
@@ -96,9 +96,9 @@ def deepgram(path: Path) -> Transcript:
     words = tuple(
         Word(
             w["word"],
-            _optional_float(w.get("start")),
-            _optional_float(w.get("end")),
-            _optional_float(w.get("confidence")),
+            optional_float(w.get("start")),
+            optional_float(w.get("end")),
+            optional_float(w.get("confidence")),
         )
         for w in best.get("words", [])
     )
@@ -124,9 +124,9 @@ def elevenlabs_scribe(path: Path) -> Transcript:
     words = tuple(
         Word(
             w["text"],
-            _optional_float(w.get("start")),
-            _optional_float(w.get("end")),
-            _optional_float(w.get("logprob")),
+            optional_float(w.get("start")),
+            optional_float(w.get("end")),
+            optional_float(w.get("logprob")),
         )
         for w in data.get("words", [])
         if w.get("type") == "word"
@@ -135,9 +135,9 @@ def elevenlabs_scribe(path: Path) -> Transcript:
 
 
 def mistral_voxtral(path: Path) -> Transcript:
+    # WHY: the API rejects `language` together with word timestamps.
     fields = {
         "model": os.environ.get("MISTRAL_STT_MODEL", "voxtral-mini-latest"),
-        "language": "fr",
         "timestamp_granularities": "word",
     }
     body, content_type = _multipart(fields, "file", path)
@@ -151,9 +151,9 @@ def mistral_voxtral(path: Path) -> Transcript:
     words = tuple(
         Word(
             str(w.get("word") or w.get("text") or ""),
-            _optional_float(w.get("start")),
-            _optional_float(w.get("end")),
-            _optional_float(w.get("confidence")),
+            optional_float(w.get("start")),
+            optional_float(w.get("end")),
+            optional_float(w.get("confidence")),
         )
         for w in data.get("words") or data.get("segments") or []
     )
@@ -187,19 +187,23 @@ def whisper_local(model_dir: Path) -> Callable[[Path], Transcript]:
     return transcribe
 
 
-# WHY: list prices per audio hour, from ADR-026 (Deepgram batch is $0.0052 a minute).
+# WHY: list prices per audio hour from the providers' public pages, checked 2026-11-13.
 PRICED: dict[str, tuple[str | None, float | None, str]] = {
     "deepgram-nova-3": (
         "DEEPGRAM_API_KEY",
-        0.0052 * 60,
-        "batch list price; streaming $0.0092 a minute",
+        0.0043 * 60,
+        "monolingual batch $0.0043 a minute; streaming $0.0048 a minute",
     ),
     "elevenlabs-scribe": (
         "ELEVENLABS_API_KEY",
         0.20,
-        "batch list price; Scribe v3 Live $0.22 an hour",
+        "Scribe v3 batch $0.20 an hour; Scribe v3 Live $0.22 an hour",
     ),
-    "mistral-voxtral": ("MISTRAL_API_KEY", None, "no list price checked yet"),
+    "mistral-voxtral": (
+        "MISTRAL_API_KEY",
+        0.003 * 60,
+        "batch $0.003 a minute; realtime $0.006 a minute",
+    ),
     "whisper-large-v3": (None, 0.0, "open weights run locally; compute is ours"),
 }
 

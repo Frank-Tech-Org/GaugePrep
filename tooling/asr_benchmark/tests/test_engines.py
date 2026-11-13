@@ -98,3 +98,19 @@ def test_multipart_body_has_fields_and_file(clip: Path) -> None:
     assert body.startswith(f"--{boundary}".encode())
     assert b'name="a"\r\n\r\n1' in body and b'filename="clip.wav"' in body
     assert body.endswith(f"--{boundary}--\r\n".encode())
+
+
+def test_mistral_sends_no_language_with_word_timestamps(
+    monkeypatch: pytest.MonkeyPatch, clip: Path
+) -> None:
+    monkeypatch.setenv("MISTRAL_API_KEY", "k")
+    seen = stub_post(monkeypatch, {"text": "x", "words": []})
+    engines.mistral_voxtral(clip)
+    assert b'name="timestamp_granularities"' in seen["body"]
+    assert b'name="language"' not in seen["body"]
+
+
+def test_every_engine_has_a_price() -> None:
+    assert all(price is not None for _, price, _ in engines.PRICED.values())
+    assert engines.PRICED["mistral-voxtral"][1] == pytest.approx(0.18)
+    assert engines.PRICED["deepgram-nova-3"][1] == pytest.approx(0.258)
