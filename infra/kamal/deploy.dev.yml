@@ -1,7 +1,7 @@
 servers:
   web:
     hosts:
-      - <%= `doppler secrets get SERVER_HOST --plain -p gaugeprep -c dev`.strip %>
+      - <%= `doppler secrets get SERVER_HOST --plain #{ENV["DOPPLER_TOKEN"] ? "" : "-p gaugeprep -c dev"}`.strip %>
     options:
       memory: 320m
 

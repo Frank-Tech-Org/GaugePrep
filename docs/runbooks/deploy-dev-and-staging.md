@@ -21,7 +21,7 @@ A version needs to reach dev or staging, or the last deploy broke one and the pr
 
 ### One-time setup
 
-1. `doppler login`, and check `doppler secrets --project gaugeprep --config stg --only-names` lists `DATABASE_URL`, `MIGRATION_DATABASE_URL`, `DJANGO_SECRET_KEY`, `KAMAL_REGISTRY_USERNAME`, `KAMAL_REGISTRY_PASSWORD` and `SERVER_HOST` (and the same for `dev`). New values go in with `doppler secrets set KEY --project gaugeprep --config <dev|stg>`, which prompts instead of taking the value on the command line. Deploy as your logged-in Doppler user with `DOPPLER_TOKEN` unset: with a service token Kamal ignores the config named in the secrets file, so the Kamal config refuses to load. If `kamal` fails with `servers/web/hosts/0: should be a string or a hash`, Doppler is logged out or `SERVER_HOST` is missing.
+1. `doppler login`, and check `doppler secrets --project gaugeprep --config stg --only-names` lists `DATABASE_URL`, `MIGRATION_DATABASE_URL`, `DJANGO_SECRET_KEY`, `KAMAL_REGISTRY_USERNAME`, `KAMAL_REGISTRY_PASSWORD`, `SERVER_HOST`, `SERVER_HOST_KEY`, `SSH_PRIVATE_KEY` and `SSH_PUBLIC_KEY` (and the same for `dev`). New values go in with `doppler secrets set KEY --project gaugeprep --config <dev|stg>`, which prompts instead of taking the value on the command line. Deploy as your logged-in Doppler user with `DOPPLER_TOKEN` unset: with a service token Kamal ignores the config named in the secrets file, so the Kamal config refuses to load. If `kamal` fails with `servers/web/hosts/0: should be a string or a hash`, Doppler is logged out or `SERVER_HOST` is missing.
 2. Kamal 2.12.0 and arm64 emulation, since an x86 machine builds arm64 images:
 
    ```bash
@@ -136,6 +136,37 @@ Rollback: set `DATABASE_URL` in Doppler back to the migration role's URL and red
 
 The deploy user is in the docker group, which is root on the server: its key can read both environments' settings. Both hold synthetic data only; production gets its own server and key. One kamal-proxy serves both environments. Rebooting the server, or `kamal proxy reboot` or `kamal setup` from either destination, interrupts dev and staging together.
 
+## Automatic deploy
+
+### Trigger
+
+A push to `develop` deploys dev (`deploy-dev` run); a push to `stage` deploys staging (`deploy-staging` run). A staging deploy can also be started by hand from `stage` or a `hotfix/*` branch. Each run first calls the pull request checks; if any is red nothing is built or deployed. Then one job on an arm64 runner builds the image (layer cache in Actions), scans it with Trivy (`--ignore-unfixed --severity HIGH,CRITICAL --exit-code 1`) before anything is pushed, pushes `ghcr.io/frank-tech-org/gaugeprep-backend:<sha>`, runs `kamal deploy --skip-push --version <sha>` and curls `/api/v1/health` until `"database": "ok"`. The job stops at 15 minutes.
+
+Secrets and approval: the deploy job runs in the GitHub environment `dev` or `staging`. `dev` accepts only the `develop` branch. `staging` accepts `stage` and `hotfix/*` and waits for the owner's approval on every run, including a push to `stage`: open the run and press Review deployments, Approve. Each environment holds one secret, `DOPPLER_TOKEN`, a read-only token (90 days) for the Doppler config `deploy_dev` or `deploy_stg`. Those configs hold only the eight keys a deploy needs (registry login, both database URLs, Django key, server host, pinned host key, CI deploy key), each a reference to the same key in `dev` or `stg`, so there is one value to rotate. Kamal and its gems install from the committed `infra/kamal/Gemfile.lock` (checksums verified), and Kamal runs from a second checkout of `develop` or `stage`, never from the dispatching branch, so a hotfix branch cannot change what runs with the token. The image push uses the run's own `GITHUB_TOKEN`. If the first push is refused with `denied`, open the package `gaugeprep-backend` on GitHub, Package settings, Manage Actions access, and add this repository with Write.
+
+### Steps
+
+Rerun a deploy: GitHub, Actions, the `deploy-dev` or `deploy-staging` run, Re-run failed jobs. Deploy staging by hand: Actions, `deploy-staging`, Run workflow, pick `stage` or the `hotfix/*` branch, then approve the run. A rerun deploys the commit the run was started for, so rerun only the newest run.
+
+If a run died mid-deploy and the next one reports a Kamal lock, release it from a machine with the deploy key: `kamal lock release -c infra/kamal/deploy.yml -d <dev|staging>`.
+
+Rotate the CI key or token (the token every 90 days): generate a new ed25519 pair, `doppler secrets set SSH_PRIVATE_KEY` and `SSH_PUBLIC_KEY` in that config, append the public key to `~/.ssh/authorized_keys` of the `deploy` user, then remove the old line. A new Doppler token: `doppler configs tokens create ci-deploy --project gaugeprep --config <deploy_dev|deploy_stg> --max-age 2160h --plain | gh secret set DOPPLER_TOKEN --env <dev|staging>`, then revoke the old one with `doppler configs tokens revoke --slug <slug>`. The SSH key and host key are changed in `dev` and `stg`; the deploy configs follow.
+
+After a server rebuild, run `bootstrap.sh`, then authorize both CI keys: `doppler secrets get SSH_PUBLIC_KEY --plain -p gaugeprep -c <dev|stg> | ssh deploy@dev.gaugeprep.com 'cat >> ~/.ssh/authorized_keys'`, and refresh `SERVER_HOST_KEY` in both configs with `ssh-keyscan -t ed25519 dev.gaugeprep.com`.
+
+### Verify
+
+```bash
+curl -s https://dev.gaugeprep.com/api/v1/health       # {"status":"ok","database":"ok"}
+kamal app details -c infra/kamal/deploy.yml -d dev    # up, on the sha of the run
+```
+
+The run summary shows the sha; `gh run list --workflow deploy-dev.yml` gives the duration, which must be under 15 minutes.
+
+### Rollback
+
+Same as the manual rollback above: `kamal rollback <earlier sha> -c infra/kamal/deploy.yml -d <dev|staging>`, or revert the commit on the branch and let the push deploy it. To stop automatic deploys while a problem is fixed, disable the workflow in Actions; the manual commands keep working.
+
 ## Pages publish and rollback
 
 ### Trigger
@@ -209,7 +240,8 @@ Security reasoning that used to sit in workflow comments:
 - Pull request title check: the template is read from the base commit, and the title and body reach the script only through environment variables, never inside the run text.
 - `ci` has no secrets; the test PostgreSQL credentials are test-only. Called from the Pages run, it gets none of the Pages tokens, and each Pages job reads only its own prefix's secrets.
 - The alarm workflows: GitHub refuses a direct push that edits or deletes `develop-alarm.yml` because the agent token lacks the workflow scope. Only an issue the workflow opened with the exact title counts as the alarm, and a renamed one does not, since titles and bodies are editable by anyone.
-- Runners: arm64 GitHub-hosted runners are free for public repositories only, so this private repository uses x64.
+- Runners: arm64 GitHub-hosted runners are free for public repositories only. The repository is public, so the deploy builds on arm64 natively; the PR checks stay on x64.
+- Deploy workflows: `deploy-dev` and `deploy-staging` call `ci` and then `deploy-backend`, each running in its own GitHub environment with its own Doppler token. Trivy and Doppler are pinned binaries with checked hashes, and the scan runs outside the checkout, so no ignore file from the repository is read.
 
 ### Verify
 
