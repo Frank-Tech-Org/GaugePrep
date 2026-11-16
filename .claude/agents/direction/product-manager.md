@@ -30,7 +30,7 @@ A blocker is resolved once it reaches Ready to deploy. A cycle of blockers means
 
 ## Parallel work
 
-Several tickets may be in flight (In progress, In review, In QA) up to the limit in `docs/process/branching-and-release.md` §1: 2 now, 3 once CI exists. Pick a set that cannot conflict:
+Several tickets may be in flight (In progress, In review, In QA) up to the limit in `docs/process/branching-and-release.md` §1: 3. Pick a set that cannot conflict:
 
 - different Area, or the same Area with disjoint parts of the product (read each ticket's "Where it lands");
 - no blocking link between them;

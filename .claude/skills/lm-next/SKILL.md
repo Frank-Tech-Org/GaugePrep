@@ -25,7 +25,7 @@ First match wins:
 2. A hotfix in flight: stop and name `/lm-hotfix`.
 3. The current branch or worktree is `feature/<n>-*`: that ticket.
 4. The ticket in flight nearest the end: In QA, then In review, then In progress. An open `chore/*` PR with no verdict on its head counts as In review, with no ticket.
-5. Fewer tickets in flight than the limit (2, or 3 once CI runs on every PR; `owner-task` tickets don't count): ask `product-manager`, with the `cto` agent's technical read, for the next non-overlapping ticket in Ready. An `owner-task` ticket is handed to the owner, not built.
+5. Fewer tickets in flight than the limit (3; `owner-task` tickets don't count): ask `product-manager`, with the `cto` agent's technical read, for the next non-overlapping ticket in Ready. An `owner-task` ticket is handed to the owner, not built.
 6. Nothing to do: name `/pm`.
 
 ## 2. Pick the step

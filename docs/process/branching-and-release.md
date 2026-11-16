@@ -4,7 +4,7 @@ How a ticket moves from an idea to production, how code moves between branches, 
 
 ## 1. The parallel rule
 
-Up to **two** tickets may be in flight at once (In progress, In review or In QA), **three** once CI runs on every PR (ticket #6). A ticket is in flight from **In progress** until **Ready to deploy**. The `product-manager` agent picks the set; `/lm-next` refuses a ticket that would exceed the limit or overlap one in flight.
+Up to **three** tickets may be in flight at once (In progress, In review or In QA). A ticket is in flight from **In progress** until **Ready to deploy**. The `product-manager` agent picks the set; `/lm-next` refuses a ticket that would exceed the limit or overlap one in flight.
 
 Two tickets may run together only when all of this holds:
 
