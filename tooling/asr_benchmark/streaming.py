@@ -195,27 +195,28 @@ async def deepgram_session() -> AsyncIterator[StreamSession]:
         )
 
 
+def _elevenlabs_chunk(audio: bytes, commit: bool = False) -> str:
+    return json.dumps(
+        {
+            "message_type": "input_audio_chunk",
+            "audio_base_64": base64.b64encode(audio).decode(),
+            "sample_rate": 16000,
+            "commit": commit,
+        }
+    )
+
+
 @asynccontextmanager
 async def elevenlabs_session() -> AsyncIterator[StreamSession]:
     from websockets.asyncio.client import connect
-
-    def chunk(audio: bytes, commit: bool = False) -> str:
-        return json.dumps(
-            {
-                "message_type": "input_audio_chunk",
-                "audio_base_64": base64.b64encode(audio).decode(),
-                "sample_rate": 16000,
-                "commit": commit,
-            }
-        )
 
     headers = {"xi-api-key": os.environ["ELEVENLABS_API_KEY"]}
     async with connect(ELEVENLABS_LIVE, additional_headers=headers) as socket:
         yield _Websocket(
             socket,
             _elevenlabs_events,
-            lambda c: chunk(c),
-            lambda: chunk(b"", commit=True),
+            _elevenlabs_chunk,
+            lambda: _elevenlabs_chunk(b"", commit=True),
             True,
         )
 

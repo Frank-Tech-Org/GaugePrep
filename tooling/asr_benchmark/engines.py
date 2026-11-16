@@ -1,6 +1,7 @@
 import json
 import mimetypes
 import os
+import threading
 import time
 import urllib.error
 import urllib.parse
@@ -205,6 +206,8 @@ def _get(url: str, headers: Mapping[str, str]) -> dict[str, Any]:
 # Seconds between job status checks, and how many checks before giving up.
 SPEECHMATICS_POLL = 1.0
 SPEECHMATICS_POLLS = 300
+# WHY: never set; waiting on it is a plain pause between status checks.
+_POLL_PAUSE = threading.Event()
 
 
 def speechmatics(path: Path) -> Transcript:
@@ -222,7 +225,7 @@ def speechmatics(path: Path) -> Transcript:
             break
         if status == "rejected":
             raise EngineError(f"speechmatics job {job_id} was rejected")
-        time.sleep(SPEECHMATICS_POLL)
+        _POLL_PAUSE.wait(SPEECHMATICS_POLL)
     else:
         raise EngineError(f"speechmatics job {job_id} did not finish")
     data = _get(f"{base}/jobs/{job_id}/transcript", auth)
