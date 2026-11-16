@@ -56,7 +56,7 @@ Wait until the staging deploy of `stage` includes the promotion (`gh run list --
 | 10 | Grader changes have a stored, passing release-check report | `ai-engineer` (only if grading changed) |
 | 11 | Rollback command documented for this deploy | `platform-engineer` |
 
-Show the table with each result. If any check fails, stop with `RELEASE: NO-GO — <check>` and hand a draft ticket for each failure to `product-manager`. The fix is built on `develop` with `/lm-next`, then promoted again from step 2. Nothing is fixed on `stage`.
+Show the table with each result. If any check fails, stop with `RELEASE: NO-GO - <check>` and hand a draft ticket for each failure to `product-manager`. The fix is built on `develop` with `/lm-next`, then promoted again from step 2. Nothing is fixed on `stage`.
 
 ### 4. Release PR and hand-over
 

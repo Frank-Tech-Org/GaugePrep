@@ -73,7 +73,7 @@ Commit in logical steps, never `--amend`, staging only this ticket's paths: `git
 - `performance-engineer` for a learner page's bundle or media, a hot query, or the grading or voice path;
 - `qa-engineer` for the claims check if learner-facing claims or copy change.
 
-Each checks the DoD items in its area. Post one PR comment in the same voice, at most 10 lines plus findings, verdict first: a verdict per reviewer, fixes as `file:line — problem — fix`, unmet criteria and unticked DoD items by name. The last line alone is `REVIEW: PASS <full head sha>` or `REVIEW: CHANGES <full head sha>`. A new commit makes it stale. After three rounds of CHANGES, stop and ask the owner. Checkpoint stage: In review.
+Each checks the DoD items in its area. Post one PR comment in the same voice, at most 10 lines plus findings, verdict first: a verdict per reviewer, fixes as `file:line - problem - fix`, unmet criteria and unticked DoD items by name. The last line alone is `REVIEW: PASS <full head sha>` or `REVIEW: CHANGES <full head sha>`. A new commit makes it stale. After three rounds of CHANGES, stop and ask the owner. Checkpoint stage: In review.
 
 ## 5. Merge
 

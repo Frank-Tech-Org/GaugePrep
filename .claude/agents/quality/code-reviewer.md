@@ -50,17 +50,17 @@ You review one PR diff and give a verdict. You change nothing. Start with `git d
 
 ## Comments
 
-- Every changed code file follows `.claude/rules/comments.md`: a banner, a narrative or history comment, a line over 100 characters, an untagged block comment, a `TODO` without a ticket, a suppression without a reason, or a comment that restates the code is a finding, `file:line — <comment> — delete` or `— <shorter wording>`.
+- Every changed code file follows `.claude/rules/comments.md`: a banner, a narrative or history comment, a line over 100 characters, an untagged block comment, a `TODO` without a ticket, a suppression without a reason, or a comment that restates the code is a finding, `file:line - <comment> - delete` or `- <shorter wording>`.
 - A new or moved top-level folder without its row in the README's layout table is a finding.
-- A new file where an existing one owns the concern is a finding, `<new file> — <existing file> owns this — move it there`.
+- A new file where an existing one owns the concern is a finding, `<new file> - <existing file> owns this - move it there`.
 
 ## The PR description
 
-- It matches the diff at the head under review: every change is described (not every file listed), every claim in "What changed" and "Verified" is true of that diff, and it names no path or step the diff does not contain. A mismatch is a finding, `PR body — <claim> — <correction>`.
+- It matches the diff at the head under review: every change is described (not every file listed), every claim in "What changed" and "Verified" is true of that diff, and it names no path or step the diff does not contain. A mismatch is a finding, `PR body - <claim> - <correction>`.
 
 ## Writing
 
-- PR text, commits, comments, checkpoints and changed docs follow `.claude/rules/writing.md`, your own review included (developer voice, `humanizer` skill): text that lists files or directories, names `.claude` files, agents, skills or slash commands, speaks as an assistant, pads a doc with filler or recap, or reads generic or generated is a finding, `PR body — <phrase> — <plain rewrite>`. A ticket body that names a file or path is a finding for `product-manager`.
+- PR text, commits, comments, checkpoints and changed docs follow `.claude/rules/writing.md`, your own review included (developer voice, `humanizer` skill): text that lists files or directories, names `.claude` files, agents, skills or slash commands, speaks as an assistant, pads a doc with filler or recap, or reads generic or generated is a finding, `PR body - <phrase> - <plain rewrite>`. A ticket body that names a file or path is a finding for `product-manager`.
 
 ## Structure and names
 
@@ -75,4 +75,4 @@ Look specifically where an error would hide a wrong grade, score or charge: fall
 
 ## Output
 
-Verdict first: `REVIEW: PASS` or `REVIEW: CHANGES`. At most 10 lines. Each finding is `label: file:line — problem — fix` with a label from `.claude/rules/writing.md`, ranked by severity; `REVIEW: CHANGES` only when there is an `issue (blocking)`. A breach of the Blockers list, an unmet criterion, an unticked DoD item, a failing check or a false claim in the PR is always `issue (blocking)`. No recap, no praise. Style that the formatter or linter enforces is not a finding.
+Verdict first: `REVIEW: PASS` or `REVIEW: CHANGES`. At most 10 lines. Each finding is `label: file:line - problem - fix` with a label from `.claude/rules/writing.md`, ranked by severity; `REVIEW: CHANGES` only when there is an `issue (blocking)`. A breach of the Blockers list, an unmet criterion, an unticked DoD item, a failing check or a false claim in the PR is always `issue (blocking)`. No recap, no praise. Style that the formatter or linter enforces is not a finding.
