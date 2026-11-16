@@ -32,3 +32,16 @@ Imported agents, skills and rules, with where they came from and under what lice
 | OWASP ZAP, Nuclei | Apache-2.0, MIT | Run weekly against staging, and in the pre-release pentest. |
 | Schemathesis, sqlmap, ffuf | MIT, GPL-2.0, MIT | Run by `security-engineer` in the pre-release pentest, against staging or a local copy only. |
 | Playwright Test Agents | Apache-2.0 | `npx playwright init-agents --loop=claude` overwrites `.mcp.json`; back it up first. |
+
+## Written in-house
+
+| Skill | Used by | Note |
+|---|---|---|
+| `architecture-review` | `cto`, on demand | Own text; tested against a no-skill baseline (same rulings, 13-19% more tokens), so never preloaded |
+| `review-checklist` | `code-reviewer` | Own text |
+| `exam-spec-standard`, `exam-item-review` | `exam-content-lead`, `exam-item-reviewer` | Own text; follow `docs/exam-specs/TCF-Canada.md` |
+| `support-triage` | `support-lead` | Own text; untested until launch |
+| `research-brief` | `research-analyst` | Own text |
+| `grill-me` | `product-manager`, on demand | Own text; the idea of interviewing one question at a time is common practice, nothing copied |
+
+No external skill was adopted for these, so no licence applies.
