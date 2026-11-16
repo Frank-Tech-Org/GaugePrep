@@ -362,11 +362,11 @@ The chained pipeline is used instead of a speech-to-speech model because grading
 
 ### 8.6 Speech recognition selection (milestone 0)
 
-- Candidates: Deepgram Nova-3 Multilingual, ElevenLabs Scribe v3 Live, Speechmatics Enhanced, each with its batch counterpart where one exists. Whisper large-v3 runs as a control and cannot win.
+- Candidates: Deepgram Nova-3 (monolingual French), ElevenLabs Scribe v3 and v3 Live, ElevenLabs Scribe v2, Speechmatics Enhanced. Whisper large-v3 ran as a control and could not win. Chosen (ADR-026): Scribe v2, with Deepgram Nova-3 as the fallback; Scribe v2's live endpoint still needs its latency check before the examiner is built on it.
 - Data, all public (ADR-026): OpenSLR 57 African Accented French (Apache-2.0, 232 speakers from Cameroon, Chad, Congo, Gabon and Niger, mostly read), with Cameroonian speakers reported separately; LANGSNAP and FLLOC learner French from English speakers (CC BY-NC-SA, internal measurement only, never in the repository, a model or the product); Common Voice French (CC0) as control; a synthetic planted-error set for error preservation only.
 - A fixed, seeded subset inside each provider's free allowance; one text normaliser for every engine; results by corpus and speaker code only.
-- Measures: word error rate; preservation of the learner's grammatical errors (at least 95%); word-level timing and confidence available; latency; price.
-- Rule: the lowest word error rate among candidates that meet the preservation and word-level requirements; within one point, the cheaper wins.
+- Measures: word error rate; preservation of the learner's grammatical errors (95% planned; no engine reached it, so the bar is the best measured provider rate, 77%, and the grader is told the transcript may have corrected some errors); word-level timing and confidence available; latency; price.
+- Rule: the lowest word error rate among candidates that keep at least 77% of the planted errors (the best measured provider rate; 95% was planned and no engine reached it) and return word-level timing and confidence; within one point, the cheaper wins.
 - Limits: no claim for anglophone Cameroonians, spontaneous A2 to C1 speech or phone microphones on slow networks. Public wording: "tested on Central African and English-speaking learner French".
 - Before launch, the first 20 consenting beta learners, including anglophone Cameroonians, record the speaking tasks and the benchmark reruns on their answers; this is the launch check. It also reruns on any provider or model change, and when the top two engines finish within 1 point.
 
@@ -704,7 +704,7 @@ Content production (items, prompts, lessons, anchors) runs in parallel from M1 u
 | ADR-022 | PR security scanners catch accidents, not a deliberate bypass |
 | ADR-023 | Email verification only, no SMS sign-up |
 | ADR-024 | Resend for transactional email, Mailpit locally and in dev |
-| ADR-026 | Speech recognition chosen by a public-corpus benchmark |
+| ADR-026 | Speech recognition chosen by a public-corpus benchmark: ElevenLabs Scribe v2, Deepgram Nova-3 as fallback |
 
 ## Appendix C: Glossary
 

@@ -27,7 +27,7 @@
 | [ADR-023](ADR-023-email-verification-only.md) | Email verification only, no SMS sign-up | Accepted |
 | [ADR-024](ADR-024-resend-transactional-email-mailpit.md) | Resend for transactional email, Mailpit locally and in dev | Accepted |
 | [ADR-025](ADR-025-content-as-validated-files.md) | Content authored as validated files, imported into the content module | Proposed |
-| [ADR-026](ADR-026-speech-recognition-corpus-benchmark.md) | Speech recognition chosen by a public-corpus benchmark | Accepted |
+| [ADR-026](ADR-026-speech-recognition-corpus-benchmark.md) | Speech recognition chosen by a public-corpus benchmark: ElevenLabs Scribe v2, Deepgram Nova-3 as fallback | Accepted |
 
 ## Template
 

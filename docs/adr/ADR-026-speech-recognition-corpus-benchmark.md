@@ -1,8 +1,15 @@
 # ADR-026: Speech recognition chosen by a public-corpus benchmark
 
-- Status: Proposed
-- Date: 2026-11-12
+- Status: Accepted
+- Date: 2026-11-12, decided 2026-11-16
 - Supersedes: ADR-008
+
+## Outcome
+
+- ElevenLabs Scribe v2 is the provider and Deepgram Nova-3 is the fallback. Speechmatics and Whisper are not chosen.
+- No engine reached the 95% planted-error bar. I relaxed it as in the "Relax the bar" option below: the bar is now the best rate a provider measured, 77% (17 of 22, Scribe v2), and the grader has to be told that the transcript may have corrected some of the learner's errors.
+- Scribe v2's live endpoint hasn't been measured yet, only v3 Live. Before the examiner is built on it, it runs the same streaming test (20 Common Voice clips sent at real-time pace). It passes if the final result after end of audio stays at or under 0.8 s at p95, which is what Deepgram and v3 Live both did. If it has no live mode or misses that, Deepgram Nova-3 takes over.
+- Revisit when an engine reaches the original 95% bar or the Scribe v2 latency check fails, as well as on the earlier triggers under "Revisit when".
 
 ## Context
 
@@ -35,11 +42,11 @@ The provider is chosen by a benchmark on public corpora, run once in milestone 0
 - Learner French from English speakers: LANGSNAP and FLLOC, for internal measurement only. Their audio and transcripts never enter the repository, a model, a prompt or the product, and only aggregate numbers are published. If TalkBank or Oxford refuse a company's evaluation use, that set is dropped and the claim below narrows to Central African French.
 - Control: Common Voice French scripted and spontaneous speech.
 - Error preservation: scripted learner sentences with planted grammatical errors, spoken by a synthetic voice. This set measures preservation only, never accent accuracy.
-- Candidates, each streaming and batch: Deepgram Nova-3 (monolingual French), ElevenLabs Scribe v3 Live and Scribe v3, Speechmatics Enhanced (batch only so far). Whisper large-v3 runs as a control and cannot win.
+- Candidates, each streaming and batch: Deepgram Nova-3 (monolingual French), ElevenLabs Scribe v3 Live and Scribe v3, Speechmatics Enhanced (batch only so far). Whisper large-v3 runs as a control and cannot win. ElevenLabs Scribe v2 (batch) was added after this plan, once Scribe v3 kept fewer planted errors than the control.
 - A fixed, seeded subset sized to stay inside each provider's free allowance; any paid spend goes to the owner first.
 - One text normaliser for every engine; results by corpus and speaker code only.
 
-ADR-008's rule picks the winner, unchanged: the lowest word error rate among candidates that preserve at least 95% of the learner's errors and return word-level timing and confidence; within one point of word error rate, the cheaper wins. Latency and price per audio hour are measured and reported.
+ADR-008's rule picks the winner: the lowest word error rate among candidates that preserve the learner's errors and return word-level timing and confidence; within one point of word error rate, the cheaper wins. The planned preservation bar was 95%; no engine reached it, so the bar is the best rate a provider measured, 77% (see Outcome). Latency and price per audio hour are measured and reported.
 
 Public wording is "tested on Central African and English-speaking learner French". We make no claim for anglophone Cameroonians, spontaneous A2 to C1 speech, or phone microphones on slow networks.
 
@@ -56,8 +63,8 @@ Run 2026-11-13 with `tooling/asr_benchmark` (seed 15, batch mode, one normaliser
 | Speechmatics Enhanced                 | 4.8                     | 9.7                         | 4.8                      | 4.7                               | 17.5                       | 68 (15 of 22)           | yes         | yes             | 3.13 / 4.36                    | 0.75 list (0.80 real time)   |
 
 - Sets: 60 Common Voice FR clips (CC0, test split, mirror `fsicoli/common_voice_22_0`), 83 OpenSLR 57 clips (Apache-2.0, from the `BrunoHays/small_african_accented_french_test` mirror of its test split, grouped by the country in the file name: all 47 Cameroon clips, 20 Gabon, 16 Chad and Congo), 22 planted-error sentences spoken by the Piper `fr_FR-siwis-medium` voice (CC BY 4.0). Clip lists are rebuilt from the seed; no audio or transcript is stored in the repository.
-- Choice: none by the rule, and none recorded here; the owner decides. Two candidates stay for that decision. Scribe v2 keeps the most learner errors of the three providers (77% against 55% and 68%) and costs $0.20 an hour; it has the lowest WER on Common Voice (3.0), and the highest on Gabon (8.9). Deepgram Nova-3 has the lowest WER on Cameroon (6.6 against 7.6), Gabon (4.2 against 8.9), Yaoundé (12.9 against 13.8) and, tied with Speechmatics, Chad and Congo (4.7 against 6.3) and costs $0.26 an hour. Speechmatics keeps more errors than Deepgram (68%) but has the highest WER on Cameroon and Yaoundé and the highest price. Scribe v2 is the lead if the bar is relaxed to a measured one, because keeping the learner's errors is what the bar is for; its live (streaming) endpoint was measured for v3 only.
-- The 95% bar fails for every engine, and the control (82%) is the best of the four: all of them rewrite some learner grammar. The planted set is 22 sentences, so one sentence is 4.5 points and the three providers' 55, 59 and 68 are not clearly apart. Two things follow for the owner: either the bar is relaxed (for example to the best engine's rate, with the grader told which errors the transcript may have corrected) or a provider setting that disables smart formatting and language-model correction is tried. Neither is done here.
+- Choice: none by the rule; the decision is under Outcome. Two candidates stayed in. Scribe v2 keeps the most learner errors of the three providers (77% against 55% and 68%) and costs $0.20 an hour; it has the lowest WER on Common Voice (3.0), and the highest on Gabon (8.9). Deepgram Nova-3 has the lowest WER on Cameroon (6.6 against 7.6), Gabon (4.2 against 8.9), Yaoundé (12.9 against 13.8) and, tied with Speechmatics, Chad and Congo (4.7 against 6.3) and costs $0.26 an hour. Speechmatics keeps more errors than Deepgram (68%) but has the highest WER on Cameroon and Yaoundé and the highest price. Scribe v2's live (streaming) endpoint was measured for v3 only.
+- The 95% bar fails for every engine, and the control (82%) is the best of the four: all of them rewrite some learner grammar. The planted set is 22 sentences, so one sentence is 4.5 points and the three providers' 55, 59 and 68 are not clearly apart.
 - Provider settings tried on the 22 planted sentences only, 2026-11-13. The default calls already used the most literal documented settings: Deepgram `smart_format=false` and `punctuate=false`, ElevenLabs `no_verbatim=false` (keep fillers and false starts) and `tag_audio_events=false`, Speechmatics `remove_disfluencies` left at its default `false`. Speechmatics lists no option to turn smart formatting or normalisation off. Kept errors, out of 22:
 
 | Engine                | Setting                                             | Kept                    |
@@ -74,7 +81,7 @@ Run 2026-11-13 with `tooling/asr_benchmark` (seed 15, batch mode, one normaliser
 - No engine reaches 95% (21 of 22). The best is ElevenLabs Scribe v2 at 77% (17 of 22), still under the Whisper control at 82%. ElevenLabs moves by one sentence between identical runs, so one sentence of difference is noise. Scribe v2 then ran once on the full 225 clips (18.8 min of audio, the 22 planted clips reused from the cache): the rows above. The settings runs used 0.8 min each on the planted audio: 2.5 min Deepgram, 3.3 min ElevenLabs, 2.9 min Speechmatics. ElevenLabs is now at about 44 min used against its 189 cap, Deepgram and Speechmatics at about 25 against 32558 and 5600.
 - Upper bound for a second transcript: counting an error as kept when either of two engines kept it gives 19 of 22 for Scribe v2 plus Whisper, 20 of 22 (91%) for Scribe v2 plus Speechmatics, and 21 of 22 (95.5%) only with all five transcripts. That counts a sentence as kept without knowing which transcript to trust, so it overstates what a grader could use.
 
-Options for the owner, the rule unchanged until one is picked:
+Options compared for the failed bar (the first was taken):
 
 | Option                     | What it gives                                                                                                                                                                               | Cost and risk                                                                                                                                                                                                                            |
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -105,3 +112,5 @@ Options for the owner, the rule unchanged until one is picked:
 - The first 20 consenting beta learners' recordings are in, before launch.
 - A candidate provider changes its model or a new model is released for one of them.
 - The top two engines finish within 1 WER point of each other.
+- An engine keeps at least 95% of the planted errors.
+- Scribe v2's live endpoint fails the latency check under Outcome.
