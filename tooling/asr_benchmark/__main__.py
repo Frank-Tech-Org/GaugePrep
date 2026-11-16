@@ -1,6 +1,6 @@
 # Usage: python -m asr_benchmark fetch-cv|fetch-openslr|synth|run|stream
 # synth needs GPL-licensed piper-tts, kept out of the lock file; run it as
-# uvx --with piper-tts python -m asr_benchmark synth <voice> <dir>
+# uvx --with piper-tts==1.8.0 python -m asr_benchmark synth <voice> <dir>
 import argparse
 import asyncio
 import json
@@ -54,7 +54,7 @@ def synth(voice_path: Path, directory: Path) -> None:
     except ImportError as exc:
         raise SystemExit(
             "synth needs piper-tts (GPL, not in the lock file). Run: "
-            "uvx --with piper-tts python -m asr_benchmark synth <voice> <dir>"
+            "uvx --with piper-tts==1.8.0 python -m asr_benchmark synth <voice> <dir>"
         ) from exc
 
     directory.mkdir(parents=True, exist_ok=True)
