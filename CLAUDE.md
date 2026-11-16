@@ -15,8 +15,10 @@ Exam preparation platform for TCF Canada first: a responsive web app installable
 - **Parallel tickets, never overlapping.** At most 2 tickets are in flight (In progress, In review, In QA), 3 once CI runs on every PR. Each has its own branch. The one being built uses the owner's checkout, so the owner sees the work; any other in flight uses its own git worktree (switching rules in the `lm-next` skill). Two run together only if their Areas or paths differ and neither blocks the other. `/pm` picks the set; `/lm-next` refuses an overlap. Owner-run tickets with no repository code (accounts, recordings, vendor requests) run outside the limit, one at a time; one only waiting on a third party doesn't count. See the process doc §1 for blocking and hotfixes.
 - **Brief.** Reviews, comments, reports and checkpoints are short: verdict first, at most 10 lines, findings as `label: file:line - problem - fix` (labels in `.claude/rules/writing.md`), no recap, no praise.
 - **Branches and environments.** `develop` (default) deploys to dev, `stage` to staging, `main` to production on a tag. Code moves forward only, by merge-commit PRs the owner merges; a hotfix starts on `main` and is merged back into `stage`, then `develop`. See the process doc §3.
-- **Agents commit and open PRs; `/lm-next` merges into `develop`; the owner releases.** Inside a `/lm-*` command, agents create the ticket's branch from the ticket (`gh issue develop`), so the branch and PR show in its Development panel, then commit to it, push it and open the PR. A ticket that writes nothing into the repository gets no branch and no PR; its result goes on the ticket. After the review step of `/lm-next` posts `REVIEW: PASS`, CI is green and the owner has approved that commit on GitHub (a sign-off, not a second review), the merge step of `/lm-next` is the only merge, by running `.claude/scripts/merge.sh <pr>`, which squash-merges into `develop` and refuses anything else. Only the owner merges into `stage` and `main`, pushes tags and publishes releases. Agents push only with `.claude/scripts/push.sh <work-branch> [--force-with-lease]`, which pushes to the branch of the same name. The guard hook and the deny rules in `.claude/settings.json` block raw `git push`, `gh pr merge`, merges and ref, tag or release writes through `gh api`, tags, releases, `--amend`, `reset --hard`, writes to owner-only files and reads of secret files.
+- **Agents commit and open PRs; `/lm-next` merges into `develop`; the owner releases.** Inside a `/lm-*` command, agents create the ticket's branch from the ticket (`gh issue develop`), so the branch and PR show in its Development panel, then commit to it, push it and open the PR. A ticket that writes nothing into the repository gets no branch and no PR; its result goes on the ticket. The review runs on the local diff before the first push. After the review step of `/lm-next` posts `REVIEW: PASS <head sha>` and CI is green, the merge step of `/lm-next` merges by running `.claude/scripts/merge.sh <pr>`, which squash-merges into `develop` and refuses anything else. A PR that touches authentication, payments, personal data, migrations, append-only tables or owner-only files also needs the owner's approval of that commit on GitHub (a sign-off, not a second review). Only the owner merges into `stage` and `main`, pushes tags and publishes releases. Agents push only with `.claude/scripts/push.sh <work-branch> [--force-with-lease]`, which pushes to the branch of the same name. The guard hook and the deny rules in `.claude/settings.json` block raw `git push`, `gh pr merge`, merges and ref, tag or release writes through `gh api`, tags, releases, `--amend`, `reset --hard`, writes to owner-only files and reads of secret files.
 - **One branch and one PR per setup effort.** Changes to the team, commands, hooks or process go on one `chore/*` branch and one PR until that effort is finished; later fixes are new commits on it, never a new PR.
+- **Owner-only files go through one staged folder.** Hooks, scripts, settings and workflows stay owner-only. A change to them is written into `.claude/proposed/` with one apply script that copies the files and shows the diff; the owner runs that one command and reads one diff. Staged files are labelled tested or untested.
+- **Accounts and money.** Dev and staging use free or self-hosted tools, so money is never a question there: an agent that finds a free plan too small picks the best free alternative and tells the owner afterwards. An account an agent cannot create (identity, payment, captcha, KYC) goes in one `owner-task` bundle per milestone, written before the ticket that needs it.
 - **Commits** follow Conventional Commits, `<type>(<area>): <subject>`, with one commit per logical step. Never add a `Co-Authored-By` trailer, a "Generated with Claude Code" line or any similar tool signature to a commit message, PR body, issue, comment or file; the owner doesn't want any of it anywhere.
 - **GitHub admin is fine.** Moving board items, editing labels and fields, and posting issue or PR comments through `gh` are allowed. Before a bulk write (more than five issues), state the scope and confirm it.
 - **Only `product-manager` writes tickets.** Any other agent that finds work (a failed QA check, a budget breach, a false claim, a missing blocker) writes a draft with a title, type, suggested area and priority, context, and steps or evidence, then hands it to `product-manager`. `product-manager` creates it in Ideas, or adds it to an existing ticket if it's a duplicate. Creating or editing more than five at once needs the owner's go-ahead.
@@ -52,7 +54,7 @@ Exam preparation platform for TCF Canada first: a responsive web app installable
 | Command | Stage | What it does |
 |---|---|---|
 | `/pm [plan \| decide \| report]` | planning | Bare: takes the `cto` agent's technical read, says what is done, what to start next and what needs the owner. `plan` sorts Ideas, writes acceptance criteria and the DoD, fills the sprint. `decide` resolves owner decisions. `report` posts the weekly delivery report to Notion |
-| `/lm-next [block <blocker>]` | Ready → Ready to deploy | Moves the ticket nearest done one step: build, fix, review, merge or QA, resuming from its checkpoint; starts the next ticket when there is room; records a blocker |
+| `/lm-next [block <blocker>]` | Ready → Ready to deploy | Runs the ticket nearest done through build, local review, fix, PR, merge and QA until something only the owner can do or a blocker, resuming from its checkpoint, then prints Done, Needs you, Next; starts the next ticket when there is room; records a blocker |
 | `/lm-release [version] \| check` | Ready to deploy → Done | Due when a key feature is complete, at sprint end for fixes, and once M0 is complete; `/pm` says when. `check`: the release gate alone (security, performance budgets, public claims). Otherwise, with the version worked out from the last tag: changelog, promotion PR `develop` → `stage`, gate and regression on staging, release PR `stage` → `main`, notes, then post "Released in" on the tickets and move them to Done after the owner tags |
 | `/lm-hotfix` | interrupt | Production fix from `main` |
 
@@ -62,22 +64,27 @@ Board helper used by the commands: `.claude/scripts/board.sh` (list, wip, info, 
 
 ## Team
 
-18 agents live in `.claude/agents/<department>/`. No session is special: whichever session or scheduled job runs a command runs the team through it, and gets technical judgment from the `cto` agent.
+22 agents live in `.claude/agents/<department>/`. The session running a command starts the work and receives the report; roles hand over through files, and two leads delegate (below).
 
 | Department | Agents |
 |---|---|
-| Direction | `cto`, `product-manager`, `business-analyst` |
+| Direction | `cto`, `product-manager`, `business-analyst`, `research-analyst` |
 | Engineering | `backend-engineer`, `frontend-engineer`, `scoring-engineer`, `platform-engineer`, `ai-engineer`, `voice-engineer` |
 | Quality | `qa-engineer`, `performance-engineer`, `security-engineer`, `code-reviewer` |
 | Design | `brand-designer`, `product-designer` |
-| Content and growth | `exam-content-lead`, `content-marketer` |
-| Compliance | `privacy-compliance` |
+| Content and growth | `exam-content-lead`, `exam-item-reviewer`, `content-marketer` |
+| Compliance and support | `privacy-compliance`, `support-lead` (dormant until launch) |
+| Learning | `process-coach` |
 
-**`cto`** owns the architecture, ADRs, `docs/process/` and `.claude/`, writes the technical read `/pm` passes to `product-manager`, decides technical Decision tickets and checks every new dependency; see `.claude/agents/direction/cto.md`.
+**`cto`** owns the architecture, ADRs, `docs/process/` and `.claude/`, writes the technical read `/pm` passes to `product-manager`, decides technical Decision tickets and checks every new dependency; see `.claude/agents/direction/cto.md`. `product-manager` keeps what is built, in what order and whether a ticket meets its criteria, and takes drafts of criteria and the Definition of Done from `business-analyst`. `research-analyst` writes a sourced brief when the team does not know something. `exam-item-reviewer` reviews every exam item in a clean context; the author never reviews their own item. `process-coach` reads checkpoints, review findings and token and CI numbers weekly and proposes one-line lessons; `cto` approves them.
 
-`code-reviewer` is read-only and reviews every diff once, covering the architecture invariants, Python, Django, SQL, TypeScript, React, silent failures and changes to `.claude/`. Security review and attack testing are `security-engineer`; attacks run only against staging or a local copy, never production or third parties.
+`code-reviewer` is read-only and reviews every diff once, covering the architecture invariants, Python, Django, SQL, TypeScript, React, silent failures and changes to `.claude/`; the mechanical checks (comment limits, banned phrases, em dashes) run first as one local script. Security review and attack testing are `security-engineer`; attacks run only against staging or a local copy, never production or third parties.
 
-**Skills and rules.** Each agent preloads only the skills its role needs (the `skills:` list in its file) and is told not to load others. Stack rules for Python and the web are in `.claude/rules/`, and the `/lm-*` commands are skills named `lm-*` in `.claude/skills/`.
+**Who delegates.** `cto` and `product-manager` have the `Agent` tool; nobody else does. `cto` delegates only to its direct reports (engineers, `code-reviewer`, `security-engineer`, `performance-engineer`, `process-coach`); `product-manager` only to `cto`, `business-analyst` and `research-analyst`. One agent at a time, no fan-out, depth two. The limit is written in the two agent files, not enforced by the tool.
+
+**Skills and rules.** Each agent preloads at most three skills (the `skills:` list in its file, `humanizer` included) and loads the rest on demand: agents with the `Skill` tool call it, the others read `.claude/skills/<name>/SKILL.md`. Stack rules for Python and the web are in `.claude/rules/`, and the `/lm-*` commands are skills named `lm-*` in `.claude/skills/`.
+
+**Models.** Sonnet by default. Opus for `cto`, `scoring-engineer`, `ai-engineer`, `security-engineer` and `exam-content-lead`, and per invocation for `code-reviewer` on grades, scores, payments and migrations, `privacy-compliance` on personal data and `product-manager` when planning. A tier is a proposal until a week of `/usage` numbers exists.
 
 **Routing by the issue's Area field** (used by `/lm-next`):
 
@@ -95,6 +102,65 @@ Board helper used by the commands: `.claude/scripts/board.sh` (list, wip, info, 
 | docs | the agent that owns the documented area; `cto` for process docs and ADRs | `code-reviewer` |
 
 Decision tickets go to `cto` (technical) or `product-manager` (product) and produce an ADR. Anything touching authentication, payments, personal data, migrations or append-only tables also gets `security-engineer` review.
+
+## Who decides
+
+An agent that is unsure asks up the ladder, records the ruling in one line and keeps working.
+
+| Question is about | Decides | Told afterwards |
+|---|---|---|
+| Architecture, dependency, technical option | `cto` | PR, or `docs/DECISIONS.md` "under D-11" |
+| Scope, order, ticket wording, acceptance | `product-manager` | ticket |
+| Exam behaviour, item content | `exam-content-lead` | ticket |
+| Personal data, consent, claims | `privacy-compliance` | PR |
+| Attack surface, auth, secrets handling | `security-engineer` | PR |
+| Budgets and performance trade-offs | `performance-engineer` | PR |
+| Scoring or grading formula, destructive migration, auth redesign, pricing, cutting scope, anything irreversible, a production paid service | owner | n/a |
+
+- The ladder is the agent, its department lead, then the owner only where the row says owner.
+- Two agents disagree: `cto` decides technical points and `product-manager` product points; if those two disagree, `cto` decides, unless an owner row is touched.
+- While an owner decision is open the ticket is blocked and the next one starts.
+- Every ruling is one line under Decided in `docs/DECISIONS.md`: question, ruling, who, why.
+
+## Handoffs and where information lives
+
+A brief to an agent is at most 12 lines: goal, ticket and criteria, last checkpoint, files owned, constraints, stop conditions, return format. The agent has none of the builder's history, so the brief carries what it needs. A report back is at most 10 lines:
+
+```text
+Verdict: DONE | BLOCKED | NEEDS-RULING
+Changed: <what, in words>
+Verified: <commands that passed>
+Findings: <label: file:line - problem - fix>
+Rulings made: <question - ruling - who>
+Draft tickets: <title, type, area, priority> or none
+Next: <role and step>
+```
+
+| Information | Lives in | Written by |
+|---|---|---|
+| What was done, what is next | ticket checkpoint | whoever moved it |
+| Review verdict | PR comment ending `REVIEW: PASS <sha>` or `REVIEW: CHANGES` | reviewer |
+| A ruling | `docs/DECISIONS.md` Decided | the decider |
+| An owner question | `docs/DECISIONS.md` Open | `product-manager` |
+| Architecture decision | ADR | `cto` |
+| Standing fact or lesson | agent file or rule file | `cto`, same PR |
+| Command only the owner can run | the chat reply | the session |
+
+## House rules for every agent
+
+Do the work yourself with the logged-in CLIs and connectors, never a step list for the owner. Names as in "Names"; code where "Where code goes" puts it; code comments by `.claude/rules/comments.md`; tickets, PRs, comments, commits and docs by `.claude/rules/writing.md`, as the developer who did the work, after a pass with the `humanizer` skill. The design doc and ADRs come before any technical proposal. Post the checkpoint on the ticket before you finish.
+
+## One writer, reviews by size, tokens
+
+One agent writes a change on its branch; reviewers read the local diff in a clean context and never edit it. Review rounds stop at three, then the ticket is blocked with what was tried. Cost follows risk:
+
+| Change | Builder | Reviewers |
+|---|---|---|
+| Docs, copy, small fix | owner of the area | the mechanical script only |
+| Normal | owner of the area | `code-reviewer` |
+| Auth, payments, personal data, migrations, append-only tables, AI prompts | owner of the area | `code-reviewer` on opus, plus `security-engineer`, `privacy-compliance` or `scoring-engineer` as the area needs |
+
+Noisy work (test output, scans, logs, searches) runs in a subagent that returns a short summary. Every agent file carries a stop condition and `maxTurns`. A token or minute saving is claimed only with a number measured from `/usage`, `/context` or GitHub's usage page; `process-coach` reports them weekly.
 
 ## Quality gates
 
