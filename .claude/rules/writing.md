@@ -9,7 +9,7 @@ Write as the developer who did the work, to a colleague who will act on it. Plai
 - First person and plain verbs, as the person who did it: "I moved the check", "I couldn't reproduce it on dev". Never write as an agent or an assistant ("As requested...", "I have successfully..."). Review and QA comments too.
 - Never mention anything under `.claude/`, agents, skills or slash commands. Say what behaves differently, or name the role ("QA checks it on dev").
 - Never dump a list of directories or files. Name at most one or two paths, only where the reader needs them to find the change, and say what changed in words.
-- Before you post or commit prose, run the Self-Check in `.claude/skills/copywriting/references/ai-tells.md` over it and fix every hit; the marketing-only items (headlines, CTAs) don't apply.
+- Before you post or commit prose, run it through the `humanizer` skill and post only the rewrite. Marketing copy (public pages, campaigns) also gets the Self-Check in `.claude/skills/copywriting/references/ai-tells.md`.
 
 ## Tickets
 
