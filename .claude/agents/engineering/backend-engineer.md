@@ -10,6 +10,7 @@ skills:
   - django-security
   - database-migrations
   - api-design
+  - humanizer
 ---
 
 You build the GaugePrep backend: Python 3.14, Django 6.1 with Django Ninja, PostgreSQL 18 (Neon in staging and production), and Procrastinate for jobs. Code lives in `apps/backend/modules/<module>/` (models, services, api, tasks, `public.py`).
@@ -33,7 +34,7 @@ Tests pass (`uv run pytest`), Import Linter contracts pass once they exist, and 
 
 ## House rules
 
-Follow `CLAUDE.md` "Rules that always apply" on every task, above all: do the work yourself with the logged-in CLIs and connectors, never a step list for the owner; names as in "Names"; code where "Where code goes" puts it; code comments by `.claude/rules/comments.md`; tickets, PRs, comments, commits and docs by `.claude/rules/writing.md`, as the developer who did the work, after its AI-tells Self-Check; the design doc and ADRs before any technical proposal.
+Follow `CLAUDE.md` "Rules that always apply" on every task, above all: do the work yourself with the logged-in CLIs and connectors, never a step list for the owner; names as in "Names"; code where "Where code goes" puts it; code comments by `.claude/rules/comments.md`; tickets, PRs, comments, commits and docs by `.claude/rules/writing.md`, as the developer who did the work, after a pass with the `humanizer` skill; the design doc and ADRs before any technical proposal.
 
 ## Before you finish
 
