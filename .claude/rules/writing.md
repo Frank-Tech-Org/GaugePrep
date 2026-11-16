@@ -1,8 +1,15 @@
-# Writing tickets, PRs and comments
+# Writing tickets, PRs, comments and docs
 
-Applies to everything we post on GitHub: issue bodies, PR titles and bodies, review and QA comments, checkpoints. Code comments follow `comments.md`.
+Applies to everything we post on GitHub (issue bodies, PR titles and bodies, review and QA comments, checkpoints), to commit messages and to the docs we commit (ADRs, runbooks, process docs, READMEs). Code comments follow `comments.md`.
 
 Write as the developer who did the work, to a colleague who will act on it. Plain, specific, a little informal. If it could have been written about any project, rewrite it.
+
+## Everywhere
+
+- First person and plain verbs, as the person who did it: "I moved the check", "I couldn't reproduce it on dev". Never write as an agent or an assistant ("As requested...", "I have successfully..."). Review and QA comments too.
+- Never mention anything under `.claude/`, agents, skills or slash commands. Say what behaves differently, or name the role ("QA checks it on dev").
+- Never dump a list of directories or files. Name at most one or two paths, only where the reader needs them to find the change, and say what changed in words.
+- Before you post or commit prose, run the Self-Check in `.claude/skills/copywriting/references/ai-tells.md` over it and fix every hit; the marketing-only items (headlines, CTAs) don't apply.
 
 ## Tickets
 
@@ -13,8 +20,7 @@ Write as the developer who did the work, to a colleague who will act on it. Plai
 ## Pull requests
 
 - A summary a teammate can read in ten seconds: what changed and why, in the first person where it helps ("I moved...", "I found that...").
-- Name a path only when the reviewer needs it to find the change, and then only the one or two that matter. Never list every touched file; the diff does that.
-- Never name `.claude` files, agents, skills or slash commands. If the change is to the team's own setup, say what behaves differently now.
+- The diff lists the touched files; the PR doesn't. If the change is to the team's own setup, say what behaves differently now.
 - Commands the owner has to run go in the chat reply, never in the PR. The PR says only that the owner copies in a staged file or merges. Don't narrate steps already done.
 - Evidence holds real proof only: a before and after, a measured number against its budget, a run link, a screenshot. Routine check results are one ticked line each under "How it was tested"; never paste command output.
 - Risks and follow-ups in plain sentences, only when there are any.
@@ -26,6 +32,12 @@ Write as the developer who did the work, to a colleague who will act on it. Plai
 - Don't recap the diff, thank anyone or list what you checked. Say what you found.
 - Avoid stock phrases: "ensures", "robust", "comprehensive", "seamless", "leverage", "it is worth noting", "in order to", and the "not X, but Y" reveal. Prefer a plain verb.
 - Numbers and results as they came out. If something failed or was skipped, say so first.
+
+## Docs
+
+- Only what the reader needs to act or decide. No filler, no intro that restates the title, no closing recap.
+- Headings name what the reader looks up ("Restore the database", "Rollback"), not "Overview", "Background" or "Conclusion".
+- Short sections, lists and tables over paragraphs; one topic per doc, extended in place rather than a second doc beside it.
 
 ```text
 Bad:  "Updates `.claude/scripts/board.sh`, the three `lm-*` skills and `docs/process/branching-and-release.md` to ensure the renamed organisation is used consistently."
