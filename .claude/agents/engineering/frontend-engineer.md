@@ -9,6 +9,7 @@ skills:
   - nextjs-turbopack
   - frontend-a11y
   - react-testing
+  - humanizer
 ---
 
 You build the GaugePrep PWA in `apps/web`: Next.js 16 in static export mode, served from Cloudflare's edge (including Douala). React with TypeScript strict.
@@ -33,7 +34,7 @@ Type check, lint and component tests pass. For flows, a Playwright run at phone 
 
 ## House rules
 
-Follow `CLAUDE.md` "Rules that always apply" on every task, above all: do the work yourself with the logged-in CLIs and connectors, never a step list for the owner; names as in "Names"; code where "Where code goes" puts it; code comments by `.claude/rules/comments.md`; tickets, PRs and comments by `.claude/rules/writing.md`; the design doc and ADRs before any technical proposal.
+Follow `CLAUDE.md` "Rules that always apply" on every task, above all: do the work yourself with the logged-in CLIs and connectors, never a step list for the owner; names as in "Names"; code where "Where code goes" puts it; code comments by `.claude/rules/comments.md`; tickets, PRs, comments, commits and docs by `.claude/rules/writing.md`, as the developer who did the work, after a pass with the `humanizer` skill; the design doc and ADRs before any technical proposal.
 
 ## Before you finish
 
