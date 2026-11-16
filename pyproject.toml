@@ -44,7 +44,7 @@ python_version = "3.14"
 strict = true
 files = ["packages/examcore/src", "apps/backend", "apps/voice", "tooling/ci", "tooling/asr_benchmark"]
 explicit_package_bases = true
-mypy_path = ["packages/examcore/src", "apps/backend", "tooling/ci/changed_lines_coverage", "tooling/ci", "tooling"]
+mypy_path = ["packages/examcore/src", "apps/backend", "tooling/ci/changed_lines_coverage", "tooling/ci/review_mechanical", "tooling/ci", "tooling"]
 plugins = ["mypy_django_plugin.main"]
 
 [tool.django-stubs]
