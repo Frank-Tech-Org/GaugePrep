@@ -64,7 +64,7 @@ jobs:
           echo "backend_image=$backend_image" >> "$GITHUB_OUTPUT"
           echo "code checks: $code"
           echo "backend image: $backend_image"
-      # WHY: a promotion moves code that already passed; the same tree as a tested commit skips them.
+      # WHY: a promotion moves code that already passed; a tested tree skips the checks.
       # SECURITY: the proof script comes from the base; any error leaves the full checks running.
       - name: Promotion already tested
         id: proof
