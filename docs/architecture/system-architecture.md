@@ -68,7 +68,7 @@ The design must reach these without changes and must scale tenfold by adding ser
 |---|---|---|
 | Anthropic API | Grading (Claude Sonnet 5.5) and light tasks (Claude Haiku 5.5) | Staging and production; local uses open models |
 | OpenAI API | Backup grader (GPT-6.1 Sol), used only after it passes the release checks | Integrated, disabled by default |
-| Speech recognition provider | Live and batch French transcription, chosen in milestone 0 among Deepgram, Mistral Voxtral and ElevenLabs Scribe | Staging and production |
+| Speech recognition provider | Live and batch French transcription, chosen in milestone 0 among Deepgram, ElevenLabs Scribe and Speechmatics | Staging and production |
 | ElevenLabs | Examiner voice and listening content voices | Staging and production |
 | LiveKit | Real-time audio rooms (WebRTC) for the examiner | Local dev server, LiveKit Cloud free tier in staging, self-hosted in production |
 | Notch Pay | MTN Mobile Money, Orange Money and cards in Cameroon | Test keys locally and in staging, live keys in production |
@@ -362,7 +362,7 @@ The chained pipeline is used instead of a speech-to-speech model because grading
 
 ### 8.6 Speech recognition selection (milestone 0)
 
-- Candidates: Deepgram Nova-3 Multilingual, Mistral Voxtral Realtime, ElevenLabs Scribe v3 Live, each with its batch counterpart. Whisper large-v3 runs as a control and cannot win.
+- Candidates: Deepgram Nova-3 Multilingual, ElevenLabs Scribe v3 Live, Speechmatics Enhanced, each with its batch counterpart where one exists. Whisper large-v3 runs as a control and cannot win.
 - Data, all public (ADR-026): OpenSLR 57 African Accented French (Apache-2.0, 232 speakers from Cameroon, Chad, Congo, Gabon and Niger, mostly read), with Cameroonian speakers reported separately; LANGSNAP and FLLOC learner French from English speakers (CC BY-NC-SA, internal measurement only, never in the repository, a model or the product); Common Voice French (CC0) as control; a synthetic planted-error set for error preservation only.
 - A fixed, seeded subset inside each provider's free allowance; one text normaliser for every engine; results by corpus and speaker code only.
 - Measures: word error rate; preservation of the learner's grammatical errors (at least 95%); word-level timing and confidence available; latency; price.
