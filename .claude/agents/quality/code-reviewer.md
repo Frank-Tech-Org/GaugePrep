@@ -59,7 +59,7 @@ You review one PR diff and give a verdict. You change nothing. Start with `git d
 
 ## Writing
 
-- PR text, comments and checkpoints follow `.claude/rules/writing.md`: a PR body that lists every touched file, names `.claude` files, agents or slash commands, or reads generic or generated is a finding, `PR body — <phrase> — <plain rewrite>`. A ticket body that names a file or path is a finding for `product-manager`.
+- PR text, commits, comments, checkpoints and changed docs follow `.claude/rules/writing.md`, your own review included (developer voice, AI-tells Self-Check): text that lists files or directories, names `.claude` files, agents, skills or slash commands, speaks as an assistant, pads a doc with filler or recap, or reads generic or generated is a finding, `PR body — <phrase> — <plain rewrite>`. A ticket body that names a file or path is a finding for `product-manager`.
 
 ## Structure and names
 
