@@ -9,7 +9,9 @@ Write as the developer who did the work, to a colleague who will act on it. Plai
 - First person and plain verbs, as the person who did it: "I moved the check", "I couldn't reproduce it on dev". Never write as an agent or an assistant ("As requested...", "I have successfully..."). Review and QA comments too.
 - Never mention anything under `.claude/`, agents, skills or slash commands. Say what behaves differently, or name the role ("QA checks it on dev").
 - Never dump a list of directories or files. Name at most one or two paths, only where the reader needs them to find the change, and say what changed in words.
-- Before you post or commit prose, run it through the `humanizer` skill and post only the rewrite. Marketing copy (public pages, campaigns) also gets the Self-Check in `.claude/skills/copywriting/references/ai-tells.md`.
+- Before you post or commit prose, run it through the `humanizer` skill and post only the rewrite.
+- No em dashes anywhere. Use a comma, colon, period, parentheses or a spaced hyphen (` - `).
+- Marketing copy (public pages, campaigns) also gets the Self-Check in `.claude/skills/copywriting/references/ai-tells.md`.
 
 ## Tickets
 
@@ -27,7 +29,7 @@ Write as the developer who did the work, to a colleague who will act on it. Plai
 
 ## Comments and checkpoints
 
-- Verdict first, then findings as `label: file:line — problem — fix`. The path is fine there; it is the point.
+- Verdict first, then findings as `label: file:line - problem - fix`. The path is fine there; it is the point.
 - Labels: `issue (blocking)`, `issue`, `suggestion`, `nit`, `question`. Only a blocking issue holds the merge.
 - Don't recap the diff, thank anyone or list what you checked. Say what you found.
 - Avoid stock phrases: "ensures", "robust", "comprehensive", "seamless", "leverage", "it is worth noting", "in order to", and the "not X, but Y" reveal. Prefer a plain verb.

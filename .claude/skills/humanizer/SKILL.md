@@ -10,7 +10,7 @@ Adapted from Profound's `humanizer` skill (MIT, see `LICENSE`). Our writing rule
 
 ## Rules
 
-1. **Em dashes.** None in prose. Use a comma, period, colon or parentheses. The em dash in the finding format `label: file:line — problem — fix` stays.
+1. **Em dashes.** None, anywhere, formats included. Use a comma, colon, period, parentheses or a spaced hyphen (` - `).
 2. **Banned words.** Rewrite any sentence using: pivotal, crucial, vital, testament, landscape (figurative), tapestry, underscore or highlight (as verbs), showcase, foster, garner, delve, vibrant, enduring, intricate, interplay, additionally, enhance, align with, ensure, robust, seamless, leverage, comprehensive. Put the fact in their place.
 3. **Plain copula.** "is", "are", "has". Not "serves as", "stands as", "represents", "boasts", "features", "offers".
 4. **No significance claims.** Delete sentences that say something is important. Give the fact or nothing.
@@ -41,5 +41,5 @@ Adapted from Profound's `humanizer` skill (MIT, see `LICENSE`). Our writing rule
 
 1. Read the draft in full and note what the reader must do with it.
 2. Rewrite with the rules and voice above, keeping every fact, path, number and link.
-3. Check: zero banned words, zero em dashes outside the finding format, no assistant phrases, no negative parallelism, no forced threes, a concrete last line, uneven paragraph lengths.
+3. Check: zero banned words, zero em dashes, no assistant phrases, no negative parallelism, no forced threes, a concrete last line, uneven paragraph lengths.
 4. Post or commit only the rewrite. No list of changes.
