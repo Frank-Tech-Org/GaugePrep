@@ -1,18 +1,18 @@
-# LinguaMentor: TCF Canada Exam Specification and Calibration Brief
+# GaugePrep: TCF Canada Exam Specification and Calibration Brief
 
 ## 0. Document control
 
 | Field | Value |
 |---|---|
 | Document | TCF Canada exam specification and calibration brief |
-| Version | 1.0 |
+| Version | 1.1 (anchor rules, 5 November 2026) |
 | Date | 22 October 2026 |
 | Owner | Frank, founder |
-| Parent document | LinguaMentor Product Requirements Document v1.0 |
+| Parent document | GaugePrep Product Requirements Document v1.0 |
 | Exam reference | France Éducation international (FEI), Manuel du candidat TCF, version Q, September 2026; IRCC test equivalency chart |
 | Used by | Content authors and reviewers, the prediction grader, the simulation engine, the system architecture |
 
-This document is the single source of truth for how LinguaMentor reproduces TCF Canada: the exam rules, the construct per skill and level, the specification of every item and task type, the simulation form blueprint, the scoring and prediction model, the calibration plan, and the content production rules. The PRD says what the product does; this document says exactly how TCF Canada is modelled. Every rule here is stored as versioned exam data in the product, and a change to this document creates a new version of that data.
+This document is the single source of truth for how GaugePrep reproduces TCF Canada: the exam rules, the construct per skill and level, the specification of every item and task type, the simulation form blueprint, the scoring and prediction model, the calibration plan, and the content production rules. The PRD says what the product does; this document says exactly how TCF Canada is modelled. Every rule here is stored as versioned exam data in the product, and a change to this document creates a new version of that data.
 
 ## 1. Exam rules
 
@@ -70,7 +70,7 @@ Below NCLC 4 the product reports the CEFR level only. Express Entry's French-lan
 
 ## 2. Construct: what each level means in each skill
 
-The descriptors below are LinguaMentor's own wording, built from the CEFR and FEI's description of each paper. They drive item writing, task rating, anchors and feedback.
+The descriptors below are GaugePrep's own wording, built from the CEFR and FEI's description of each paper. They drive item writing, task rating, anchors and feedback.
 
 ### 2.1 Listening
 
@@ -214,7 +214,7 @@ The task level is the level supported by at least two of the three criteria, nev
 ### 5.5 Grading procedure
 
 1. Rule checks (5.3).
-2. Two independent grading passes with the grader prompt, the task's level descriptors and the anchors for that task type. Each pass returns a level per criterion, the task level and quoted evidence from the learner's text.
+2. Two independent grading passes with the grader prompt, the task's level descriptors and the exemplars for that task type (never the evaluation anchors). Each pass returns a level per criterion, the task level and quoted evidence from the learner's text.
 3. If the two task levels differ by one level, the lower is kept when the criteria are split, otherwise the level most supported by the criteria. If they differ by more than one level, a third pass decides.
 4. The three task levels are combined into a mark out of 20 (Section 8.3).
 
@@ -255,7 +255,7 @@ The task level is the level supported by at least two of the three criteria, nev
 
 ### 7.1 Listening and reading blueprint
 
-Each form has 39 items per paper, ordered by increasing difficulty. The distribution by level is LinguaMentor's design, set to measure across the whole scale with the most precision around B1 to C1, where NCLC 5 to 9 sit.
+Each form has 39 items per paper, ordered by increasing difficulty. The distribution by level is GaugePrep's design, set to measure across the whole scale with the most precision around B1 to C1, where NCLC 5 to 9 sit.
 
 | Level | Listening items | Reading items | Listening types | Reading types |
 |---|---|---|---|---|
@@ -352,21 +352,37 @@ The learner is told they look ready to book the real exam when, in two consecuti
 
 ### 9.1 Before launch: anchors and grader checks
 
-- Anchor set: for each of the three writing task types and three speaking task types, at least 5 responses per level from A1 to C2 (30 per task type, 180 in total). Responses are written or recorded to a level specification, then levelled independently by the content reviewer against Section 2 and Section 5.4 or 6.4 without seeing the target level. Only responses where the target and the reviewer's level agree are kept as anchors.
+- Anchor set: 204 responses across the three writing and three speaking task types, in two groups that never mix:
+  - **Exemplars:** 34, one per level per task type. They go in the grader prompt as reference responses and are never used to check the grader.
+  - **Evaluation anchors:** 170, five per level per task type. They are never in the grader prompt; the release check scores the grader on them.
+- Levels covered: A1 to C2 for writing tasks 2 and 3 and speaking tasks 2 and 3 (6 exemplars and 30 evaluation anchors each). Writing task 1 and speaking task 1 are capped at C1, so they have no C2 anchors (5 exemplars and 25 evaluation anchors each).
+
+| Task type | Levels | Exemplars | Evaluation anchors | Total |
+|---|---|---|---|---|
+| Writing task 1 | A1 to C1 | 5 | 25 | 30 |
+| Writing task 2 | A1 to C2 | 6 | 30 | 36 |
+| Writing task 3 | A1 to C2 | 6 | 30 | 36 |
+| Speaking task 1 | A1 to C1 | 5 | 25 | 30 |
+| Speaking task 2 | A1 to C2 | 6 | 30 | 36 |
+| Speaking task 3 | A1 to C2 | 6 | 30 | 36 |
+| Total | | 34 | 170 | 204 |
+
+- Levelling: each response is written or recorded to a target level, then two raters level it independently against Section 2 and Section 5.4 or 6.4, without seeing the target level or each other's rating. If they agree, that is the response's level. If they differ by one level, a third rater decides. If they differ by two levels or more, the response is rejected.
+- The level the raters agree on wins over the target level the response was written for: a response written as B2 and levelled B1 is kept as a B1 anchor.
 - Official reference: FEI's sample items (manual version Q, pages 58 to 67) and FEI's published sample writing and speaking subjects are used to check that our item types and task levels look like the real exam.
-- Grader release checks, on the anchor set:
+- Grader release checks, on the evaluation anchors:
 
 | Check | Threshold |
 |---|---|
-| Exact level | At least 60% of anchors |
-| Within one level | At least 95% of anchors |
+| Exact level | At least 60% of evaluation anchors |
+| Within one level | At least 95% of evaluation anchors |
 | No inversion | A lower-level anchor never scores above a higher-level anchor of the same task type |
 | Consistency | Same level in at least 90% of 5 repeated runs per anchor |
 | Rule checks | 100% of the rule-check test cases (word range, copying, off topic, templates) handled as Section 5.3 requires |
 | Gaming | Keyword-stuffed, template-based and off-topic texts in rich vocabulary never rated above the level the rules allow |
 | Injection | Instructions hidden in a response never change the result |
 
-- Speech recognition check: at least 20 Cameroonian speakers (francophone and anglophone, A2 to C1) each record the three speaking tasks; transcripts are judged accurate enough to grade for at least 90% of answers; errors are analysed by sound and fed back to the speaking feedback.
+- Speech recognition check: at least 20 Cameroonian speakers (francophone and anglophone, A2 to C1) each record the three speaking tasks; transcripts are judged accurate enough to grade for at least 90% of answers; errors are analysed by sound and fed back to the speaking feedback. The speakers are the first 20 consenting beta learners, run through the benchmark in ADR-026.
 
 ### 9.2 After launch: item calibration from learner responses
 
@@ -399,7 +415,7 @@ The learner is told they look ready to book the real exam when, in two consecuti
 | Speaking task 1 sets | 30 | 8 to 10 questions each |
 | Speaking task 2 cards | 40 | With hidden examiner sheets |
 | Speaking task 3 questions | 60 | With 3 follow-up questions each |
-| Anchors | 180 | 5 per level per task type, writing and speaking |
+| Anchors | 204 | 34 exemplars (1 per level per task type) and 170 evaluation anchors (5 per level per task type); no C2 for writing task 1 and speaking task 1 |
 | Simulation forms | 5 | Built from the banks above |
 
 The five forms use 195 listening and 195 reading items; the rest serve practice and the diagnostic.
@@ -450,7 +466,7 @@ Feedback is written in the learner's interface language, with French examples. I
 
 ## 12. Fairness and accessibility
 
-- Accent fairness: speaking is rated on intelligibility, never on closeness to a Parisian accent; the speech recognition check in 9.1 covers Cameroonian speakers before launch and is repeated with each change of speech technology.
+- Accent fairness: speaking is rated on intelligibility, never on closeness to a Parisian accent; the speech recognition check in 9.1 covers Cameroonian speakers before launch (the first 20 consenting beta learners, ADR-026) and is repeated with each change of speech technology.
 - Item fairness: items whose statistics show a large difference in difficulty between learners of the same ability from different countries or first languages are reviewed and revised or retired.
 - Accessibility: adjustable text size for reading; keyboard operation on desktop; transcripts after every listening item outside simulation mode.
 
@@ -460,7 +476,7 @@ Feedback is written in the learner's interface language, with French examples. I
 - Every prediction stores the versions of the exam rules, the item bank, the cut points, the combination model and the grader.
 - Before each product release, FEI's latest candidate manual and IRCC's equivalency chart are checked; any change creates a new exam-rules version and an update of this document.
 
-## Appendix A: Example items in LinguaMentor style
+## Appendix A: Example items in GaugePrep style
 
 ### Listening, type L2 (A1)
 
@@ -509,7 +525,7 @@ Hidden examiner sheet: Wednesday and Saturday, 14 h to 15 h; 25,000 FCFA per ter
 | Logit | The unit of the Rasch scale |
 | Infit, outfit | Statistics showing how well an item's responses fit the model |
 | Point-biserial | Correlation between answering an item correctly and overall ability |
-| Anchor | A response with an agreed level, used to check the grader |
+| Anchor | A response with a level agreed by human raters: an exemplar (shown to the grader) or an evaluation anchor (used only to check it) |
 | Form | A fixed, versioned full simulation |
 | Cut point | The ability that separates two CEFR bands on the 699 scale |
 | Verified result | A real TCF Canada result reported by a learner with the attestation checked |

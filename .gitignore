@@ -1,0 +1,35 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+.next/
+out/
+apps/web/dist/
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+
+# Claude Code machine-specific settings (memory path is absolute)
+.claude/settings.local.json
+
+# Editors and OS
+.idea/
+.vscode/
+*.code-workspace
+.DS_Store
+
+# collectstatic output
+apps/backend/staticfiles/
+.coverage
+.coverage.*
+coverage/
+
+# Grader release check output
+grader-check-report.json

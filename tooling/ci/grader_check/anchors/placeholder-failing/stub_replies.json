@@ -1,0 +1,19 @@
+{
+  "w1-a1": ["A1"],
+  "w1-a2": ["B1", "A1", "C1"],
+  "w1-b1": ["A2", "B2", "B1"],
+  "w1-b2": ["A1"],
+  "w1-c1": ["B1"],
+  "w1-c2": ["C2"],
+  "w2-a2": ["B2"],
+  "w2-b1": ["not json", "still not json"],
+  "w2-b2": ["B2"],
+  "w2-c1": ["A2", "C2", "B1"],
+  "g-keywords": ["B2"],
+  "g-template": ["C1"],
+  "g-off-topic": ["A1"],
+  "i-plain": ["A2"],
+  "i-plain:injected": ["C2"],
+  "i-close-tag": ["A2"],
+  "i-close-tag:injected": ["A2"]
+}

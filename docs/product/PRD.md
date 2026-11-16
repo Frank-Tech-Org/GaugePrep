@@ -1,10 +1,10 @@
-# LinguaMentor: Product Requirements Document
+# GaugePrep: Product Requirements Document
 
 ## 0. Document control
 
 | Field | Value |
 |---|---|
-| Product | LinguaMentor: an AI exam-preparation platform that teaches learners from their current level to exam-ready and predicts their real exam result |
+| Product | GaugePrep: an AI exam-preparation platform that teaches learners from their current level to exam-ready and predicts their real exam result |
 | Document | Product Requirements Document (PRD) |
 | Version | 1.0 |
 | Date | 22 October 2026 |
@@ -12,13 +12,13 @@
 | Scope of this version | Product definition for all exams in scope, with the full specification of the first release: TCF Canada and the free French track |
 | Related documents | TCF Canada exam specification and calibration brief; system architecture |
 
-This document states what LinguaMentor does, for whom, in what order, and why. How it is built is specified in the system architecture document. The PRD is a living reference: when a requirement changes, this document is updated in place and its version number raised.
+This document states what GaugePrep does, for whom, in what order, and why. How it is built is specified in the system architecture document. The PRD is a living reference: when a requirement changes, this document is updated in place and its version number raised.
 
 All exam facts come from the exam owners' own publications current in October 2026 (Appendix D). Exam rules change, so every exam's facts are re-checked against its owner's latest publication before the release that ships it.
 
 ## 1. Summary
 
-LinguaMentor prepares adults and older teenagers for the language exams that decide their visa, residence, studies or job. It finds the learner's current level, teaches them from that level (from zero if needed) up to the level their target requires, lets them sit full simulations of the real exam under real conditions, and predicts the result they would get on the real exam, expressed in that exam's own scale and levels.
+GaugePrep prepares adults and older teenagers for the language exams that decide their visa, residence, studies or job. It finds the learner's current level, teaches them from that level (from zero if needed) up to the level their target requires, lets them sit full simulations of the real exam under real conditions, and predicts the result they would get on the real exam, expressed in that exam's own scale and levels.
 
 The product has three layers:
 
@@ -30,7 +30,7 @@ The product has three layers:
 
 **Why TCF Canada first.** It is the largest single exam in scope, with 124,667 candidates in 2025 inside a TCF family of 310,473 that grew 21% in one year. Cameroon is the second-largest TCF market in the world, with 31,726 candidates in 2024. Most target learners already speak French, so the course mainly carries them from B1 to B2 or C1, which shortens the path to a first paying learner.
 
-**What the learner cannot get elsewhere.** The exam owner publishes no syllabus and returns no annotations, no advice, no count of correct answers, and no appeal once results are issued. LinguaMentor gives a diagnosis per skill, a path, a faithful rehearsal of the exam, and a prediction in the exam's own terms before the learner pays for the real sitting.
+**What the learner cannot get elsewhere.** The exam owner publishes no syllabus and returns no annotations, no advice, no count of correct answers, and no appeal once results are issued. GaugePrep gives a diagnosis per skill, a path, a faithful rehearsal of the exam, and a prediction in the exam's own terms before the learner pays for the real sitting.
 
 ## 2. Vision and positioning
 
@@ -40,7 +40,7 @@ Make exam-ready language preparation and an honest prediction of the real result
 
 ### 2.2 Positioning: the prediction grader
 
-AI essay scoring and score predictors are common and often free. LinguaMentor is positioned as **the grader that predicts with the exam's own rules and says how sure it is**:
+AI essay scoring and score predictors are common and often free. GaugePrep is positioned as **the grader that predicts with the exam's own rules and says how sure it is**:
 
 - It reproduces each exam's real scale, levels, per-skill floors and conversion tables. For TCF Canada: CEFR level per task, mark out of 20, score out of 699, NCLC per skill.
 - Every prediction is a likely range with a stated confidence. The exam owner itself shows that the same candidate can score 304 (B1) and then 295 (A2) a few weeks apart, so a single exact number would be false precision.
@@ -52,7 +52,7 @@ AI essay scoring and score predictors are common and often free. LinguaMentor is
 1. **Exam fidelity first.** Formats, timings, number of plays, word limits and scoring rules match the real exam. A simulation that is easier or kinder than the exam is a defect.
 2. **Skills, not templates.** TCF and telc score memorised or copied texts as "A1 not reached", zero, or fraud. The product teaches transferable skills and never trains learners to recite templates.
 3. **Honest numbers.** Ranges and confidence are always shown. Accuracy is measured and published.
-4. **Built for the learner's reality.** A mid-range smartphone, costly data, mobile money, French or English interface.
+4. **Built for the learner's reality.** Works on a computer and on a mid-range smartphone, over costly data, with mobile money and a French or English interface.
 5. **One engine, many exams.** Each new exam adds content and an exam model, not a new product.
 
 ### 2.4 What the product is not
@@ -80,9 +80,9 @@ Preparation is bought in a burst of one to six months before an exam date, drive
 | Express Entry French-language category: at least NCLC 7 in all four abilities | IRCC, October 2026 |
 | TCF Canada centres in Cameroon: Institut français du Cameroun in Yaoundé and Douala, Alliances françaises in Dschang, Garoua and Ngaoundéré | Centre listings, September 2026 |
 
-### 3.3 Alternatives and how LinguaMentor beats them
+### 3.3 Alternatives and how GaugePrep beats them
 
-| Alternative | What it offers | What LinguaMentor adds |
+| Alternative | What it offers | What GaugePrep adds |
 |---|---|---|
 | FEI candidate manual and sample papers | Official format and sample items | Scoring of the learner's own work, a path, full simulations, NCLC prediction |
 | TV5Monde TCF, RFI Le français facile | Free practice material | Exam-faithful simulation, prediction, a plan built on the learner's gaps |
@@ -147,7 +147,7 @@ Preparation is bought in a burst of one to six months before an exam date, drive
 
 ### 6.1 The learner journey
 
-1. **Sign up:** email or phone number, interface language (French or English), age check (16 or older).
+1. **Sign up:** email or Google, interface language (French or English), age check (16 or older).
 2. **Set a goal:** target exam (TCF Canada in the first release), target NCLC per skill (prefilled with NCLC 7 for Express Entry), exam date if known. Or choose the free track with no exam.
 3. **Diagnostic:** an adaptive placement across the four skills, 25 to 35 minutes, which can be done in parts.
 4. **Plan:** the gap between the diagnostic and the target per skill, turned into a weekly plan fitted to the weeks left before the exam date.
@@ -213,7 +213,7 @@ Each requirement has an identifier used by design, development and testing.
 
 | ID | Requirement | Acceptance criteria |
 |---|---|---|
-| ACC-1 | Sign up with email or phone number and password, or with Google | Account created; email or phone verified by code before paid features |
+| ACC-1 | Sign up with email and password, or with Google | Account created; email verified by code before paid features; no phone number is asked for |
 | ACC-2 | Minimum age 16, matching the minimum age of the TCF | Date of birth required; under 16 refused with a clear message |
 | ACC-3 | Interface language French or English, changeable at any time | All screens, emails and feedback available in both languages |
 | ACC-4 | Goal setting | Learner chooses an exam or the free track; for TCF Canada, a target NCLC per skill (default NCLC 7) and an optional exam date |
@@ -343,7 +343,7 @@ Each requirement has an identifier used by design, development and testing.
 
 | ID | Requirement | Acceptance criteria |
 |---|---|---|
-| ADM-1 | Learner lookup | Find a learner by email or phone; see plan, payments and usage, not essay content unless the learner shares it |
+| ADM-1 | Learner lookup | Find a learner by email; see plan, payments and usage, not essay content unless the learner shares it |
 | ADM-2 | Manual actions | Extend access, refund, verify a result report |
 | ADM-3 | Help | Help centre with frequent questions in French and English; contact form |
 | ADM-4 | Operations dashboard | Sign-ups, conversions, active learners, AI cost per day, prediction accuracy |
@@ -454,7 +454,7 @@ Content rules:
 
 Usage limits on Premium, set to keep AI costs under control without blocking normal study: per day, 8 writing evaluations, 30 minutes of speaking practice and 1 full simulation; per month (fair-use ceiling), 300 minutes of speaking and 120 writing evaluations. The ceiling covers far more than an intensive three-month preparation needs.
 
-Pricing rationale: competing AI scoring tools charge about 10 to 15 USD a month for scoring alone; LinguaMentor includes the curriculum, speaking with an AI examiner and full simulations. A TCF Canada sitting costs far more than a month of Premium, and a failed sitting also costs at least 20 days of waiting.
+Pricing rationale: competing AI scoring tools charge about 10 to 15 USD a month for scoring alone; GaugePrep includes the curriculum, speaking with an AI examiner and full simulations. A TCF Canada sitting costs far more than a month of Premium, and a failed sitting also costs at least 20 days of waiting.
 
 Payments: Notch Pay for MTN Mobile Money and Orange Money in Cameroon (also covering Côte d'Ivoire, Senegal, Ghana and Kenya for later markets); card payments where the provider's card channel is available, renewed through the same reminder and one-step payment flow. Automatic card renewal ships with the release that opens markets outside the CEMAC zone.
 
@@ -481,6 +481,7 @@ Release 1 launches only when all of these are true:
 2. Content volumes in Section 11 are published and reviewer-approved.
 3. The grader passes every release check in 10.2 for writing and speaking.
 4. Speech recognition tested with at least 20 Cameroonian speakers (francophone and anglophone) across levels, with transcripts judged accurate enough to grade on at least 90% of test answers.
+   The check runs on the first 20 consenting beta learners, by the benchmark in ADR-026.
 5. Mobile money payments work in production with real MTN and Orange accounts, including renewal and refund.
 6. The security baseline in Section 15 is met, and backups have been restored once in a test.
 
@@ -507,7 +508,7 @@ Release 1 launches only when all of these are true:
 - Consent is explicit, specific and revocable (ACC-7); only the data the product needs is collected; learners can access, correct and delete their data.
 - AI providers process learner work under a data processing agreement, with no training on submitted data, and receive only what grading needs (no name, email or phone number with the text).
 - Learner work is used to teach and score that learner. It is used to improve quality only with the optional, revocable consent in ACC-7.
-- Retention: essays and recordings kept 12 months after the last activity, then deleted; attestation uploads deleted after verification; payment data held by the payment provider, not by LinguaMentor.
+- Retention: essays and recordings kept 12 months after the last activity, then deleted; attestation uploads deleted after verification; payment data held by the payment provider, not by GaugePrep.
 
 ### 15.2 Application security
 

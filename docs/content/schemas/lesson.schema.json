@@ -1,0 +1,197 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gaugeprep.com/schemas/content/lesson.schema.json",
+  "title": "French curriculum lesson",
+  "description": "PRD CUR-1, CUR-2, CUR-5. 5 levels (A1 to C1) x 10 units x 4 lessons. Interface-language text (explanations, summaries) is given in English and French.",
+  "type": "object",
+  "required": [
+    "schema",
+    "code",
+    "version",
+    "level",
+    "unit",
+    "lesson",
+    "unit_goal",
+    "goal",
+    "input",
+    "explanation",
+    "practice",
+    "production",
+    "summary",
+    "vocabulary",
+    "authoring"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "bilingual": {
+      "type": "object",
+      "required": ["fr", "en"],
+      "additionalProperties": false,
+      "properties": {
+        "fr": { "type": "string", "minLength": 1 },
+        "en": { "type": "string", "minLength": 1 }
+      }
+    },
+    "exercise": {
+      "type": "object",
+      "required": ["id", "kind", "instruction", "items"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^E[0-9]{1,2}$" },
+        "kind": {
+          "type": "string",
+          "enum": ["choice", "gap_fill", "ordering", "matching", "dictation"]
+        },
+        "instruction": { "$ref": "#/$defs/bilingual" },
+        "items": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 12,
+          "items": {
+            "type": "object",
+            "required": ["prompt", "answer", "explanation"],
+            "additionalProperties": false,
+            "properties": {
+              "prompt": {
+                "type": "string",
+                "description": "French. Gaps written as ___. Ordering: segments separated by ' | '. Matching: 'left => ?'. Dictation: the text to voice."
+              },
+              "choices": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "For choice and matching."
+              },
+              "answer": {
+                "type": "string",
+                "description": "Exact expected answer. Several accepted answers separated by ' || '."
+              },
+              "explanation": { "$ref": "#/$defs/bilingual" }
+            }
+          }
+        }
+      }
+    }
+  },
+  "properties": {
+    "schema": { "const": "lesson/1" },
+    "code": {
+      "type": "string",
+      "pattern": "^FR-CUR-(A1|A2|B1|B2|C1)-U(0[1-9]|10)-L[1-4]$"
+    },
+    "version": { "type": "integer", "minimum": 1 },
+    "level": { "type": "string", "enum": ["A1", "A2", "B1", "B2", "C1"] },
+    "unit": { "type": "integer", "minimum": 1, "maximum": 10 },
+    "lesson": { "type": "integer", "minimum": 1, "maximum": 4 },
+    "unit_goal": {
+      "$ref": "#/$defs/bilingual",
+      "description": "The unit's communicative goal from the curriculum map."
+    },
+    "goal": {
+      "$ref": "#/$defs/bilingual",
+      "description": "Can-do statement for this lesson."
+    },
+    "tcf_link": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "L1",
+          "L2",
+          "L3",
+          "L4",
+          "L5",
+          "L6",
+          "R1",
+          "R2",
+          "R3",
+          "R4",
+          "R5",
+          "R6",
+          "EE1",
+          "EE2",
+          "EE3",
+          "EO1",
+          "EO2",
+          "EO3"
+        ]
+      },
+      "description": "Exam task types this lesson prepares for."
+    },
+    "input": {
+      "type": "object",
+      "required": ["kind", "text_fr"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "type": "string", "enum": ["text", "audio"] },
+        "text_fr": {
+          "type": "string",
+          "description": "The text, or the audio script with audio-script-rules.md markup. Shown as transcript after the activity (CUR-5)."
+        },
+        "speakers": {
+          "type": "array",
+          "items": { "$ref": "common.schema.json#/$defs/voice_profile" }
+        },
+        "comprehension": { "$ref": "#/$defs/exercise" }
+      }
+    },
+    "explanation": {
+      "type": "object",
+      "required": ["focus", "body"],
+      "additionalProperties": false,
+      "properties": {
+        "focus": {
+          "type": "string",
+          "enum": [
+            "grammar",
+            "vocabulary",
+            "pronunciation",
+            "discourse",
+            "sociolinguistic",
+            "exam_strategy"
+          ]
+        },
+        "body": { "$ref": "#/$defs/bilingual" },
+        "examples_fr": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "practice": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 4,
+      "items": { "$ref": "#/$defs/exercise" }
+    },
+    "production": {
+      "type": "object",
+      "required": ["kind", "prompt_fr", "success_criteria"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "type": "string", "enum": ["writing", "speaking"] },
+        "prompt_fr": { "type": "string" },
+        "word_range": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": { "type": "integer" }
+        },
+        "success_criteria": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" },
+          "description": "In English; passed to the feedback engine."
+        }
+      }
+    },
+    "summary": { "$ref": "#/$defs/bilingual" },
+    "vocabulary": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^FR-VOC-[a-z_]+-[0-9]{4}$" },
+      "description": "Free-track vocabulary entries introduced, scheduled for spaced review (CUR-3)."
+    },
+    "estimated_minutes": { "type": "integer", "minimum": 10, "maximum": 40 },
+    "authoring": { "$ref": "common.schema.json#/$defs/authoring" }
+  }
+}

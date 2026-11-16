@@ -1,0 +1,41 @@
+{
+  "schema": "writing-prompt/1",
+  "code": "TCF-CA-EE-EE3-0001",
+  "version": 1,
+  "exam": "TCF_CA",
+  "paper": "EE",
+  "type": "EE3",
+  "theme": "technology",
+  "situation": "A local news website asks readers whether secondary schools should ban mobile phones during the whole school day. The learner compares two readers' views and gives their own opinion.",
+  "genre": "opinion_text",
+  "documents": [
+    {
+      "source": "Courrier des lecteurs, M. Tchoupo, parent d'élève",
+      "stance": "for",
+      "text": "Depuis que mon fils a un smartphone, ses notes baissent. En classe, il attend les messages de ses camarades au lieu d'écouter le professeur, et à la récréation, plus personne ne joue ni ne discute. Les établissements qui ont interdit le téléphone pendant toute la journée constatent que les élèves sont plus attentifs et qu'ils se parlent de nouveau. L'école doit rester un lieu protégé, où l'on apprend à se concentrer. Les familles peuvent très bien joindre leurs enfants en appelant le secrétariat en cas d'urgence.",
+      "word_count": 86
+    },
+    {
+      "source": "Tribune de Mme Abena, professeure de sciences",
+      "stance": "against",
+      "text": "Interdire complètement le téléphone, c'est refuser de préparer les élèves au monde dans lequel ils vivent. Dans mes cours, nous utilisons parfois les smartphones pour mesurer des températures, vérifier une information ou filmer une expérience. Le vrai problème n'est pas l'outil, mais l'absence de règles claires. Je préfère apprendre aux jeunes quand et comment s'en servir plutôt que de le confisquer à l'entrée. Une interdiction totale déplace simplement le problème : les élèves l'utiliseront en cachette, sans aucun accompagnement.",
+      "word_count": 78
+    }
+  ],
+  "instruction_fr": "Un site d'information locale demande à ses lecteurs : « Faut-il interdire le téléphone portable dans les collèges et lycées pendant toute la journée ? » Vous écrivez un texte pour ce site : vous présentez les deux points de vue des documents ci-dessous, puis vous donnez votre opinion de manière argumentée. (120 mots minimum, 180 mots maximum)",
+  "topic_brief": "The text must present both views on a full-day ban of mobile phones in secondary schools and state and justify the writer's own position.",
+  "on_topic_requirements": [
+    "summarises the view in favour of a full ban, in the writer's own words",
+    "summarises the view against a full ban, in the writer's own words",
+    "states a personal opinion on the ban",
+    "supports the opinion with at least one argument or example",
+    "is addressed to the readers of a news website"
+  ],
+  "target_band": ["B1", "C2"],
+  "authoring": {
+    "author": "example",
+    "drafted_with_ai": true,
+    "model": "claude-opus-5-5",
+    "originality_statement": "original"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "schema": "vocabulary-entry/1",
+  "code": "FR-VOC-transport-0001",
+  "version": 1,
+  "theme": "transport",
+  "level": "A1",
+  "kind": "word",
+  "headword": "la gare routière",
+  "pos": "noun",
+  "gender": "f",
+  "translation_en": "bus station, coach station",
+  "example_fr": "Le bus pour Yaoundé part de la gare routière à six heures.",
+  "example_en": "The bus to Yaoundé leaves from the bus station at six o'clock.",
+  "regional_note": "Au Canada, on dit plutôt « le terminus d'autobus ».",
+  "authoring": {
+    "author": "example",
+    "drafted_with_ai": false,
+    "originality_statement": "original"
+  }
+}

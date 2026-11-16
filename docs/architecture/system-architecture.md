@@ -1,4 +1,4 @@
-# LinguaMentor: System Architecture
+# GaugePrep: System Architecture
 
 ## 0. Document control
 
@@ -7,13 +7,13 @@
 | Document | System architecture |
 | Version | 1.0 |
 | Date | 22 October 2026 |
-| Owner | CTO, LinguaMentor |
+| Owner | CTO, GaugePrep |
 | Product owner | Frank |
 | Inputs | Product Requirements Document v1.0; TCF Canada exam specification and calibration brief v1.0 |
 | Companion files | Architecture decision records (docs/adr), milestone 0 backlog |
-| Audience | Every engineer, reviewer and operator working on LinguaMentor |
+| Audience | Every engineer, reviewer and operator working on GaugePrep |
 
-This document describes how LinguaMentor is built and run: its structure, technologies, data, AI and speech pipelines, infrastructure, delivery process, quality practices and the plan to start development. Every technology choice was made from the vendor's or project's own current documentation in October 2026; versions and limits are listed in Appendix A with their sources. Each major decision also has a short decision record (Appendix B) explaining the alternatives considered.
+This document describes how GaugePrep is built and run: its structure, technologies, data, AI and speech pipelines, infrastructure, delivery process, quality practices and the plan to start development. Every technology choice was made from the vendor's or project's own current documentation in October 2026; versions and limits are listed in Appendix A with their sources. Each major decision also has a short decision record (Appendix B) explaining the alternatives considered.
 
 When the PRD or the exam specification and this document disagree, the PRD wins on what the product does, the exam specification wins on exam rules, and this document wins on how the system does it. Any change to a decision in this document is made by writing a new decision record and updating the affected section.
 
@@ -21,13 +21,13 @@ When the PRD or the exam specification and this document disagree, the PRD wins 
 
 ### 1.1 Product in one paragraph
 
-LinguaMentor prepares learners for high-stakes language exams. It places the learner, teaches them from their level to the level their target needs, lets them sit full simulations under real exam conditions (including a live AI examiner for speaking), and predicts their real result using the exam's own scoring rules, as a range with a stated confidence. The first release covers TCF Canada and a free French track for learners in Cameroon; later releases add TEF Canada, German, English and other exams through the same engine.
+GaugePrep prepares learners for high-stakes language exams. It places the learner, teaches them from their level to the level their target needs, lets them sit full simulations under real exam conditions (including a live AI examiner for speaking), and predicts their real result using the exam's own scoring rules, as a range with a stated confidence. The first release covers TCF Canada and a free French track for learners in Cameroon; later releases add TEF Canada, German, English and other exams through the same engine.
 
 ### 1.2 Architecture drivers
 
 | Driver | Source | What it forces in the design |
 |---|---|---|
-| Live speaking examiner, reply under 2.5 s, French with Cameroonian accents | PRD PRA-4, SIM-5, Section 14 | A dedicated real-time process, a voice framework with turn detection, a speech recognition service chosen by a measured accent test |
+| Live speaking examiner, reply under 2.5 s, French with Cameroonian accents | PRD PRA-4, SIM-5, Section 14 | A dedicated real-time process, a voice framework with turn detection, a speech recognition service chosen by a measured benchmark on accented and learner French |
 | Writing and speaking results in under 30 s and 60 s | PRD PRA-3, PRA-4 | Asynchronous grading on a job queue, never inside a web request |
 | Predictions in the exam's own terms with confidence | PRD Section 9, exam specification Section 8 | A statistics engine (Rasch model), versioned scale mappings and combination models |
 | Every prediction reproducible | PRD PRE-4, exam specification Section 13 | Versioned content and rules, append-only results that store every version used |
@@ -68,12 +68,11 @@ The design must reach these without changes and must scale tenfold by adding ser
 |---|---|---|
 | Anthropic API | Grading (Claude Sonnet 5.5) and light tasks (Claude Haiku 5.5) | Staging and production; local uses open models |
 | OpenAI API | Backup grader (GPT-6.1 Sol), used only after it passes the release checks | Integrated, disabled by default |
-| Speech recognition provider | Live and batch French transcription, chosen in milestone 0 among Deepgram, Mistral Voxtral and ElevenLabs Scribe | Staging and production |
+| Speech recognition provider | Live and batch French transcription, chosen in milestone 0 among Deepgram, ElevenLabs Scribe and Speechmatics | Staging and production |
 | ElevenLabs | Examiner voice and listening content voices | Staging and production |
 | LiveKit | Real-time audio rooms (WebRTC) for the examiner | Local dev server, LiveKit Cloud free tier in staging, self-hosted in production |
 | Notch Pay | MTN Mobile Money, Orange Money and cards in Cameroon | Test keys locally and in staging, live keys in production |
 | Resend | Transactional email | Staging and production |
-| Twilio | SMS verification codes for phone sign-up (about $0.0075 per SMS to Cameroon per a vendor comparison; MTN requires a pre-registered sender ID, which can take up to 3 weeks) | Staging and production |
 | Cloudflare | DNS, CDN (data centre in Douala), static hosting of the PWA, R2 object storage, edge rate limits | All environments except local |
 | Neon | Managed PostgreSQL 18 in Frankfurt | Staging (free) and production (paid) |
 | Sentry, Grafana Cloud | Errors and traces; logs, metrics, dashboards and alerts | Staging and production |
@@ -87,7 +86,7 @@ The design must reach these without changes and must scale tenfold by adding ser
         | HTTPS (api.)                 |
         v                              v
  +-------------------------------------------------+        Anthropic / OpenAI
- |                LinguaMentor platform            | -----> Speech recognition
+ |                GaugePrep platform            | -----> Speech recognition
  |  core app | job worker | scoring | voice examiner|        ElevenLabs
  +-------------------------------------------------+        Notch Pay, Resend
         |  WebRTC via LiveKit (UDP, TURN/TLS 443)            Sentry, Grafana
@@ -100,7 +99,7 @@ The design must reach these without changes and must scale tenfold by adding ser
 
 ### 3.1 Style
 
-LinguaMentor is a modular monolith: one codebase, deployed as one application, divided into modules with enforced boundaries. Three additional process types run from the same codebase because their workloads differ from web requests. Microservices are not used: they would add network calls, distributed consistency and multiple deployments without a benefit at the planned scale (ADR-001).
+GaugePrep is a modular monolith: one codebase, deployed as one application, divided into modules with enforced boundaries. Three additional process types run from the same codebase because their workloads differ from web requests. Microservices are not used: they would add network calls, distributed consistency and multiple deployments without a benefit at the planned scale (ADR-001).
 
 ### 3.2 Process types
 
@@ -191,8 +190,8 @@ class ExamModel(Protocol):
 
 ### 6.1 Sign-up and goal
 
-1. The learner signs up with email or phone, a password or Google, and a date of birth (16 or older).
-2. identity creates the account and records the required consent; a single-use, time-limited verification code is sent by email (Resend) or by SMS (Twilio, behind an SMS provider interface).
+1. The learner signs up with email and a password, or with Google, and a date of birth (16 or older). No phone number is collected.
+2. identity creates the account and records the required consent; a single-use, time-limited verification code is sent by email (Resend).
 3. The learner sets a goal: exam, target NCLC per skill (default 7), exam date.
 
 ### 6.2 Multiple-choice answer (practice or simulation)
@@ -208,7 +207,7 @@ class ExamModel(Protocol):
 1. The learner submits a task; practice or simulation stores a `production` and writes a grading job.
 2. The worker runs the rule checks from `examcore` (word count, copying, off-topic, memorised text, similarity to own past texts).
 3. If a rule fails, the task level is "A1 not reached" and no model call is made.
-4. Otherwise, two independent grading passes run on Claude Sonnet 5.5 with the task's rubric and anchors (cached prompt prefix), each returning criterion levels, task level and quoted evidence as validated JSON.
+4. Otherwise, two independent grading passes run on Claude Sonnet 5.5 with the task's rubric and exemplars (cached prompt prefix; never the evaluation anchors), each returning criterion levels, task level and quoted evidence as validated JSON.
 5. A third pass runs when the passes differ by more than one level.
 6. The worker writes an append-only `task_grade` with the grader version, and the feedback text.
 7. When the three tasks of a paper are graded, the combination model produces the mark out of 20, CEFR and NCLC in a `paper_score`, followed by a new `prediction`.
@@ -304,7 +303,7 @@ Every `task_grade`, `paper_score` and `prediction` stores: exam rules version, i
 | Speaking recordings | 12 months, by R2 lifecycle rule |
 | Attestation uploads | Deleted after verification |
 | Grades, scores, predictions | Kept without personal data for accuracy statistics |
-| Payment records | Kept as required for accounting; card data never stored by LinguaMentor |
+| Payment records | Kept as required for accounting; card data never stored by GaugePrep |
 | Raw webhooks | 24 months |
 
 ### 7.5 Growth
@@ -337,7 +336,7 @@ Switching provider is a configuration change. There is no silent fallback: if th
 ### 8.3 Grader versioning and release
 
 - A grader version is the combination of model ID, prompt, rubric, anchor set and settings. Any change creates a new version.
-- A new version serves learners only after it passes the release checks of the exam specification (Section 9.1): exact level on at least 60% of anchors, within one level on 95%, no inversions, 90% consistency over repeated runs, rule checks, gaming and injection tests.
+- A new version serves learners only after it passes the release checks of the exam specification (Section 9.1): exact level on at least 60% of evaluation anchors, within one level on 95%, no inversions, 90% consistency over repeated runs, rule checks, gaming and injection tests.
 - The release check is a CI workflow that calls the real model and stores its report with the grader version.
 
 ### 8.4 Prompt and output safety
@@ -354,24 +353,27 @@ Switching provider is a configuration change. There is no silent fallback: if th
 | Framework | LiveKit Agents 1.8 (Python) |
 | Transport | LiveKit media server, WebRTC over UDP with built-in TURN over UDP and TLS on port 443 |
 | Turn detection | LiveKit turn detector with French support; light version on CPU |
-| Speech recognition | Chosen by the milestone 0 accent test |
+| Speech recognition | Chosen by the milestone 0 benchmark (8.6) |
 | Dialogue | Claude Haiku 5.5, streaming |
 | Voice | ElevenLabs Flash, streaming |
 | Recording | Server-side capture of the learner's track, Opus, stored in private R2 |
 
-The chained pipeline is used instead of a speech-to-speech model because grading needs a word-level transcript of the learner's own words, the recognition service must be chosen for Cameroonian accents, and the examiner rules are easier to enforce and test as text (ADR-006).
+The chained pipeline is used instead of a speech-to-speech model because grading needs a word-level transcript of the learner's own words, the recognition service must be chosen on accented and learner French, and the examiner rules are easier to enforce and test as text (ADR-006).
 
 ### 8.6 Speech recognition selection (milestone 0)
 
-- Candidates: Deepgram Nova-3 Multilingual, Mistral Voxtral Realtime, ElevenLabs Scribe v2 Realtime, each with its batch counterpart.
-- Data: 20 Cameroonian speakers, francophone and anglophone, A2 to C1, recording the three TCF speaking tasks, with signed consent; verbatim human transcripts.
-- Measures: word error rate; preservation of the learner's grammatical errors (at least 95%); word-level timing and confidence available; latency; price.
-- Rule: the lowest word error rate among candidates that meet the preservation and word-level requirements; within one point, the cheaper wins.
+- Candidates: Deepgram Nova-3 (monolingual French), ElevenLabs Scribe v3 and v3 Live, ElevenLabs Scribe v2, Speechmatics Enhanced. Whisper large-v3 ran as a control and could not win. Chosen (ADR-026): Scribe v2, with Deepgram Nova-3 as the fallback; Scribe v2's live endpoint still needs its latency check before the examiner is built on it.
+- Data, all public (ADR-026): OpenSLR 57 African Accented French (Apache-2.0, 232 speakers from Cameroon, Chad, Congo, Gabon and Niger, mostly read), with Cameroonian speakers reported separately; LANGSNAP and FLLOC learner French from English speakers (CC BY-NC-SA, internal measurement only, never in the repository, a model or the product); Common Voice French (CC0) as control; a synthetic planted-error set for error preservation only.
+- A fixed, seeded subset inside each provider's free allowance; one text normaliser for every engine; results by corpus and speaker code only.
+- Measures: word error rate; preservation of the learner's grammatical errors (95% planned; no engine reached it, so the bar is the best measured provider rate, 77%, and the grader is told the transcript may have corrected some errors); word-level timing and confidence available; latency; price.
+- Rule: the lowest word error rate among candidates that keep at least 77% of the planted errors (the best measured provider rate; 95% was planned and no engine reached it) and return word-level timing and confidence; within one point, the cheaper wins.
+- Limits: no claim for anglophone Cameroonians, spontaneous A2 to C1 speech or phone microphones on slow networks. Public wording: "tested on Central African and English-speaking learner French".
+- Before launch, the first 20 consenting beta learners, including anglophone Cameroonians, record the speaking tasks and the benchmark reruns on their answers; this is the launch check. It also reruns on any provider or model change, and when the top two engines finish within 1 point.
 
 ### 8.7 Cost controls
 
 - Usage counters per learner per day and per month enforce the PRD limits (8 writing evaluations, 30 speaking minutes and 1 simulation per day; 300 speaking minutes and 120 writing evaluations per month).
-- Prompt caching for rubric and anchors.
+- Prompt caching for rubric and exemplars.
 - Rule checks before any model call; no model call for a task that fails a rule.
 - Daily AI spend per provider tracked against budget, with alerts.
 
@@ -440,7 +442,7 @@ The chained pipeline is used instead of a speech-to-speech model because grading
 - Passwords hashed with Argon2 (Django's Argon2 hasher); sessions rotate on sign-in; "sign out of all devices" deletes all sessions.
 - Database roles: the application role cannot UPDATE or DELETE append-only tables; migrations use a separate role; only identity reads personal data.
 - Network: databases, workers, scoring and voice workers are not exposed to the internet; only the API, the LiveKit server ports and the static site are public.
-- Secrets in GitHub environments and Kamal secrets; distinct keys per environment.
+- Secrets in GitHub repository secrets prefixed `DEV_`, `STAGING_` or `PROD_` (the free plan has no environments for a private repository) and Kamal secrets; distinct keys per environment.
 - Edge: security headers and a strict content security policy for the static app; rate limits on authentication.
 - LiveKit tokens valid for one room and a short time.
 - Recordings and attestations in private buckets, reachable only through short-lived signed URLs.
@@ -452,17 +454,22 @@ The chained pipeline is used instead of a speech-to-speech model because grading
 ### 13.1 Repository layout
 
 ```
-linguamentor/                      private GitHub repository
-  apps/web/                        Next.js PWA (pnpm)
-  backend/
-    config/                        Django settings per environment
-    modules/<module>/              models, services, api, tasks, public.py
+gaugeprep/                      private GitHub repository
+  apps/
+    web/                           Next.js PWA (pnpm)
+    backend/
+      config/                      Django settings per environment
+      modules/<module>/            models, services, api, tasks, public.py
+    voice/                         LiveKit examiner worker
   packages/examcore/               exam rules, rule checks, Rasch maths, plug-ins (no Django)
-  voice/                           LiveKit examiner worker
+  tooling/
+    eslint/ typescript/ python/    shared lint, type and format configs
+    ci/                            our own CI checks and their tests
+    semgrep/                       custom Semgrep rules and their tests
   infra/
     docker/                        images for api, worker, voice
     kamal/                         deploy configs for staging and production
-    staging/                       rebuild scripts for the staging server
+    server/                        rebuild script for the shared dev and staging server
   docs/
     architecture/                  this document
     adr/                           decision records
@@ -477,11 +484,14 @@ linguamentor/                      private GitHub repository
 
 | Trigger | Steps |
 |---|---|
-| Pull request | Lint, types, Import Linter contracts, unit and integration tests with PostgreSQL 18, API contract check, frontend tests, gitleaks |
-| Merge to main | Build ARM images on GitHub's arm64 runners, push to GitHub Container Registry, deploy to staging with Kamal, publish the static PWA to Cloudflare staging |
-| Version tag plus approval | Run migrations (expand-then-contract), deploy to production with Kamal (zero-downtime switch through kamal-proxy), publish the PWA |
+| Pull request | One `gate` job (changed paths, PR title, gitleaks); then, unless the PR is docs only, `pnpm check`: lint, types, Import Linter contracts, unit and integration tests with PostgreSQL 18, API contract check, frontend tests, coverage floors and 90% on changed lines; plus the smoke end-to-end set when `apps/` changed (ADR-021) |
+| Promotion PR, `develop` into `stage` | The pull request checks, plus the full end-to-end suite, mutmut on `examcore` and scoring code, and the full scoring engine recovery tests (ADR-021) |
+| Push to develop | Build ARM images on GitHub's arm64 runners, push to GitHub Container Registry, deploy to dev with Kamal, publish the static PWA to Cloudflare dev |
+| Push to stage (or a manual run on `hotfix/*`) | The same images, deployed to staging with Kamal, and the PWA published to Cloudflare staging |
+| Version tag pushed by the owner on a commit on main, no approval step (ADR-020) | Check the tag format, the owner as actor and the commit on main, then run migrations (expand-then-contract), deploy to production with Kamal (zero-downtime switch through kamal-proxy), publish the PWA |
 | Change to grader prompt, rubric or model | Grader release check workflow against the real model |
-| Nightly | Full scoring engine recovery tests, full end-to-end suite |
+
+No scheduled runs: the free plan's 2,000 Actions minutes a month go to pull requests and the promotion PR; the budget and its arithmetic are in ADR-021.
 
 ## 14. Environments and infrastructure
 
@@ -491,19 +501,21 @@ Servers run in Germany (Hetzner) next to the database in Frankfurt (Neon). Traff
 
 ### 14.2 Environments
 
-| Part | Local | Staging | Production |
-|---|---|---|---|
-| App, workers, scoring, voice | Docker Compose | Oracle Cloud Always Free ARM server (2 OCPU, 12 GB) | Hetzner Cloud ARM servers (app server; voice server) |
-| Database | PostgreSQL 18 in Docker | Neon Free, Frankfurt | Neon Launch, Frankfurt |
-| LiveKit | `livekit-server --dev` | LiveKit Cloud Build (free) | Self-hosted LiveKit server |
-| Object storage | Local disk via Django storage | Cloudflare R2 free tier | Cloudflare R2 |
-| CDN and DNS | None | Cloudflare free | Cloudflare free |
-| AI and speech | Local open models | Real providers, small budget | Real providers |
-| Payments | Notch Pay test keys | Notch Pay test keys | Notch Pay live keys |
-| Email | Local mail catcher | Resend free | Resend |
-| Monitoring | Console | Sentry and Grafana Cloud free | Sentry and Grafana Cloud |
+| Part | Local | Dev | Staging | Production |
+|---|---|---|---|---|
+| App, workers, scoring, voice | Docker Compose | One shared ARM server (an AWS t4g.small, see D-16), separate Kamal deploy | The same server, separate Kamal deploy | Hetzner Cloud ARM servers (app server; voice server) |
+| Database | PostgreSQL 18 in Docker | Neon Free branch, Frankfurt | Neon Free, Frankfurt | Neon Launch, Frankfurt |
+| LiveKit | `livekit-server --dev` | LiveKit Cloud Build (free), shared with staging | LiveKit Cloud Build (free) | Self-hosted LiveKit server |
+| Object storage | Local disk via Django storage | Cloudflare R2 free tier, own bucket | Cloudflare R2 free tier | Cloudflare R2 |
+| CDN and DNS | None | Cloudflare free | Cloudflare free | Cloudflare free |
+| AI and speech | Local open models | Self-hosted open models | Self-hosted open models | Real providers |
+| Payments | Notch Pay test keys | Notch Pay test keys | Notch Pay test keys | Notch Pay live keys |
+| Email | Mailpit | Mailpit | Resend free | Resend free, Pro once over 100 a day (owner decision) |
+| Monitoring | Console | Sentry and Grafana Cloud free | Sentry and Grafana Cloud free | Sentry and Grafana Cloud |
+| Host | `localhost` | `dev.gaugeprep.com` (planned) | `staging.gaugeprep.com` (planned) | Not yet named |
+| Kamal service and image | None | `gaugeprep-dev`, `ghcr.io/<org>/gaugeprep-backend` (planned) | `gaugeprep-staging`, `ghcr.io/<org>/gaugeprep-backend` (planned) | Not yet named |
 
-Staging is fully scripted and rebuilt from scratch in under an hour, because free tiers can change without notice (Oracle halved its free ARM allowance on 15 June 2026). Staging holds only synthetic data from seed scripts.
+Dev deploys every merge into `develop` and is where each ticket is tested. Staging deploys the `stage` branch, the release candidate, and is where the release gate and the weekly demo run. Both are fully scripted and rebuilt from scratch in under an hour, because free tiers can change without notice (Oracle halved its free ARM allowance on 15 June 2026). Both hold only synthetic data from seed scripts. Branches and promotion are in `docs/process/branching-and-release.md` and ADR-019.
 
 ### 14.3 Production topology
 
@@ -534,22 +546,32 @@ Staging is fully scripted and rebuilt from scratch in under an hour, because fre
 | Hetzner voice server (ARM, sized by load test) | About €41 |
 | Neon Launch (about 0.5 compute unit average, storage) | About $40 to $45 |
 | Cloudflare, R2, Resend, Sentry, Grafana Cloud at launch volume | €0 to €5 |
-| SMS verification codes | Per message, only for phone sign-ups |
 | Total | About €90 to €100 |
 
 ## 15. Testing strategy
 
+The strategy, the minutes budget and when each layer starts are in ADR-021.
+
 | Layer | Tests | When |
 |---|---|---|
-| examcore | Unit, property-based and fixed-answer tests from every table of the exam specification | Every pull request |
-| Scoring engine | Recovery on simulated data; comparison with an established statistics package | Pull request (small), nightly (full) |
-| Backend modules | Integration with PostgreSQL 18; idempotency of answers and webhooks; append-only enforcement; authorisation | Every pull request |
-| API | Contract check against OpenAPI | Every pull request |
-| Frontend | Component tests; Playwright end-to-end on a phone-size screen with slow 3G throttling, including interrupted and resumed simulations | Pull request (core), nightly (full) |
+| examcore | pytest fixed-answer tests from every table of the exam specification; Hypothesis property tests; mutmut, mutation score at least 80% | Every pull request with code; mutmut on the promotion PR |
+| Scoring engine | Recovery on simulated data; comparison with an established statistics package; mutmut, at least 80% | Pull request (small set), promotion PR (full, and mutmut) |
+| Backend modules | pytest-django against PostgreSQL 18, never SQLite; idempotency of answers and webhooks; append-only enforcement; authorisation; every endpoint has success, not-found and other-learner-refused tests | Every pull request with code |
+| API | Schemathesis in-process against `apps/backend/openapi.json`: documented statuses, no 5xx on bad input, schema-valid responses | Every pull request with code |
+| Frontend | Vitest and React Testing Library | Every pull request with code |
+| End to end | Playwright with slow 3G throttling and axe-core (zero serious or critical violations). Smoke: about 5 happy paths at 375 px. Full: 375 px and 1440 px, all flows, a server error, offline, session expiry, another learner's URL refused, interrupted and resumed simulations | Smoke on pull requests touching `apps/`; full on the promotion PR |
 | Voice examiner | Scripted conversations with recorded audio: timings, interruptions, no volunteered information, recitation probing | Every change to voice |
 | Grader | Release check on the anchor set with the real model | Every grader change; blocks release |
 | Load | API and queue at twice expected peak; concurrent speaking sessions to size the voice server | Before launch and before infrastructure changes |
 | Security | ASVS Level 2 review; dependency and secret scanning | Before launch; continuous |
+
+Rules for every automated layer:
+
+- Branch coverage floors: `examcore` 95%, backend 85%, web 80%, and 90% on the lines a PR changes (diff-cover). Floors live in config and only go up.
+- Under CI no test may be skipped or xfail; tests run in random order with the seed printed; every test has a timeout (pytest 30 s, Vitest 10 s, Playwright 60 s unless the test sets its own with a reason).
+- No retries for unit or integration tests. Playwright retries 0 on PRs and 1 on the promotion PR, where a pass on retry still fails the run.
+- Branch protection is unavailable on the free private plan: `merge.sh` refusing a PR without a green run on its head commit is the gate.
+- Hypothesis and axe-core are MPL-2.0, accepted as dev-only: used in tests, never shipped to learners.
 
 ## 16. Observability and operations
 
@@ -599,7 +621,7 @@ Prices are those published by providers in October 2026 and are tracked monthly 
 
 | Risk | Mitigation |
 |---|---|
-| No recognition service is accurate enough on Cameroonian accents | Measured selection in milestone 0; visible transcripts; intelligibility, not accent, is assessed; providers swappable |
+| No recognition service is accurate enough on Cameroonian accents | Public-corpus benchmark in milestone 0, rerun on 20 consenting beta learners before launch; visible transcripts; intelligibility, not accent, is assessed; providers swappable |
 | Grader below release thresholds | Prompt and rubric iteration on anchors; backup grader evaluated under the same checks; launch blocked until passed |
 | Provider price or policy change | Provider interfaces; monthly cost review; pinned model IDs with published retirement dates |
 | Free-tier change in staging | Staging scripted and rebuildable in under an hour on any provider |
@@ -612,7 +634,7 @@ Prices are those published by providers in October 2026 and are tracked monthly 
 
 | Milestone | Delivers | Done when |
 |---|---|---|
-| M0 Foundations and checks | Repository, CI/CD, three environments, deploy pipeline; accent test; latency test from Douala; Notch Pay confirmation; grader release-check pipeline skeleton | Staging deploys from main; recognition provider chosen; region confirmed |
+| M0 Foundations and checks | Repository, CI/CD, environments (local, dev, staging, production), deploy pipeline; speech recognition benchmark; latency test from Douala; Notch Pay confirmation; grader release-check pipeline skeleton | Dev deploys from develop and staging from stage; recognition provider chosen; region confirmed |
 | M1 Accounts and content | Sign-up, consents, goals; content bank with review workflow, versions and audio pipeline | A reviewer publishes an item with audio; a learner signs up and sets a goal |
 | M2 Listening and reading | Practice for both papers; scoring engine v0; diagnostic | A learner receives a predicted 699-scale range from the diagnostic |
 | M3 Writing | Rule checks, grader, anchors, release checks, feedback | The grader passes every release check |
@@ -640,9 +662,9 @@ Content production (items, prompts, lessons, anchors) runs in parallel from M1 u
 | LiveKit Cloud | Build free: 1,000 agent minutes, 5 concurrent sessions | livekit.com pricing |
 | Claude Sonnet 5.5, Haiku 5.5 | $2/$10 and $0.10/$0.50 per million tokens; no retirement before September and October 2027 | Anthropic pricing and model deprecations pages |
 | GPT-6.1 Sol | $2/$10 per million tokens | OpenAI pricing page |
-| Deepgram Nova-3 Multilingual | $0.0058 per minute streaming (promotional) | deepgram.com pricing |
+| Deepgram Nova-3 Multilingual | $0.0092 per minute streaming, $0.0052 batch, list price (12 November 2026) | deepgram.com pricing |
 | Mistral Voxtral Realtime | $0.006 per minute; open weights Apache 2.0 | AI Business, February 2026 |
-| ElevenLabs | Flash $0.04 and v3 $0.08 per 1,000 characters; Scribe v2 $0.22 per hour, Realtime $0.39 per hour | elevenlabs.io API pricing |
+| ElevenLabs | Flash $0.04 and v3 $0.08 per 1,000 characters; Scribe v3 $0.20 per hour, v3 Live $0.22 per hour (12 November 2026) | elevenlabs.io API pricing |
 | Cloudflare R2 | 10 GB free; $0.015 per GB-month; no egress fees | Cloudflare R2 pricing |
 | Hetzner Cloud | ARM CAX11 €5.99, CAX41 €40.99 after June 2026 repricing | privatedevops.com report |
 | Oracle Always Free | 2 OCPU and 12 GB ARM since 15 June 2026 | InfoQ, July 2026 |
@@ -651,9 +673,8 @@ Content production (items, prompts, lessons, anchors) runs in parallel from M1 u
 | Import Linter | 2.15 (4 September 2026) | PyPI |
 | Sentry | Developer plan free: 5,000 errors, 5 million spans | sentry.io pricing |
 | Grafana Cloud | Free: 10,000 series, 50 GB logs and traces, 3 users | Last9 pricing analysis, September 2026 |
-| Resend | Free 3,000 emails a month; Pro $20 for 50,000 | resend.com pricing |
+| Resend | Free 3,000 emails a month, 100 a day, 3 domains; Pro $20 for 50,000; data stored in the US (ADR-024) | resend.com pricing and GDPR page, 5 November 2026 |
 | OWASP ASVS | 5.0.0 (May 2025) | OWASP ASVS repository |
-| Twilio SMS | About $0.0075 per SMS to Cameroon; MTN sender ID pre-registration up to 3 weeks | sent.dm Cameroon SMS pricing comparison |
 
 ## Appendix B: Decision records
 
@@ -666,7 +687,7 @@ Content production (items, prompts, lessons, anchors) runs in parallel from M1 u
 | ADR-005 | Session cookie authentication |
 | ADR-006 | Chained voice pipeline on LiveKit Agents instead of a speech-to-speech model |
 | ADR-007 | Claude Sonnet 5.5 as the grader, Haiku 5.5 for light tasks, GPT-6.1 Sol as backup |
-| ADR-008 | Speech recognition chosen by a measured accent test |
+| ADR-008 | Speech recognition chosen by a measured accent test (superseded by ADR-026) |
 | ADR-009 | ElevenLabs for examiner and content voices |
 | ADR-010 | In-house Rasch scoring engine verified against a reference |
 | ADR-011 | Versioned content and append-only results |
@@ -676,7 +697,14 @@ Content production (items, prompts, lessons, anchors) runs in parallel from M1 u
 | ADR-015 | GitHub Actions and Kamal for delivery |
 | ADR-016 | Sentry and Grafana Cloud for observability |
 | ADR-017 | Opus with AAC fallback for audio |
-| ADR-018 | Twilio for SMS verification codes behind an SMS provider interface |
+| ADR-018 | Twilio for SMS verification codes behind an SMS provider interface (superseded by ADR-023) |
+| ADR-019 | Dev, staging and production from develop, stage and main |
+| ADR-020 | Production deploys on the owner's tag, without an approval gate |
+| ADR-021 | Test strategy and CI minutes budget |
+| ADR-022 | PR security scanners catch accidents, not a deliberate bypass |
+| ADR-023 | Email verification only, no SMS sign-up |
+| ADR-024 | Resend for transactional email, Mailpit locally and in dev |
+| ADR-026 | Speech recognition chosen by a public-corpus benchmark: ElevenLabs Scribe v2, Deepgram Nova-3 as fallback |
 
 ## Appendix C: Glossary
 

@@ -1,0 +1,250 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gaugeprep.com/schemas/content/listening-item.schema.json",
+  "title": "TCF Canada listening item (CO, types L1 to L6)",
+  "description": "Exam specification Sections 3 and 10.3. One file per item version.",
+  "type": "object",
+  "required": [
+    "schema",
+    "code",
+    "version",
+    "exam",
+    "paper",
+    "type",
+    "target_level",
+    "theme",
+    "focus",
+    "script",
+    "question",
+    "options",
+    "key",
+    "key_passage",
+    "skill_note",
+    "authoring"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema": { "const": "listening-item/1" },
+    "code": { "type": "string", "pattern": "^TCF-CA-CO-L[1-6]-[0-9]{4}$" },
+    "version": { "type": "integer", "minimum": 1 },
+    "exam": { "const": "TCF_CA" },
+    "paper": { "const": "CO" },
+    "type": { "type": "string", "enum": ["L1", "L2", "L3", "L4", "L5", "L6"] },
+    "target_level": { "$ref": "common.schema.json#/$defs/cefr" },
+    "difficulty_adjustment": {
+      "type": "number",
+      "minimum": -0.5,
+      "maximum": 0.5,
+      "default": 0,
+      "description": "Author's proposed shift from the level's initial difficulty (exam specification 8.1). Final value set by the reviewer."
+    },
+    "theme": { "$ref": "common.schema.json#/$defs/theme" },
+    "focus": { "$ref": "common.schema.json#/$defs/focus" },
+    "image": {
+      "type": "object",
+      "description": "Required for L1 only.",
+      "required": ["brief", "alt_text"],
+      "additionalProperties": false,
+      "properties": {
+        "brief": {
+          "type": "string",
+          "description": "Description for the illustrator or image generator: scene, people, objects, what must and must not be visible."
+        },
+        "alt_text": {
+          "type": "string",
+          "description": "Accessible description that does not reveal the answer."
+        }
+      }
+    },
+    "script": {
+      "type": "object",
+      "required": ["genre", "speakers", "turns", "target_wpm", "background"],
+      "additionalProperties": false,
+      "properties": {
+        "genre": {
+          "type": "string",
+          "enum": [
+            "none",
+            "question",
+            "dialogue",
+            "voicemail",
+            "announcement",
+            "instructions",
+            "news",
+            "interview",
+            "report",
+            "talk",
+            "lecture",
+            "debate"
+          ],
+          "description": "'none' for L1, where the recording is the four spoken options only."
+        },
+        "speakers": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 4,
+          "items": {
+            "type": "object",
+            "required": ["id", "role", "voice"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "type": "string", "pattern": "^S[1-4]$" },
+              "role": {
+                "type": "string",
+                "description": "For example 'receptionist', 'radio presenter'."
+              },
+              "voice": { "$ref": "common.schema.json#/$defs/voice_profile" }
+            }
+          }
+        },
+        "turns": {
+          "type": "array",
+          "minItems": 0,
+          "items": {
+            "type": "object",
+            "required": ["speaker", "text"],
+            "additionalProperties": false,
+            "properties": {
+              "speaker": { "type": "string", "pattern": "^S[1-4]$" },
+              "text": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Spoken text with the markup of audio-script-rules.md."
+              }
+            }
+          }
+        },
+        "target_wpm": { "type": "integer", "minimum": 90, "maximum": 210 },
+        "background": {
+          "type": "string",
+          "enum": [
+            "none",
+            "street",
+            "office",
+            "studio",
+            "station",
+            "shop",
+            "home",
+            "phone_line"
+          ]
+        },
+        "estimated_seconds": { "type": "integer", "minimum": 5, "maximum": 90 }
+      }
+    },
+    "question": {
+      "type": "object",
+      "required": ["mode", "text"],
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["none", "spoken"],
+          "description": "'none' for L1 (the image is the stimulus) and L2 (the spoken question is the script)."
+        },
+        "text": {
+          "type": "string",
+          "description": "Empty when mode is 'none'."
+        },
+        "voice": { "$ref": "common.schema.json#/$defs/voice_profile" }
+      }
+    },
+    "options_mode": { "type": "string", "enum": ["spoken", "written"] },
+    "options": { "$ref": "common.schema.json#/$defs/four_options" },
+    "key": { "$ref": "common.schema.json#/$defs/option_key" },
+    "key_passage": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact text from the script that gives the answer, highlighted in the transcript in feedback."
+    },
+    "skill_note": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The listening skill involved, in one sentence in English; translated for the interface."
+    },
+    "authoring": { "$ref": "common.schema.json#/$defs/authoring" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "type": { "const": "L1" } } },
+      "then": {
+        "required": ["image", "options_mode"],
+        "properties": {
+          "options_mode": { "const": "spoken" },
+          "target_level": { "const": "A1" },
+          "script": { "properties": { "genre": { "const": "none" } } },
+          "question": { "properties": { "mode": { "const": "none" } } }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "type": { "const": "L2" } } },
+      "then": {
+        "required": ["options_mode"],
+        "properties": {
+          "options_mode": { "const": "spoken" },
+          "target_level": { "enum": ["A1", "A2"] },
+          "script": { "properties": { "genre": { "const": "question" } } },
+          "question": { "properties": { "mode": { "const": "none" } } }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "type": { "enum": ["L3", "L4", "L5", "L6"] } } },
+      "then": {
+        "required": ["options_mode"],
+        "properties": {
+          "options_mode": { "const": "written" },
+          "question": { "properties": { "mode": { "const": "spoken" } } }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "type": { "const": "L3" } } },
+      "then": {
+        "properties": {
+          "target_level": { "enum": ["A2", "B1"] },
+          "script": { "properties": { "genre": { "const": "dialogue" } } }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "type": { "const": "L4" } } },
+      "then": {
+        "properties": {
+          "target_level": { "enum": ["A2", "B1"] },
+          "script": {
+            "properties": {
+              "genre": { "enum": ["voicemail", "announcement", "instructions"] }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "type": { "const": "L5" } } },
+      "then": {
+        "properties": {
+          "target_level": { "enum": ["B1", "B2", "C1"] },
+          "script": {
+            "properties": {
+              "genre": { "enum": ["news", "interview", "report"] }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "type": { "const": "L6" } } },
+      "then": {
+        "properties": {
+          "target_level": { "enum": ["C1", "C2"] },
+          "script": {
+            "properties": {
+              "genre": { "enum": ["talk", "lecture", "debate", "interview"] }
+            }
+          }
+        }
+      }
+    }
+  ]
+}
