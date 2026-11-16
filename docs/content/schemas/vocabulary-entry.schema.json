@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gaugeprep.com/schemas/content/vocabulary-entry.schema.json",
+  "title": "Free-track vocabulary entry",
+  "description": "PRD FRE-1: about 3,000 entries in 60 themes, A1 to B2, each with audio and an example sentence. Themes in vocabulary-themes.md.",
+  "type": "object",
+  "required": [
+    "schema",
+    "code",
+    "version",
+    "theme",
+    "level",
+    "kind",
+    "headword",
+    "translation_en",
+    "example_fr",
+    "example_en",
+    "authoring"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema": { "const": "vocabulary-entry/1" },
+    "code": { "type": "string", "pattern": "^FR-VOC-[a-z_]+-[0-9]{4}$" },
+    "version": { "type": "integer", "minimum": 1 },
+    "theme": {
+      "type": "string",
+      "pattern": "^[a-z_]+$",
+      "description": "Theme code from vocabulary-themes.md."
+    },
+    "level": { "type": "string", "enum": ["A1", "A2", "B1", "B2"] },
+    "kind": { "type": "string", "enum": ["word", "expression"] },
+    "headword": {
+      "type": "string",
+      "description": "Lemma or fixed expression as taught, with the article for nouns: 'la gare', 'avoir besoin de'."
+    },
+    "pos": {
+      "type": "string",
+      "enum": [
+        "noun",
+        "verb",
+        "adjective",
+        "adverb",
+        "preposition",
+        "conjunction",
+        "pronoun",
+        "determiner",
+        "interjection",
+        "expression"
+      ]
+    },
+    "gender": { "type": "string", "enum": ["m", "f", "m_or_f"] },
+    "plural": { "type": "string", "description": "Only when irregular." },
+    "translation_en": { "type": "string" },
+    "example_fr": {
+      "type": "string",
+      "description": "Natural sentence of 5 to 14 words, at or below the entry's level, contexts from francophone Africa and Canada as well as France."
+    },
+    "example_en": { "type": "string" },
+    "regional_note": {
+      "type": "string",
+      "description": "When usage differs between countries, for example 'Cameroun: on dit aussi ...'."
+    },
+    "audio_text": {
+      "type": "string",
+      "description": "Text to voice if different from headword plus example (for example a liaison to make explicit)."
+    },
+    "authoring": { "$ref": "common.schema.json#/$defs/authoring" }
+  }
+}

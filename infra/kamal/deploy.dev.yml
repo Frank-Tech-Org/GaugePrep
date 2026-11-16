@@ -1,0 +1,13 @@
+servers:
+  web:
+    hosts:
+      - <%= `doppler secrets get SERVER_HOST --plain #{ENV["DOPPLER_TOKEN"] ? "" : "-p gaugeprep -c dev"}`.strip %>
+    options:
+      memory: 320m
+
+proxy:
+  host: dev.gaugeprep.com
+
+env:
+  clear:
+    DJANGO_ALLOWED_HOSTS: dev.gaugeprep.com

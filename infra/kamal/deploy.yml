@@ -1,0 +1,50 @@
+# Shared by every destination; run from the repo root: kamal -c infra/kamal/deploy.yml -d <env>
+service: gaugeprep-backend
+image: frank-tech-org/gaugeprep-backend
+
+minimum_version: 2.12.0
+require_destination: true
+# WHY: clean-up counts stopped containers across both environments, not per environment.
+retain_containers: 10
+# SECURITY: a Doppler token overrides --from; this guard catches mistakes, scope limits the token.
+<% if ENV["DOPPLER_TOKEN"] && !ENV["GITHUB_ACTIONS"] %><% raise "Unset DOPPLER_TOKEN: a service token makes Kamal ignore --from, so every destination would get that token's secrets." %><% end %>
+
+registry:
+  server: ghcr.io
+  username:
+    - KAMAL_REGISTRY_USERNAME
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+builder:
+  arch: arm64
+  dockerfile: infra/docker/backend.Dockerfile
+  target: production
+
+# WHY: migrations run as the container starts, inside this wait; raise it for a slow one.
+deploy_timeout: 60
+
+ssh:
+  user: deploy
+
+# WHY: ufw refuses the 6th new SSH connection within 30 s, so keep connections open.
+sshkit:
+  pool_idle_timeout: 900
+
+# WHY: one kamal-proxy per server serves dev and staging, so its limit lives here.
+proxy:
+  ssl: true
+  app_port: 8000
+  healthcheck:
+    path: /api/v1/health
+    interval: 3
+    timeout: 3
+  run:
+    options:
+      memory: 64m
+
+env:
+  secret:
+    - DATABASE_URL
+    - MIGRATION_DATABASE_URL
+    - DJANGO_SECRET_KEY

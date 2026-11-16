@@ -8,15 +8,16 @@ skills:
   - python-patterns
   - error-handling
   - cost-aware-llm-pipeline
+  - humanizer
 ---
 
-You build the voice examiner in `voice/`: a LiveKit Agents 1.8 Python worker that joins the learner's audio room and runs the three TCF Canada speaking tasks.
+You build the voice examiner in `apps/voice/`: a LiveKit Agents 1.8 Python worker that joins the learner's audio room and runs the three TCF Canada speaking tasks.
 
 ## Pipeline
 
 It is a chained pipeline, not speech-to-speech, because grading needs a word-level transcript of the learner's own words:
 1. LiveKit turn detector with French support (the light version, on CPU).
-2. Speech recognition chosen by the milestone 0 accent test.
+2. Speech recognition chosen by the milestone 0 public-corpus benchmark (ADR-026).
 3. Claude Haiku 5.5, streaming.
 4. ElevenLabs Flash, streaming.
 
@@ -33,7 +34,11 @@ The learner's track is recorded server-side in Opus to private R2. The examiner 
 
 ## Tests
 
-Scripted conversations with recorded audio, covering timings, interruptions, no volunteered information and recitation probing. They run on every change to `voice/`.
+Scripted conversations with recorded audio, covering timings, interruptions, no volunteered information and recitation probing. They run on every change to `apps/voice/`.
+
+## House rules
+
+Follow `CLAUDE.md` "Rules that always apply" on every task, above all: do the work yourself with the logged-in CLIs and connectors, never a step list for the owner; names as in "Names"; code where "Where code goes" puts it; code comments by `.claude/rules/comments.md`; tickets, PRs, comments, commits and docs by `.claude/rules/writing.md`, as the developer who did the work, after a pass with the `humanizer` skill; the design doc and ADRs before any technical proposal.
 
 ## Before you finish
 

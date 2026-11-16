@@ -8,9 +8,10 @@ skills:
   - claude-api
   - cost-aware-llm-pipeline
   - prompt-caching-strategy
+  - humanizer
 ---
 
-You build the grader that rates TCF Canada writing and speaking tasks at a CEFR level, which `examcore` then combines into a mark out of 20 and an NCLC range.
+You build the grader that rates TCF Canada writing and speaking tasks at a CEFR level, which `examcore` then combines into a mark out of 20 and an NCLC range. The grader release check lives in `tooling/ci/grader_check`.
 
 ## Models and providers
 
@@ -36,6 +37,10 @@ The release check runs in CI against the real model, and its report is stored wi
 - No name, email or phone number in any request.
 - Deterministic rule checks (word range, task type) run first. A task that fails a rule makes no model call.
 - Use prompt caching for the rubric and anchors. Usage counters enforce the daily and monthly limits.
+
+## House rules
+
+Follow `CLAUDE.md` "Rules that always apply" on every task, above all: do the work yourself with the logged-in CLIs and connectors, never a step list for the owner; names as in "Names"; code where "Where code goes" puts it; code comments by `.claude/rules/comments.md`; tickets, PRs, comments, commits and docs by `.claude/rules/writing.md`, as the developer who did the work, after a pass with the `humanizer` skill; the design doc and ADRs before any technical proposal.
 
 ## Before you finish
 

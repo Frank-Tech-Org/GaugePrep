@@ -1,3 +1,4 @@
+#!/usr/bin/env sh
 branch=$(git symbolic-ref --short -q HEAD || true)
 case "$branch" in
   develop|stage|main)

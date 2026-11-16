@@ -1,0 +1,189 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gaugeprep.com/schemas/content/reading-item.schema.json",
+  "title": "TCF Canada reading item (CE, types R1 to R6)",
+  "description": "Exam specification Sections 4 and 10.3. One document and one question per item.",
+  "type": "object",
+  "required": [
+    "schema",
+    "code",
+    "version",
+    "exam",
+    "paper",
+    "type",
+    "target_level",
+    "theme",
+    "focus",
+    "document",
+    "question",
+    "options",
+    "key",
+    "key_passage",
+    "skill_note",
+    "authoring"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema": { "const": "reading-item/1" },
+    "code": { "type": "string", "pattern": "^TCF-CA-CE-R[1-6]-[0-9]{4}$" },
+    "version": { "type": "integer", "minimum": 1 },
+    "exam": { "const": "TCF_CA" },
+    "paper": { "const": "CE" },
+    "type": { "type": "string", "enum": ["R1", "R2", "R3", "R4", "R5", "R6"] },
+    "target_level": { "$ref": "common.schema.json#/$defs/cefr" },
+    "difficulty_adjustment": {
+      "type": "number",
+      "minimum": -0.5,
+      "maximum": 0.5,
+      "default": 0
+    },
+    "theme": { "$ref": "common.schema.json#/$defs/theme" },
+    "focus": { "$ref": "common.schema.json#/$defs/focus" },
+    "document": {
+      "type": "object",
+      "required": ["layout", "body", "word_count"],
+      "additionalProperties": false,
+      "properties": {
+        "layout": {
+          "type": "string",
+          "enum": [
+            "sign",
+            "label",
+            "form",
+            "advertisement",
+            "timetable",
+            "menu",
+            "leaflet",
+            "opening_hours",
+            "email",
+            "letter",
+            "text_message",
+            "memo",
+            "instructions",
+            "practical_article",
+            "report",
+            "press_article",
+            "review",
+            "essay_extract",
+            "literary_extract",
+            "specialised_extract"
+          ]
+        },
+        "title": { "type": "string" },
+        "email_header": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["from", "to", "subject"],
+          "properties": {
+            "from": { "type": "string" },
+            "to": { "type": "string" },
+            "subject": { "type": "string" },
+            "date": { "type": "string" }
+          }
+        },
+        "table": {
+          "type": "array",
+          "description": "Rows for timetables, menus, opening hours. First row is the header.",
+          "items": { "type": "array", "items": { "type": "string" } }
+        },
+        "body": {
+          "type": "string",
+          "description": "Text in the light markup of authoring-guide.md Section 4.3 (paragraphs, bold, lists)."
+        },
+        "attribution": {
+          "type": "string",
+          "description": "Fictional source shown under press articles and reviews, for example 'Le Quotidien de Kribi, rubrique Société'."
+        },
+        "word_count": {
+          "type": "integer",
+          "minimum": 5,
+          "maximum": 520,
+          "description": "Counted with the exam word-count rule (exam specification 5.3) over title, table cells and body."
+        }
+      }
+    },
+    "question": {
+      "type": "object",
+      "required": ["text"],
+      "additionalProperties": false,
+      "properties": { "text": { "type": "string", "minLength": 1 } }
+    },
+    "options": { "$ref": "common.schema.json#/$defs/four_options" },
+    "key": { "$ref": "common.schema.json#/$defs/option_key" },
+    "key_passage": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Exact text from the document that answers the question."
+    },
+    "skill_note": { "type": "string", "minLength": 1 },
+    "authoring": { "$ref": "common.schema.json#/$defs/authoring" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "type": { "const": "R1" } } },
+      "then": {
+        "properties": {
+          "target_level": { "const": "A1" },
+          "document": {
+            "properties": { "word_count": { "minimum": 10, "maximum": 40 } }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "type": { "const": "R2" } } },
+      "then": {
+        "properties": {
+          "target_level": { "enum": ["A1", "A2"] },
+          "document": {
+            "properties": { "word_count": { "minimum": 40, "maximum": 100 } }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "type": { "const": "R3" } } },
+      "then": {
+        "properties": {
+          "target_level": { "enum": ["A2", "B1"] },
+          "document": {
+            "properties": { "word_count": { "minimum": 60, "maximum": 150 } }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "type": { "const": "R4" } } },
+      "then": {
+        "properties": {
+          "target_level": { "enum": ["B1", "B2"] },
+          "document": {
+            "properties": { "word_count": { "minimum": 120, "maximum": 250 } }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "type": { "const": "R5" } } },
+      "then": {
+        "properties": {
+          "target_level": { "enum": ["B2", "C1"] },
+          "document": {
+            "properties": { "word_count": { "minimum": 200, "maximum": 350 } }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "type": { "const": "R6" } } },
+      "then": {
+        "properties": {
+          "target_level": { "enum": ["C1", "C2"] },
+          "document": {
+            "properties": { "word_count": { "minimum": 300, "maximum": 500 } }
+          }
+        }
+      }
+    }
+  ]
+}

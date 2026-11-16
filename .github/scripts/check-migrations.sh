@@ -2,7 +2,7 @@
 # Passes every module's app label explicitly: a bare makemigrations --check skips apps with no migrations package.
 set -euo pipefail
 
-cd "$(dirname "$0")/../../backend"
+cd "$(dirname "$0")/../../apps/backend"
 export DJANGO_SETTINGS_MODULE=config.settings.test
 
 # Fails on an empty label list or a module package on disk that is not installed.
@@ -26,7 +26,7 @@ print(*found.values())
 if ! out=$(uv run python manage.py makemigrations --check --dry-run $labels 2>&1); then
   echo "$out" >&2
   if grep -q "Migrations for" <<<"$out"; then
-    echo "Model changes without a migration (app named above). Run: cd backend && python manage.py makemigrations <app>, then commit the file." >&2
+    echo "Model changes without a migration (app named above). Run: cd apps/backend && python manage.py makemigrations <app>, then commit the file." >&2
   else
     echo "makemigrations --check failed (not a missing migration; see the error above)." >&2
   fi

@@ -6,4 +6,4 @@ node_modules
 .mypy_cache
 .pytest_cache
 .ruff_cache
-backend/staticfiles
+apps/backend/staticfiles

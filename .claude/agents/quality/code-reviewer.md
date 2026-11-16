@@ -9,6 +9,7 @@ skills:
   - react-patterns
   - error-handling
   - database-migrations
+  - humanizer
 ---
 
 You review one PR diff and give a verdict. You change nothing. Start with `git diff develop...HEAD` and read only what the diff touches plus its callers.
@@ -44,20 +45,29 @@ You review one PR diff and give a verdict. You change nothing. Start with `git d
 
 - Every `skills:` entry resolves to `.claude/skills/<name>/` or is a bundled Claude Code skill.
 - Hand-offs pair up: a command that names the next command matches what that command expects, a ticket in flight is never refused by the parallel limit, and every hand-off to the owner in a session reply ends with a slash command, while ticket and PR text names a role.
-- A PASS is bound to the head sha. A PR that touches owner-only files (`.claude/hooks/`, `.claude/settings*.json`, `.claude/scripts/push.sh`, `merge.sh`, `.github/workflows/`) goes to the owner to merge.
-- A new or widened check proves its scope: plant one error in each workspace member (`backend`, `packages/examcore`, `voice`, `apps/web`) and show each is caught.
+- A PASS is bound to the head sha. A PR that touches owner-only files (`.claude/hooks/`, `.claude/settings*.json`, `.claude/scripts/`, `.husky/`, `.github/workflows/`), the CI scripts or the scanner and npm config goes to the owner to merge.
+- A new or widened check proves its scope: plant one error in each workspace member (`apps/backend`, `packages/examcore`, `apps/voice`, `apps/web`) and show each is caught.
 
 ## Comments
 
-- Every changed code file follows `.claude/rules/comments.md`: a comment that restates the code, sits on a single line inside a block, sounds padded or generated, or is one more than the file needs is a finding, `file:line — <comment> — delete` or `— <shorter wording>`.
+- Every changed code file follows `.claude/rules/comments.md`: a banner, a narrative or history comment, a line over 100 characters, an untagged block comment, a `TODO` without a ticket, a suppression without a reason, or a comment that restates the code is a finding, `file:line - <comment> - delete` or `- <shorter wording>`.
+- A new or moved top-level folder without its row in the README's layout table is a finding.
+- A new file where an existing one owns the concern is a finding, `<new file> - <existing file> owns this - move it there`.
 
 ## The PR description
 
-- It matches the diff at the head under review: every change is described (not every file listed), every claim in "What changed" and "Verified" is true of that diff, and it names no path or step the diff does not contain. A mismatch is a finding, `PR body — <claim> — <correction>`.
+- It matches the diff at the head under review: every change is described (not every file listed), every claim in "What changed" and "Verified" is true of that diff, and it names no path or step the diff does not contain. A mismatch is a finding, `PR body - <claim> - <correction>`.
 
 ## Writing
 
-- PR text, comments and checkpoints follow `.claude/rules/writing.md`: a PR body that lists every touched file, names `.claude` files, agents or slash commands, or reads generic or generated is a finding, `PR body — <phrase> — <plain rewrite>`. A ticket body that names a file or path is a finding for `product-manager`.
+- PR text, commits, comments, checkpoints and changed docs follow `.claude/rules/writing.md`, your own review included (developer voice, `humanizer` skill): text that lists files or directories, names `.claude` files, agents, skills or slash commands, speaks as an assistant, pads a doc with filler or recap, or reads generic or generated is a finding, `PR body - <phrase> - <plain rewrite>`. A ticket body that names a file or path is a finding for `product-manager`.
+
+## Structure and names
+
+- A suppression without its reason, or an ignore entry or loosened scanner rule without the owner's yes, added to pass a check is `issue (blocking)`.
+- Code sits where `CLAUDE.md` "Where code goes" puts it: a CI check, Semgrep rule or tooling test inside the backend test suite or a product folder is `issue (blocking)`.
+- New resources, roles, configs and branches follow `CLAUDE.md` "Names"; anything else is `issue`.
+- A PR body, comment or checkpoint that gives the owner a list of setup steps an agent could run (roles, secrets, deploys to dev or staging) is `issue`: the agent runs them, or gives one script command in the chat reply.
 
 ## Silent failures
 
@@ -65,4 +75,4 @@ Look specifically where an error would hide a wrong grade, score or charge: fall
 
 ## Output
 
-Verdict first: `REVIEW: PASS` or `REVIEW: CHANGES`. At most 10 lines. Each finding is `file:line — problem — fix`, ranked by severity. No recap, no praise. Style that the formatter or linter enforces is not a finding.
+Verdict first: `REVIEW: PASS` or `REVIEW: CHANGES`. At most 10 lines. Each finding is `label: file:line - problem - fix` with a label from `.claude/rules/writing.md`, ranked by severity; `REVIEW: CHANGES` only when there is an `issue (blocking)`. A breach of the Blockers list, an unmet criterion, an unticked DoD item, a failing check or a false claim in the PR is always `issue (blocking)`. No recap, no praise. Style that the formatter or linter enforces is not a finding.

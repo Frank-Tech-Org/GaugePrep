@@ -6,7 +6,14 @@ Settled architecture choices become ADRs in `docs/adr/`. This file is for open q
 
 ## Open
 
-No open entries.
+### D-16: What runs dev and staging once the free server hours end?
+- Raised: 2026-11-11 by cto on #179
+- Context: dev and staging share one AWS t4g.small in Stockholm, free under AWS's t4g.small trial until 31 Dec 2026. From January it bills by the hour, about $12 to $15 a month with its disk, unless we move.
+- Options: A, keep it and pay from January; no work · B, an Oracle Always Free ARM server; free, a rebuild with the existing script and new DNS records, but Oracle reclaims idle free servers and free capacity is often unavailable · C, a Hetzner ARM server like production will use; about €4 to €5 a month, the same rebuild.
+- Recommendation: C, because it costs about a third of A and staging runs on the same kind of server as production.
+- Cost of delay: none until mid-December; after 31 Dec about $3 a week.
+- Reversible: yes
+- Blocks: none
 
 <!-- Template:
 ### D-<n>: <question>
@@ -40,6 +47,7 @@ No open entries.
 - Raised: 2026-10-30 by product-manager on the build pack intake
 - Decided: 2026-10-30: follow the pack · the owner. 204 anchors: 34 exemplars, one per level per task type, used in the grader prompt, and 170 evaluation anchors never in the prompt, instead of 180. The level two independent human raters agree on wins over the target level an item was written for. Two raters, plus a third on a one-level disagreement, instead of one reviewer.
 - Effect: `docs/exam-specs/TCF-Canada.md` updated and ADR-020 written by `cto` in #53; raters recruited in #57.
+- Addendum, decided 2026-11-12 · the owner: with no recruited speakers (#14 closed), the first speaking anchors are scripted transcripts that `exam-content-lead` writes per level and task, levelled by the two raters (#57) and stored append-only with a source tag. Rated attempts from consenting learners replace them after launch. LANGSNAP and FLLOC can never be anchors: CC BY-NC-SA forbids commercial use and would carry share-alike into our content. Effect: speech recognition is chosen on public corpora instead (ADR-026).
 
 ### D-5: How does the human reviewer approve content batches?
 - Raised: 2026-10-30 by product-manager on the build pack intake
@@ -70,6 +78,31 @@ No open entries.
 - Raised: 2026-11-03 by the owner
 - Decided: 2026-11-04: GaugePrep, domain gaugeprep.com, new resources prefixed `gaugeprep-` · the owner. The product was called LinguaMentor before.
 - Effect: the rename ticket (#147); the deploy tickets use the new names.
+
+### D-11: What may cto and product-manager decide without the owner?
+- Decided: 2026-11-05: a standing delegation list · the owner. `cto` decides technical items and `product-manager` decides product items, then records each ruling here with "under D-11". Delegated: a free MIT, BSD, Apache-2.0 or ISC dependency with no open CVE and under 5 new lockfile packages (a package already in the lockfile counts as none); whether an acceptance criterion is met when its number is met; splitting or merging tickets; process wording that loosens no safety rule. Kept by the owner: money, legal identity, accounts, physical access, anything irreversible, scoring or grading formulas, PR approvals, owner-only files, releases and tags.
+- Effect: owner asks come as one list before the Friday demo.
+
+### D-12: Does an owner task that is only waiting count against the one-at-a-time rule?
+- Decided: 2026-11-05: no · the owner. Once the owner's part is done and only a third party's reply is awaited, the next owner task can start. First case: #18 alongside #14.
+- Effect: process doc §1, the CLAUDE.md parallel-tickets rule.
+
+### D-13: Verify sign-ups by SMS?
+- Decided: 2026-11-05: no, email verification only, Google sign-in stays · the owner. SMS costs money per message and the owner prefers email.
+- Effect: Twilio and the MTN sender ID are dropped; sign-up uses email (or Google); no phone number is collected. ADR-023 supersedes ADR-018.
+
+### D-14: Which email provider, and what does dev send to?
+- Decided: 2026-11-05: under D-11 · cto. Resend free in staging and production through plain SMTP (no SDK), Mailpit (MIT) locally and in dev so synthetic addresses never bounce on the real account. Brevo free is the fallback if mail logs must stay in the EU.
+- Effect: ADR-024. Owner actions: the Resend account, the sending subdomain's DNS records in Cloudflare and the API key values. Resend Pro ($20 a month) past 100 emails a day is a later owner call.
+
+### D-15: Which app server runs the backend container?
+- Decided: 2026-11-10: gunicorn 26.2, under D-11 · cto. MIT, no required dependencies, no open CVE, the standard Django WSGI server; 2 sync workers fit the 320 MB dev container. Added to the backend's dependencies below 27, whose release was a few hours old.
+- Effect: #11 (production image stage and Kamal dev deploy).
+
+### D-16: Pay for GitHub Team to enforce required checks on develop?
+- Raised: 2026-11-12 by cto on #167
+- Decided: 2026-11-12: no, not yet · the owner. The repository is private on a free organization plan, so rulesets and branch protection are not enforced (checked in the settings pages). The merge step's checks, the develop alarm and the guard hook stand in for it.
+- Effect: revisit before the first production release or when more people get write access.
 
 <!-- Move an entry here when answered, adding:
 - Decided: <YYYY-MM-DD>: <option> · <the owner's reason>

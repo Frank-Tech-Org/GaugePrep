@@ -52,7 +52,7 @@ AI essay scoring and score predictors are common and often free. GaugePrep is po
 1. **Exam fidelity first.** Formats, timings, number of plays, word limits and scoring rules match the real exam. A simulation that is easier or kinder than the exam is a defect.
 2. **Skills, not templates.** TCF and telc score memorised or copied texts as "A1 not reached", zero, or fraud. The product teaches transferable skills and never trains learners to recite templates.
 3. **Honest numbers.** Ranges and confidence are always shown. Accuracy is measured and published.
-4. **Built for the learner's reality.** A mid-range smartphone, costly data, mobile money, French or English interface.
+4. **Built for the learner's reality.** Works on a computer and on a mid-range smartphone, over costly data, with mobile money and a French or English interface.
 5. **One engine, many exams.** Each new exam adds content and an exam model, not a new product.
 
 ### 2.4 What the product is not
@@ -147,7 +147,7 @@ Preparation is bought in a burst of one to six months before an exam date, drive
 
 ### 6.1 The learner journey
 
-1. **Sign up:** email or phone number, interface language (French or English), age check (16 or older).
+1. **Sign up:** email or Google, interface language (French or English), age check (16 or older).
 2. **Set a goal:** target exam (TCF Canada in the first release), target NCLC per skill (prefilled with NCLC 7 for Express Entry), exam date if known. Or choose the free track with no exam.
 3. **Diagnostic:** an adaptive placement across the four skills, 25 to 35 minutes, which can be done in parts.
 4. **Plan:** the gap between the diagnostic and the target per skill, turned into a weekly plan fitted to the weeks left before the exam date.
@@ -213,7 +213,7 @@ Each requirement has an identifier used by design, development and testing.
 
 | ID | Requirement | Acceptance criteria |
 |---|---|---|
-| ACC-1 | Sign up with email or phone number and password, or with Google | Account created; email or phone verified by code before paid features |
+| ACC-1 | Sign up with email and password, or with Google | Account created; email verified by code before paid features; no phone number is asked for |
 | ACC-2 | Minimum age 16, matching the minimum age of the TCF | Date of birth required; under 16 refused with a clear message |
 | ACC-3 | Interface language French or English, changeable at any time | All screens, emails and feedback available in both languages |
 | ACC-4 | Goal setting | Learner chooses an exam or the free track; for TCF Canada, a target NCLC per skill (default NCLC 7) and an optional exam date |
@@ -343,7 +343,7 @@ Each requirement has an identifier used by design, development and testing.
 
 | ID | Requirement | Acceptance criteria |
 |---|---|---|
-| ADM-1 | Learner lookup | Find a learner by email or phone; see plan, payments and usage, not essay content unless the learner shares it |
+| ADM-1 | Learner lookup | Find a learner by email; see plan, payments and usage, not essay content unless the learner shares it |
 | ADM-2 | Manual actions | Extend access, refund, verify a result report |
 | ADM-3 | Help | Help centre with frequent questions in French and English; contact form |
 | ADM-4 | Operations dashboard | Sign-ups, conversions, active learners, AI cost per day, prediction accuracy |
@@ -481,6 +481,7 @@ Release 1 launches only when all of these are true:
 2. Content volumes in Section 11 are published and reviewer-approved.
 3. The grader passes every release check in 10.2 for writing and speaking.
 4. Speech recognition tested with at least 20 Cameroonian speakers (francophone and anglophone) across levels, with transcripts judged accurate enough to grade on at least 90% of test answers.
+   The check runs on the first 20 consenting beta learners, by the benchmark in ADR-026.
 5. Mobile money payments work in production with real MTN and Orange accounts, including renewal and refund.
 6. The security baseline in Section 15 is met, and backups have been restored once in a test.
 

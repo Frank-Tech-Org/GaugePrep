@@ -102,6 +102,7 @@ Do not reach for generic wrapper `div` stacks when a semantic element exists.
 
 ## Naming
 
+- Files: kebab-case (`score-card.tsx`), one exported component per file
 - Components: PascalCase (`ScrollySection`, `SurfaceCard`)
 - Hooks: `use` prefix (`useReducedMotion`)
 - CSS classes: kebab-case or utility classes

@@ -73,11 +73,11 @@ Commit in logical steps, never `--amend`, staging only this ticket's paths: `git
 - `performance-engineer` for a learner page's bundle or media, a hot query, or the grading or voice path;
 - `qa-engineer` for the claims check if learner-facing claims or copy change.
 
-Each checks the DoD items in its area. Post one PR comment in the same voice, at most 10 lines plus findings, verdict first: a verdict per reviewer, fixes as `file:line — problem — fix`, unmet criteria and unticked DoD items by name. The last line alone is `REVIEW: PASS <full head sha>` or `REVIEW: CHANGES <full head sha>`. A new commit makes it stale. After three rounds of CHANGES, stop and ask the owner. Checkpoint stage: In review.
+Each checks the DoD items in its area. Post one PR comment in the same voice, at most 10 lines plus findings, verdict first: a verdict per reviewer, fixes as `file:line - problem - fix`, unmet criteria and unticked DoD items by name. The last line alone is `REVIEW: PASS <full head sha>` or `REVIEW: CHANGES <full head sha>`. A new commit makes it stale. After three rounds of CHANGES, stop and ask the owner. Checkpoint stage: In review.
 
 ## 5. Merge
 
-- A hotfix into `main`, or a PR touching the guard hook, settings, workflows, `push.sh` or `merge.sh`: tell the owner it is ready to merge.
+- A hotfix into `main`, or a PR touching the guard hook, settings, workflows, the git hooks or any script in `.claude/scripts/`: tell the owner it is ready to merge.
 - No approval from `frankkefoueg` on the head sha (`gh api repos/Frank-Tech-Org/GaugePrep/pulls/<pr>/reviews`): stop and tell the owner `Approve PR #<pr>: <PR title>` with the PR link and one line on what it does for the learner, then rerun `/lm-next`. Checkpoint: "Needs the owner: approve PR #<pr>".
 - Otherwise run `.claude/scripts/merge.sh <pr>`. While no CI exists it refuses and the owner merges. Any other refusal: fix what it names; never merge another way.
 

@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gaugeprep.com/schemas/content/simulation-form.schema.json",
+  "title": "TCF Canada simulation form",
+  "description": "Exam specification Section 7. Produced by the form builder (PRD CMS-5) from published items; items appear in delivery order.",
+  "type": "object",
+  "required": [
+    "schema",
+    "code",
+    "version",
+    "exam",
+    "rules_version",
+    "listening",
+    "reading",
+    "writing",
+    "speaking",
+    "assembly_report"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema": { "const": "simulation-form/1" },
+    "code": { "type": "string", "pattern": "^TCF-CA-FORM-[0-9]{4}$" },
+    "version": { "type": "integer", "minimum": 1 },
+    "exam": { "const": "TCF_CA" },
+    "rules_version": { "type": "string", "pattern": "^TCF-CA-rules-v[0-9]+$" },
+    "listening": {
+      "type": "array",
+      "minItems": 39,
+      "maxItems": 39,
+      "items": { "$ref": "common.schema.json#/$defs/content_ref" }
+    },
+    "reading": {
+      "type": "array",
+      "minItems": 39,
+      "maxItems": 39,
+      "items": { "$ref": "common.schema.json#/$defs/content_ref" }
+    },
+    "writing": {
+      "type": "object",
+      "required": ["EE1", "EE2", "EE3"],
+      "additionalProperties": false,
+      "properties": {
+        "EE1": { "$ref": "common.schema.json#/$defs/content_ref" },
+        "EE2": { "$ref": "common.schema.json#/$defs/content_ref" },
+        "EE3": { "$ref": "common.schema.json#/$defs/content_ref" }
+      }
+    },
+    "speaking": {
+      "type": "object",
+      "required": ["EO1", "EO2_choices", "EO3"],
+      "additionalProperties": false,
+      "properties": {
+        "EO1": { "$ref": "common.schema.json#/$defs/content_ref" },
+        "EO2_choices": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": { "$ref": "common.schema.json#/$defs/content_ref" },
+          "description": "One of the two is drawn at random when the sitting starts."
+        },
+        "EO3": { "$ref": "common.schema.json#/$defs/content_ref" }
+      }
+    },
+    "assembly_report": {
+      "type": "object",
+      "required": [
+        "level_counts",
+        "key_balance",
+        "theme_count",
+        "listening_seconds",
+        "reading_words",
+        "mean_difficulty_gap",
+        "checks_passed"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "level_counts": {
+          "type": "object",
+          "description": "Per paper and level, must equal the blueprint of exam specification 7.1."
+        },
+        "key_balance": {
+          "type": "object",
+          "description": "Share of keys A to D per paper; each between 0.20 and 0.30."
+        },
+        "theme_count": {
+          "type": "object",
+          "description": "Distinct themes per paper; at least 8."
+        },
+        "listening_seconds": {
+          "type": "integer",
+          "description": "Total audio plus 10 s per item; at most 2100."
+        },
+        "reading_words": { "type": "integer", "maximum": 9000 },
+        "mean_difficulty_gap": {
+          "type": "number",
+          "description": "Largest gap per level between the form mean and the bank mean, in logits; at most 0.15."
+        },
+        "checks_passed": { "type": "boolean", "const": true }
+      }
+    }
+  }
+}
