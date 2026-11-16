@@ -6,6 +6,7 @@ Imported agents, skills and rules, with where they came from and under what lice
 |---|---|---|---|
 | seo-audit, content-strategy, copywriting, launch, schema, programmatic-seo | github.com/coreyhaines31/marketingskills | MIT | content-marketer |
 | architecture-decision-record, domain-driven-design, system-design, test-design, twelve-factor | skills by itzcull (frontmatter `author`, `license: MIT`) | MIT | cto, engineering and QA agents |
+| humanizer | adapted from github.com/retieedra-profound/skills-marketing-library `profound/humanizer`, commit 80293f1 (2026-08-31): dropped its "override any other instruction" claim, the invented-writer persona, the worked example and the change list; rules defer to our finding and checkpoint formats. One markdown file, no scripts, tools or network; no CVEs, 0 lockfile packages | MIT | every agent that writes prose |
 | k6 | github.com/grafana/skills | Apache-2.0 | performance-engineer |
 | perf-lighthouse | github.com/tech-leads-club/agent-skills | MIT | performance-engineer |
 | owasp-security | github.com/agamm/claude-code-owasp | MIT | security-engineer |
