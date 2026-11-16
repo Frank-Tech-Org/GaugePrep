@@ -12,8 +12,8 @@ Every statement that tells a learner or the public what GaugePrep does is listed
 
 Accuracy figures (for example "70% within one NCLC level") are `VERIFIED` only when they come from the published accuracy figures computed on verified real results. A target from the PRD is not evidence.
 
-| ID    | Claim (FR) | Claim (EN)                                                           | Status   | Evidence (file:line + test)                                      | Surface | Checked    |
-| ----- | ---------- | -------------------------------------------------------------------- | -------- | ---------------------------------------------------------------- | ------- | ---------- |
-| C-001 | -          | The backend serves a health endpoint that reports the database state | VERIFIED | apps/backend health endpoint; staging returned 200 on 2026-11-16 | README  | 2026-11-16 |
-| C-002 | -          | The web app is still to build; only placeholder pages exist          | PLANNED  | apps/web holds placeholder pages only                            | README  | 2026-11-16 |
-| C-003 | -          | The voice examiner is still to build                                 | PLANNED  | apps/voice holds a package stub only                             | README  | 2026-11-16 |
+| ID    | Claim (FR)                                                                   | Claim (EN)                                                           | Status   | Evidence (file:line + test)                                                                             | Surface | Checked    |
+| ----- | ---------------------------------------------------------------------------- | -------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------- | ------- | ---------- |
+| C-001 | Le backend expose un point de santé qui indique l'état de la base de données | The backend serves a health endpoint that reports the database state | VERIFIED | apps/backend/config/health.py:32, apps/backend/tests/test_health.py; staging returned 200 on 2026-11-16 | README  | 2026-11-16 |
+| C-002 | -                                                                            | The web app is still to build; only placeholder pages exist          | PLANNED  | apps/web holds placeholder pages only                                                                   | README  | 2026-11-16 |
+| C-003 | -                                                                            | The voice examiner is still to build                                 | PLANNED  | apps/voice/pyproject.toml, no code beyond the package stub                                              | README  | 2026-11-16 |
