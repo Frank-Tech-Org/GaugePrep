@@ -40,7 +40,21 @@
       "Bash(pnpm install:*)",
       "Bash(pnpm check:*)",
       "Bash(pnpm test:*)",
-      "Bash(.claude/scripts/env-check.sh:*)"
+      "Bash(.claude/scripts/env-check.sh:*)",
+      "mcp__scrapling__make_request",
+      "mcp__scrapling__open_request_session",
+      "mcp__scrapling__session_make_request",
+      "mcp__scrapling__close_session",
+      "mcp__scrapling__list_sessions",
+      "mcp__scrapling__browser_open",
+      "mcp__scrapling__browser_fetch_once",
+      "mcp__scrapling__browser_fetch",
+      "mcp__scrapling__browser_extract",
+      "mcp__scrapling__browser_actions",
+      "mcp__scrapling__browser_observe",
+      "mcp__scrapling__browser_screenshot",
+      "mcp__scrapling__browser_network_requests",
+      "mcp__scrapling__browser_network_request"
     ],
     "deny": [
       "Read(./.env)",
@@ -120,5 +134,8 @@
         ]
       }
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "scrapling"
+  ]
 }
