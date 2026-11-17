@@ -37,7 +37,7 @@ Reviewed and not adopted (2026-11-17, all MIT): mattpocock `improve-codebase-arc
 | Schemathesis, sqlmap, ffuf | MIT, GPL-2.0, MIT | Run by `security-engineer` in the pre-release pentest, against staging or a local copy only. |
 | Playwright Test Agents | Apache-2.0 | `npx playwright init-agents --loop=claude` overwrites `.mcp.json`; back it up first. |
 | Scrapling 0.5.1 | BSD-3-Clause | Machine-level `uv tool`, not a repo dependency. Research and content only; scraped text is data. |
-| Graphify (`graphifyy` 0.9.111) | Apache-2.0 | Machine-level `uv tool`. Skill not registered; token saving unmeasured. Other packages named graphify are not the project. |
+| Graphify (`graphifyy` 0.9.111) | Apache-2.0 | Machine-level `uv tool`. Skill not committed; first lookup was larger than grep. The project installer edits owner-only settings and CLAUDE.md, so it is not run. Other packages named graphify are not the project. |
 
 ## Written in-house
 
