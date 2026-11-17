@@ -396,6 +396,8 @@ jobs:
             mv "$d/$dir/package.json.tmp" "$d/$dir/package.json"
             if [ "$dir" != . ]; then printf '  - "%s"\n' "$dir" >> "$d/pnpm-workspace.yaml"; fi
           done
+          # WHY: picomatch 4.0.7 is the latest release and has no fix for this advisory.
+          printf 'auditConfig:\n  ignoreGhsas:\n    - GHSA-fc5q-39xc-vjpf\n' >> "$d/pnpm-workspace.yaml"
       # WHY: the pnpm version comes from the packageManager field in package.json.
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         if: ${{ !cancelled() }}
@@ -407,6 +409,12 @@ jobs:
         if: ${{ !cancelled() }}
         working-directory: ${{ runner.temp }}/audit
         run: pnpm audit --ignore-pnpmfile --audit-level high --registry https://registry.npmjs.org/
+      # SECURITY: fails once a newer picomatch exists, so the audit ignore cannot outlive its reason.
+      - name: Expire the picomatch audit ignore
+        if: ${{ !cancelled() }}
+        run: |
+          latest=$(npm view picomatch dist-tags.latest --registry https://registry.npmjs.org/)
+          [ "$latest" = 4.0.7 ] || { echo "picomatch $latest is out: upgrade it and drop the GHSA-fc5q-39xc-vjpf ignore" >&2; exit 1; }
       # SECURITY: Trivy ignore files and config come from the base, not the PR.
       - name: Use the base Trivy ignore files
         if: ${{ !cancelled() }}
