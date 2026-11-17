@@ -430,7 +430,7 @@ The chained pipeline is used instead of a speech-to-speech model because grading
 | Idempotency | `Idempotency-Key` header on every write that may be retried (answers, submissions, payments); answer records also carry the client ID |
 | Pagination | Cursor-based on time-ordered IDs |
 | Time | ISO 8601 in UTC; the server's clock is authoritative for timers |
-| Authentication | Session cookie (HttpOnly, Secure, SameSite Lax) shared across `app.` and `api.` of the same domain; CSRF token on writes |
+| Authentication | Session cookie (HttpOnly, Secure, SameSite Lax), host-only on the API host and sent because app and API are same-site; CSRF token from the API on writes; CORS for the app origin only (ADR-027) |
 | Authorisation | Every endpoint declares the role and entitlement it needs; learners can only reach their own data |
 | Rate limits | At the edge for sign-in and sign-up; in the API per learner on AI-backed actions; usage limits from billing |
 | Internal API | Separate `/internal/v1` path, reachable only from the private network, authenticated with a service token, used by the voice examiner |
@@ -512,7 +512,7 @@ Servers run in Germany (Hetzner) next to the database in Frankfurt (Neon). Traff
 | Payments | Notch Pay test keys | Notch Pay test keys | Notch Pay test keys | Notch Pay live keys |
 | Email | Mailpit | Mailpit | Resend free | Resend free, Pro once over 100 a day (owner decision) |
 | Monitoring | Console | Sentry and Grafana Cloud free | Sentry and Grafana Cloud free | Sentry and Grafana Cloud |
-| Host | `localhost` | `dev.gaugeprep.com` (planned) | `staging.gaugeprep.com` (planned) | Not yet named |
+| Host (app, API) | `localhost:3000`, `localhost:8000` | `dev.gaugeprep.com`, `api.dev.gaugeprep.com` | `staging.gaugeprep.com`, `api.staging.gaugeprep.com` | `app.gaugeprep.com`, `api.gaugeprep.com` (ADR-027) |
 | Kamal service and image | None | `gaugeprep-dev`, `ghcr.io/<org>/gaugeprep-backend` (planned) | `gaugeprep-staging`, `ghcr.io/<org>/gaugeprep-backend` (planned) | Not yet named |
 
 Dev deploys every merge into `develop` and is where each ticket is tested. Staging deploys the `stage` branch, the release candidate, and is where the release gate and the weekly demo run. Both are fully scripted and rebuilt from scratch in under an hour, because free tiers can change without notice (Oracle halved its free ARM allowance on 15 June 2026). Both hold only synthetic data from seed scripts. Branches and promotion are in `docs/process/branching-and-release.md` and ADR-019.

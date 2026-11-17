@@ -161,6 +161,14 @@ Settled architecture choices become ADRs in `docs/adr/`. This file is for open q
 
 - Decided: 2026-11-17: the team, like an agency · the owner. Research, vendor requests and setup are worked by the owning agent. The owner is asked only for budget, accounts only the owner can create, passwords and the owner rows of the ladder, in the chat. Progress reaches the owner in the weekly report, where change requests come from.
 
+### D-31: Which hosts do the app and API use in dev and staging?
+
+- Decided: 2026-11-17: app on `dev.` and `staging.gaugeprep.com`, API on `api.dev.` and `api.staging.`, host-only `__Host-` cookies, CSRF token from the API, own CORS middleware, under D-11 · the CTO. Same site in every environment without cookies crossing environments (ADR-027).
+
+### D-32: Can the research analyst use Scrapling for pages plain fetches can't read?
+
+- Decided: 2026-11-17: yes, under D-11 · the CTO. BSD-3-Clause, 0.5.1 of 4 November 2026, no open advisory on it or its main dependencies, run pinned through `uvx` so it adds nothing to our lockfile (49 packages in its own environment); a browser fetcher is far past 200 lines. Script evaluation and saved browser state stay off; the no-CAPTCHA, no-login, robots rule stands.
+
 <!-- Move an entry here when answered, adding:
 - Decided: <YYYY-MM-DD>: <option> · <the owner's reason>
 -->
