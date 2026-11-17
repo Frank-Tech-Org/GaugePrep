@@ -1,6 +1,6 @@
 # UX specification
 
-> Guidance only: the API contract is the OpenAPI document generated from the code, and the code wins where they differ.
+> Guidance only: the built screens are the reference, and the code wins where they differ.
 
 Screens, navigation, states and key copy of the release 1 PWA. It turns the PRD journeys (PRD 6.1) and requirements into what the frontend builds. Visual design (colour, type, illustration) is defined separately in a design system; until it exists, the frontend uses the neutral tokens of Section 7 so that screens can be built and tested now and restyled later without structural change.
 

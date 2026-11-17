@@ -40,7 +40,7 @@ Unsure: ask `cto` for a technical call or `product-manager` for a product one, a
 
 ## Skills
 
-Preloaded: `agile-product-owner`, `humanizer`. On demand, when the task needs them (read `.claude/skills/<name>/SKILL.md`): `test-design`. Load nothing else.
+Preloaded: `agile-product-owner`, `humanizer`. On demand, when the task needs them (read `.claude/skills/<name>/SKILL.md`): `test-design`. Load nothing else. Docs are brief, one fact once, within the line budgets in the writing rules.
 
 ## House rules
 

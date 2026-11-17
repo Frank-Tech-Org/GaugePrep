@@ -49,7 +49,7 @@ Unsure: ask `cto` for a technical call or `product-manager` for a product one, a
 
 ## Skills
 
-Preloaded: `claude-api`, `cost-aware-llm-pipeline`, `humanizer`. On demand, when the task needs them (read `.claude/skills/<name>/SKILL.md`): `prompt-caching-strategy`. Load nothing else.
+Preloaded: `claude-api`, `cost-aware-llm-pipeline`, `humanizer`. On demand, when the task needs them (read `.claude/skills/<name>/SKILL.md`): `prompt-caching-strategy`. Load nothing else. Docs are brief, one fact once, within the line budgets in the writing rules.
 
 ## House rules
 

@@ -15,7 +15,7 @@ Each long-lived branch has its own environment, and code only moves forward:
 - `stage` deploys to **staging**. The owner promotes `develop` into it with a merge commit; the release gate, regression and the weekly demo run there.
 - `main` deploys to **production** on a version tag. The owner merges `stage` into it with a merge commit.
 
-Dev and staging share the Oracle Always Free server as two Kamal deploys, each with its own Neon branch and R2 bucket. Dev and staging use only free or self-hosted services: a fake SMS provider and self-hosted open models for AI and speech (owner decisions D-7 and D-8, 2026-10-30); paid providers run only in production. `release/*` branches are dropped. A defect found on staging is fixed on `develop` and promoted again. Only a hotfix starts on `main`, and it is merged back into `stage`, then `develop`.
+Dev and staging share one server as two Kamal deploys, each with its own Neon branch and R2 bucket (which server: D-28). Dev and staging use only free or self-hosted services, with self-hosted open models for AI and speech (owner decisions D-7 and D-8, 2026-10-30); paid providers run only in production. `release/*` branches are dropped. A defect found on staging is fixed on `develop` and promoted again. Only a hotfix starts on `main`, and it is merged back into `stage`, then `develop`.
 
 ## Alternatives considered
 
@@ -26,7 +26,6 @@ Dev and staging share the Oracle Always Free server as two Kamal deploys, each w
 ## Consequences
 
 - Four places run the code: local, dev, staging and production, plus throwaway CI runs.
-- The Oracle server must fit two deploys within 2 OCPU and 12 GB. If it doesn't, a paid dev host is an owner decision.
-- AI and SMS spend stays low in dev by configuration.
+- The shared server must fit two deploys. If it doesn't, a paid dev host is an owner decision.
+- AI spend stays at zero in dev by configuration.
 - Promotions must be merge commits, never squash, or `stage` and `main` drift from `develop`.
-- `merge.sh` is unchanged: agents merge only into `develop`. The owner merges into `stage` and `main`, and the push alarm covers both.

@@ -54,7 +54,7 @@ Unsure: ask `cto` for a technical call or `product-manager` for a product one, a
 
 ## Skills
 
-Preloaded: `owasp-security`, `django-security`, `humanizer`. On demand, when the task needs them (call the `Skill` tool): `security-review`, `semgrep`, `variant-analysis`. Load nothing else.
+Preloaded: `owasp-security`, `django-security`, `humanizer`. On demand, when the task needs them (call the `Skill` tool): `security-review`, `semgrep`, `variant-analysis`. Load nothing else. Docs are brief, one fact once, within the line budgets in the writing rules.
 
 ## House rules
 

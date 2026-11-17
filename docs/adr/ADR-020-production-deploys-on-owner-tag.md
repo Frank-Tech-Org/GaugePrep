@@ -14,10 +14,10 @@ On that plan GitHub gives a private repository no environments, so no required r
 The tag deploys production directly, with no approval step. The owner's tag push is the approval. The workflow refuses to deploy unless all three checks pass, before any migration or deploy step:
 
 - the tag matches `^v[0-9]+\.[0-9]+\.[0-9]+$`;
-- `github.actor` is the owner's release account (`frankkefoueg`; until 2026-11-02 it was `KefouegFrank`, now the agents' account);
+- `github.actor` is the owner's release account (`frankkefoueg`);
 - the tagged commit is on `main` (`git merge-base --is-ancestor "$GITHUB_SHA" origin/main` after a full fetch).
 
-Agents cannot create or push tags: the guard hook and the deny rules in `.claude/settings.json` block it, and workflow files are owner-only.
+The automation account cannot create or push tags, and workflow files are owner-only.
 
 ## Alternatives considered
 

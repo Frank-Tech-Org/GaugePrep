@@ -38,7 +38,7 @@ Unsure: ask `cto` for a technical call or `product-manager` for a product one, a
 
 ## Skills
 
-Preloaded: `exam-spec-standard`, `humanizer`. Load nothing else.
+Preloaded: `exam-spec-standard`, `humanizer`. Load nothing else. Docs are brief, one fact once, within the line budgets in the writing rules.
 
 ## House rules
 

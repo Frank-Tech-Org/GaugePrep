@@ -1,8 +1,8 @@
 # Data model
 
-> Guidance only: the API contract is the OpenAPI document generated from the code, and the code wins where they differ.
+> Guidance only: the Django models and migrations are the schema, and the code wins where they differ.
 
-The tables of every module, in PostgreSQL 18. This document details architecture Section 7. Engineers turn it into Django models and migrations module by module; a change here is made in the same pull request as the migration.
+The columns of every module's tables, in PostgreSQL 18; architecture section 7 has the principles and the table list. No module has models yet; as each one lands, its section here shrinks to what the models don't say.
 
 ## 1. Conventions
 
@@ -17,6 +17,7 @@ The tables of every module, in PostgreSQL 18. This document details architecture
 | Money | `amount_minor bigint` plus `currency char(3)`; FCFA has no minor unit, so 7,900 FCFA is stored as 7900 |
 | JSON | `jsonb`, always validated by a Pydantic model before write |
 | Append-only tables | Marked "append-only": the application role has INSERT and SELECT only. Corrections insert a new row with `supersedes_id` |
+| Database roles | Per environment a migration role (`gaugeprep_<env>_migrator`, owns every schema, used only by the migrate step through `MIGRATION_DATABASE_URL`) and a serving role (`gaugeprep_<env>_app`, the app's `DATABASE_URL`: data rights only, select and insert on append-only tables, select on `django_migrations`). Neon shares roles across a project's branches, so each environment has its own pair. `append_only("<schema>.<table>")` from `config.append_only` adds triggers refusing update, delete and truncate even for the migration role, so Django's flush fails on those tables and a data fix must reverse the operation, fix, then reapply |
 | Soft data | No soft deletes. Deletion of personal data follows Section 16 |
 | Partitioning | Marked "partitioned by month": range partition on `created_at`, partitions created ahead by a scheduled job |
 
@@ -61,7 +62,7 @@ Personal data lives only here (architecture 7.1).
 
 ## 4. content
 
-Content identity plus immutable versions ([ADR-011](../adr/ADR-011-versioned-content-append-only-results.md), [ADR-025](../adr/ADR-025-content-as-validated-files.md)).
+Content identity plus immutable versions ([ADR-011](../adr/ADR-011-versioned-content-append-only-results.md)).
 
 **item**: `id`, `code text unique` (`TCF-CA-CO-L4-0001`), `exam_id`, `paper text check in ('CO','CE')`, `type text`, `current_published_version_id uuid null`
 
