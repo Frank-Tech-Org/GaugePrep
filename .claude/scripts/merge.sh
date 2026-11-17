@@ -7,6 +7,8 @@ pr=${1:-}
 [ $# -eq 1 ] && [[ "$pr" =~ ^[0-9]+$ ]] || { echo "merge.sh: usage: merge.sh <pr-number>" >&2; exit 2; }
 repo=Frank-Tech-Org/GaugePrep
 owner=frankkefoueg
+# WHY: paths that need the owner's approval of the head commit; keep equal to develop-alarm.yml.
+sensitive_re='^apps/backend/modules/(identity|billing|assessment|prediction|calibration|exammodels)/|/migrations/|^packages/examcore/|^tooling/ci/grader_check/'
 [ "$(git remote get-url origin)" = "https://github.com/$repo.git" ] \
   || { echo "merge.sh: origin is not $repo" >&2; exit 2; }
 
@@ -34,8 +36,10 @@ done
 [ "$(field .head.sha)" = "$sha" ] || fail "the branch moved while checking; run again"
 
 # WHY: guard files, helper scripts, git hooks, workflows, CI scripts and config go to the owner.
-owner_files=$(all "repos/$repo/pulls/$pr/files?per_page=100" | jq -r '[.[] | .filename, (.previous_filename // "") | select(test("^\\.claude/(hooks/|settings|scripts/)|^\\.husky/|^\\.github/(workflows|scripts)/|^tooling/semgrep/|(^|/)(\\.semgrepignore|\\.trivyignore[^/]*|trivy\\.ya?ml|\\.gitleaks\\.toml|\\.gitleaksignore|\\.npmrc|\\.pnpmfile\\.[^/]*|pnpm-workspace\\.yaml)$"))] | join(", ")')
+files=$(all "repos/$repo/pulls/$pr/files?per_page=100")
+owner_files=$(printf '%s' "$files" | jq -r '[.[] | .filename, (.previous_filename // "") | select(test("^\\.claude/(hooks/|settings|scripts/)|^\\.husky/|^\\.github/(workflows|scripts)/|^tooling/semgrep/|(^|/)(\\.semgrepignore|\\.trivyignore[^/]*|trivy\\.ya?ml|\\.gitleaks\\.toml|\\.gitleaksignore|\\.npmrc|\\.pnpmfile\\.[^/]*|pnpm-workspace\\.yaml)$"))] | join(", ")')
 [ -z "$owner_files" ] || fail "it changes owner-only files ($owner_files); the owner merges this one"
+sensitive=$(printf '%s' "$files" | jq -r --arg re "$sensitive_re" '[.[] | .filename, (.previous_filename // "") | select(test($re))] | join(", ")')
 
 # WHY: CI fails closed; workflow runs are read because the agent token has no Checks access.
 runs=$(all "repos/$repo/actions/runs?head_sha=$sha&per_page=100" | jq '[.[] | .workflow_runs[]?]')
@@ -59,10 +63,12 @@ verdict=$(all "repos/$repo/issues/$pr/comments?per_page=100" | jq -r '
 [ "$verdict" = "REVIEW: PASS $sha" ] || fail "the latest verdict is '$verdict', not a PASS for $sha; review again"
 
 # WHY: a later push makes the owner approval stale, so it must name this exact commit.
-approval=$(all "repos/$repo/pulls/$pr/reviews?per_page=100" | jq -r --arg o "$owner" '
-  [.[] | select(.user.login == $o and (.state | IN("APPROVED", "CHANGES_REQUESTED", "DISMISSED")))]
-  | sort_by(.submitted_at) | last // empty | "\(.state) \(.commit_id)"')
-[ "$approval" = "APPROVED $sha" ] || fail "the owner has not approved $sha; ask them to approve PR #$pr"
+if [ -n "$sensitive" ]; then
+  approval=$(all "repos/$repo/pulls/$pr/reviews?per_page=100" | jq -r --arg o "$owner" '
+    [.[] | select(.user.login == $o and (.state | IN("APPROVED", "CHANGES_REQUESTED", "DISMISSED")))]
+    | sort_by(.submitted_at) | last // empty | "\(.state) \(.commit_id)"')
+  [ "$approval" = "APPROVED $sha" ] || fail "it touches $sensitive and the owner has not approved $sha; ask them to approve PR #$pr"
+fi
 
 # WHY: refs in the squash body let git log --grep find every change of a ticket.
 refs=$(field .body | grep -oE 'Refs #[0-9]+' | sort -u || true)

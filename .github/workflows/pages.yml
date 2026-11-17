@@ -1,10 +1,14 @@
 name: pages
 
-# Publishes the web placeholder to Cloudflare Pages by direct upload, after the PR checks pass.
+# Publishes the web placeholder to Cloudflare Pages by direct upload; the deploy workflows call it.
 # SECURITY: each job reads only its own prefix's secrets; the checks never see the Pages tokens.
 on:
-  push:
-    branches: [develop, stage]
+  workflow_call:
+    inputs:
+      environment:
+        description: dev or staging
+        required: true
+        type: string
   workflow_dispatch:
 
 # WHY: every job states its own permissions below.
@@ -15,15 +19,8 @@ env:
   WRANGLER_SEND_METRICS: "false"
 
 jobs:
-  checks:
-    if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/stage'
-    permissions:
-      contents: read
-    uses: ./.github/workflows/ci.yml
-
   dev:
-    needs: checks
-    if: github.ref == 'refs/heads/develop'
+    if: ${{ inputs.environment == 'dev' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/develop') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
@@ -68,8 +65,7 @@ jobs:
         run: pnpm dlx "wrangler@$WRANGLER_VERSION" pages deploy apps/web/dist --project-name gaugeprep-dev --branch main --commit-hash "$GITHUB_SHA" --commit-dirty=true
 
   staging:
-    needs: checks
-    if: github.ref == 'refs/heads/stage'
+    if: ${{ inputs.environment == 'staging' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/stage') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
