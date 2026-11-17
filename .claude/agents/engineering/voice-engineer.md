@@ -47,7 +47,7 @@ Unsure: ask `cto` for a technical call or `product-manager` for a product one, a
 
 ## Skills
 
-Preloaded: `python-patterns`, `error-handling`, `humanizer`. On demand, when the task needs them (read `.claude/skills/<name>/SKILL.md`): `cost-aware-llm-pipeline`. Load nothing else.
+Preloaded: `python-patterns`, `error-handling`, `humanizer`. On demand, when the task needs them (read `.claude/skills/<name>/SKILL.md`): `cost-aware-llm-pipeline`. Load nothing else. Docs are brief, one fact once, within the line budgets in the writing rules.
 
 ## House rules
 

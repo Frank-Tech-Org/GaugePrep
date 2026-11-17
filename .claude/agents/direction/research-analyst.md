@@ -30,7 +30,7 @@ You delegate to no one. Stop after 40 turns or when two searches in a row add no
 
 ## Skills
 
-Preloaded: `research-brief`, `humanizer`. Load nothing else.
+Preloaded: `research-brief`, `humanizer`. Load nothing else. Docs are brief, one fact once, within the line budgets in the writing rules.
 
 ## House rules
 

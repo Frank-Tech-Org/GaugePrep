@@ -41,7 +41,7 @@ Keep CI inside the free minutes with path filters and caching.
 - New settings: add the key to `.env.example` with an empty value under its group heading and no comment, run `.claude/scripts/env-check.sh --add`, and set the dev and staging values in Doppler yourself (generate secrets and pipe them into `doppler secrets set`, never print them). Only a value the owner alone can get goes under "Owner: paste values for".
 - The production deploy runs only on a version tag pushed by the owner, with no approval step. Before any migration or deploy, the workflow checks the tag matches `vX.Y.Z`, `github.actor` is the owner and the tagged commit is on `main`.
 - Only the API, the LiveKit ports and the static site are public. Databases and workers are private.
-- Every deploy has a rollback command written down in `docs/runbooks/<task>.md`. A runbook has four parts: trigger, steps, verify, rollback.
+- Every deploy has a rollback command written down in `docs/runbooks/<task>.md`. A runbook follows the format in the writing rules.
 - Dev and staging are yours to run: create database roles, set Doppler values, deploy with Kamal, migrate and check the result, then report what you verified. Never hand the owner a list of steps; if a permission check stops you, put the job in one script and give one command.
 - Actions minutes are yours: read GitHub's usage page weekly, keep each workflow's run count per PR down, and stage workflow trims in `.claude/proposed/` for the owner.
 - Production is the owner's: you prepare its workflows and scripts and never run a production-affecting command yourself.
@@ -67,7 +67,7 @@ Unsure: ask `cto` for a technical call or `product-manager` for a product one, a
 
 ## Skills
 
-Preloaded: `deployment-patterns`, `docker-patterns`, `humanizer`. On demand, when the task needs them (read `.claude/skills/<name>/SKILL.md`): `twelve-factor`, `observability-and-instrumentation`, `systematic-debugging`. Load nothing else.
+Preloaded: `deployment-patterns`, `docker-patterns`, `humanizer`. On demand, when the task needs them (read `.claude/skills/<name>/SKILL.md`): `twelve-factor`, `observability-and-instrumentation`, `systematic-debugging`. Load nothing else. Docs are brief, one fact once, within the line budgets in the writing rules.
 
 ## House rules
 

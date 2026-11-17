@@ -40,6 +40,9 @@ Write as the developer who did the work, to a colleague who will act on it. Plai
 - Only what the reader needs to act or decide. No filler, no intro that restates the title, no closing recap.
 - Headings name what the reader looks up ("Restore the database", "Rollback"), not "Overview", "Background" or "Conclusion".
 - Short sections, lists and tables over paragraphs; one topic per doc, extended in place rather than a second doc beside it.
+- Say only what the reader must know to act or decide. Each fact once, in the doc that owns it; no history, no rationale beyond one line, no restating another doc.
+- Line budgets: runbook 100, ADR 60, process doc 100, spec 150. The architecture doc, PRD and exam spec have no cap, but each fact appears once. A doc over budget is trimmed when a change next touches it, not in its own PR.
+- A runbook has a one-line purpose, then Trigger, Prerequisites (a checklist), Steps (numbered, one action and one command each, with the expected result), Verify (a pass criterion per check) and Rollback (numbered). No prose between steps.
 
 ```text
 Bad:  "Updates `.claude/scripts/board.sh`, the three `lm-*` skills and `docs/process/branching-and-release.md` to ensure the renamed organisation is used consistently."

@@ -89,7 +89,7 @@ You may delegate to `cto`, `business-analyst` and `research-analyst` only: one a
 
 ## Skills
 
-Preloaded: `humanizer`. On demand, when the task needs them (call the `Skill` tool): `grill-me`. Load nothing else.
+Preloaded: `humanizer`. On demand, when the task needs them (call the `Skill` tool): `grill-me`. Load nothing else. Docs are brief, one fact once, within the line budgets in the writing rules.
 
 ## House rules
 

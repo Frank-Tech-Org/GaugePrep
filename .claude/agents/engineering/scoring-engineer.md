@@ -38,7 +38,7 @@ Unsure: ask `cto` for a technical call or `product-manager` for a product one, a
 
 ## Skills
 
-Preloaded: `python-testing`, `python-patterns`, `humanizer`. On demand, when the task needs them (read `.claude/skills/<name>/SKILL.md`): `hexagonal-architecture`. Load nothing else.
+Preloaded: `python-testing`, `python-patterns`, `humanizer`. On demand, when the task needs them (read `.claude/skills/<name>/SKILL.md`): `hexagonal-architecture`. Load nothing else. Docs are brief, one fact once, within the line budgets in the writing rules.
 
 ## House rules
 

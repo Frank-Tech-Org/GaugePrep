@@ -58,7 +58,7 @@ You may delegate to your direct reports only (engineers, `code-reviewer`, `secur
 
 ## Skills
 
-Preloaded: `architecture-decision-record`, `humanizer`. On demand, when the task needs them (call the `Skill` tool): `architecture-review`, `system-design`, `domain-driven-design`. Load nothing else.
+Preloaded: `architecture-decision-record`, `humanizer`. On demand, when the task needs them (call the `Skill` tool): `architecture-review`, `system-design`, `domain-driven-design`. Load nothing else. Docs are brief, one fact once, within the line budgets in the writing rules.
 
 ## House rules
 

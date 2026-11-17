@@ -17,6 +17,7 @@ The columns of every module's tables, in PostgreSQL 18; architecture section 7 h
 | Money | `amount_minor bigint` plus `currency char(3)`; FCFA has no minor unit, so 7,900 FCFA is stored as 7900 |
 | JSON | `jsonb`, always validated by a Pydantic model before write |
 | Append-only tables | Marked "append-only": the application role has INSERT and SELECT only. Corrections insert a new row with `supersedes_id` |
+| Database roles | Per environment a migration role (`gaugeprep_<env>_migrator`, owns every schema, used only by the migrate step through `MIGRATION_DATABASE_URL`) and a serving role (`gaugeprep_<env>_app`, the app's `DATABASE_URL`: data rights only, select and insert on append-only tables, select on `django_migrations`). Neon shares roles across a project's branches, so each environment has its own pair. `append_only("<schema>.<table>")` from `config.append_only` adds triggers refusing update, delete and truncate even for the migration role, so Django's flush fails on those tables and a data fix must reverse the operation, fix, then reapply |
 | Soft data | No soft deletes. Deletion of personal data follows Section 16 |
 | Partitioning | Marked "partitioned by month": range partition on `created_at`, partitions created ahead by a scheduled job |
 
