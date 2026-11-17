@@ -171,13 +171,11 @@ Settled architecture choices become ADRs in `docs/adr/`. This file is for open q
 
 - Raised: 2026-11-11 by cto on #179
 - Decided: 2026-11-17: try option B, an Oracle Always Free ARM server, first if a free one can be created; otherwise option C, a Hetzner ARM server, provided it meets the criteria below · the owner. Criteria: arm64; at least 2 GB RAM and about 20 GB disk (both inferred from today's t4g.small, the architecture doc gives no minimum); Western Europe, ideally Germany next to Neon Frankfurt; rebuilt from scratch by script in under an hour.
-- Effect: platform-engineer tries Oracle first. The move happens before 31 Dec 2026, when the AWS t4g.small trial ends. This entry was D-16 while open, which clashed with the GitHub Team ruling above.
-
+- Effect: platform-engineer tries Oracle first. The move happens before 31 Dec 2026, when the AWS t4g.small trial ends.
 ### O-3: Make the repository private once Actions minutes allow it
 
 - Raised: 2026-11-16 by cto
-- Decided: 2026-11-17: the repository goes back to private once the owner's Actions usage is restored; the plan stays GitHub Free and is never paid · the owner. This also confirms the GitHub Team ruling in D-16.
-- Effect: platform-engineer makes the switch when the usage resets and checks the minutes against the 2,000 a month limit.
+- Decided: 2026-11-17: the repository goes back to private once the owner's Actions usage is restored; the plan stays GitHub Free and is never paid · the owner.
 
 <!-- Move an entry here when answered, adding:
 - Decided: <YYYY-MM-DD>: <option> · <the owner's reason>
