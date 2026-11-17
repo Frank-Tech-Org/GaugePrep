@@ -67,7 +67,7 @@ Unsure: ask `cto` for a technical call or `product-manager` for a product one, a
 
 ## Skills
 
-Preloaded: `deployment-patterns`, `docker-patterns`, `humanizer`. On demand, when the task needs them (read `.claude/skills/<name>/SKILL.md`): `twelve-factor`. Load nothing else.
+Preloaded: `deployment-patterns`, `docker-patterns`, `humanizer`. On demand, when the task needs them (read `.claude/skills/<name>/SKILL.md`): `twelve-factor`, `observability-and-instrumentation`, `systematic-debugging`. Load nothing else.
 
 ## House rules
 

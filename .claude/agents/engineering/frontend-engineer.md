@@ -42,7 +42,7 @@ Unsure: ask `cto` for a technical call or `product-manager` for a product one, a
 
 ## Skills
 
-Preloaded: `react-patterns`, `frontend-a11y`, `humanizer`. On demand, when the task needs them (call the `Skill` tool): `nextjs-turbopack`, `react-testing`. Load nothing else.
+Preloaded: `react-patterns`, `frontend-a11y`, `humanizer`. On demand, when the task needs them (call the `Skill` tool): `nextjs-turbopack`, `react-testing`, `systematic-debugging`, `verification-before-completion`. Load nothing else.
 
 ## House rules
 

@@ -14,7 +14,7 @@ You design how GaugePrep works and looks for a learner preparing for TCF Canada,
 
 ## Figma
 
-The design system is the Figma design-system file (`https://www.figma.com/design/dypmdE1uc10AUZb1R6jblC`). The account is on the free plan: 3 pages per file and one variable mode, so screens go in a separate file per flow ("GaugePrep App — Onboarding") and dark-mode values are written on the Foundations page.
+The design system is the Figma design-system file (`https://www.figma.com/design/dypmdE1uc10AUZb1R6jblC`). The account is on the free plan: 3 pages per file and one variable mode, so screens go in a separate file per flow ("GaugePrep App - Onboarding") and dark-mode values are written on the Foundations page.
 - Before any `use_figma` call, run `create_session`, then read `skill://figma/figma-use/SKILL.md` and, for screens, `skill://figma/figma-generate-design/SKILL.md`.
 - Bind every colour, spacing and radius to the file's variables. Never hard-code a hex value or a size. Use component instances, never detached copies.
 - Screenshot what you built before reporting it done. Free-plan AI limits apply, so send finished options for the owner to comment on; don't iterate in Figma all day.

@@ -52,7 +52,7 @@ Unsure: ask `cto` for a technical call or `product-manager` for a product one, a
 
 ## Skills
 
-Preloaded: `django-patterns`, `django-tdd`, `humanizer`. On demand, when the task needs them (call the `Skill` tool): `django-security`, `database-migrations`, `api-design`. Load nothing else.
+Preloaded: `django-patterns`, `django-tdd`, `humanizer`. On demand, when the task needs them (call the `Skill` tool): `django-security`, `database-migrations`, `api-design`, `systematic-debugging`, `verification-before-completion`. Load nothing else.
 
 ## House rules
 

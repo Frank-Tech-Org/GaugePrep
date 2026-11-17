@@ -13,9 +13,13 @@ Imported agents, skills and rules, with where they came from and under what lice
 | agile-product-owner | github.com/alirezarezvani/claude-skills | MIT | business-analyst |
 | webapp-testing | github.com/anthropics/skills | Apache-2.0 | qa-engineer |
 | semgrep, variant-analysis | github.com/trailofbits/skills | CC-BY-SA-4.0 | security-engineer |
+| systematic-debugging, verification-before-completion | github.com/obra/superpowers, commit 22f0b46 (SKILL.md and two reference notes only; scripts and the TypeScript example left out; cross-references and dashes adapted) | MIT | engineering and QA agents, on demand |
+| observability-and-instrumentation | github.com/addyosmani/agent-skills, commit 39b723c (SKILL.md only; cross-references and dashes adapted) | MIT | platform-engineer, on demand |
 | api-design, cost-aware-llm-pipeline, database-migrations, deployment-patterns, django-patterns, django-security, django-tdd, docker-patterns, e2e-testing, error-handling, frontend-a11y, hexagonal-architecture, nextjs-turbopack, postgres-patterns, prompt-caching-strategy, python-patterns, python-testing, react-patterns, react-testing, security-review, and the Python and web rules | github.com/affaan-m/ECC v2.2.3, commit 90606c8 (no hooks, commands or MCP configs) | MIT | engineering and review agents |
 
 **Trail of Bits skills are CC-BY-SA-4.0.** Attribution to Trail of Bits stays in each skill's `LICENSE`. If we change one, the changed file stays under the same licence.
+
+Reviewed and not adopted (2026-11-17, all MIT): mattpocock `improve-codebase-architecture` (needs a skill we lack, HTML report from a CDN) and `domain-modeling` (overlaps `domain-driven-design`); addyosmani `debugging-and-error-recovery` and `api-and-interface-design` (duplicate `systematic-debugging` and `api-design`). Anthropic `pr-review-toolkit`: not taken, `code-reviewer` already covers its checklists.
 
 ## Not committed
 

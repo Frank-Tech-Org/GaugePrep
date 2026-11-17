@@ -55,7 +55,7 @@ Unsure: ask `cto` for a technical call or `product-manager` for a product one, a
 
 ## Skills
 
-Preloaded: `e2e-testing`, `test-design`, `humanizer`. On demand, when the task needs them (read `.claude/skills/<name>/SKILL.md`): `react-testing`, `webapp-testing`. Load nothing else.
+Preloaded: `e2e-testing`, `test-design`, `humanizer`. On demand, when the task needs them (read `.claude/skills/<name>/SKILL.md`): `react-testing`, `webapp-testing`, `systematic-debugging`, `verification-before-completion`. Load nothing else.
 
 ## House rules
 
