@@ -39,6 +39,8 @@ jobs:
           IN_BRANCH: ${{ inputs.branch }}
           IN_SHA: ${{ inputs.sha }}
           OWNER: frankkefoueg
+          # WHY: paths that need the owner's approval of the head commit; keep equal to merge.sh.
+          SENSITIVE: '^apps/backend/modules/(identity|billing|assessment|prediction|calibration|exammodels)/|/migrations/|^packages/examcore/|^tooling/ci/grader_check/'
         run: |
           set +e
           set -uo pipefail
@@ -69,20 +71,20 @@ jobs:
             if ! [[ "$head" =~ $allowed ]]; then
               why="PR #$pr came from ${head:-a branch that could not be read}, which may not merge into $branch"; return
             fi
+            if ! files=$(gh api "repos/$REPO/commits/$sha" --jq '.files[] | .filename, (.previous_filename // empty)' 2>/dev/null); then
+              why="its changed files could not be read"; return
+            fi
             if [[ "$head" =~ ^(feature|chore)/ ]]; then
-              if [ "$merger" != "$OWNER" ]; then
+              if [ "$merger" != "$OWNER" ] && grep -qE "$SENSITIVE" <<<"$files"; then
                 approval=$(gh api --paginate "repos/$REPO/pulls/$pr/reviews?per_page=100" 2>/dev/null | jq -rs --arg o "$OWNER" \
                   'add // [] | [.[] | select(.user.login == $o and (.state | IN("APPROVED", "CHANGES_REQUESTED", "DISMISSED")))]
                    | sort_by(.submitted_at) | last // empty | "\(.state) \(.commit_id)"' 2>/dev/null)
                 if [ -z "$headsha" ] || [ "$approval" != "APPROVED $headsha" ]; then
-                  why="PR #$pr was merged by ${merger:-nobody} without the owner approving its last commit"; return
+                  why="PR #$pr changes sensitive code and was merged by ${merger:-nobody} without the owner approving its last commit"; return
                 fi
               fi
             elif [ "$merger" != "$OWNER" ]; then
               why="PR #$pr from $head was merged by ${merger:-nobody}, not the owner"; return
-            fi
-            if ! files=$(gh api "repos/$REPO/commits/$sha" --jq '.files[].filename' 2>/dev/null); then
-              why="its changed files could not be read"; return
             fi
             if grep -q '^\.github/workflows/' <<<"$files" && [ "$merger" != "$OWNER" ]; then
               why="it changes a workflow file and the owner did not merge PR #$pr"
