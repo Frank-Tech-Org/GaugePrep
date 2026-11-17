@@ -24,6 +24,7 @@
 | [ADR-023](ADR-023-email-verification-only.md) | Email verification only, no SMS sign-up | Accepted |
 | [ADR-024](ADR-024-resend-transactional-email-mailpit.md) | Resend for transactional email, Mailpit locally and in dev | Accepted |
 | [ADR-026](ADR-026-speech-recognition-corpus-benchmark.md) | Speech recognition chosen by a public-corpus benchmark: ElevenLabs Scribe v2, Deepgram Nova-3 as fallback | Accepted |
+| [ADR-027](ADR-027-app-api-hosts-cookies.md) | App and API hosts per environment, host-only cookies | Accepted |
 
 ## Template
 
