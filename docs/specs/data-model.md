@@ -2,7 +2,7 @@
 
 > Guidance only: the Django models and migrations are the schema, and the code wins where they differ.
 
-The tables of every module, in PostgreSQL 18. This document details architecture Section 7. Engineers turn it into Django models and migrations module by module; a change here is made in the same pull request as the migration.
+The columns of every module's tables, in PostgreSQL 18; architecture section 7 has the principles and the table list. No module has models yet; as each one lands, its section here shrinks to what the models don't say.
 
 ## 1. Conventions
 
