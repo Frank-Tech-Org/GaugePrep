@@ -174,25 +174,11 @@ Noisy work (test output, scans, logs, searches) runs in a subagent that returns 
 
 The lists live in the issue templates' "Definition of Done" field (`.github/ISSUE_TEMPLATE/task.yml`, `story.yml`, `chore.yml`, `bug.yml`). `/pm plan` keeps the items that apply, deletes the rest and writes the list into the ticket body beside the acceptance criteria, so every ticket carries its own. The review and QA steps of `/lm-next` tick them, and an unticked item is a fail.
 
-The items are measurable on purpose:
-- each endpoint has success, not-found and other-learner-refused tests
-- axe-core reports zero serious or critical violations
-- the stated performance budgets hold
-
-Don't soften them into "handled" or "considered".
+The items are measurable on purpose (for example "axe-core reports zero serious or critical violations"); never soften them into "handled" or "considered".
 
 ## Decisions
 
-Anything that needs the owner goes in `docs/DECISIONS.md` as a numbered entry with options, a recommendation and the cost of delay. `/pm` surfaces it and `/pm decide` resolves it. These always need the owner:
-- scoring or grading formula changes
-- a new paid service or dependency
-- destructive migrations
-- auth redesign
-- pricing
-- cutting milestone scope
-- anything that costs money or can't be undone
-
-Every other technical question is the `cto` agent's to decide with evidence, recorded in the PR or as "under D-11"; agents don't ask the owner to confirm it.
+Anything that needs the owner (the owner row in "Who decides", plus a new paid service or dependency) goes in `docs/DECISIONS.md` as a numbered entry with options, a recommendation and the cost of delay. `/pm` surfaces it and `/pm decide` resolves it. Every other technical question is the `cto` agent's to decide with evidence, recorded in the PR or as "under D-11"; agents don't ask the owner to confirm it.
 
 ## Checkpoint comment
 
@@ -208,7 +194,5 @@ Needs the owner: <decision or action, or "nothing">
 ```
 
 ## Lessons and memory
-
 - Agents keep no memory files. A lesson worth keeping (a recurring defect, a ruling, a provider quirk) becomes a one-line edit to the agent's own file or to `.claude/rules/`, in the same PR as the work, so it is reviewed and nothing piles up.
-- The project memory is `.claude/memory/`, read by `cto` and by the session running the commands: one index, `MEMORY.md`, and a file per standing fact, updated in place, never duplicated. Memory changes go in the commit with the work they came from. It is selected by `autoMemoryDirectory` in `.claude/settings.local.json`, which needs an absolute path, so each machine sets its own:
-  `{ "autoMemoryDirectory": "/absolute/path/to/checkout/.claude/memory" }`
+- The project memory is `.claude/memory/`, read by `cto` and by the session running the commands: one index, `MEMORY.md`, and a file per standing fact, updated in place, never duplicated. Memory changes go in the commit with the work they came from. It is selected by `autoMemoryDirectory` in `.claude/settings.local.json`, which needs an absolute path, so each machine sets its own (`{ "autoMemoryDirectory": "/absolute/path/to/checkout/.claude/memory" }`).
