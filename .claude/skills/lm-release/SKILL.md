@@ -44,7 +44,7 @@ Wait until the staging deploy of `stage` includes the promotion (`gh run list --
 | # | Check | Who |
 |---|---|---|
 | 1 | Staging runs the head of `stage`, and `stage` equals `develop` at the changelog merge | `platform-engineer` |
-| 2 | CI green on the head of `stage` | `platform-engineer` |
+| 2 | The head tree of `stage` equals a `develop` commit with a green `ci` run (a promotion moves tested code, so CI is not run again); a hotfix branch still needs a green full run | `platform-engineer` |
 | 3 | Security pass on `git diff <last-tag>..origin/stage`: no CRITICAL or HIGH | `security-engineer` |
 | 4 | Dependencies: `uvx pip-audit` and `pnpm audit --audit-level high`, no high or critical | `security-engineer` |
 | 4b | Attack test on staging (never production): the permanent attack tests, ZAP active scan, Nuclei and Schemathesis against the OpenAPI contract (all free), no open HIGH or CRITICAL | `security-engineer` |

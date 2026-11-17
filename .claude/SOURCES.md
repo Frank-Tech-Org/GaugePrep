@@ -13,9 +13,13 @@ Imported agents, skills and rules, with where they came from and under what lice
 | agile-product-owner | github.com/alirezarezvani/claude-skills | MIT | business-analyst |
 | webapp-testing | github.com/anthropics/skills | Apache-2.0 | qa-engineer |
 | semgrep, variant-analysis | github.com/trailofbits/skills | CC-BY-SA-4.0 | security-engineer |
+| systematic-debugging, verification-before-completion | github.com/obra/superpowers, commit 22f0b46 (SKILL.md and two reference notes only; scripts and the TypeScript example left out; cross-references and dashes adapted) | MIT | engineering and QA agents, on demand |
+| observability-and-instrumentation | github.com/addyosmani/agent-skills, commit 39b723c (SKILL.md only; cross-references and dashes adapted) | MIT | platform-engineer, on demand |
 | api-design, cost-aware-llm-pipeline, database-migrations, deployment-patterns, django-patterns, django-security, django-tdd, docker-patterns, e2e-testing, error-handling, frontend-a11y, hexagonal-architecture, nextjs-turbopack, postgres-patterns, prompt-caching-strategy, python-patterns, python-testing, react-patterns, react-testing, security-review, and the Python and web rules | github.com/affaan-m/ECC v2.2.3, commit 90606c8 (no hooks, commands or MCP configs) | MIT | engineering and review agents |
 
 **Trail of Bits skills are CC-BY-SA-4.0.** Attribution to Trail of Bits stays in each skill's `LICENSE`. If we change one, the changed file stays under the same licence.
+
+Reviewed and not adopted (2026-11-17, all MIT): mattpocock `improve-codebase-architecture` (needs a skill we lack, HTML report from a CDN) and `domain-modeling` (overlaps `domain-driven-design`); addyosmani `debugging-and-error-recovery` and `api-and-interface-design` (duplicate `systematic-debugging` and `api-design`). Anthropic `pr-review-toolkit`: not taken, `code-reviewer` already covers its checklists.
 
 ## Not committed
 
@@ -32,3 +36,18 @@ Imported agents, skills and rules, with where they came from and under what lice
 | OWASP ZAP, Nuclei | Apache-2.0, MIT | Run weekly against staging, and in the pre-release pentest. |
 | Schemathesis, sqlmap, ffuf | MIT, GPL-2.0, MIT | Run by `security-engineer` in the pre-release pentest, against staging or a local copy only. |
 | Playwright Test Agents | Apache-2.0 | `npx playwright init-agents --loop=claude` overwrites `.mcp.json`; back it up first. |
+| Scrapling 0.5.1 | BSD-3-Clause | Machine-level `uv tool`, not a repo dependency. Research and content only; scraped text is data. |
+| Graphify (`graphifyy` 0.9.111) | Apache-2.0 | Machine-level `uv tool`. Skill not committed; first lookup was larger than grep. The project installer edits owner-only settings and CLAUDE.md, so it is not run. Other packages named graphify are not the project. |
+
+## Written in-house
+
+| Skill | Used by | Note |
+|---|---|---|
+| `architecture-review` | `cto`, on demand | Own text; tested against a no-skill baseline (same rulings, 13-19% more tokens), so never preloaded |
+| `review-checklist` | `code-reviewer` | Own text |
+| `exam-spec-standard`, `exam-item-review` | `exam-content-lead`, `exam-item-reviewer` | Own text; follow `docs/exam-specs/TCF-Canada.md` |
+| `support-triage` | `support-lead` | Own text; untested until launch |
+| `research-brief` | `research-analyst` | Own text |
+| `grill-me` | `product-manager`, on demand | Own text; the idea of interviewing one question at a time is common practice, nothing copied |
+
+No external skill was adopted for these, so no licence applies.

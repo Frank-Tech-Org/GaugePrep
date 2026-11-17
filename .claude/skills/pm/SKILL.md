@@ -12,7 +12,7 @@ disable-model-invocation: true
 !`.claude/scripts/board.sh list || true`
 !`.claude/scripts/board.sh wip || true`
 
-First ask the `cto` agent for the technical read (skip it for `report` and `decide` with no technical entry). Then delegate everything below to the `product-manager` agent with that read pasted into its prompt. Subagents can't call each other, so this session carries the read from one to the other.
+First ask the `cto` agent for the technical read (skip it for `report` and `decide` with no technical entry). Then delegate everything below to the `product-manager` agent with that read pasted into its prompt. `product-manager` may ask `cto` for a follow-up itself, one agent at a time; if that call fails, this session carries the question between them.
 
 ## No argument: status and next
 

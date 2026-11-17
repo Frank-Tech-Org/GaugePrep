@@ -1,0 +1,33 @@
+name: pr-title
+
+# Checks the pull request title and description; a title edit runs only this, not the code checks.
+# SECURITY: the template is read from the base; title and body reach the script only by env.
+on:
+  pull_request:
+    branches: [develop, stage, main]
+    types: [opened, synchronize, reopened, edited]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-title-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  title:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      BASE: ${{ github.event.pull_request.base.sha }}
+      PR_TITLE: ${{ github.event.pull_request.title }}
+      PR_BODY: ${{ github.event.pull_request.body }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: PR title and description
+        run: |
+          git show "$BASE:.github/pull_request_template.md" > "$RUNNER_TEMP/pull_request_template.md"
+          bash .github/scripts/check-pr-description.sh "$RUNNER_TEMP/pull_request_template.md"

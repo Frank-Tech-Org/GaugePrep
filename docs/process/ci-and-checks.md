@@ -49,6 +49,23 @@ One `gate` job runs first on every pull request, in this order: the path filter 
 
 Any red step other than `Scanner settings` (secret scan, API check, title check, path filter, gitleaks install) skips the tests, pip-audit, pnpm audit, Trivy and the backend image build. A red `Scanner settings` step alone does not: those jobs still run, so a pull request the owner merges over that flag still has its test and scan results. The pull request stays red while the step fails. A skipped job counts as passing for merge, so a red `gate` is what blocks, and a grey job is not a pass.
 
+## CI once per change
+
+Full CI runs where new code appears; a promotion moves tested code, so it checks identity instead of running the code again.
+
+| Stage | CI |
+|---|---|
+| Local push | `pnpm check` (the pre-push hook). It does not run Semgrep, Gitleaks, the audits or Trivy |
+| PR into `develop` | Full CI, the only place new code is checked. A PR edit with no new commit runs only the title check |
+| Push to `develop` | Full CI once, from `deploy-dev`; the placeholder pages are published from the same workflow |
+| Promotion PR to `stage` or `main` | One job checks the head tree equals a `develop` commit with a green `ci` run. A hotfix branch still runs full CI |
+| Push to `stage` | A deploy gate: the pushed commit's tree must equal a tested one (the merge commit's second parent, `sha^2`), then deploy and the post-deploy checks. It fails closed |
+| Tag and release | The release gate (security, budgets, claims), not a CI repeat |
+
+On a docs-only PR `semgrep` is skipped; `gitleaks` in `gate` still scans every PR. The three audits run as one `audits` job.
+
+Measured on 2026-11-16 from GitHub's usage and run pages, Nov 1-16: 364 PR runs of `ci` (184 passed, 90 failed, 90 cancelled), 2.8 runs per PR, 129 of them (35%) on a commit that already had a run. Billed 2,890 org minutes (2,814 Linux, 76 ARM); of the repo's 2,475, `ci` took 1,984, `pages` 300, `deploy-dev` 91 and `deploy-staging` 29. Every short job bills a whole minute, so a full PR run is about 7.4 minutes. Both promotions to `stage` so far (#226, #228) had a tree identical to the tested `develop` tip. The workflow changes behind this table are owner-only files, staged for the owner, and the savings are arithmetic until GitHub's usage page shows a week after they land. Targets: at most 2 runs per PR and one owner touch per ticket.
+
 ## API breaking changes
 
 When a pull request changes `apps/backend/openapi.json`, the `API breaking changes` step of `gate` compares it with the base branch copy (both read with `git show`, never from the checkout) using [oasdiff](https://github.com/oasdiff/oasdiff) v1.35.0 (Apache-2.0, built from source with `go install -trimpath` at the pinned module version and Go 1.27.3, cached, and run only when its SHA256 matches the pinned value). It runs `oasdiff breaking --match-path '^/api/v1/' --fail-on ERR` and fails on a removed operation, a removed response property (required or optional), a request property that became required, a changed property type or an added enum value in a response, naming each one. Adding an optional field or a new operation passes. oasdiff reads no config from the checkout (it gets an empty config file and its own severity file) and refuses external `$ref`s. Installed copies of the web app keep calling the old contract for days, so a breaking change needs a new API version, not an edit. To run it locally, build oasdiff as the `API breaking changes` step does, then: `: > empty.yaml; echo 'response-optional-property-removed err' > severity.txt; oasdiff breaking base.json head.json --config empty.yaml --severity-levels severity.txt --allow-external-refs=false --match-path '^/api/v1/' --fail-on ERR`. Without the severity file, removing an optional response property passes. The step runs with `contents: read` and no secret.
