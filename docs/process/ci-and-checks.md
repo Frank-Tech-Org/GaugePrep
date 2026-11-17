@@ -64,7 +64,7 @@ Full CI runs where new code appears; a promotion moves tested code, so it checks
 
 On a docs-only PR `semgrep` is skipped; `gitleaks` in `gate` still scans every PR. The three audits run as one `audits` job.
 
-Measured on 2026-11-16 from GitHub's usage and run pages, Nov 1-16: 364 PR runs of `ci` (184 passed, 90 failed, 90 cancelled), 2.8 runs per PR, 129 of them (35%) on a commit that already had a run. Billed 2,890 org minutes (2,814 Linux, 76 ARM); of the repo's 2,475, `ci` took 1,984, `pages` 300, `deploy-dev` 91 and `deploy-staging` 29. Every short job bills a whole minute, so a full PR run is about 7.4 minutes. Both promotions to `stage` so far (#226, #228) had a tree identical to the tested `develop` tip. The workflow changes behind this table are owner-only files, staged for the owner, and the savings are arithmetic until GitHub's usage page shows a week after they land. Targets: at most 2 runs per PR and one owner touch per ticket.
+Every short job bills a whole minute, so a full PR run is about 7.4 minutes. Targets: at most 2 runs per PR and one owner touch per ticket (measured baseline in D-20).
 
 ## API breaking changes
 
@@ -84,13 +84,32 @@ Each pull request also runs these checks (the `gate` job holds the path filter, 
 
 | Check                | What it scans                                                                                                                                                                                                                                                                                                                             |
 | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Semgrep              | Source code, community rules (pinned `semgrep/semgrep-rules` for Python, TypeScript and generic, metrics off) plus our own rules in `tooling/semgrep/` (see Local Semgrep rules), ERROR findings fail, except two vendored dev tools that never ship: `.claude/skills/semgrep/scripts` and `.claude/skills/webapp-testing/scripts/with_server.py` |
+| Semgrep              | Source code, community rules (pinned `semgrep/semgrep-rules` for Python, TypeScript and generic, metrics off) plus our own rules in `tooling/semgrep/` (see Local Semgrep rules), ERROR findings fail, except two vendored dev scripts in the team tooling folder that never ship |
 | pip-audit            | The `uv.lock` dependencies; it has no severity filter, so any known advisory fails                                                                                                                                                                                                                                                        |
 | pnpm audit           | The `pnpm-lock.yaml` dependencies, audited in a rebuilt directory with no pull request settings or hooks (`pnpm audit --audit-level high`)                                                                                                                                                                                                |
 | Trivy                | The repository files (`trivy fs --severity HIGH,CRITICAL`)                                                                                                                                                                                                                                                                                |
 | gitleaks (in `gate`) | The full git history, not only the pull request's commits                                                                                                                                                                                                                                                                                 |
 
 Documentation-only pull requests skip pip-audit, pnpm audit and Trivy. The only secret-scan allowlist entry is the placeholder key in `api-design.md`, in `.gitleaks.toml`.
+
+The scanners catch accidental vulnerabilities, not a deliberate bypass by the PR author: a bypass an honest change could trigger by accident blocks the PR, and one that needs deliberate hiding is LOW and goes to a follow-up. Known gaps: a hand-crafted lockfile, a suppression comment in a form we don't neutralise, and a tampered tarball URL in the lockfile (the frozen install fails on that one).
+
+## Workflow design
+
+Workflow files are owner-only: a pull request stages the new file and the owner copies it in before merge. Job names (`gate`, `check`, `semgrep`, `pip-audit`, `pnpm-audit`, `trivy`, and `checks / ...` in the Pages run) stay as they are, since the merge reads them.
+
+- Scanners are free binaries or pinned packages, no token or account. gitleaks and Trivy run as binaries, since the gitleaks action needs a paid licence on organisations. Semgrep community rules are pinned to a commit (Semgrep Rules License v1.0 allows internal CI use).
+- Secret scan: the checkout's `.gitleaksignore` is removed and allow comments are off, so a pull request cannot switch off its own scan.
+- oasdiff is built from source because the release binary ships a Go standard library CVE; its hash is checked after every cache restore, so a poisoned cache entry cannot run.
+- Semgrep drops every `.semgrepignore` and restores the base's; Trivy's inline markers are rewritten. On a push with neither a base nor a first parent, no ignore files are used.
+- Scanner settings runs on pull requests only, because on a push it would block every publish after the owner merges over it.
+- The title and body reach the description check only through environment variables, never inside the run text.
+- `ci` has no secrets; the test PostgreSQL credentials are test-only. Called from the Pages run, it gets none of the Pages tokens, and each Pages job reads only its own prefix's secrets.
+- Alarm workflows: the automation account's token lacks the workflow scope, so GitHub refuses a push that edits or deletes `develop-alarm.yml`. Only an issue the workflow opened with the exact title counts as the alarm.
+- Runners: arm64 GitHub-hosted runners are free for public repositories only. While the repository is public the deploy builds on arm64; PR checks stay on x64.
+- `deploy-dev` and `deploy-staging` call `ci` and then `deploy-backend`, each with its own Doppler token. Trivy and Doppler are pinned binaries with checked hashes, and the deploy scan runs outside the checkout.
+
+To check a workflow change, open a pull request with a planted failure (a secret-shaped string, a changed scanner ignore file, a breaking `/api/v1` change), see the same job go red as before, and close it unmerged. To roll back, the owner copies the previous workflow file back in.
 
 ## Local Semgrep rules
 
@@ -116,7 +135,7 @@ Diffs are read as text whatever `.gitattributes` says, and file names are matche
 
 Limits: the `package.json` check looks only at those three top-level fields. A marker split across lines or built at run time is not seen, and a path added to the `packages:` list is not flagged. A `pnpm-workspace.yaml` that is not a regular file is always flagged. pnpm 11 (pinned in `package.json`) no longer reads settings from a `pnpm` field, but the field is still flagged, since dropping to an older pnpm would bring it back.
 
-The check flags; it does not decide. It prints file names, field names and line numbers, never values. When the suppression is justified, the owner merges over the red check. The free plan cannot make checks required, so nothing stops that merge but `merge.sh`, which reads the gate and refuses a red one: the owner merges by hand, after reading the named files and lines.
+The check flags; it does not decide. It prints file names, field names and line numbers, never values. When the suppression is justified, the owner merges over the red check. The free plan cannot make checks required, so nothing stops that merge but the merge script, which reads the gate and refuses a red one: the owner merges by hand, after reading the named files and lines.
 
 ## Pull request description
 

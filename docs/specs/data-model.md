@@ -1,6 +1,6 @@
 # Data model
 
-> Guidance only: the API contract is the OpenAPI document generated from the code, and the code wins where they differ.
+> Guidance only: the Django models and migrations are the schema, and the code wins where they differ.
 
 The tables of every module, in PostgreSQL 18. This document details architecture Section 7. Engineers turn it into Django models and migrations module by module; a change here is made in the same pull request as the migration.
 
@@ -61,7 +61,7 @@ Personal data lives only here (architecture 7.1).
 
 ## 4. content
 
-Content identity plus immutable versions ([ADR-011](../adr/ADR-011-versioned-content-append-only-results.md), [ADR-025](../adr/ADR-025-content-as-validated-files.md)).
+Content identity plus immutable versions ([ADR-011](../adr/ADR-011-versioned-content-append-only-results.md)).
 
 **item**: `id`, `code text unique` (`TCF-CA-CO-L4-0001`), `exam_id`, `paper text check in ('CO','CE')`, `type text`, `current_published_version_id uuid null`
 

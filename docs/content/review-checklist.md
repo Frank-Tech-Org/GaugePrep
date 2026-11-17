@@ -1,6 +1,6 @@
 # Review checklist
 
-The reviewing agent applies this checklist to every item of a batch. The human reviewer applies it to the sample. Record each defect with its code.
+The item reviewer applies this checklist to every item of a batch. The human reviewer applies it to the sample. Record each defect with its code.
 
 ## 1. Defect codes
 
@@ -63,7 +63,7 @@ The reviewing agent applies this checklist to every item of a batch. The human r
 
 ## 3. Recording the verdict
 
-The reviewing agent posts this table in the pull request:
+The item reviewer posts this table in the pull request:
 
 ```
 | Code | Verdict | Defects | Comment |

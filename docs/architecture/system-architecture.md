@@ -13,7 +13,7 @@
 | Companion files | Architecture decision records (docs/adr), milestone 0 backlog |
 | Audience | Every engineer, reviewer and operator working on GaugePrep |
 
-This document describes how GaugePrep is built and run: its structure, technologies, data, AI and speech pipelines, infrastructure, delivery process, quality practices and the plan to start development. Every technology choice was made from the vendor's or project's own current documentation in October 2026; versions and limits are listed in Appendix A with their sources. Each major decision also has a short decision record (Appendix B) explaining the alternatives considered.
+This document describes how GaugePrep is built and run: its structure, technologies, data, AI and speech pipelines, infrastructure, delivery process, quality practices and the plan to start development. Every technology choice was made from the vendor's or project's own current documentation in October 2026; versions and limits are listed in Appendix A with their sources. Each major decision has a decision record in `docs/adr/` with the alternatives considered.
 
 When the PRD or the exam specification and this document disagree, the PRD wins on what the product does, the exam specification wins on exam rules, and this document wins on how the system does it. Any change to a decision in this document is made by writing a new decision record and updating the affected section.
 
@@ -550,28 +550,14 @@ Dev deploys every merge into `develop` and is where each ticket is tested. Stagi
 
 ## 15. Testing strategy
 
-The strategy, the minutes budget and when each layer starts are in ADR-021.
+The automated layers (examcore, scoring, backend, API contract, web, end to end), coverage floors and run rules are in ADR-021. The layers outside CI:
 
 | Layer | Tests | When |
 |---|---|---|
-| examcore | pytest fixed-answer tests from every table of the exam specification; Hypothesis property tests; mutmut, mutation score at least 80% | Every pull request with code; mutmut on the promotion PR |
-| Scoring engine | Recovery on simulated data; comparison with an established statistics package; mutmut, at least 80% | Pull request (small set), promotion PR (full, and mutmut) |
-| Backend modules | pytest-django against PostgreSQL 18, never SQLite; idempotency of answers and webhooks; append-only enforcement; authorisation; every endpoint has success, not-found and other-learner-refused tests | Every pull request with code |
-| API | Schemathesis in-process against `apps/backend/openapi.json`: documented statuses, no 5xx on bad input, schema-valid responses | Every pull request with code |
-| Frontend | Vitest and React Testing Library | Every pull request with code |
-| End to end | Playwright with slow 3G throttling and axe-core (zero serious or critical violations). Smoke: about 5 happy paths at 375 px. Full: 375 px and 1440 px, all flows, a server error, offline, session expiry, another learner's URL refused, interrupted and resumed simulations | Smoke on pull requests touching `apps/`; full on the promotion PR |
 | Voice examiner | Scripted conversations with recorded audio: timings, interruptions, no volunteered information, recitation probing | Every change to voice |
 | Grader | Release check on the anchor set with the real model | Every grader change; blocks release |
 | Load | API and queue at twice expected peak; concurrent speaking sessions to size the voice server | Before launch and before infrastructure changes |
 | Security | ASVS Level 2 review; dependency and secret scanning | Before launch; continuous |
-
-Rules for every automated layer:
-
-- Branch coverage floors: `examcore` 95%, backend 85%, web 80%, and 90% on the lines a PR changes (diff-cover). Floors live in config and only go up.
-- Under CI no test may be skipped or xfail; tests run in random order with the seed printed; every test has a timeout (pytest 30 s, Vitest 10 s, Playwright 60 s unless the test sets its own with a reason).
-- No retries for unit or integration tests. Playwright retries 0 on PRs and 1 on the promotion PR, where a pass on retry still fails the run.
-- Branch protection is unavailable on the free private plan: `merge.sh` refusing a PR without a green run on its head commit is the gate.
-- Hypothesis and axe-core are MPL-2.0, accepted as dev-only: used in tests, never shipped to learners.
 
 ## 16. Observability and operations
 
@@ -675,36 +661,6 @@ Content production (items, prompts, lessons, anchors) runs in parallel from M1 u
 | Grafana Cloud | Free: 10,000 series, 50 GB logs and traces, 3 users | Last9 pricing analysis, September 2026 |
 | Resend | Free 3,000 emails a month, 100 a day, 3 domains; Pro $20 for 50,000; data stored in the US (ADR-024) | resend.com pricing and GDPR page, 5 November 2026 |
 | OWASP ASVS | 5.0.0 (May 2025) | OWASP ASVS repository |
-
-## Appendix B: Decision records
-
-| ID | Decision |
-|---|---|
-| ADR-001 | Modular monolith with four process types |
-| ADR-002 | Python and Django for all backend processes, with a shared examcore package |
-| ADR-003 | PostgreSQL 18 as database and job queue (Procrastinate), no Redis at launch |
-| ADR-004 | Next.js static export as the PWA, served from Cloudflare |
-| ADR-005 | Session cookie authentication |
-| ADR-006 | Chained voice pipeline on LiveKit Agents instead of a speech-to-speech model |
-| ADR-007 | Claude Sonnet 5.5 as the grader, Haiku 5.5 for light tasks, GPT-6.1 Sol as backup |
-| ADR-008 | Speech recognition chosen by a measured accent test (superseded by ADR-026) |
-| ADR-009 | ElevenLabs for examiner and content voices |
-| ADR-010 | In-house Rasch scoring engine verified against a reference |
-| ADR-011 | Versioned content and append-only results |
-| ADR-012 | Hosting: Hetzner Germany, Neon Frankfurt, Cloudflare edge |
-| ADR-013 | Self-hosted LiveKit in production, LiveKit Cloud free in staging |
-| ADR-014 | Notch Pay for payments; automatic card renewal after release 1 |
-| ADR-015 | GitHub Actions and Kamal for delivery |
-| ADR-016 | Sentry and Grafana Cloud for observability |
-| ADR-017 | Opus with AAC fallback for audio |
-| ADR-018 | Twilio for SMS verification codes behind an SMS provider interface (superseded by ADR-023) |
-| ADR-019 | Dev, staging and production from develop, stage and main |
-| ADR-020 | Production deploys on the owner's tag, without an approval gate |
-| ADR-021 | Test strategy and CI minutes budget |
-| ADR-022 | PR security scanners catch accidents, not a deliberate bypass |
-| ADR-023 | Email verification only, no SMS sign-up |
-| ADR-024 | Resend for transactional email, Mailpit locally and in dev |
-| ADR-026 | Speech recognition chosen by a public-corpus benchmark: ElevenLabs Scribe v2, Deepgram Nova-3 as fallback |
 
 ## Appendix C: Glossary
 

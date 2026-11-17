@@ -1,6 +1,6 @@
 # Content production kit
 
-This kit tells authoring agents, reviewing agents and human reviewers how to produce every piece of release 1 content: listening and reading items, writing prompts, speaking tasks, simulation forms, curriculum lessons and free-track vocabulary. Anchors for the grader follow their own protocol, which comes with the grader work; the counts and rater rules are already in the spec's calibration section.
+This kit tells authors, item reviewers and human reviewers how to produce every piece of release 1 content: listening and reading items, writing prompts, speaking tasks, simulation forms, curriculum lessons and free-track vocabulary. Anchors for the grader follow their own protocol, which comes with the grader work; the counts and rater rules are already in the spec's calibration section.
 
 The rules here apply the TCF Canada exam specification (`docs/exam-specs/TCF-Canada.md`, cited below as "spec") and the PRD. When this kit and the spec disagree, the spec wins and this kit must be corrected.
 
@@ -11,7 +11,7 @@ The rules here apply the TCF Canada exam specification (`docs/exam-specs/TCF-Can
 | `README.md` | Workflow, roles, batches, statuses, volumes and the human review plan (this file) |
 | `authoring-guide.md` | How to write each item and task type, level by level |
 | `audio-script-rules.md` | Script markup, voice bank, speech rates, audio checks |
-| `review-checklist.md` | What the reviewing agent and the human reviewer check, defect codes and acceptance rules |
+| `review-checklist.md` | What the item reviewer and the human reviewer check, defect codes and acceptance rules |
 | `originality-and-sources.md` | What may and may not be used as a source, licences, copying checks |
 | `curriculum-map.md` | The 50 units of the French curriculum (A1 to C1) and their goals |
 | `vocabulary-themes.md` | The 60 free-track vocabulary themes |
@@ -39,29 +39,28 @@ content/
 
 - The file name is `<code>-v<version>.json`. A published version is never edited: a correction is a new file with the next version number.
 - CI will run the content validator on every changed file once it lands.
-- An import command (`manage.py content_import`) loads approved files into the `content` module as versions with status "approved". Publication then happens in the internal console, where the audit log records who published what (PRD CMS-2, CMS-8). The database stays the source of truth for what learners see; the repository is the authoring workspace. [ADR-025](../adr/ADR-025-content-as-validated-files.md) records this decision.
-- Audio files are not stored in Git. The media job produces them from the scripts after approval (spec 10.2 step 4).
+- An import command (`manage.py content_import`) loads approved files into the `content` module as versions with status "approved". Publication then happens in the internal console, where the audit log records who published what (PRD CMS-2, CMS-8). The database stays the source of truth for what learners see; the repository is the authoring workspace.- Audio files are not stored in Git. The media job produces them from the scripts after approval (spec 10.2 step 4).
 
 ## 3. Roles
 
 | Role | Who | Does |
 |---|---|---|
-| Author | Authoring agent | Drafts items in batches from a batch brief, runs the validator, opens a pull request |
-| Reviewing agent | A different agent from the author, with the review checklist as its instructions | Reviews every item in the batch against `review-checklist.md`, records a verdict per item, sends defects back |
+| Author | Content author | Drafts items in batches from a batch brief, runs the validator, opens a pull request |
+| Item reviewer | Someone other than the author, working from the review checklist | Reviews every item in the batch against `review-checklist.md`, records a verdict per item, sends defects back |
 | Human reviewer | Frank or a French-language reviewer he appoints (PRD role "content reviewer") | Reviews a random sample of every batch, all simulation-form items, all anchors and the audio listening checks; approves or rejects the batch |
 | Audio producer | Media job plus a human listener | Voices scripts, runs automatic checks, a human listens (Section 7) |
 | Form builder | Form builder tool (PRD CMS-5) | Assembles simulation forms from published items under spec 7.2 |
 
-An agent never approves its own work, and no batch is approved without the human sample review. This keeps the PRD rule "publication requires reviewer approval" (PRD Section 11) true when most drafting and first-line review is done by agents.
+No author approves their own work, and no batch is approved without the human sample review. This keeps the PRD rule "publication requires reviewer approval" (PRD Section 11) true when most drafting and first-line review is automated.
 
 ## 4. Workflow
 
 Each step maps to spec 10.2.
 
-1. **Brief.** The PM agent opens a batch issue from the coverage report (Section 6). A batch is 20 to 40 items of one type, or one curriculum unit, or one vocabulary theme. The brief file `content/batches/BATCH-nnnn.yml` lists: type, target levels with counts, themes, focus mix, voice and accent mix for listening, and the codes reserved for the batch.
+1. **Brief.** The product manager opens a batch issue from the coverage report (Section 6). A batch is 20 to 40 items of one type, or one curriculum unit, or one vocabulary theme. The brief file `content/batches/BATCH-nnnn.yml` lists: type, target levels with counts, themes, focus mix, voice and accent mix for listening, and the codes reserved for the batch.
 2. **Draft.** The author drafts every item following `authoring-guide.md`, fills `authoring` honestly (including `drafted_with_ai` and the model ID), runs the validator and opens a pull request with status "in review".
-3. **Agent review.** The reviewing agent checks every item and writes its verdict in the pull request as a table: code, verdict (accept, revise, reject), defect codes, comment. Items marked "revise" go back to the author; two rejections of the same item end it.
-4. **Human sample review.** When the reviewing agent accepts the whole batch, the human reviewer reviews the sample defined in Section 5 and records the result in the batch issue. The batch is approved, or returned with the defects found.
+3. **Item review.** The item reviewer checks every item and writes its verdict in the pull request as a table: code, verdict (accept, revise, reject), defect codes, comment. Items marked "revise" go back to the author; two rejections of the same item end it.
+4. **Human sample review.** When the item reviewer accepts the whole batch, the human reviewer reviews the sample defined in Section 5 and records the result in the batch issue. The batch is approved, or returned with the defects found.
 5. **Merge and import.** The approved pull request is merged; the import command loads the versions as "approved".
 6. **Audio.** For listening items, lessons with audio input and vocabulary entries, the media job voices the scripts and runs the automatic checks; the human listening check follows Section 7.
 7. **Publish.** The human reviewer publishes the batch in the console. Publication assigns the initial difficulty from the target level plus the reviewer-confirmed adjustment (spec 8.1).
@@ -130,14 +129,3 @@ Spec 3.2 requires a human listener to approve every listening audio file before 
 ## 8. Statuses
 
 The status values are those of PRD CMS-2 and spec 10.3: `draft`, `in_review`, `approved`, `published`, `retired`. In the repository, a file is `draft` until its pull request is opened, `in_review` until the batch is approved, then `approved` when imported. `published` and `retired` exist only in the database.
-
-## 9. Content agent instructions in one page
-
-For agents that load only one file before drafting, the minimum rules are:
-
-1. Read the batch brief, the relevant section of `authoring-guide.md`, and the example file of the type.
-2. Write original French only. Never copy, translate or closely paraphrase FEI papers, sample items, published subjects or any other exam material (`originality-and-sources.md`).
-3. One correct answer; three plausible, clearly wrong distractors; key letters balanced within the batch.
-4. Stay inside the type's level range, length range and the level's language controls.
-5. Fill every field truthfully, including `drafted_with_ai` and the model.
-6. Run the content validator on your folder and fix every failure before opening the pull request (the validator comes with its own ticket; until then, check against the schemas).

@@ -2,7 +2,7 @@
 
 - Status: Accepted
 - Date: 2026-11-05
-- Supersedes: ADR-018
+- Supersedes: ADR-018 (deleted)
 
 ## Context
 

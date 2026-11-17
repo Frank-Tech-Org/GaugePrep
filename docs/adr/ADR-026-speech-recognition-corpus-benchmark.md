@@ -2,7 +2,7 @@
 
 - Status: Accepted
 - Date: 2026-11-12, decided 2026-11-16
-- Supersedes: ADR-008
+- Supersedes: ADR-008 (deleted; its selection rule is restated below)
 
 ## Outcome
 

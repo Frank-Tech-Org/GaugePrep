@@ -9,7 +9,6 @@
 | [ADR-005](ADR-005-session-cookie-authentication.md) | Session cookie authentication | Accepted |
 | [ADR-006](ADR-006-chained-voice-pipeline-livekit-agents.md) | Chained voice pipeline on LiveKit Agents instead of a speech-to-speech model | Accepted |
 | [ADR-007](ADR-007-claude-grader-gpt-backup.md) | Claude Sonnet 5.5 as the grader, Haiku 5.5 for light tasks, GPT-6.1 Sol as backup | Accepted |
-| [ADR-008](ADR-008-speech-recognition-accent-test.md) | Speech recognition chosen by a measured accent test | Superseded by ADR-026 |
 | [ADR-009](ADR-009-elevenlabs-examiner-content-voices.md) | ElevenLabs for examiner and content voices | Accepted |
 | [ADR-010](ADR-010-in-house-rasch-scoring-engine.md) | In-house Rasch scoring engine verified against a reference | Accepted |
 | [ADR-011](ADR-011-versioned-content-append-only-results.md) | Versioned content and append-only results | Accepted |
@@ -19,14 +18,11 @@
 | [ADR-015](ADR-015-github-actions-kamal-delivery.md) | GitHub Actions and Kamal for delivery | Accepted |
 | [ADR-016](ADR-016-sentry-grafana-observability.md) | Sentry and Grafana Cloud for observability | Accepted |
 | [ADR-017](ADR-017-opus-with-aac-fallback.md) | Opus with AAC fallback for audio | Accepted |
-| [ADR-018](ADR-018-twilio-sms-verification.md) | Twilio for SMS verification codes behind an SMS provider interface | Superseded by ADR-023 |
 | [ADR-019](ADR-019-dev-staging-production-branches.md) | Dev, staging and production from develop, stage and main | Accepted |
 | [ADR-020](ADR-020-production-deploys-on-owner-tag.md) | Production deploys on the owner's tag, without an approval gate | Accepted |
 | [ADR-021](ADR-021-test-strategy-ci-minutes-budget.md) | Test strategy and CI minutes budget | Accepted |
-| [ADR-022](ADR-022-pr-security-scanners-scope.md) | PR security scanners catch accidents, not a deliberate bypass | Accepted |
 | [ADR-023](ADR-023-email-verification-only.md) | Email verification only, no SMS sign-up | Accepted |
 | [ADR-024](ADR-024-resend-transactional-email-mailpit.md) | Resend for transactional email, Mailpit locally and in dev | Accepted |
-| [ADR-025](ADR-025-content-as-validated-files.md) | Content authored as validated files, imported into the content module | Proposed |
 | [ADR-026](ADR-026-speech-recognition-corpus-benchmark.md) | Speech recognition chosen by a public-corpus benchmark: ElevenLabs Scribe v2, Deepgram Nova-3 as fallback | Accepted |
 
 ## Template
