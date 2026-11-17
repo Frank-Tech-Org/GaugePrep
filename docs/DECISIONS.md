@@ -154,7 +154,7 @@ Settled architecture choices become ADRs in `docs/adr/`. This file is for open q
 
 ### D-21: Does every `develop` PR need the owner's approval?
 
-- Decided: 2026-11-16: no, only PRs touching authentication, payments, personal data, migrations, append-only tables, scoring formulas or owner-only files · the owner. This relaxes a gate, so it is recorded on purpose.
+- Decided: 2026-11-16: no, only PRs touching authentication, payments, personal data, migrations, append-only tables, scoring formulas or owner-only files · the owner. This relaxes a gate, so it is recorded on purpose. Confirmed again 2026-11-17: go ahead as long as it does no harm.
 - Effect: the merge script and the develop alarm change in a staged file; until the owner applies it, the old rule stands.
 
 ### D-22: How do promotions to `stage` and `main` avoid running CI again?
