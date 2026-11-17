@@ -6,26 +6,6 @@ Settled architecture choices become ADRs in `docs/adr/`. This file is for open q
 
 ## Open
 
-### D-16: What runs dev and staging once the free server hours end?
-
-- Raised: 2026-11-11 by cto on #179
-- Context: dev and staging share one AWS t4g.small in Stockholm, free under AWS's t4g.small trial until 31 Dec 2026. From January it bills by the hour, about $12 to $15 a month with its disk, unless we move.
-- Options: A, keep it and pay from January; no work · B, an Oracle Always Free ARM server; free, a rebuild with the existing script and new DNS records, but Oracle reclaims idle free servers and free capacity is often unavailable · C, a Hetzner ARM server like production will use; about €4 to €5 a month, the same rebuild.
-- Recommendation: C, because it costs about a third of A and staging runs on the same kind of server as production.
-- Cost of delay: none until mid-December; after 31 Dec about $3 a week.
-- Reversible: yes
-- Blocks: none
-
-### O-3: Make the repository private once Actions minutes allow it
-
-- Raised: 2026-11-16 by cto
-- Context: the repository is public for now, so Actions minutes are free. A private repository on the free plan has 2,000 minutes a month, and November used about 2,475 before the trims.
-- Options: A, stay public; free, but code and history are visible · B, go private when a week of runs after the trims projects under 1,500 minutes a month · C, go private now and pay for minutes.
-- Recommendation: B, because the trims are measured before the switch and nothing is paid.
-- Cost of delay: none while public.
-- Reversible: yes
-- Blocks: none
-
 <!-- Template:
 ### D-<n>: <question>
 - Raised: <YYYY-MM-DD> by <agent> on #<issue>
@@ -186,6 +166,18 @@ Settled architecture choices become ADRs in `docs/adr/`. This file is for open q
 
 - Decided: 2026-11-16: three · the owner, replacing "two, three once CI runs on every PR". Overlap rules are unchanged.
 - Effect: `CLAUDE.md`, process doc §1, `/lm-next` and `product-manager`; the board helper comment is in the staged files.
+
+### D-28: What runs dev and staging once the free server hours end?
+
+- Raised: 2026-11-11 by cto on #179
+- Decided: 2026-11-17: try option B, an Oracle Always Free ARM server, first if a free one can be created; otherwise option C, a Hetzner ARM server, provided it meets the criteria below · the owner. Criteria: arm64; at least 2 GB RAM and about 20 GB disk (both inferred from today's t4g.small, the architecture doc gives no minimum); Western Europe, ideally Germany next to Neon Frankfurt; rebuilt from scratch by script in under an hour.
+- Effect: platform-engineer tries Oracle first. The move happens before 31 Dec 2026, when the AWS t4g.small trial ends. This entry was D-16 while open, which clashed with the GitHub Team ruling above.
+
+### O-3: Make the repository private once Actions minutes allow it
+
+- Raised: 2026-11-16 by cto
+- Decided: 2026-11-17: the repository goes back to private once the owner's Actions usage is restored; the plan stays GitHub Free and is never paid · the owner. This also confirms the GitHub Team ruling in D-16.
+- Effect: platform-engineer makes the switch when the usage resets and checks the minutes against the 2,000 a month limit.
 
 <!-- Move an entry here when answered, adding:
 - Decided: <YYYY-MM-DD>: <option> · <the owner's reason>
