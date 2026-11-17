@@ -174,25 +174,11 @@ Noisy work (test output, scans, logs, searches) runs in a subagent that returns 
 
 The lists live in the issue templates' "Definition of Done" field (`.github/ISSUE_TEMPLATE/task.yml`, `story.yml`, `chore.yml`, `bug.yml`). `/pm plan` keeps the items that apply, deletes the rest and writes the list into the ticket body beside the acceptance criteria, so every ticket carries its own. The review and QA steps of `/lm-next` tick them, and an unticked item is a fail.
 
-The items are measurable on purpose:
-- each endpoint has success, not-found and other-learner-refused tests
-- axe-core reports zero serious or critical violations
-- the stated performance budgets hold
-
-Don't soften them into "handled" or "considered".
+The items are measurable on purpose (for example "axe-core reports zero serious or critical violations"); never soften them into "handled" or "considered".
 
 ## Decisions
 
-Anything that needs the owner goes in `docs/DECISIONS.md` as a numbered entry with options, a recommendation and the cost of delay. `/pm` surfaces it and `/pm decide` resolves it. These always need the owner:
-- scoring or grading formula changes
-- a new paid service or dependency
-- destructive migrations
-- auth redesign
-- pricing
-- cutting milestone scope
-- anything that costs money or can't be undone
-
-Every other technical question is the `cto` agent's to decide with evidence, recorded in the PR or as "under D-11"; agents don't ask the owner to confirm it.
+Anything that needs the owner (the owner row in "Who decides", plus a new paid service or dependency) goes in `docs/DECISIONS.md` as a numbered entry with options, a recommendation and the cost of delay. `/pm` surfaces it and `/pm decide` resolves it. Every other technical question is the `cto` agent's to decide with evidence, recorded in the PR or as "under D-11"; agents don't ask the owner to confirm it.
 
 ## Checkpoint comment
 
