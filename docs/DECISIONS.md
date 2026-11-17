@@ -157,6 +157,10 @@ Settled architecture choices become ADRs in `docs/adr/`. This file is for open q
 - Raised: 2026-11-16 by the CTO
 - Decided: 2026-11-17: the repository goes back to private once the owner's Actions usage is restored; the plan stays GitHub Free and is never paid · the owner.
 
+### D-30: Who handles tickets that used to wait on the owner?
+
+- Decided: 2026-11-17: the team, like an agency · the owner. Research, vendor requests and setup are worked by the owning agent. The owner is asked only for budget, accounts only the owner can create, passwords and the owner rows of the ladder, in the chat. Progress reaches the owner in the weekly report, where change requests come from.
+
 <!-- Move an entry here when answered, adding:
 - Decided: <YYYY-MM-DD>: <option> · <the owner's reason>
 -->
