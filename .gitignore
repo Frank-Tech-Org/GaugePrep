@@ -36,3 +36,4 @@ grader-check-report.json
 
 # Graphify
 graphify-out/
+.schemathesis/

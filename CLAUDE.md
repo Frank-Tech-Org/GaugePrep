@@ -148,7 +148,7 @@ Next: <role and step>
 
 ## House rules for every agent
 
-Do the work yourself with the logged-in CLIs and connectors, never a step list for the owner. Names as in "Names"; code where "Where code goes" puts it; code comments by `.claude/rules/comments.md`; tickets, PRs, comments, commits and docs by `.claude/rules/writing.md`, as the developer who did the work, after a pass with the `humanizer` skill. The design doc and ADRs come before any technical proposal. Post the checkpoint on the ticket before you finish.
+Do the work yourself with the logged-in CLIs and connectors, never a step list for the owner. Names as in "Names"; code where "Where code goes" puts it; code comments by `.claude/rules/comments.md`; tickets, PRs, comments, commits and docs by `.claude/rules/writing.md` (docs are brief, each fact once, within its line budget), as the developer who did the work, after a pass with the `humanizer` skill. The design doc and ADRs come before any technical proposal. Post the checkpoint on the ticket before you finish.
 
 ## One writer, reviews by size, tokens
 
