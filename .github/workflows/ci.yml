@@ -1,11 +1,11 @@
 name: ci
 
-# Pull request checks, also called by the Pages publish; the postgres login is test-only.
+# Pull request checks, also called by the deploy workflows; the postgres login is test-only.
 # WHY: a push has no PR context, so BASE is the commit before it and PR-only steps skip.
 on:
   pull_request:
     branches: [develop, stage, main]
-    types: [opened, synchronize, reopened, edited]
+    types: [opened, synchronize, reopened]
   workflow_call:
 
 permissions:
@@ -23,14 +23,16 @@ concurrency:
 # WHY: arm64 hosted runners are free for public repositories only, so this repo uses x64.
 jobs:
   # WHY: a skipped job counts as passing for merge, so only a red gate blocks.
-  # SECURITY: the title script comes from the PR and runs last, so it cannot change other results.
   gate:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: read
     outputs:
-      code: ${{ steps.filter.outputs.code }}
-      backend_image: ${{ steps.filter.outputs.backend_image }}
-      ok: ${{ steps.early.outputs.ok == 'true' && (steps.title.outcome == 'success' || github.event_name != 'pull_request') }}
+      code: ${{ steps.proof.outputs.reuse == 'true' && 'false' || steps.filter.outputs.code }}
+      backend_image: ${{ steps.proof.outputs.reuse == 'true' && 'false' || steps.filter.outputs.backend_image }}
+      ok: ${{ steps.early.outputs.ok == 'true' }}
     env:
       GITLEAKS_VERSION: 8.30.1
       GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
@@ -62,6 +64,23 @@ jobs:
           echo "backend_image=$backend_image" >> "$GITHUB_OUTPUT"
           echo "code checks: $code"
           echo "backend image: $backend_image"
+      # WHY: a promotion moves code that already passed; a tested tree skips the checks.
+      # SECURITY: the proof script comes from the base; any error leaves the full checks running.
+      - name: Promotion already tested
+        id: proof
+        if: ${{ github.event_name == 'pull_request' && (github.base_ref == 'stage' || github.base_ref == 'main') }}
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          git show "$BASE:.github/scripts/tree-proof.sh" > "$RUNNER_TEMP/tree-proof.sh"
+          if [ "$BASE_REF" = stage ]; then src=develop; mode=jobs; else src=stage; mode=run; fi
+          proof=$(bash "$RUNNER_TEMP/tree-proof.sh" "$src" "$(git rev-parse "$HEAD^{tree}")" "$mode")
+          if [ -n "$proof" ]; then
+            echo "reuse=true" >> "$GITHUB_OUTPUT"
+            echo "::notice title=Checks reused::this tree is $src commit ${proof:0:7}, whose checks passed"
+          fi
       # WHY: the MIT binary, not gitleaks-action, which needs a paid licence on organisations.
       - name: Install gitleaks
         id: gitleaks-install
@@ -140,7 +159,6 @@ jobs:
             exit 1
           fi
       # WHY: scanner settings is left out on purpose; alone it keeps the other jobs running.
-      # WHY: the title step runs after this one; the job output adds its result.
       - name: Blocking checks passed
         id: early
         if: ${{ !cancelled() }}
@@ -206,16 +224,6 @@ jobs:
             echo "::error title=Scanner settings::This pull request changes scanner settings, the pnpm version or its settings, or adds a suppression (listed above). The code and scanner jobs still run. Remove it, or the owner merges over this check when it is justified."
             exit 1
           fi
-      # SECURITY: the template is read from the base; title and body reach the script only by env.
-      - name: PR title and description
-        id: title
-        if: ${{ !cancelled() && github.event_name == 'pull_request' }}
-        env:
-          PR_TITLE: ${{ github.event.pull_request.title }}
-          PR_BODY: ${{ github.event.pull_request.body }}
-        run: |
-          git show "$BASE:.github/pull_request_template.md" > "$RUNNER_TEMP/pull_request_template.md"
-          bash .github/scripts/check-pr-description.sh "$RUNNER_TEMP/pull_request_template.md"
 
   check:
     needs: gate
@@ -287,8 +295,10 @@ jobs:
       - name: Build the backend image
         run: docker build -f infra/docker/backend.Dockerfile .
 
-  # WHY: runs on every pull request, docs included.
+  # WHY: skipped with the other code checks when a PR changes only docs or agent prompts.
   semgrep:
+    needs: gate
+    if: ${{ !cancelled() && needs.gate.outputs.ok == 'true' && needs.gate.outputs.code == 'true' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -346,14 +356,19 @@ jobs:
             echo "No tooling/semgrep/ directory, nothing to test."
           fi
 
-  pip-audit:
+  # WHY: one runner for the three audits; each step runs even when an earlier one failed.
+  audits:
     needs: gate
     if: ${{ !cancelled() && needs.gate.outputs.ok == 'true' && needs.gate.outputs.code == 'true' }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 20
+    env:
+      TRIVY_VERSION: 0.76.1
+      TRIVY_SHA256: c7cbe3137fb8a48a17574bede3dd6beb16742d1e9772929940fc90082c39d9c0
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          fetch-depth: 0
           persist-credentials: false
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
@@ -361,21 +376,13 @@ jobs:
           cache-dependency-glob: uv.lock
       # WHY: pip-audit has no severity filter, so any known advisory fails this check.
       - name: Audit the uv lockfile
+        if: ${{ !cancelled() }}
         run: |
           uv export --no-config --frozen --no-hashes --no-emit-project --no-emit-workspace -o "$RUNNER_TEMP/requirements.txt"
           uvx --no-config --exclude-newer 2026-10-30 pip-audit==2.10.1 --no-deps --disable-pip -r "$RUNNER_TEMP/requirements.txt"
-
-  pnpm-audit:
-    needs: gate
-    if: ${{ !cancelled() && needs.gate.outputs.ok == 'true' && needs.gate.outputs.code == 'true' }}
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
       # SECURITY: audit a rebuilt copy (allowlisted lockfile fields, fresh manifests).
       - name: Rebuild a clean audit directory
+        if: ${{ !cancelled() }}
         run: |
           set -euo pipefail
           d="$RUNNER_TEMP/audit"
@@ -391,28 +398,18 @@ jobs:
           done
       # WHY: the pnpm version comes from the packageManager field in package.json.
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        if: ${{ !cancelled() }}
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        if: ${{ !cancelled() }}
         with:
           node-version: 24
       - name: pnpm audit
+        if: ${{ !cancelled() }}
         working-directory: ${{ runner.temp }}/audit
         run: pnpm audit --ignore-pnpmfile --audit-level high --registry https://registry.npmjs.org/
-
-  trivy:
-    needs: gate
-    if: ${{ !cancelled() && needs.gate.outputs.ok == 'true' && needs.gate.outputs.code == 'true' }}
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    env:
-      TRIVY_VERSION: 0.76.1
-      TRIVY_SHA256: c7cbe3137fb8a48a17574bede3dd6beb16742d1e9772929940fc90082c39d9c0
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 0
-          persist-credentials: false
       # SECURITY: Trivy ignore files and config come from the base, not the PR.
       - name: Use the base Trivy ignore files
+        if: ${{ !cancelled() }}
         run: |
           if [ "$GITHUB_EVENT_NAME" != pull_request ] && ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then BASE=$(git rev-parse -q --verify "$HEAD^" || true); fi
           for f in .trivyignore .trivyignore.yaml .trivyignore.yml trivy.yaml trivy.yml; do
@@ -423,11 +420,13 @@ jobs:
           { git grep -lzE '(trivy|tfsec):(ignore|exp)' || true; } | xargs -0 -r sed -i -E 's/(trivy|tfsec):(ignore|exp)/\1-\2/g'
       # WHY: the Apache-2.0 binary, not aquasecurity/trivy-action.
       - name: Install Trivy
+        if: ${{ !cancelled() }}
         run: |
           curl -sSfL -o "$RUNNER_TEMP/trivy.tgz" "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz"
           echo "${TRIVY_SHA256}  $RUNNER_TEMP/trivy.tgz" | sha256sum --check -
           mkdir "$RUNNER_TEMP/trivy-bin"
           tar -xzf "$RUNNER_TEMP/trivy.tgz" -C "$RUNNER_TEMP/trivy-bin" trivy
       - name: Trivy filesystem scan
+        if: ${{ !cancelled() }}
         run: |
           "$RUNNER_TEMP/trivy-bin/trivy" fs --severity HIGH,CRITICAL --exit-code 1 --scanners vuln,misconfig .

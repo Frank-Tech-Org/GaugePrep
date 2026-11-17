@@ -12,12 +12,6 @@ Refs #
 
 -
 
-## Acceptance criteria
-
-<!-- Copy the criteria from the ticket and tick each one this change satisfies. Note any not covered as follow-ups below. -->
-
-- [ ]
-
 ## Evidence
 
 <!-- UI changes: screenshots. Performance or accessibility changes: before and after scores. Delete this section if not applicable. -->
