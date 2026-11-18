@@ -37,11 +37,11 @@ uv run python -c "import examcore"   # must import with no Django installed
 
 ## Run locally
 
-Starts PostgreSQL 18 and the backend, which migrates and then serves on port 8000:
+Starts PostgreSQL 18 and the backend, which migrates and then serves. Docker picks free host ports, so nothing clashes; `pnpm dev:up` prints the API address and the database URL. Set `BACKEND_PORT` or `POSTGRES_PORT` in `.env` only if you want fixed ones.
 
 ```sh
-docker compose up -d --build
-curl -i http://localhost:8000/api/v1/health      # 200 {"status": "ok", "database": "ok"}
+pnpm dev:up                                      # prints API: http://127.0.0.1:<port>
+curl -i http://127.0.0.1:<port>/api/v1/health    # 200 {"status": "ok", "database": "ok"}
 docker compose down                              # add -v to drop the database volume
 ```
 
