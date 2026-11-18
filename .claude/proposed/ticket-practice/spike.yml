@@ -1,0 +1,37 @@
+name: Spike
+description: A question to answer in one day at most; the result is a finding on this ticket
+title: ""
+type: Spike
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: "What we need to find out, and which ticket or decision waits on the answer."
+    validations:
+      required: true
+  - type: textarea
+    id: approach
+    attributes:
+      label: How to find out
+      description: "Sources to read, a prototype to build or a measurement to take."
+    validations:
+      required: true
+  - type: textarea
+    id: done
+    attributes:
+      label: Done when
+      value: |
+        - [ ] Finished within one working day, or stopped at one day with what was learnt
+        - [ ] The finding is posted on this ticket, each claim with its source or measurement
+        - [ ] Follow-up tickets drafted, or "none needed" stated
+        - [ ] Any prototype code is thrown away or moved into a ticket of its own
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: 'Issues this depends on, or "none".'
+    validations:
+      required: true
