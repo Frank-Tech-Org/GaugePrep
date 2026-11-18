@@ -1,5 +1,5 @@
 import logging
-from typing import Any
+from typing import Annotated, Any
 
 from config.problems import FieldProblem, Problem
 from django.contrib.auth import authenticate, login, logout
@@ -71,7 +71,7 @@ def csrf(request: HttpRequest) -> CsrfToken:
 def signup(
     request: HttpRequest,
     payload: SignUpIn,
-    idempotency_key: str | None = Header(None, alias="Idempotency-Key"),
+    idempotency_key: Annotated[str | None, Header(alias="Idempotency-Key")] = None,
 ) -> Status[AccountSession] | HttpResponse:
     language = payload.interface_language
     address = throttle.client_address(request)
@@ -148,7 +148,10 @@ def signup(
 
     if user is not None:
         login(request, user)
-    return Status(201, dict(profile, csrf_token=get_token(request)))
+    return Status(
+        201,
+        AccountSession.model_validate(dict(profile, csrf_token=get_token(request))),
+    )
 
 
 @router.post(
@@ -183,7 +186,12 @@ def log_in(
         return problem_for(request, 401, "invalid_credentials")
     login(request, user)
     logger.info("event=login_succeeded learner_id=%s", user.id)
-    return Status(200, dict(profile_of(user), csrf_token=get_token(request)))
+    return Status(
+        200,
+        AccountSession.model_validate(
+            dict(profile_of(user), csrf_token=get_token(request))
+        ),
+    )
 
 
 @router.post(

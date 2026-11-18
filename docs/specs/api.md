@@ -15,19 +15,18 @@ The release 1 endpoints not built yet: who may call each one and the rules it en
 
 ## 2. identity
 
+Built: `GET /auth/csrf`, `POST /auth/signup` (201 with the profile and a CSRF token; takes `Idempotency-Key`; an email already in use gets the same 201 without a session; 16 or older and processing consent required; 20 per hour per address), `POST /auth/login` (5 failed attempts per minute per address, then 429), `POST /auth/logout`, `GET /me`, `PATCH /me`. The contract is in the OpenAPI file. Sign-up does not send a verification code yet.
+
 | Method and path | Access | Purpose | Notes | PRD |
 |---|---|---|---|---|
-| POST `/auth/signup` | public | Create an account with email, password, date of birth, interface language, required consent | Refuses under 16 with `age_below_minimum`; sends a verification code; rate-limited at the edge | ACC-1, ACC-2, ACC-7 |
 | POST `/auth/verify` | learner | Submit a verification code | 5 attempts per code | ACC-1 |
 | POST `/auth/verify/resend` | learner | Send a new code | At most 1 per minute and 5 per day | ACC-1 |
-| POST `/auth/login` | public | Sign in with email and password | Rotates the session; generic error on failure | ACC-5 |
 | GET `/auth/google/start`, GET `/auth/google/callback` | public | Google sign-in (OpenID Connect, authorisation code with PKCE) | Callback creates the account or links it when the verified email matches; date of birth is then asked before any other screen | ACC-1 |
-| POST `/auth/logout` | learner | Sign out this device | | ACC-5 |
 | POST `/auth/logout-all` | learner | Sign out of all devices | Deletes all sessions of the user | ACC-5 |
 | POST `/auth/password/reset-request` | public | Send a reset code | Same response whether or not the account exists | ACC-5 |
 | POST `/auth/password/reset` | public | Set a new password with the code | Signs out all other sessions | ACC-5 |
-| GET `/me` | learner | Current account, interface language, verification state, entitlement summary, consents | | ACC-3 |
-| PATCH `/me` | learner | Change interface language or email (re-verification) | | ACC-3 |
+| GET `/me` | learner | Adds the entitlement summary and consents to the profile | The profile (email, display name, language, verification state) is built | ACC-3 |
+| PATCH `/me` | learner | Change email (re-verification) | Language and display name are built | ACC-3 |
 | GET `/me/consents`, POST `/me/consents` | learner | Read and change optional consents | Inserts a consent row | ACC-7 |
 | POST `/me/delete` | learner | Request account deletion | Requires password or a fresh code; cancellable for 7 days through POST `/me/delete/cancel` | ACC-6 |
 | GET `/me/export` | learner | Download personal data as JSON | Generated asynchronously; link by email | PRD 15.1 |
@@ -148,6 +147,10 @@ The diagnostic is a practice session of kind `diagnostic` (Section 6), with an a
 | `usage_limit_reached` | 429 | Daily or monthly usage limit; body has `metric`, `used`, `limit`, `resets_at` |
 | `rate_limited` | 429 | Too many requests; `Retry-After` header |
 | `age_below_minimum` | 422 | Date of birth under 16 |
+| `consent_required` | 422 | Processing consent was not given |
+| `weak_password` | 422 | Password too short, common or all digits |
+| `invalid_credentials` | 401 | Wrong password or unknown email, same answer |
+| `csrf_failed` | 403 | Missing or wrong CSRF token or origin |
 | `code_invalid`, `code_expired`, `code_attempts_exceeded` | 422 | Verification code problems |
 | `paper_closed` | 409 | The paper's deadline has passed or it was submitted |
 | `already_played` | 409 | A simulation recording was already played |

@@ -4,7 +4,6 @@ from typing import Any
 
 import pytest
 from django.conf import settings
-from django.http import HttpResponse
 from django.test import Client
 
 PASSWORD = "Sturdy-Pelican-4821"
@@ -50,7 +49,7 @@ class Api:
 
     def send(
         self, method: str, path: str, body: Any = None, csrf: bool = True, **extra: Any
-    ) -> HttpResponse:
+    ) -> Any:
         if csrf and self.token is None:
             self.fetch_token()
         headers = {"HTTP_X_CSRFTOKEN": self.token} if csrf else {}
@@ -67,16 +66,16 @@ class Api:
                 self.token = data["csrf_token"]
         return response
 
-    def post(self, path: str, body: Any = None, **kw: Any) -> HttpResponse:
+    def post(self, path: str, body: Any = None, **kw: Any) -> Any:
         return self.send("post", path, body, **kw)
 
-    def patch(self, path: str, body: Any = None, **kw: Any) -> HttpResponse:
+    def patch(self, path: str, body: Any = None, **kw: Any) -> Any:
         return self.send("patch", path, body, **kw)
 
-    def get(self, path: str, **kw: Any) -> HttpResponse:
+    def get(self, path: str, **kw: Any) -> Any:
         return self.client.get(path, **kw)
 
-    def sign_up(self, **overrides: Any) -> HttpResponse:
+    def sign_up(self, **overrides: Any) -> Any:
         return self.post(SIGNUP, signup_body(**overrides))
 
 

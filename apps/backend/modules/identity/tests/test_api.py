@@ -1,5 +1,6 @@
 import logging
 import uuid
+from typing import Any
 
 import pytest
 from django.conf import settings
@@ -21,9 +22,9 @@ from .conftest import (
 pytestmark = pytest.mark.django_db
 
 
-def problem(response):  # type: ignore[no-untyped-def]
+def problem(response: Any) -> dict[str, Any]:
     assert response["Content-Type"].startswith("application/problem+json")
-    return response.json()
+    return dict(response.json())
 
 
 @pytest.mark.success("GET /api/v1/auth/csrf")

@@ -42,7 +42,7 @@ def client_address(request: HttpRequest) -> str:
     forwarded = request.headers.get("X-Forwarded-For", "")
     if settings.SECURE_PROXY_SSL_HEADER and forwarded:
         return forwarded.split(",")[-1].strip()
-    return request.META.get("REMOTE_ADDR", "")
+    return str(request.META.get("REMOTE_ADDR", ""))
 
 
 def key_for(limit: Limit, address: str) -> str:

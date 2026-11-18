@@ -1,4 +1,5 @@
 import uuid
+from typing import ClassVar
 
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.sessions.base_session import AbstractBaseSession
@@ -26,7 +27,7 @@ class User(AbstractBaseUser):
 
     USERNAME_FIELD = "email"
     EMAIL_FIELD = "email"
-    REQUIRED_FIELDS: list[str] = []
+    REQUIRED_FIELDS: ClassVar[list[str]] = []
 
     class Meta:
         db_table = '"identity"."user"'

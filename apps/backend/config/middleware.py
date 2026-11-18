@@ -2,7 +2,7 @@ from collections.abc import Callable
 from typing import Any
 
 from django.conf import settings
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseForbidden
 from django.http.response import HttpResponseBase
 from django.middleware.csrf import CsrfViewMiddleware
 from django.utils.cache import patch_vary_headers
@@ -49,7 +49,7 @@ class CorsMiddleware:
             response = self.get_response(request)
         if origin is not None:
             patch_vary_headers(response, ["Origin"])
-        if allowed:
+        if allowed and origin is not None:
             response["Access-Control-Allow-Origin"] = origin
             response["Access-Control-Allow-Credentials"] = "true"
         return response
@@ -80,7 +80,7 @@ class ApiCsrfMiddleware(CsrfViewMiddleware):
         callback: Callable[..., HttpResponseBase],
         callback_args: tuple[Any, ...],
         callback_kwargs: dict[str, Any],
-    ) -> HttpResponse | None:
+    ) -> HttpResponseForbidden | None:
         if not request.path.startswith(API_PREFIX):
             return super().process_view(
                 request, callback, callback_args, callback_kwargs
