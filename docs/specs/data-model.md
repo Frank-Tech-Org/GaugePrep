@@ -29,9 +29,11 @@ Personal data lives only here (architecture 7.1).
 
 **user**
 - `id uuid pk`
-- `email citext unique not null` : no phone number is collected
+- `email text unique not null check (email = lower(email))` : normalised before storage; no phone number is collected
 - `email_verified_at timestamptz null`
-- `password_hash text null` : Argon2; null for Google-only accounts
+- `password_hash text not null check (starts with 'argon2$' or '!')` : Argon2 only; `!` marks an account with no usable password (Google-only)
+- `display_name text not null default ''` : at most 80 characters
+- `last_login timestamptz null`
 - `date_of_birth date not null` : check age at least 16 at sign-up time in the service, not as a constraint
 - `interface_language text not null check in ('fr','en')`
 - `country char(2) null` : ISO 3166, from sign-up, used for currency and later markets
@@ -44,9 +46,15 @@ Personal data lives only here (architecture 7.1).
 
 **verification_code**: `id`, `user_id fk`, `purpose text check in ('verify','reset','login')`, `code_hash text`, `expires_at`, `attempts int default 0`, `used_at null`. Codes are 6 digits, valid 10 minutes, at most 5 attempts (PRD ACC-1, ACC-5).
 
-**consent** (append-only): `id`, `user_id fk`, `kind text check in ('processing','quality_improvement','marketing')`, `granted boolean`, `policy_version text`, `source text` (`signup`, `settings`). The current consent is the latest row per kind (PRD ACC-7).
+**consent** (append-only): `id`, `user_id fk`, `kind text check in ('processing','quality_improvement','marketing')`, `granted boolean`, `policy_version text`, `source text` (`signup`, `settings`), `created_at`. The current consent is the latest row per kind (PRD ACC-7). A database trigger refuses deletes, so account deletion must remove or detach consent rows through a path that handles it (the consent foreign key cascades).
 
-**auth_session**: Django's session table in this schema; plus `session_meta` with `session_key`, `user_id`, `user_agent`, `ip_prefix` (IPv4 /24 or IPv6 /48 only), `last_seen_at`, used for "sign out of all devices".
+**session**: Django's session table in this schema (`session_key`, `session_data`, `expire_date`); expired rows are not purged yet.
+
+**throttle**: `key text pk` (SHA-256 of scope and address, never the address), `window_started_at`, `count`. Failed-login and sign-up counters shared by all workers.
+
+**idempotency_record**: `scope`, `key uuid`, `request_hash`, `user_id fk null`, `status_code`, `response jsonb` (only the learner ID; the body is rebuilt on replay, so no name or email is stored), unique (`scope`, `key`); valid 24 hours, expired rows are deleted when the same key returns and are not purged yet.
+
+**session_meta** (not built): with `session_key`, `user_id`, `user_agent`, `ip_prefix` (IPv4 /24 or IPv6 /48 only), `last_seen_at`, used for "sign out of all devices".
 
 ## 3. exammodels
 

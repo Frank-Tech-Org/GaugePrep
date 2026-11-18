@@ -36,6 +36,7 @@ HOSTED = {
     "MAIL_PORT": "1025",
     "MAIL_FROM": "GaugePrep <no-reply@example.test>",
     "MAIL_HEALTH_TO": "inbox@example.test",
+    "WEB_APP_ORIGIN": "https://app.example.test",
 }
 
 
@@ -177,6 +178,46 @@ def test_static_root_is_git_ignored_inside_the_backend(
         check=False,
     )
     assert ignored.returncode == 0
+
+
+@pytest.mark.parametrize("module", ["dev", "staging", "production"])
+def test_hosted_cookies_are_host_only_and_secure(module: str) -> None:
+    code = (
+        f"import config.settings.{module} as m;"
+        "print(m.SESSION_COOKIE_NAME, m.CSRF_COOKIE_NAME, m.SESSION_COOKIE_SECURE,"
+        " m.CSRF_COOKIE_SECURE, m.SESSION_COOKIE_HTTPONLY, m.SESSION_COOKIE_SAMESITE,"
+        " m.CSRF_COOKIE_SAMESITE, m.SESSION_COOKIE_DOMAIN, m.CSRF_COOKIE_DOMAIN,"
+        " m.CSRF_TRUSTED_ORIGINS, m.SECURE_HSTS_SECONDS)"
+    )
+    clean = {k: v for k, v in os.environ.items() if not k.startswith("DJANGO_")}
+    clean.pop("DATABASE_URL", None)
+    result = subprocess.run(
+        [sys.executable, "-c", code],
+        cwd=BACKEND,
+        env={**clean, **HOSTED},
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == (
+        "__Host-gp_session __Host-gp_csrf True True True Lax Lax None None "
+        "['https://app.example.test'] 63072000"
+    )
+
+
+@pytest.mark.parametrize(
+    "origin",
+    [
+        "http://app.example.test",
+        "https://app.example.test/path",
+        "https://*.example.test",
+    ],
+)
+def test_hosted_settings_reject_a_bad_web_app_origin(origin: str) -> None:
+    result = _load("dev", **{**HOSTED, "WEB_APP_ORIGIN": origin})
+    assert result.returncode != 0
+    assert "WEB_APP_ORIGIN" in result.stderr
 
 
 def test_collectstatic_writes_the_swagger_assets(
