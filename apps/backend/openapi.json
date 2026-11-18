@@ -393,10 +393,12 @@
       "FieldProblem": {
         "properties": {
           "field": {
+            "description": "The request field that was refused.",
             "title": "Field",
             "type": "string"
           },
           "code": {
+            "description": "Stable code saying why the field was refused.",
             "title": "Code",
             "type": "string"
           }
@@ -411,22 +413,27 @@
       "Problem": {
         "properties": {
           "type": {
+            "description": "URN naming the kind of problem.",
             "title": "Type",
             "type": "string"
           },
           "title": {
+            "description": "Short summary, in the learner's language.",
             "title": "Title",
             "type": "string"
           },
           "status": {
+            "description": "HTTP status code.",
             "title": "Status",
             "type": "integer"
           },
           "detail": {
+            "description": "What went wrong, in the learner's language.",
             "title": "Detail",
             "type": "string"
           },
           "code": {
+            "description": "Stable machine-readable error code.",
             "title": "Code",
             "type": "string"
           },
@@ -442,6 +449,7 @@
                 "type": "null"
               }
             ],
+            "description": "Per-field problems, present on validation errors.",
             "title": "Errors"
           }
         },
@@ -458,6 +466,7 @@
       "CsrfToken": {
         "properties": {
           "csrf_token": {
+            "description": "Token to send as X-CSRFToken on every write.",
             "title": "Csrf Token",
             "type": "string"
           }
@@ -471,19 +480,23 @@
       "AccountSession": {
         "properties": {
           "learner_id": {
+            "description": "Anonymous learner ID that every other part of the product stores.",
             "format": "uuid",
             "title": "Learner Id",
             "type": "string"
           },
           "email": {
+            "description": "Account email, lower case.",
             "title": "Email",
             "type": "string"
           },
           "display_name": {
+            "description": "Name shown in the app; empty when none was given.",
             "title": "Display Name",
             "type": "string"
           },
           "interface_language": {
+            "description": "Interface language, fr or en.",
             "enum": [
               "fr",
               "en"
@@ -492,10 +505,12 @@
             "type": "string"
           },
           "email_verified": {
+            "description": "True once the email address is confirmed.",
             "title": "Email Verified",
             "type": "boolean"
           },
           "csrf_token": {
+            "description": "Token to send as X-CSRFToken on every write.",
             "title": "Csrf Token",
             "type": "string"
           }
@@ -514,22 +529,26 @@
       "SignUpIn": {
         "properties": {
           "email": {
+            "description": "Email address; compared without case.",
             "maxLength": 254,
             "title": "Email",
             "type": "string"
           },
           "password": {
+            "description": "Password; the server applies the strength rules.",
             "maxLength": 128,
             "minLength": 1,
             "title": "Password",
             "type": "string"
           },
           "date_of_birth": {
+            "description": "Date of birth; the learner must be 16 or older.",
             "format": "date",
             "title": "Date Of Birth",
             "type": "string"
           },
           "interface_language": {
+            "description": "Interface language, fr or en.",
             "enum": [
               "fr",
               "en"
@@ -539,12 +558,14 @@
           },
           "display_name": {
             "default": "",
+            "description": "Name shown in the app, up to 80 characters.",
             "maxLength": 80,
             "title": "Display Name",
             "type": "string"
           },
           "processing_consent": {
             "default": false,
+            "description": "Must be true: consent to process learning data.",
             "title": "Processing Consent",
             "type": "boolean"
           }
@@ -561,12 +582,14 @@
       "LoginIn": {
         "properties": {
           "email": {
+            "description": "Email address of the account.",
             "maxLength": 254,
             "minLength": 1,
             "title": "Email",
             "type": "string"
           },
           "password": {
+            "description": "Password of the account.",
             "maxLength": 256,
             "minLength": 1,
             "title": "Password",
@@ -583,19 +606,23 @@
       "Profile": {
         "properties": {
           "learner_id": {
+            "description": "Anonymous learner ID that every other part of the product stores.",
             "format": "uuid",
             "title": "Learner Id",
             "type": "string"
           },
           "email": {
+            "description": "Account email, lower case.",
             "title": "Email",
             "type": "string"
           },
           "display_name": {
+            "description": "Name shown in the app; empty when none was given.",
             "title": "Display Name",
             "type": "string"
           },
           "interface_language": {
+            "description": "Interface language, fr or en.",
             "enum": [
               "fr",
               "en"
@@ -604,6 +631,7 @@
             "type": "string"
           },
           "email_verified": {
+            "description": "True once the email address is confirmed.",
             "title": "Email Verified",
             "type": "boolean"
           }
@@ -633,6 +661,7 @@
                 "type": "null"
               }
             ],
+            "description": "New interface language, fr or en.",
             "title": "Interface Language"
           },
           "display_name": {
@@ -645,6 +674,7 @@
                 "type": "null"
               }
             ],
+            "description": "New display name, up to 80 characters.",
             "title": "Display Name"
           }
         },

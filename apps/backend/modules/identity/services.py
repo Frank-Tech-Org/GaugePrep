@@ -100,6 +100,17 @@ def profile_of(user: User) -> dict[str, Any]:
     )
 
 
+def decoy_profile(details: AccountDetails, learner_id: str) -> dict[str, Any]:
+    """The profile shown for a used email, rebuilt from the request, never stored."""
+    decoy = User(
+        id=uuid.UUID(learner_id),
+        email=normalize_email(details.email),
+        display_name=details.display_name.strip(),
+        interface_language=details.interface_language,
+    )
+    return profile_of(decoy)
+
+
 def register(
     details: AccountDetails, password: str
 ) -> tuple[User | None, dict[str, Any]]:
@@ -112,7 +123,8 @@ def register(
         validate_password(password)
     except ValidationError:
         raise AccountRefused("weak_password") from None
-    hashed = make_password(password)  # hashed first so a used email costs the same time
+    # WHY: hash first so a used email takes the same time
+    hashed = make_password(password)
     try:
         user = create_account(
             email=details.email,
@@ -122,13 +134,7 @@ def register(
             display_name=details.display_name,
         )
     except EmailTaken:
-        decoy = User(
-            id=uuid.uuid4(),
-            email=normalize_email(details.email),
-            display_name=details.display_name.strip(),
-            interface_language=details.interface_language,
-        )
-        return None, profile_of(decoy)
+        return None, decoy_profile(details, str(uuid.uuid4()))
     user.password = hashed
     user.save(update_fields=["password"])
     return user, profile_of(user)

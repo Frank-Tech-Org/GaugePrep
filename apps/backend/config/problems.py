@@ -4,22 +4,25 @@ from collections.abc import Mapping
 
 from django.http import HttpRequest, JsonResponse
 from ninja import Schema
+from pydantic import Field
 
 PROBLEM_CONTENT_TYPE = "application/problem+json"
 
 
 class FieldProblem(Schema):
-    field: str
-    code: str
+    field: str = Field(description="The request field that was refused.")
+    code: str = Field(description="Stable code saying why the field was refused.")
 
 
 class Problem(Schema):
-    type: str
-    title: str
-    status: int
-    detail: str
-    code: str
-    errors: list[FieldProblem] | None = None
+    type: str = Field(description="URN naming the kind of problem.")
+    title: str = Field(description="Short summary, in the learner's language.")
+    status: int = Field(description="HTTP status code.")
+    detail: str = Field(description="What went wrong, in the learner's language.")
+    code: str = Field(description="Stable machine-readable error code.")
+    errors: list[FieldProblem] | None = Field(
+        default=None, description="Per-field problems, present on validation errors."
+    )
 
 
 def problem_response(

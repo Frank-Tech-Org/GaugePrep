@@ -5,12 +5,12 @@ from config.problems import FieldProblem, Problem
 from django.contrib.auth import authenticate, login, logout
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse
-from django.middleware.csrf import get_token
+from django.middleware.csrf import get_token, rotate_token
 from ninja import Header, Router, Status
 
 from . import idempotency, throttle
 from .auth import learner_auth
-from .models import User
+from .models import IdempotencyRecord, User
 from .problems import problem_for
 from .schemas import (
     AccountSession,
@@ -23,6 +23,7 @@ from .schemas import (
 from .services import (
     AccountDetails,
     AccountRefused,
+    decoy_profile,
     normalize_email,
     profile_of,
     register,
@@ -32,6 +33,22 @@ logger = logging.getLogger(__name__)
 router = Router(tags=["account"])
 
 SIGNUP_SCOPE = "signup"
+
+
+def _replay(
+    saved: IdempotencyRecord, details: AccountDetails
+) -> tuple[User | None, dict[str, Any]]:
+    # WHY: the record keeps only the learner ID; the profile is rebuilt, never stored.
+    if saved.user is not None:
+        return saved.user, profile_of(saved.user)
+    return None, decoy_profile(details, saved.response["learner_id"])
+
+
+def _anonymous_session(request: HttpRequest) -> None:
+    # SECURITY: a used email gets the same cookies as a new account, but no login.
+    request.session["anonymous"] = True
+    request.session.cycle_key()
+    rotate_token(request)
 
 
 def _user(request: HttpRequest) -> User:
@@ -128,7 +145,7 @@ def signup(
                         return problem_for(
                             request, 409, "idempotency_conflict", language=language
                         )
-                    user, profile = saved.user, saved.response
+                    user, profile = _replay(saved, details)
             if profile is None:
                 user, profile = register(details, payload.password)
                 if user is None:
@@ -137,7 +154,12 @@ def signup(
                     logger.info("event=signup_completed learner_id=%s", user.id)
                 if key is not None:
                     idempotency.store(
-                        SIGNUP_SCOPE, key, fingerprint, user, 201, profile
+                        SIGNUP_SCOPE,
+                        key,
+                        fingerprint,
+                        user,
+                        201,
+                        {"learner_id": profile["learner_id"]},
                     )
     except AccountRefused as refused:
         reason = {"age_below_minimum": "age", "consent_required": "consent"}
@@ -148,6 +170,8 @@ def signup(
 
     if user is not None:
         login(request, user)
+    else:
+        _anonymous_session(request)
     return Status(
         201,
         AccountSession.model_validate(dict(profile, csrf_token=get_token(request))),

@@ -5,7 +5,7 @@ from typing import Any
 import pytest
 from django.conf import settings
 
-from modules.identity.models import Consent, User
+from modules.identity.models import Consent, IdempotencyRecord, User
 
 from .conftest import (
     CSRF,
@@ -119,6 +119,32 @@ def test_duplicate_email_in_any_case_looks_like_a_new_signup(learner: Api) -> No
     assert User.objects.count() == 1
     assert other.get(ME).status_code == 401
     assert User.objects.get().check_password(PASSWORD)
+
+
+def test_duplicate_and_new_signups_set_the_same_cookies(api: Api, learner: Api) -> None:
+    fresh = Api().sign_up(email="grace@example.com")
+    duplicate = Api().sign_up(email="ada@example.com", password="Another-Pass-9921")
+    assert fresh.cookies.keys() == duplicate.cookies.keys()
+    assert "gp_session" in duplicate.cookies
+
+
+def test_idempotent_replay_stores_no_name_or_email(api: Api) -> None:
+    key = str(uuid.uuid4())
+    api.post(SIGNUP, signup_body(), HTTP_IDEMPOTENCY_KEY=key)
+    stored = IdempotencyRecord.objects.get().response
+    assert set(stored) == {"learner_id"}
+
+
+def test_idempotent_replay_of_a_duplicate_email_matches_the_first_answer(
+    learner: Api,
+) -> None:
+    key = str(uuid.uuid4())
+    body = signup_body(password="Another-Pass-9921", display_name="Eve")
+    first = Api().post(SIGNUP, body, HTTP_IDEMPOTENCY_KEY=key)
+    second = Api().post(SIGNUP, body, HTTP_IDEMPOTENCY_KEY=key)
+    assert first.json()["learner_id"] == second.json()["learner_id"]
+    assert second.json()["display_name"] == "Eve"
+    assert "gp_session" in second.cookies
 
 
 def test_write_without_csrf_token_is_refused(api: Api) -> None:
@@ -280,8 +306,6 @@ def test_language_change_applies_to_next_response_and_later_logins(
     other = Api()
     login = other.post(LOGIN, {"email": "ada@example.com", "password": PASSWORD})
     assert login.json()["interface_language"] == "fr"
-    unauth = Api()
-    unauth.client.cookies.clear()
     assert User.objects.get().interface_language == "fr"
 
 

@@ -11,12 +11,29 @@ LanguageCode = Literal["fr", "en"]
 
 
 class SignUpIn(Schema):
-    email: str = Field(max_length=254)
-    password: str = Field(min_length=1, max_length=128)
-    date_of_birth: date = Field(ge=date(1900, 1, 1))
-    interface_language: LanguageCode
-    display_name: str = Field(default="", max_length=80)
-    processing_consent: bool = False
+    email: str = Field(
+        max_length=254, description="Email address; compared without case."
+    )
+    password: str = Field(
+        min_length=1,
+        max_length=128,
+        description="Password; the server applies the strength rules.",
+    )
+    date_of_birth: date = Field(
+        ge=date(1900, 1, 1),
+        description="Date of birth; the learner must be 16 or older.",
+    )
+    interface_language: LanguageCode = Field(
+        description="Interface language, fr or en."
+    )
+    display_name: str = Field(
+        default="",
+        max_length=80,
+        description="Name shown in the app, up to 80 characters.",
+    )
+    processing_consent: bool = Field(
+        default=False, description="Must be true: consent to process learning data."
+    )
 
     @field_validator("email")
     @classmethod
@@ -29,26 +46,44 @@ class SignUpIn(Schema):
 
 
 class LoginIn(Schema):
-    email: str = Field(min_length=1, max_length=254)
-    password: str = Field(min_length=1, max_length=256)
+    email: str = Field(
+        min_length=1, max_length=254, description="Email address of the account."
+    )
+    password: str = Field(
+        min_length=1, max_length=256, description="Password of the account."
+    )
 
 
 class ProfilePatch(Schema):
-    interface_language: LanguageCode | None = None
-    display_name: str | None = Field(default=None, max_length=80)
+    interface_language: LanguageCode | None = Field(
+        default=None, description="New interface language, fr or en."
+    )
+    display_name: str | None = Field(
+        default=None,
+        max_length=80,
+        description="New display name, up to 80 characters.",
+    )
 
 
 class Profile(Schema):
-    learner_id: UUID
-    email: str
-    display_name: str
-    interface_language: LanguageCode
-    email_verified: bool
+    learner_id: UUID = Field(
+        description="Anonymous learner ID that every other part of the product stores."
+    )
+    email: str = Field(description="Account email, lower case.")
+    display_name: str = Field(
+        description="Name shown in the app; empty when none was given."
+    )
+    interface_language: LanguageCode = Field(
+        description="Interface language, fr or en."
+    )
+    email_verified: bool = Field(
+        description="True once the email address is confirmed."
+    )
 
 
 class AccountSession(Profile):
-    csrf_token: str
+    csrf_token: str = Field(description="Token to send as X-CSRFToken on every write.")
 
 
 class CsrfToken(Schema):
-    csrf_token: str
+    csrf_token: str = Field(description="Token to send as X-CSRFToken on every write.")
