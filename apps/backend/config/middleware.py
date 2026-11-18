@@ -68,7 +68,9 @@ class NoStoreMiddleware:
         return response
 
 
-def _not_exempt(request: HttpRequest) -> HttpResponse:  # pragma: no cover
+def _not_exempt(
+    request: HttpRequest,
+) -> HttpResponse:  # pragma: no cover  (placeholder view, never called)
     raise AssertionError("the view is never called here")
 
 

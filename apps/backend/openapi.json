@@ -78,9 +78,11 @@
                   "type": "null"
                 }
               ],
+              "description": "UUID. Retrying with the same key and body replays the answer.",
               "title": "Idempotency-Key"
             },
-            "required": false
+            "required": false,
+            "description": "UUID. Retrying with the same key and body replays the answer."
           }
         ],
         "responses": {
@@ -135,7 +137,7 @@
             }
           }
         },
-        "description": "Access: public. Creates the account and signs the learner in. An email already in use gets the same answer, without a session. Accepts an Idempotency-Key (UUID), kept for 24 hours.",
+        "description": "Access: public. Creates the account and signs the learner in. An email already in use gets the same answer, without signing in. Accepts an Idempotency-Key (UUID), kept for 24 hours.",
         "tags": [
           "account"
         ],

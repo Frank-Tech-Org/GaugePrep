@@ -53,7 +53,7 @@ def _anonymous_session(request: HttpRequest) -> None:
 
 def _user(request: HttpRequest) -> User:
     user = request.user
-    assert isinstance(user, User)  # learner_auth ran first
+    assert isinstance(user, User)
     return user
 
 
@@ -81,14 +81,20 @@ def csrf(request: HttpRequest) -> CsrfToken:
     summary="Sign up",
     description=(
         "Access: public. Creates the account and signs the learner in. "
-        "An email already in use gets the same answer, without a session. "
+        "An email already in use gets the same answer, without signing in. "
         "Accepts an Idempotency-Key (UUID), kept for 24 hours."
     ),
 )
 def signup(
     request: HttpRequest,
     payload: SignUpIn,
-    idempotency_key: Annotated[str | None, Header(alias="Idempotency-Key")] = None,
+    idempotency_key: Annotated[
+        str | None,
+        Header(
+            alias="Idempotency-Key",
+            description="UUID. Retrying with the same key and body replays the answer.",
+        ),
+    ] = None,
 ) -> Status[AccountSession] | HttpResponse:
     language = payload.interface_language
     address = throttle.client_address(request)

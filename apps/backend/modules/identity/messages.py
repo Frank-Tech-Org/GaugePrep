@@ -3,8 +3,9 @@ from django.http import HttpRequest
 LANGUAGES = ("fr", "en")
 DEFAULT_LANGUAGE = "en"
 
-# code -> language -> (title, detail)
-CATALOG: dict[str, dict[str, tuple[str, str]]] = {
+type Texts = dict[str, dict[str, tuple[str, str]]]
+
+CATALOG: Texts = {
     "age_below_minimum": {
         "en": ("Too young", "You must be 16 or older to create an account."),
         "fr": (
