@@ -4,10 +4,24 @@ servers:
       - <%= `doppler secrets get SERVER_HOST --plain #{ENV["DOPPLER_TOKEN"] ? "" : "-p gaugeprep -c stg"}`.strip %>
     options:
       memory: 320m
+  worker:
+    hosts:
+      - <%= `doppler secrets get SERVER_HOST --plain #{ENV["DOPPLER_TOKEN"] ? "" : "-p gaugeprep -c stg"}`.strip %>
+    cmd: python manage.py procrastinate worker
+    env:
+      secret:
+        - DATABASE_URL:WORKER_DATABASE_URL
+    options:
+      memory: 192m
 
 proxy:
-  host: staging.gaugeprep.com
+  host: api.staging.gaugeprep.com
 
 env:
   clear:
-    DJANGO_ALLOWED_HOSTS: staging.gaugeprep.com
+    DJANGO_ALLOWED_HOSTS: api.staging.gaugeprep.com
+    MAIL_HOST: smtp.resend.com
+    MAIL_PORT: "587"
+    MAIL_FROM: GaugePrep <no-reply@mail.staging.gaugeprep.com>
+  secret:
+    - MAIL_API_KEY
