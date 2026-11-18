@@ -116,3 +116,42 @@ SESSION_COOKIE_DOMAIN = None
 CSRF_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_DOMAIN = None
 CSRF_FAILURE_VIEW = "config.problems.csrf_failure"
+
+# Mail
+_mail_key = os.environ.get("MAIL_API_KEY", "")
+MAILERS = {
+    "default": {
+        "BACKEND": "django.core.mail.backends.smtp.EmailBackend",
+        "OPTIONS": {
+            "host": os.environ.get("MAIL_HOST") or "localhost",
+            "port": int(os.environ.get("MAIL_PORT") or 1025),
+            "username": "resend" if _mail_key else "",
+            "password": _mail_key,
+            "use_tls": bool(_mail_key),
+            "timeout": 10,  # seconds
+        },
+    }
+}
+DEFAULT_FROM_EMAIL = os.environ.get("MAIL_FROM") or "GaugePrep <no-reply@localhost>"
+MAIL_HEALTH_TO = os.environ.get("MAIL_HEALTH_TO", "")
+
+# Jobs
+PROCRASTINATE_IMPORT_PATHS = ["config.jobs"]
+PROCRASTINATE_AUTODISCOVER_MODULE_NAME = ""
+PROCRASTINATE_WORKER_DEFAULTS = {
+    "wait": True,
+    "concurrency": 2,
+    "fetch_job_polling_interval": 5,  # seconds
+    "shutdown_graceful_timeout": 20,  # seconds
+}
+
+# Logging
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "line": {"format": "%(asctime)s %(levelname)s %(name)s %(message)s"}
+    },
+    "handlers": {"console": {"class": "logging.StreamHandler", "formatter": "line"}},
+    "root": {"handlers": ["console"], "level": "INFO"},
+}

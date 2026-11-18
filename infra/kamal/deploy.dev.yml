@@ -2,12 +2,38 @@ servers:
   web:
     hosts:
       - <%= `doppler secrets get SERVER_HOST --plain #{ENV["DOPPLER_TOKEN"] ? "" : "-p gaugeprep -c dev"}`.strip %>
+    # SECURITY: only web migrates, so only web gets the migration role; the worker never sees it.
+    env:
+      secret:
+        - MIGRATION_DATABASE_URL
     options:
       memory: 320m
+  worker:
+    hosts:
+      - <%= `doppler secrets get SERVER_HOST --plain #{ENV["DOPPLER_TOKEN"] ? "" : "-p gaugeprep -c dev"}`.strip %>
+    cmd: python manage.py procrastinate worker
+    env:
+      secret:
+        - DATABASE_URL:WORKER_DATABASE_URL
+    options:
+      memory: 192m
 
 proxy:
-  host: dev.gaugeprep.com
+  host: api.dev.gaugeprep.com
+
+# WHY: dev sends to Mailpit, which catches every message; its web page is never public.
+accessories:
+  mailpit:
+    image: axllent/mailpit:v1.33.0@sha256:9b3a463be15354c0f0eba91697d80e3e0d8a5623ef0e627cacc836bc17fd5231
+    host: <%= `doppler secrets get SERVER_HOST --plain #{ENV["DOPPLER_TOKEN"] ? "" : "-p gaugeprep -c dev"}`.strip %>
+    port: "127.0.0.1:8025:8025"
+    options:
+      memory: 64m
 
 env:
   clear:
-    DJANGO_ALLOWED_HOSTS: dev.gaugeprep.com
+    DJANGO_ALLOWED_HOSTS: api.dev.gaugeprep.com
+    WEB_APP_ORIGIN: https://dev.gaugeprep.com
+    MAIL_HOST: gaugeprep-backend-mailpit
+    MAIL_PORT: "1025"
+    MAIL_FROM: GaugePrep <no-reply@dev.gaugeprep.com>

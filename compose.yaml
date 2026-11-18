@@ -25,12 +25,40 @@ services:
       DJANGO_SETTINGS_MODULE: config.settings.local
       DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1
       DATABASE_URL: postgres://postgres:postgres@db:5432/gaugeprep
+      MAIL_HOST: mailpit
+      MAIL_PORT: "1025"
     ports:
       - "127.0.0.1:${BACKEND_PORT:-}:8000"
     depends_on:
       db:
         condition: service_healthy
+      mailpit:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://localhost:8000/api/v1/health')"]
+      interval: 3s
+      timeout: 3s
+      retries: 40
     command: sh -c "python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:8000"
+
+  worker:
+    build:
+      context: .
+      dockerfile: infra/docker/backend.Dockerfile
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.local
+      DATABASE_URL: postgres://postgres:postgres@db:5432/gaugeprep
+      MAIL_HOST: mailpit
+      MAIL_PORT: "1025"
+    depends_on:
+      backend:
+        condition: service_healthy
+    command: python manage.py procrastinate worker
+
+  mailpit:
+    image: axllent/mailpit:v1.33.0@sha256:9b3a463be15354c0f0eba91697d80e3e0d8a5623ef0e627cacc836bc17fd5231
+    ports:
+      - "127.0.0.1:${MAILPIT_UI_PORT:-8025}:8025"
 
 volumes:
   pgdata:

@@ -46,5 +46,5 @@ proxy:
 env:
   secret:
     - DATABASE_URL
-    - MIGRATION_DATABASE_URL
     - DJANGO_SECRET_KEY
+    - MAIL_HEALTH_TO

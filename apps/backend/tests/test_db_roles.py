@@ -118,6 +118,35 @@ def test_command_refuses_a_missing_role() -> None:
         main(["app_migrator"])
 
 
+def test_command_prints_the_worker_grants_when_given_a_third_role(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    main(["app_migrator", "app_serving", "app_worker"])
+    assert 'ON public.%I TO "app_worker"' in capsys.readouterr().out
+
+
+def test_worker_role_reaches_only_the_job_tables(roles: tuple[str, str]) -> None:
+    migrator, serving = roles
+    worker = f"t_worker_{uuid.uuid4().hex[:8]}"
+    _create_table(migrator, "public.t_ordinary", locked=False)
+    _create_table(migrator, "public.t_grades", locked=True)
+    with connection.cursor() as cursor:
+        cursor.execute(f'CREATE ROLE "{worker}"')
+        cursor.execute(role_sql(migrator, serving, worker))
+    _as(
+        worker,
+        "SELECT count(*) FROM public.procrastinate_jobs",
+        "UPDATE public.procrastinate_jobs SET attempts = attempts",
+        "SELECT procrastinate_register_worker_v1()",
+    )
+    for table in ("t_ordinary", "t_grades", "django_migrations"):
+        _refused(worker, f"SELECT * FROM public.{table}")
+    _refused(worker, "CREATE TABLE public.t_forbidden (id int)")
+    _refused(worker, "DROP TABLE public.procrastinate_jobs")
+    _refused(worker, "TRUNCATE public.procrastinate_jobs")
+    _as(serving, "INSERT INTO public.t_ordinary (body) VALUES ('a')")
+
+
 def test_rerunning_the_role_sql_keeps_an_append_only_table_closed(
     roles: tuple[str, str],
 ) -> None:
