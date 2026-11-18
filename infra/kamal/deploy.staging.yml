@@ -24,6 +24,7 @@ proxy:
 env:
   clear:
     DJANGO_ALLOWED_HOSTS: api.staging.gaugeprep.com
+    WEB_APP_ORIGIN: https://staging.gaugeprep.com
     MAIL_HOST: smtp.resend.com
     MAIL_PORT: "587"
     MAIL_FROM: GaugePrep <no-reply@mail.staging.gaugeprep.com>
