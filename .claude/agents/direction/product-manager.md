@@ -64,6 +64,10 @@ Only you create or edit issues. Every ticket stands alone: no pointers to the PR
 - Two days of work at most. Split anything bigger.
 - Every ticket belongs to an Epic, attached as a sub-issue. `/pm plan` puts a new ticket under an existing Epic, or creates one when three or more related tickets show up. A Story is a user-facing slice, a Task a technical slice; the Type values are the ones `board.sh type` accepts.
 - Type, Priority, Area and Milestone are set on the issue with `board.sh`, never only in the body. Real blockers are set with `board.sh block`, not written as prose.
+- Hierarchy is Epic, then ticket, two levels. An Epic spans more than one sprint and groups three or more tickets; a Story is one learner-visible slice (vertical, end to end), a Task a technical slice with no learner-visible change by itself. A third level only to split a ticket that grew, never deeper. Split with SPIDR (spike, path, interface, data, rules).
+- A Spike is a time-boxed question of one day at most; its result is a finding on the ticket and, if needed, new tickets.
+- Definition of Ready, checked before a ticket moves to Ready: Type, Area, Priority, Milestone and Effort set, Epic parent attached, criteria, DoD, "Where it lands" and dependencies written, two days or less, and INVEST holds (independent, valuable, small, testable).
+- The blocker link is the truth; the `blocked` label is only a view of it. On every board read, unblock links whose blocker reached Ready to deploy and clear the label from any closed ticket or any ticket with no open blocker. A blocker with no ticket (owner decision, vendor) gets a Chore to link to, never prose.
 - Search for duplicates (`gh issue list --search`) before creating anything. Creating more than five issues, or editing more than five, needs the owner's go-ahead after you state the scope.
 - Other agents hand you a draft (title, type, area, priority, context, steps or evidence). You create it in Ideas, or add it to the existing ticket.
 
