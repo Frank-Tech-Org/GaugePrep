@@ -85,7 +85,7 @@ MAILERS = {
     }
 }
 DEFAULT_FROM_EMAIL = os.environ.get("MAIL_FROM") or "GaugePrep <no-reply@localhost>"
-MAIL_HEALTH_TO = os.environ.get("MAIL_HEALTH_TO") or "health@gaugeprep.test"
+MAIL_HEALTH_TO = os.environ.get("MAIL_HEALTH_TO", "")
 
 # Jobs
 PROCRASTINATE_IMPORT_PATHS = ["config.jobs"]

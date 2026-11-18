@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Usage: worker-role.sh <dev|stg>
-# Creates or rotates the worker database role, grants it the job tables only and stores its URL in Doppler.
+# Creates or rotates the worker role, grants it the job tables only, stores its URL in Doppler.
 set -euo pipefail
 
 env="${1:?usage: worker-role.sh <dev|stg>}"

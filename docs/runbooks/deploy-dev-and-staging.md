@@ -157,6 +157,7 @@ First deploy of the worker, a worker password rotation, or a mail check after a 
 2. Dev: `ssh -L 8025:127.0.0.1:8025 deploy@<server ip>`, open `http://localhost:8025`. Pass: the message is listed.
 3. Staging: open the test inbox, show the original message. Pass: SPF and DKIM `pass`.
 4. As the worker role: `psql "$WORKER_URL" -c 'SELECT 1 FROM django_migrations'`. Pass: permission denied.
+5. `kamal app exec -r worker -c infra/kamal/deploy.yml -d dev 'env' | grep -c MIGRATION_DATABASE_URL`. Pass: `0`; only the web container holds the migration role.
 
 ### Rollback
 

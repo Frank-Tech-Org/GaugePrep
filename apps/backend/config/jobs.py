@@ -19,7 +19,7 @@ RUNS = RETRIES + 1
 RETRY = RetryStrategy(max_attempts=RETRIES, exponential_wait=2)
 
 
-# One log line per start, success and failure; never the job arguments.
+# WHY: one log line per start, success and failure; never the job arguments.
 def observed(
     func: Callable[..., Awaitable[None]],
 ) -> Callable[..., Awaitable[None]]:

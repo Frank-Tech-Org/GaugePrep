@@ -2,6 +2,10 @@ servers:
   web:
     hosts:
       - <%= `doppler secrets get SERVER_HOST --plain #{ENV["DOPPLER_TOKEN"] ? "" : "-p gaugeprep -c stg"}`.strip %>
+    # SECURITY: only web migrates, so only web gets the migration role; the worker never sees it.
+    env:
+      secret:
+        - MIGRATION_DATABASE_URL
     options:
       memory: 320m
   worker:

@@ -11,6 +11,7 @@ ENV = {
     "MAIL_HOST": "localhost",
     "MAIL_PORT": "1025",
     "MAIL_FROM": "GaugePrep <no-reply@example.test>",
+    "MAIL_HEALTH_TO": "inbox@example.test",
 }
 
 

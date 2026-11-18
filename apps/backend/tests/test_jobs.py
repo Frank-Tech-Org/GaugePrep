@@ -26,6 +26,7 @@ def clean_queue() -> Iterator[None]:
     yield
     _rows("DELETE FROM procrastinate_periodic_defers")
     _rows("DELETE FROM procrastinate_jobs")
+    _rows("DELETE FROM procrastinate_workers")
     _rows("DROP TABLE IF EXISTS t_marker")
 
 
@@ -89,6 +90,22 @@ def test_a_job_left_doing_by_a_dead_worker_runs_once_more() -> None:
     _run_worker("test")
     assert _mine("status") == [("succeeded",)]
     assert _rows("SELECT count(*) FROM t_marker") == [(1,)]
+
+
+def test_a_job_whose_worker_is_alive_is_not_requeued() -> None:
+    marker.defer()
+    _rows("INSERT INTO procrastinate_workers DEFAULT VALUES")
+    _rows(
+        "UPDATE procrastinate_jobs SET status = 'doing', "
+        "worker_id = (SELECT max(id) FROM procrastinate_workers)"
+    )
+    retry_stalled_jobs.configure(queueing_lock="test").defer(timestamp=1)
+    _run_worker("default")
+    _run_worker("test")
+    assert _mine("status") == [("doing",)]
+    assert _rows("SELECT count(*) FROM pg_tables WHERE tablename = 't_marker'") == [
+        (0,)
+    ]
 
 
 def test_the_health_job_sends_one_message_and_logs_no_address(
