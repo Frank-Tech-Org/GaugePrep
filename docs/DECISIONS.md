@@ -169,6 +169,14 @@ Settled architecture choices become ADRs in `docs/adr/`. This file is for open q
 
 - Decided: 2026-11-17: yes, under D-11 · the CTO. BSD-3-Clause, 0.5.1 of 4 November 2026, no open advisory on it or its main dependencies, run pinned through `uvx` so it adds nothing to our lockfile (49 packages in its own environment); a browser fetcher is far past 200 lines. Script evaluation and saved browser state stay off; the no-CAPTCHA, no-login, robots rule stands.
 
+### D-33: What happens to the append-only consent record when a learner deletes their account?
+
+- Decided: 2026-11-18: A, under D-11 · the CTO. Consent rows stay under the bare learner ID, with no foreign key to the account, as proof of consent; deleting the account row removes the link, and no exception to the append-only rule is needed (B deleted them through an audited role, C waited). It can be undone later, since rows kept can still be deleted. The privacy reviewer agreed on conditions that the deletion ticket must meet: no payment, log, error-tracking, job or idempotency record keeps the learner ID next to an email, name, phone or IP; essays and transcripts are deleted; backups expire within 8 weeks and a restore reruns pending deletions; consent proof has a named retention period; the notice says "kept without any link to you", never "deleted".
+
+### D-34: Which calls are the owner's?
+
+- Decided: 2026-11-18: the owner. Technical and system-design calls are the CTO's, irreversible ones included (destructive migrations, auth design). The owner keeps accounts, budget, passwords, scoring or grading formulas, pricing, cutting scope and production paid services. This replaces "anything irreversible" in D-11 and the destructive migration, auth redesign and irreversible items in D-17. PR approvals, merges into `stage` and `main`, tags, releases and owner-only files stay with the owner.
+
 <!-- Move an entry here when answered, adding:
 - Decided: <YYYY-MM-DD>: <option> · <the owner's reason>
 -->

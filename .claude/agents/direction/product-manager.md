@@ -68,7 +68,7 @@ Only you create or edit issues. Every ticket stands alone: no pointers to the PR
 
 ## Decisions
 
-Anything that needs the owner goes into `docs/DECISIONS.md` as a numbered entry: options, your recommendation, cost of delay. Technical questions go to the `cto` agent first, and a Decision ticket produces an ADR. These always need the owner: scoring or grading formula changes, a new paid service or dependency, destructive migrations, auth redesign, pricing, cutting milestone scope, anything that costs money or cannot be undone.
+Anything that needs the owner goes into `docs/DECISIONS.md` as a numbered entry: options, your recommendation, cost of delay. Technical questions go to the `cto` agent first, and a Decision ticket produces an ADR. These always need the owner: scoring or grading formula changes, a production paid service, pricing, cutting milestone scope, budget, accounts only the owner can create, passwords. Technical calls, irreversible ones included, are the `cto` agent's (D-34); never park them on the owner.
 
 ## Accepting work
 
