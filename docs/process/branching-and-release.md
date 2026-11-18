@@ -14,9 +14,11 @@ Two tickets may run together only when all of this holds:
 
 Each ticket has its own branch. The ticket being built is checked out in the owner's checkout, so the owner sees the changes in the editor and can work on them too; any other ticket in flight uses its own git worktree (`../lm-<n>`), so two tickets never share a working tree. A switch needs a clean tree, and the checkout goes back to `develop` after the merge.
 
-If a ticket in flight turns out to depend on another one, the build step marks it blocked by that ticket and sends it back to Ready; the blocker is ordered first.
+If a ticket in flight turns out to depend on another one, the build step marks the ticket on the current branch as blocked by it and sends it back to Ready (section 2, Blocked). The blocker is ordered first.
 
 A production hotfix (section 8) may exceed the limit. So may an owner-run ticket with no repository code (an account, a recording, a vendor request), labelled `owner-task`: it runs outside the limit, one at a time, except that one which is only waiting on a third party (a registration, a vendor reply) doesn't count, and needs no branch or worktree.
+
+Why: a small parallel set keeps `develop` releasable, review load bounded and context small enough for one session each, while tickets that cannot conflict no longer wait for each other.
 
 ```mermaid
 flowchart LR
@@ -175,11 +177,38 @@ GitHub doesn't enforce these on the free plan for a private organisation reposit
 - Two accounts, both organisation owners. The automation runs as `KefouegFrank`, the owner's main account, so the commits count on it. The owner approves as `frankkefoueg`, the only account used for `stage`, `main`, tags and releases. GitHub won't let the account that opened a PR approve it, so the approval on a `develop` PR always comes from the other account, and the merge script checks it.
 - Files that control these limits (the guard and other hooks, the tool settings, the push, merge, board and env scripts, the git hooks and the workflows) change only by the owner's hand. A needed change is staged with one apply script that copies the files and shows the diff, and the merge script refuses a PR that touches them, so the owner merges it.
 
-## 10. Troubleshooting
+## 10. Checklists
+
+**Before opening a PR**
+- [ ] Branch is `feature/<n>-<slug>` created from the ticket off current `develop` (or `hotfix/*` off `main`), so it shows in the ticket's Development panel
+- [ ] PR title follows Conventional Commits; body says `Refs #<n>`
+- [ ] Tests and checks pass locally
+- [ ] The code review (and any specialist review) passed the local diff before the first push
+- [ ] Every acceptance criterion addressed, or listed as a follow-up
+- [ ] The Definition of Done items in the ticket are ticked
+
+**Cutting a release**
+- [ ] Nothing In QA; Ready to deploy list confirmed; any failed-QA ticket on `develop` fixed or reverted
+- [ ] Changelog merged into `develop`; `develop` promoted to `stage` with a merge commit
+- [ ] Gate passed on staging: security, dependencies, performance, claims, UX; regression QA passed
+- [ ] `stage` merged to `main` with a merge commit, tagged, GitHub release created
+- [ ] Tickets moved to Done and closed
+
+**Hotfix**
+- [ ] Branched from `main`; QA passed on staging
+- [ ] Tagged with a PATCH version
+- [ ] `main` merged back into `stage`, then `develop`
+- [ ] Interrupted ticket resumed
+
+## 11. Troubleshooting
+
+**QA fails after the merge.** The ticket goes back to In progress and stays in flight. Fix it on a new branch from `develop`, with `Refs #<n>` in the PR. If the ticket is abandoned, or a release can't wait for the fix, revert its squash commits on `develop` before the next promotion (section 7, step 1), so `develop` stays releasable.
 
 **One ticket, several PRs.** Normal: a fix PR or a split ticket. Each squash commit carries `Refs #<n>`, so `git log --grep "#<n>"` lists them all; a revert takes all of them, newest first.
 
 **Reverts keep happening.** If tickets are often held back at release, ship unfinished work behind a feature switch that is off on staging and production, instead of reverting. Until then, a screen a learner could reach half-built stays unlinked (section 7).
+
+**A defect found on staging.** Never fix it on `stage`. Fix it on `develop` through a ticket, then promote again.
 
 **A bad change reached `main`.** Revert it instead of rewriting history (`git revert -m 1 <merge-sha>` for a merge commit), then ship a PATCH release.
 

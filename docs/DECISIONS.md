@@ -73,7 +73,7 @@ Settled architecture choices become ADRs in `docs/adr/`. This file is for open q
 
 ### D-11: What may the CTO and the product manager decide without the owner?
 
-- Decided: 2026-11-05: a standing delegation list · the owner. The CTO decides technical items and the product manager product items, then records each ruling here with "under D-11". Delegated: a free MIT, BSD, Apache-2.0 or ISC dependency with no open CVE and under 5 new lockfile packages (a package already in the lockfile counts as none); whether an acceptance criterion is met when its number is met; splitting or merging tickets; process wording that loosens no safety rule. Kept by the owner: money, legal identity, accounts, physical access, anything irreversible, scoring or grading formulas, PR approvals, owner-only files, releases and tags.
+- Decided: 2026-11-05: a standing delegation list · the owner. The CTO decides technical items and the product manager product items, then records each ruling here with "under D-11". Delegated: a free MIT, BSD, Apache-2.0 or ISC dependency with no open CVE and under 5 new lockfile packages (a package already in the lockfile counts as none); whether an acceptance criterion is met when its number is met; splitting or merging tickets; process wording that loosens no safety rule. Kept by the owner: money, legal identity, accounts, physical access, anything irreversible (replaced by D-34), scoring or grading formulas, PR approvals, owner-only files, releases and tags.
 - Effect: owner asks come as one list before the Friday demo.
 
 ### D-12: Does an owner task that is only waiting count against the one-at-a-time rule?
@@ -102,7 +102,7 @@ Settled architecture choices become ADRs in `docs/adr/`. This file is for open q
 
 ### D-17: How are rulings split between the team and the owner?
 
-- Decided: 2026-11-16: a ladder · the owner. An unsure team member asks their lead, then the owner only for scoring or grading formulas, destructive migrations, auth redesign, pricing, cutting scope, anything irreversible and a production paid service. Every ruling is one line here.
+- Decided: 2026-11-16: a ladder · the owner. An unsure team member asks their lead, then the owner only for scoring or grading formulas, destructive migrations, auth redesign (replaced by D-34), pricing, cutting scope, anything irreversible (replaced by D-34) and a production paid service. Every ruling is one line here.
 
 ### D-18: What format do briefs and reports use?
 
