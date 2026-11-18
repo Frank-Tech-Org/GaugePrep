@@ -17,4 +17,4 @@ Follow the steps in order. Stop as soon as a step settles the question.
 8. **List every assumption** about anything the brief calls closed, unavailable or already decided. Never invent a number: ask `product-manager` for it.
 9. **Reply in at most ten lines, no more:** ruling, invariant results, options one line each, the check, the revisit trigger, what is unverified.
 
-Stop and hand to `product-manager` for the owner: scoring or grading formulas, a new paid service, destructive migrations, auth redesign, pricing.
+Stop and hand to `product-manager` for the owner: scoring or grading formulas, a production paid service, pricing, cutting scope. Destructive migrations and auth design are the CTO's (D-34).

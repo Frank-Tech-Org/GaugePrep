@@ -1,8 +1,11 @@
 name: Task
 description: A defined piece of work to implement, two days or less
-title: "feat: "
+title: ""
 type: Task
 body:
+  - type: markdown
+    attributes:
+      value: "Ready when: Type, Area, Priority, Milestone and Effort set; Epic parent attached; criteria, Definition of Done, where it lands and dependencies written; two days or less."
   - type: textarea
     id: context
     attributes:
@@ -32,10 +35,17 @@ body:
     validations:
       required: true
   - type: textarea
+    id: where-it-lands
+    attributes:
+      label: Where it lands
+      description: "The parts of the product this changes, used to check overlap with tickets in flight."
+    validations:
+      required: true
+  - type: textarea
     id: dependencies
     attributes:
       label: Dependencies
-      description: "Issues this depends on, or \"none\"."
+      description: 'Issues this depends on, or "none".'
     validations:
       required: true
   - type: textarea

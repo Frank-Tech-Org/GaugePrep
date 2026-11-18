@@ -14,7 +14,7 @@ Two tickets may run together only when all of this holds:
 
 Each ticket has its own branch. The ticket being built is checked out in the owner's checkout, so the owner sees the changes in the editor and can work on them too; any other ticket in flight uses its own git worktree (`../lm-<n>`), so two tickets never share a working tree. A switch needs a clean tree, and the checkout goes back to `develop` after the merge.
 
-If a ticket in flight turns out to depend on another one, the build step marks the ticket on the current branch as blocked by it and sends it back to Ready. The blocker is ordered first. A blocker counts as resolved at Ready to deploy.
+If a ticket in flight turns out to depend on another one, the build step marks the ticket on the current branch as blocked by it and sends it back to Ready (section 2, Blocked). The blocker is ordered first.
 
 A production hotfix (section 8) may exceed the limit. So may an owner-run ticket with no repository code (an account, a recording, a vendor request), labelled `owner-task`: it runs outside the limit, one at a time, except that one which is only waiting on a third party (a registration, a vendor reply) doesn't count, and needs no branch or worktree.
 
@@ -40,14 +40,17 @@ Board: org project #6, "GaugePrep Delivery", in the `Frank-Tech-Org` organisatio
 |---|---|---|---|
 | **Ideas** | Raw, untriaged ticket or suggestion | Nothing | Accepted into the backlog, or closed as duplicate or won't do |
 | **Backlog** | Accepted: type, area, priority and milestone set, not yet refined | Nothing | Refined |
-| **Ready** | Refined: acceptance criteria, Definition of Done and dependencies written, sized to two days or less | Nothing | Picked as the next ticket |
+| **Ready** | Meets the Definition of Ready below | Nothing | Picked as the next ticket |
 | **In progress** | Being built (in flight) | `feature/<n>-<slug>` | PR opened into `develop` |
 | **In review** | PR open (in flight) | PR into `develop` | Approved and squash-merged |
 | **In QA** | Merged, deployed to dev (in flight) | `develop`, dev | QA passes, or fails back to In progress |
 | **Ready to deploy** | Passed QA; no longer in flight | `develop`, then `stage` and staging once promoted | Included in a tagged release |
 | **Done** | Live, tagged, "Released in" posted, issue closed | `main` | n/a |
 
-A blocked ticket goes back to **Ready** with the `blocked` label and a GitHub "blocked by" link to its blocker. A blocker counts as resolved once it reaches Ready to deploy.
+- **Epic.** Spans more than one sprint and groups three or more tickets as sub-issues. Every other ticket has an Epic parent.
+- **Spike.** A question answered in one day at most; the result is a finding on the ticket and, if needed, new tickets.
+- **Definition of Ready.** Type, Area, Priority, Milestone and Effort set; Epic parent attached; acceptance criteria, Definition of Done, where it lands and dependencies written; two days or less.
+- **Blocked.** A blocked ticket goes back to Ready with a GitHub "blocked by" link to its blocker. The link is the record and the `blocked` label only shows it. A blocker counts as resolved once it is Ready to deploy, Done or closed; the board helper's sweep then drops the label, as it does on any closed ticket. A wait outside the team (a provider, a signed form, an owner decision) gets a Chore to link to.
 
 ## 3. Branches and environments
 
@@ -104,7 +107,7 @@ hotfix/<version>-<short-slug>       hotfix/0.2.1-fix-timer-drift
 
 Delivery runs through build, review, push, merge and QA without stopping until something only the owner can do (a merge into `stage` or `main`, a tag, an account, money, an owner ruling) or a blocker.
 
-1. **Triage and refine.** New tickets land in Ideas. Planning sets type, area, priority and milestone, writes the acceptance criteria, the Definition of Done, where it lands and the dependencies, splits anything over two days, and moves the ticket to Ready. The owner closes duplicates and rejected ideas.
+1. **Triage and refine.** New tickets land in Ideas. Planning brings each one to the Definition of Ready (section 2), splits anything over two days, and moves it to Ready. The owner closes duplicates and rejected ideas.
 2. **Plan the sprint.** Ready tickets go into the two-week Sprint iteration in dependency order. Sprints sit inside the product milestones (M0 to M8).
 3. **Pick.** The product manager names the tickets to start, up to the parallel limit: blockers first, then milestone, priority and size, and only tickets that cannot conflict.
 4. **Build.** The ticket moves to In progress and `feature/<n>-<slug>` is created from the ticket, off an up-to-date `develop`, in the owner's checkout (or its own worktree when that holds another ticket in flight). Nothing is pushed yet.
@@ -210,5 +213,3 @@ GitHub doesn't enforce these on the free plan for a private organisation reposit
 **A bad change reached `main`.** Revert it instead of rewriting history (`git revert -m 1 <merge-sha>` for a merge commit), then ship a PATCH release.
 
 **A hotfix wasn't back-merged.** Merge `main` into `stage`, then into `develop`, as soon as it's noticed. Git skips the changes that are already there.
-
-**A ticket is stuck waiting on something outside the team** (a provider, a signed form). Mark it blocked by a Chore that tracks the outside dependency. That sends it back to Ready, and the next ticket can start.

@@ -299,6 +299,7 @@ Every `task_grade`, `paper_score` and `prediction` stores: exam rules version, i
 | Data | Kept |
 |---|---|
 | Account and identity | Until deletion request; removed within 30 days |
+| Consent records | Kept after deletion under the learner ID alone, with no link to the account, as proof of consent (D-33) |
 | Essays and transcripts | 12 months after last activity, then deleted |
 | Speaking recordings | 12 months, by R2 lifecycle rule |
 | Attestation uploads | Deleted after verification |
