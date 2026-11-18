@@ -109,13 +109,13 @@ An agent that is unsure asks up the ladder, records the ruling in one line and k
 
 | Question is about | Decides | Told afterwards |
 |---|---|---|
-| Architecture, dependency, technical option | `cto` | PR, or `docs/DECISIONS.md` "under D-11" |
+| Architecture, system design, dependency, technical option, irreversible ones included (destructive migration, auth design) | `cto` | PR, or `docs/DECISIONS.md` "under D-11" |
 | Scope, order, ticket wording, acceptance | `product-manager` | ticket |
 | Exam behaviour, item content | `exam-content-lead` | ticket |
 | Personal data, consent, claims | `privacy-compliance` | PR |
 | Attack surface, auth, secrets handling | `security-engineer` | PR |
 | Budgets and performance trade-offs | `performance-engineer` | PR |
-| Scoring or grading formula, destructive migration, auth redesign, pricing, cutting scope, anything irreversible, a production paid service | owner | n/a |
+| Scoring or grading formula, pricing, cutting scope, a production paid service, budget, accounts only the owner can create, passwords | owner | n/a |
 
 - The ladder is the agent, its department lead, then the owner only where the row says owner.
 - Two agents disagree: `cto` decides technical points and `product-manager` product points; if those two disagree, `cto` decides, unless an owner row is touched.
@@ -178,7 +178,7 @@ The items are measurable on purpose (for example "axe-core reports zero serious 
 
 ## Decisions
 
-Anything that needs the owner (the owner row in "Who decides", plus a new paid service or dependency) goes in `docs/DECISIONS.md` as a numbered entry with options, a recommendation and the cost of delay. `/pm` surfaces it and `/pm decide` resolves it. Every other technical question is the `cto` agent's to decide with evidence, recorded in the PR or as "under D-11"; agents don't ask the owner to confirm it.
+Anything that needs the owner (the owner row in "Who decides", plus a production paid service) goes in `docs/DECISIONS.md` as a numbered entry with options, a recommendation and the cost of delay. `/pm` surfaces it and `/pm decide` resolves it. Every other technical question is the `cto` agent's to decide with evidence, recorded in the PR or as "under D-11"; agents don't ask the owner to confirm it.
 
 ## Checkpoint comment
 
