@@ -8,6 +8,7 @@ ENV = {
     "DJANGO_SECRET_KEY": "x" * 50,
     "DJANGO_ALLOWED_HOSTS": "api.example.test",
     "DATABASE_URL": "postgres://app:p@h/db",
+    "WEB_APP_ORIGIN": "https://app.example.test",
 }
 
 

@@ -33,7 +33,342 @@
             }
           }
         },
-        "tags": ["health"]
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/api/v1/auth/csrf": {
+      "get": {
+        "operationId": "modules_identity_api_csrf",
+        "summary": "Get a CSRF token",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CsrfToken"
+                }
+              }
+            }
+          }
+        },
+        "description": "Access: public. Send the token as X-CSRFToken on every write.",
+        "tags": [
+          "account"
+        ]
+      }
+    },
+    "/api/v1/auth/signup": {
+      "post": {
+        "operationId": "modules_identity_api_signup",
+        "summary": "Sign up",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "UUID. Retrying with the same key and body replays the answer.",
+              "title": "Idempotency-Key"
+            },
+            "required": false,
+            "description": "UUID. Retrying with the same key and body replays the answer."
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountSession"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "description": "Access: public. Creates the account and signs the learner in. An email already in use gets the same answer, without signing in. Accepts an Idempotency-Key (UUID), kept for 24 hours.",
+        "tags": [
+          "account"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignUpIn"
+              }
+            }
+          },
+          "required": true
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "operationId": "modules_identity_api_log_in",
+        "summary": "Log in",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountSession"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "description": "Access: public. A wrong password and an unknown email get the same answer. After 5 failures in a minute from one address, the next attempt is refused.",
+        "tags": [
+          "account"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginIn"
+              }
+            }
+          },
+          "required": true
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "operationId": "modules_identity_api_log_out",
+        "summary": "Log out",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "description": "Access: learner. Ends this session on the server.",
+        "tags": [
+          "account"
+        ],
+        "security": [
+          {
+            "LearnerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/v1/me": {
+      "get": {
+        "operationId": "modules_identity_api_read_profile",
+        "summary": "Read the profile",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Profile"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "description": "Access: learner.",
+        "tags": [
+          "account"
+        ],
+        "security": [
+          {
+            "LearnerAuth": []
+          }
+        ]
+      },
+      "patch": {
+        "operationId": "modules_identity_api_update_profile",
+        "summary": "Update the profile",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Profile"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "description": "Access: learner. Changes the interface language or the display name.",
+        "tags": [
+          "account"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfilePatch"
+              }
+            }
+          },
+          "required": true
+        },
+        "security": [
+          {
+            "LearnerAuth": []
+          }
+        ]
       }
     }
   },
@@ -50,36 +385,310 @@
             "type": "string"
           }
         },
-        "required": ["status", "database"],
+        "required": [
+          "status",
+          "database"
+        ],
         "title": "Health",
+        "type": "object"
+      },
+      "FieldProblem": {
+        "properties": {
+          "field": {
+            "description": "The request field that was refused.",
+            "title": "Field",
+            "type": "string"
+          },
+          "code": {
+            "description": "Stable code saying why the field was refused.",
+            "title": "Code",
+            "type": "string"
+          }
+        },
+        "required": [
+          "field",
+          "code"
+        ],
+        "title": "FieldProblem",
         "type": "object"
       },
       "Problem": {
         "properties": {
           "type": {
+            "description": "URN naming the kind of problem.",
             "title": "Type",
             "type": "string"
           },
           "title": {
+            "description": "Short summary, in the learner's language.",
             "title": "Title",
             "type": "string"
           },
           "status": {
+            "description": "HTTP status code.",
             "title": "Status",
             "type": "integer"
           },
           "detail": {
+            "description": "What went wrong, in the learner's language.",
             "title": "Detail",
             "type": "string"
           },
           "code": {
+            "description": "Stable machine-readable error code.",
             "title": "Code",
+            "type": "string"
+          },
+          "errors": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/FieldProblem"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Per-field problems, present on validation errors.",
+            "title": "Errors"
+          }
+        },
+        "required": [
+          "type",
+          "title",
+          "status",
+          "detail",
+          "code"
+        ],
+        "title": "Problem",
+        "type": "object"
+      },
+      "CsrfToken": {
+        "properties": {
+          "csrf_token": {
+            "description": "Token to send as X-CSRFToken on every write.",
+            "title": "Csrf Token",
             "type": "string"
           }
         },
-        "required": ["type", "title", "status", "detail", "code"],
-        "title": "Problem",
+        "required": [
+          "csrf_token"
+        ],
+        "title": "CsrfToken",
         "type": "object"
+      },
+      "AccountSession": {
+        "properties": {
+          "learner_id": {
+            "description": "Anonymous learner ID that every other part of the product stores.",
+            "format": "uuid",
+            "title": "Learner Id",
+            "type": "string"
+          },
+          "email": {
+            "description": "Account email, lower case.",
+            "title": "Email",
+            "type": "string"
+          },
+          "display_name": {
+            "description": "Name shown in the app; empty when none was given.",
+            "title": "Display Name",
+            "type": "string"
+          },
+          "interface_language": {
+            "description": "Interface language, fr or en.",
+            "enum": [
+              "fr",
+              "en"
+            ],
+            "title": "Interface Language",
+            "type": "string"
+          },
+          "email_verified": {
+            "description": "True once the email address is confirmed.",
+            "title": "Email Verified",
+            "type": "boolean"
+          },
+          "csrf_token": {
+            "description": "Token to send as X-CSRFToken on every write.",
+            "title": "Csrf Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "learner_id",
+          "email",
+          "display_name",
+          "interface_language",
+          "email_verified",
+          "csrf_token"
+        ],
+        "title": "AccountSession",
+        "type": "object"
+      },
+      "SignUpIn": {
+        "properties": {
+          "email": {
+            "description": "Email address; compared without case.",
+            "maxLength": 254,
+            "title": "Email",
+            "type": "string"
+          },
+          "password": {
+            "description": "Password; the server applies the strength rules.",
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Password",
+            "type": "string"
+          },
+          "date_of_birth": {
+            "description": "Date of birth; the learner must be 16 or older.",
+            "format": "date",
+            "title": "Date Of Birth",
+            "type": "string"
+          },
+          "interface_language": {
+            "description": "Interface language, fr or en.",
+            "enum": [
+              "fr",
+              "en"
+            ],
+            "title": "Interface Language",
+            "type": "string"
+          },
+          "display_name": {
+            "default": "",
+            "description": "Name shown in the app, up to 80 characters.",
+            "maxLength": 80,
+            "title": "Display Name",
+            "type": "string"
+          },
+          "processing_consent": {
+            "default": false,
+            "description": "Must be true: consent to process learning data.",
+            "title": "Processing Consent",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "email",
+          "password",
+          "date_of_birth",
+          "interface_language"
+        ],
+        "title": "SignUpIn",
+        "type": "object"
+      },
+      "LoginIn": {
+        "properties": {
+          "email": {
+            "description": "Email address of the account.",
+            "maxLength": 254,
+            "minLength": 1,
+            "title": "Email",
+            "type": "string"
+          },
+          "password": {
+            "description": "Password of the account.",
+            "maxLength": 256,
+            "minLength": 1,
+            "title": "Password",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ],
+        "title": "LoginIn",
+        "type": "object"
+      },
+      "Profile": {
+        "properties": {
+          "learner_id": {
+            "description": "Anonymous learner ID that every other part of the product stores.",
+            "format": "uuid",
+            "title": "Learner Id",
+            "type": "string"
+          },
+          "email": {
+            "description": "Account email, lower case.",
+            "title": "Email",
+            "type": "string"
+          },
+          "display_name": {
+            "description": "Name shown in the app; empty when none was given.",
+            "title": "Display Name",
+            "type": "string"
+          },
+          "interface_language": {
+            "description": "Interface language, fr or en.",
+            "enum": [
+              "fr",
+              "en"
+            ],
+            "title": "Interface Language",
+            "type": "string"
+          },
+          "email_verified": {
+            "description": "True once the email address is confirmed.",
+            "title": "Email Verified",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "learner_id",
+          "email",
+          "display_name",
+          "interface_language",
+          "email_verified"
+        ],
+        "title": "Profile",
+        "type": "object"
+      },
+      "ProfilePatch": {
+        "properties": {
+          "interface_language": {
+            "anyOf": [
+              {
+                "enum": [
+                  "fr",
+                  "en"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "New interface language, fr or en.",
+            "title": "Interface Language"
+          },
+          "display_name": {
+            "anyOf": [
+              {
+                "maxLength": 80,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "New display name, up to 80 characters.",
+            "title": "Display Name"
+          }
+        },
+        "title": "ProfilePatch",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "LearnerAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "gp_session"
       }
     }
   },

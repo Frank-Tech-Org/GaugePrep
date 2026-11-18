@@ -223,11 +223,12 @@ def test_role_sql_works_as_a_non_superuser_owner(roles: tuple[str, str]) -> None
         cursor.execute(
             "DO $$ DECLARE r record; BEGIN "
             "FOR r IN SELECT schemaname, tablename FROM pg_tables "
-            "WHERE schemaname = 'public' LOOP "
+            "WHERE schemaname IN ('public', 'identity') LOOP "
             "EXECUTE format('ALTER TABLE %I.%I OWNER TO " + f'"{owner}"' + "', "
             "r.schemaname, r.tablename); END LOOP; END $$"
         )
         cursor.execute(f'ALTER SCHEMA public OWNER TO "{owner}"')
+        cursor.execute(f'ALTER SCHEMA identity OWNER TO "{owner}"')
         cursor.execute(
             f'ALTER DATABASE "{connection.settings_dict["NAME"]}" OWNER TO "{owner}"'
         )
@@ -253,6 +254,7 @@ def test_role_sql_stops_when_a_table_cannot_be_taken(roles: tuple[str, str]) -> 
         cursor.execute(f'CREATE ROLE "{owner}" NOSUPERUSER CREATEROLE')
         cursor.execute(f'CREATE ROLE "{stranger}"')
         cursor.execute(f'ALTER TABLE public.django_migrations OWNER TO "{stranger}"')
+        cursor.execute(f'ALTER SCHEMA identity OWNER TO "{owner}"')
         cursor.execute(
             f'ALTER DATABASE "{connection.settings_dict["NAME"]}" OWNER TO "{owner}"'
         )
