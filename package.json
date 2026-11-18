@@ -21,6 +21,7 @@
   },
   "scripts": {
     "prepare": "husky",
+    "dev:up": "docker compose up -d --build && echo \"API: http://127.0.0.1:$(docker compose port backend 8000 | cut -d: -f2)\" && echo \"DATABASE_URL=postgres://postgres:postgres@127.0.0.1:$(docker compose port db 5432 | cut -d: -f2)/gaugeprep\"",
     "check": "pnpm run --silent check:ruff-format && pnpm run --silent check:ruff-lint && pnpm run --silent check:mypy && pnpm run --silent check:import-linter && pnpm run --silent check:migrations && pnpm run --silent check:pytest && pnpm run --silent check:coverage-examcore && pnpm run --silent check:coverage-backend && pnpm run --silent check:pytest-tooling && pnpm run --silent check:prettier && pnpm run --silent check:eslint && pnpm run --silent check:tsc && pnpm run --silent check:vitest",
     "check:ruff-format": "uv run ruff format --check apps/backend packages apps/voice tooling/ci tooling/asr_benchmark || { echo \"check failed: ruff-format\" >&2; exit 1; }",
     "check:ruff-lint": "uv run ruff check apps/backend packages apps/voice tooling/ci tooling/asr_benchmark || { echo \"check failed: ruff-lint\" >&2; exit 1; }",
