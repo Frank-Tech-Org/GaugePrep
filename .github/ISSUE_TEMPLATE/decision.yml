@@ -1,6 +1,6 @@
 name: Decision
 description: A choice that must be made and recorded before work can continue
-title: "decision: "
+title: ""
 type: Decision
 body:
   - type: textarea

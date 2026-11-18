@@ -4,8 +4,9 @@
 #   board.sh wip                    tickets in flight (In progress, In review, In QA); the limit is 3
 #   board.sh info <n>               type, area, priority, status, sprint, blockers
 #   board.sh move <n> <Status>      set the Status column (adds the issue to the board if missing)
-#   board.sh block <n> <blocker>    record "<n> is blocked by <blocker>" and add the blocked label
+#   board.sh block <n> <blocker>    record "<n> is blocked by <blocker>"; labels it unless the blocker is resolved
 #   board.sh unblock <n> <blocker>  remove that link; drops the label when no blocker is left
+#   board.sh sweep                  drop the blocked label from closed issues and those with no open blocker
 #   board.sh set <n> <Field> <Opt>  set an org issue field: Priority, Area or Effort
 #   board.sh type <n> <Type>        set the issue type: Epic, Story, Task, Bug, Chore, Decision, Spike, Refactor
 #   board.sh sprint <n> <Sprint>    put the issue in a sprint, e.g. "Sprint 2"
@@ -30,8 +31,16 @@ wip() {
     | "#\(.content.number)\t\(.status)\t\(.title)"'
 }
 
-status_of() {
-  items | jq -r --argjson n "$1" '.items[] | select(.content.number == $n) | .status // "-"'
+status_in() {
+  jq -r --argjson n "$2" '.items[] | select(.content.number == $n) | .status // "-"' <<<"$1"
+}
+
+status_of() { status_in "$(items)" "$1"; }
+
+# WHY: a blocker counts as resolved at Ready to deploy, so a closed or shipped one blocks nothing.
+resolved() {
+  local state=$1 status=$2
+  [ "$state" = closed ] || [ "$state" = CLOSED ] || [ "$status" = "Ready to deploy" ] || [ "$status" = Done ]
 }
 
 info() {
@@ -75,9 +84,14 @@ sprint() {
 }
 
 block() {
-  local n=$1 blocker=$2 id
-  id=$(gh api "repos/$REPO/issues/$blocker" --jq .id)
+  local n=$1 blocker=$2 id state status
+  read -r id state < <(gh api "repos/$REPO/issues/$blocker" --jq '"\(.id) \(.state)"')
   gh api -X POST "repos/$REPO/issues/$n/dependencies/blocked_by" -F issue_id="$id" >/dev/null
+  status=$(status_of "$blocker")
+  if resolved "$state" "$status"; then
+    echo "#$n blocked by #$blocker, already $state and $status: no blocked label"
+    return
+  fi
   gh issue edit "$n" --repo "$REPO" --add-label blocked >/dev/null
   echo "#$n blocked by #$blocker"
 }
@@ -92,6 +106,33 @@ unblock() {
   echo "#$n no longer blocked by #$blocker"
 }
 
+# Lists every label it will drop before dropping any; the blocker links stay as the record.
+sweep() {
+  local board n state b bstate open clear=()
+  board=$(items)
+  while read -r n state; do
+    if [ "$state" = CLOSED ]; then
+      echo "#$n: drop the label (issue closed)"; clear+=("$n"); continue
+    fi
+    open=""
+    while read -r b bstate; do
+      [ -n "$b" ] || continue
+      resolved "$bstate" "$(status_in "$board" "$b")" || open="$open #$b"
+    done < <(gh api "repos/$REPO/issues/$n/dependencies/blocked_by" --jq '.[] | "\(.number) \(.state)"')
+    if [ -z "$open" ]; then
+      echo "#$n: drop the label (no open blocker)"; clear+=("$n")
+    else
+      echo "#$n: keep the label, blocked by$open"
+    fi
+  done < <(gh issue list --repo "$REPO" --label blocked --state all --limit 500 \
+    --json number,state --jq '.[] | "\(.number) \(.state)"')
+  [ "${#clear[@]}" -gt 0 ] || { echo "Nothing to change."; return; }
+  for n in "${clear[@]}"; do
+    gh issue edit "$n" --repo "$REPO" --remove-label blocked >/dev/null
+  done
+  echo "Dropped the blocked label from ${#clear[@]} issues."
+}
+
 issue_id() {
   gh api graphql -F n="$1" -f query='query($n: Int!) {
     repository(owner: "Frank-Tech-Org", name: "GaugePrep") { issue(number: $n) { id } } }' \
@@ -99,14 +140,14 @@ issue_id() {
 }
 
 set_field() {
-  local n=$1 field=$2 value=$3 fid oid pages
-  # The agents' token can't list org issue fields, so the field and its options are read from issues that use it.
-  pages=$(gh api graphql --paginate -f query='query($endCursor: String) { repository(owner: "Frank-Tech-Org", name: "GaugePrep") {
-      issues(first: 100, after: $endCursor, states: [OPEN, CLOSED]) { pageInfo { hasNextPage endCursor } nodes { issueFieldValues(first: 10) { nodes {
-        ... on IssueFieldSingleSelectValue { field { ... on IssueFieldSingleSelect { id name options { id name } } } } } } } } } }')
-  read -r fid oid < <(jq -rs --arg f "$field" --arg v "$value" '[.[].data.repository.issues.nodes[].issueFieldValues.nodes[].field
-        | select(. and .name == $f)] | first // empty | "\(.id) \(.options[] | select(.name == $v) | .id)"' <<<"$pages") || true
-  [ -n "${oid:-}" ] || { echo "No $field option named '$value' (or no issue uses $field yet)" >&2; exit 1; }
+  local n=$1 field=$2 value=$3 fid oid
+  # WHY: REST lists org issue fields for the agents' token; GraphQL then gives the option IDs.
+  fid=$(gh api "orgs/$OWNER/issue-fields" | jq -r --arg f "$field" '.[] | select(.name == $f) | .node_id')
+  [ -n "$fid" ] || { echo "No issue field named '$field'" >&2; exit 1; }
+  oid=$(gh api graphql -f id="$fid" -f query='query($id: ID!) {
+    node(id: $id) { ... on IssueFieldSingleSelect { options { id name } } } }' \
+    | jq -r --arg v "$value" '.data.node.options[]? | select(.name == $v) | .id')
+  [ -n "$oid" ] || { echo "No $field option named '$value'" >&2; exit 1; }
   gh api graphql -f i="$(issue_id "$n")" -f f="$fid" -f o="$oid" -f query='mutation($i: ID!, $f: ID!, $o: ID!) {
     setIssueFieldValue(input: { issueId: $i, issueFields: [{ fieldId: $f, singleSelectOptionId: $o }] }) { clientMutationId } }' >/dev/null
   echo "#$n $field: $value"
@@ -128,8 +169,9 @@ case "$cmd" in
   move) move "$1" "$2" ;;
   block) block "$1" "$2" ;;
   unblock) unblock "$1" "$2" ;;
+  sweep) sweep ;;
   set) set_field "$1" "$2" "$3" ;;
   type) set_type "$1" "$2" ;;
   sprint) sprint "$1" "$2" ;;
-  *) sed -n '2,11p' "$0"; exit 1 ;;
+  *) sed -n '2,12p' "$0"; exit 1 ;;
 esac

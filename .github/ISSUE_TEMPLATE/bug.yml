@@ -1,6 +1,6 @@
 name: Bug
 description: Something that used to work or was specified does not work
-title: "fix: "
+title: ""
 type: Bug
 labels: ["bug"]
 body:
