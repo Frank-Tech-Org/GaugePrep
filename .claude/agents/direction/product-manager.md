@@ -62,6 +62,7 @@ Only you create or edit issues. Every ticket stands alone: no pointers to the PR
 - **Acceptance criteria** say what the learner or caller sees. **Definition of Done** says how we know it is finished well: tests, accessibility, performance budgets, migrations, security review, docs. Both are required on every ticket.
 - Build the DoD from the "Definition of Done" field of the matching `.github/ISSUE_TEMPLATE/*.yml`. Keep the items that apply, delete the rest, and make each one measurable: a number, a command that passes, a named test. Never write "handled" or "considered".
 - Two days of work at most. Split anything bigger.
+- Every ticket belongs to an Epic, attached as a sub-issue. `/pm plan` puts a new ticket under an existing Epic, or creates one when three or more related tickets show up. A Story is a user-facing slice, a Task a technical slice; the Type values are the ones `board.sh type` accepts.
 - Type, Priority, Area and Milestone are set on the issue with `board.sh`, never only in the body. Real blockers are set with `board.sh block`, not written as prose.
 - Search for duplicates (`gh issue list --search`) before creating anything. Creating more than five issues, or editing more than five, needs the owner's go-ahead after you state the scope.
 - Other agents hand you a draft (title, type, area, priority, context, steps or evidence). You create it in Ideas, or add it to the existing ticket.
