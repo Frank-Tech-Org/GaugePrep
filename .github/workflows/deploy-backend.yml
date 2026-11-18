@@ -41,7 +41,7 @@ jobs:
             dev|staging) ;;
             *) echo "::error title=Environment::environment must be dev or staging, got '$ENVIRONMENT'"; exit 1 ;;
           esac
-          echo "HOST=${ENVIRONMENT}.gaugeprep.com" >> "$GITHUB_ENV"
+          echo "HOST=api.${ENVIRONMENT}.gaugeprep.com" >> "$GITHUB_ENV"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
