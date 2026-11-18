@@ -14,8 +14,10 @@ def _ident(name: str) -> str:
 
 
 # WHY: safe to repeat; tables with the append-only trigger keep select and insert only.
-def role_sql(migrator: str, serving: str) -> str:
+def role_sql(migrator: str, serving: str, worker: str | None = None) -> str:
     m, s = _ident(migrator), _ident(serving)
+    keep = f"'{migrator}', '{serving}'" + (f", '{worker}'" if worker else "")
+    w = _ident(worker) if worker else None
     return f"""
 GRANT {m} TO CURRENT_USER;
 
@@ -24,12 +26,13 @@ DECLARE r record; g record; db text := quote_ident(current_database());
 BEGIN
   EXECUTE format('REVOKE CONNECT, TEMPORARY ON DATABASE %s FROM PUBLIC', db);
   EXECUTE format('GRANT CONNECT ON DATABASE %s TO {m}, {s}, CURRENT_USER', db);
+  {f"EXECUTE format('GRANT CONNECT ON DATABASE %s TO {w}', db);" if w else ""}
   EXECUTE format('GRANT CREATE ON DATABASE %s TO {m}', db);
   FOR g IN SELECT DISTINCT a.grantee FROM pg_database d, aclexplode(d.datacl) a
            WHERE d.datname = current_database() AND a.privilege_type = 'CONNECT'
              AND a.grantee NOT IN (0, d.datdba)
              AND pg_get_userbyid(a.grantee)
-                 NOT IN (current_user, '{migrator}', '{serving}')
+                 NOT IN (current_user, {keep})
   LOOP
     EXECUTE format('REVOKE CONNECT ON DATABASE %s FROM %s', db,
                    g.grantee::regrole::text);
@@ -152,13 +155,35 @@ ALTER DEFAULT PRIVILEGES FOR ROLE {m} GRANT USAGE ON SCHEMAS TO {s};
 ALTER DEFAULT PRIVILEGES FOR ROLE {m}
   GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO {s};
 ALTER DEFAULT PRIVILEGES FOR ROLE {m} GRANT USAGE, SELECT ON SEQUENCES TO {s};
+""" + (_worker_sql(w) if w else "")
+
+
+# WHY: the worker reaches the job tables only, so a leaked URL exposes no learner data.
+def _worker_sql(w: str) -> str:
+    return f"""
+GRANT USAGE ON SCHEMA public TO {w};
+DO $$
+DECLARE r record;
+BEGIN
+  FOR r IN SELECT c.relname, c.relkind FROM pg_class c
+           JOIN pg_namespace n ON n.oid = c.relnamespace
+           WHERE n.nspname = 'public' AND c.relname LIKE 'procrastinate\\_%'
+             AND c.relkind IN ('r', 'S') LOOP
+    IF r.relkind = 'r' THEN
+      EXECUTE format('GRANT SELECT, INSERT, UPDATE, DELETE ON public.%I TO {w}',
+                     r.relname);
+    ELSE
+      EXECUTE format('GRANT USAGE, SELECT ON SEQUENCE public.%I TO {w}', r.relname);
+    END IF;
+  END LOOP;
+END $$;
 """
 
 
 def main(argv: list[str]) -> None:
-    if len(argv) != 2:
-        sys.exit("usage: python -m config.db_roles <migrator> <serving>")
-    print(role_sql(argv[0], argv[1]))
+    if len(argv) not in (2, 3):
+        sys.exit("usage: python -m config.db_roles <migrator> <serving> [<worker>]")
+    print(role_sql(*argv))
 
 
 if __name__ == "__main__":

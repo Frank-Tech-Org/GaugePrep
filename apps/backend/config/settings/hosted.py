@@ -12,6 +12,8 @@ SECRET_KEY = required_env("DJANGO_SECRET_KEY")
 ALLOWED_HOSTS = split_hosts(required_env("DJANGO_ALLOWED_HOSTS"))
 if not ALLOWED_HOSTS:
     raise ImproperlyConfigured("DJANGO_ALLOWED_HOSTS must list at least one host")
+for _key in ("MAIL_HOST", "MAIL_PORT", "MAIL_FROM"):
+    required_env(_key)
 DATABASES = {"default": parse_database_url(required_env("DATABASE_URL"))}
 
 # TLS ends at the proxy, which sets this header.
