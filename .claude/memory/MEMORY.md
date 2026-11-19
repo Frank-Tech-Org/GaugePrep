@@ -1,4 +1,3 @@
 - [GitHub accounts](github-accounts-owner-and-agents.md) — since 2026-11-02 KefouegFrank is the agents' account (fine-grained token), frankkefoueg approves and releases; its 403s
 - [Notion weekly demos](notion-weekly-demos.md) — weekly report in Notion: key features delivered vs to deliver, no tickets or process
 - [Parallel limit to be removed](parallel-limit-to-be-removed.md) — owner plans to drop the cap; don't design the team around it
-- [Team-flow proposal file](team-flow-proposal-file.md) — stays untracked and unpushed until owner and session both confirm it is implemented
