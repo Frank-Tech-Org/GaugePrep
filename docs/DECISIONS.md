@@ -177,6 +177,10 @@ Settled architecture choices become ADRs in `docs/adr/`. This file is for open q
 
 - Decided: 2026-11-18: the owner. Technical and system-design calls are the CTO's, irreversible ones included (destructive migrations, auth design). The owner keeps accounts, budget, passwords, scoring or grading formulas, pricing, cutting scope and production paid services. This replaces "anything irreversible" in D-11 and the destructive migration, auth redesign and irreversible items in D-17. PR approvals, merges into `stage` and `main`, tags, releases and owner-only files stay with the owner.
 
+### D-35: Does a local build at the same commit count as "verified on dev"?
+
+- Decided: 2026-11-19: yes, when dev cannot exercise the case, under D-11 · the product manager. Dev is reachable from one IPv4 address, so IPv6 ranges, mapped addresses and 200-request runs behind a 6 a minute limit can't be tried there. QA runs those on a build of the same commit and the ticket names the commit. First case: #260.
+
 <!-- Move an entry here when answered, adding:
 - Decided: <YYYY-MM-DD>: <option> · <the owner's reason>
 -->

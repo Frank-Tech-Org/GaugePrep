@@ -28,5 +28,10 @@ env:
     MAIL_HOST: smtp.resend.com
     MAIL_PORT: "587"
     MAIL_FROM: GaugePrep <no-reply@mail.staging.gaugeprep.com>
+  # WARNING: a destination's secret list replaces the shared one, so repeat every key here.
   secret:
+    - DATABASE_URL
+    - DJANGO_SECRET_KEY
+    - THROTTLE_KEY_SECRET
+    - MAIL_HEALTH_TO
     - MAIL_API_KEY
