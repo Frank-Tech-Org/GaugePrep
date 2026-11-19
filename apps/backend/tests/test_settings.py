@@ -30,6 +30,7 @@ def _load(module: str, **env: str) -> subprocess.CompletedProcess[str]:
 
 HOSTED = {
     "DJANGO_SECRET_KEY": "x" * 50,
+    "THROTTLE_KEY_SECRET": "y" * 50,
     "DJANGO_ALLOWED_HOSTS": "api.example.test",
     "DATABASE_URL": "postgres://u:p@h/db",
     "MAIL_HOST": "localhost",
