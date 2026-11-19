@@ -144,7 +144,7 @@ Settled architecture choices become ADRs in `docs/adr/`. This file is for open q
 
 ### D-27: How many tickets may be in flight?
 
-- Decided: 2026-11-16: three · the owner, replacing the 2026-10-26 ruling of two now and three once CI runs on every PR. Each has its own branch and worktree and runs only when Areas or paths differ and neither blocks the other.
+- Decided: 2026-11-19: no cap · the owner, replacing the 2026-11-16 ruling of three. All sprint tickets sit in Ready and every free one runs at once, each on its own branch and worktree. Free means no open blocker and no overlap in Area or paths with a ticket in flight. Dependencies, overlap, owner approvals on sensitive PRs and CI minutes are the only limits.
 
 ### D-28: What runs dev and staging once the free server hours end?
 

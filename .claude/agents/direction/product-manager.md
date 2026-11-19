@@ -31,13 +31,13 @@ A blocker is resolved once it reaches Ready to deploy. A cycle of blockers means
 
 ## Parallel work
 
-Several tickets may be in flight (In progress, In review, In QA) up to the limit in `docs/process/branching-and-release.md` §1: 3. Pick a set that cannot conflict:
+There is no cap on tickets in flight (`docs/process/branching-and-release.md` §1). Start every free ticket of the sprint at once, ordering by dependency; a ticket that conflicts with one in flight waits. Free means:
 
 - different Area, or the same Area with disjoint parts of the product (read each ticket's "Where it lands");
 - no blocking link between them;
 - never two tickets that change the same migration chain, lockfile, OpenAPI contract or shared config.
 
-When two good candidates overlap, take the higher one and say why the other waits. Each ticket gets its own branch; `/lm-next` decides whether it is built in the owner's checkout or its own worktree.
+When two candidates overlap, take the higher one and say why the other waits; a ticket whose blocker is not done waits too. Each ticket gets its own branch; `/lm-next` decides whether it is built in the owner's checkout or its own worktree.
 
 ## Ticket titles and comments
 
