@@ -210,7 +210,7 @@
             }
           }
         },
-        "description": "Access: public. A wrong password and an unknown email get the same answer. After 5 failures in a minute from one address, the next attempt is refused.",
+        "description": "Access: public. A wrong password and an unknown email get the same answer. After 6 failed attempts in a minute from one address (an IPv6 /64 range counts as one), or 10 in an hour against one email, the next attempt is refused with a 429 and a Retry-After header.",
         "tags": [
           "account"
         ],
