@@ -159,6 +159,8 @@ A push to `develop` publishes `gaugeprep-dev`, a push to `stage` publishes `gaug
 2. `dig +short dev.gaugeprep.com` and staging. Pass: Cloudflare addresses, not the server IP.
 3. `curl -s https://api.dev.gaugeprep.com/api/v1/health` and `api.staging`. Pass: `{"status": "ok", "database": "ok"}`.
 
+Each deploy also curls its own app host and API host and fails on a non-200.
+
 ### Rollback
 
 1. `bash infra/server/app-hosts.sh detach both`. Expect: both domains detached, the saved A records back.
