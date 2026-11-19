@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: gaugeprep
     ports:
-      - "127.0.0.1:${POSTGRES_PORT:-}:5432"
+      - "127.0.0.1:${POSTGRES_PORT:-15432}:5432"
     volumes:
       - pgdata:/var/lib/postgresql
     healthcheck:
@@ -28,7 +28,7 @@ services:
       MAIL_HOST: mailpit
       MAIL_PORT: "1025"
     ports:
-      - "127.0.0.1:${BACKEND_PORT:-}:8000"
+      - "127.0.0.1:${BACKEND_PORT:-18000}:8000"
     depends_on:
       db:
         condition: service_healthy
@@ -58,7 +58,7 @@ services:
   mailpit:
     image: axllent/mailpit:v1.33.0@sha256:9b3a463be15354c0f0eba91697d80e3e0d8a5623ef0e627cacc836bc17fd5231
     ports:
-      - "127.0.0.1:${MAILPIT_UI_PORT:-8025}:8025"
+      - "127.0.0.1:${MAILPIT_UI_PORT:-18025}:8025"
 
 volumes:
   pgdata:
