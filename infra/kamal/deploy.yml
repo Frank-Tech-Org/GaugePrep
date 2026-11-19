@@ -47,4 +47,5 @@ env:
   secret:
     - DATABASE_URL
     - DJANGO_SECRET_KEY
+    - THROTTLE_KEY_SECRET
     - MAIL_HEALTH_TO
