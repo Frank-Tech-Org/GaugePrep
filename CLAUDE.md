@@ -61,7 +61,7 @@ Exam preparation platform for TCF Canada first: a responsive web app installable
 | Command | Stage | What it does |
 |---|---|---|
 | `/pm [plan \| decide \| report]` | planning | Bare: takes the `cto` agent's technical read, says what is done, what to start next and what needs the owner. `plan` sorts Ideas, writes acceptance criteria and the DoD, fills the sprint. `decide` resolves owner decisions. `report` posts the weekly delivery report to Notion |
-| `/lm-next [block <blocker>]` | Ready → Ready to deploy | Runs the ticket nearest done through build, local review, fix, PR, merge and QA until something only the owner can do or a blocker, resuming from its checkpoint, then prints Done, Needs you, Next; starts the next ticket when there is room; records a blocker |
+| `/lm-next [block <blocker>]` | Ready → Ready to deploy | Runs the ticket nearest done through build, local review, fix, PR, merge and QA until something only the owner can do or a blocker, resuming from its checkpoint, then prints Done, Needs you, Next; starts every other free ticket; records a blocker |
 | `/lm-release [version] \| check` | Ready to deploy → Done | Due when a key feature is complete, at sprint end for fixes, and once M0 is complete; `/pm` says when. `check`: the release gate alone (security, performance budgets, public claims). Otherwise, with the version worked out from the last tag: changelog, promotion PR `develop` → `stage`, gate and regression on staging, release PR `stage` → `main`, notes, then post "Released in" on the tickets and move them to Done after the owner tags |
 | `/lm-hotfix` | interrupt | Production fix from `main` |
 

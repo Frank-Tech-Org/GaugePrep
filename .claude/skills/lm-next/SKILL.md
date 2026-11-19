@@ -1,6 +1,6 @@
 ---
 name: lm-next
-description: Move GaugePrep work forward until something only the owner can do. Works out from the board, branches, worktrees, open PRs and checkpoints which ticket is nearest done and runs it through build, local review, fix, push, PR, merge and QA, then starts the next ticket when there is room. Also records a blocker.
+description: Move GaugePrep work forward until something only the owner can do. Works out from the board, branches, worktrees, open PRs and checkpoints which ticket is nearest done and runs it through build, local review, fix, push, PR, merge and QA, then starts every other free ticket. Also records a blocker.
 argument-hint: "[#n to override] [block <#blocker or text>]"
 disable-model-invocation: true
 ---
