@@ -9,6 +9,7 @@ from .base import split_hosts, web_app_origin
 DEBUG = True
 MAIL_HEALTH_TO = os.environ.get("MAIL_HEALTH_TO") or "health@gaugeprep.test"
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY") or "local-only-insecure-key"
+THROTTLE_KEY_SECRET = os.environ.get("THROTTLE_KEY_SECRET") or "local-only-throttle-key"
 ALLOWED_HOSTS = split_hosts(os.environ.get("DJANGO_ALLOWED_HOSTS", "")) or [
     "localhost",
     "127.0.0.1",

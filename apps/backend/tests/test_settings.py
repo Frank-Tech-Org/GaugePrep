@@ -30,6 +30,7 @@ def _load(module: str, **env: str) -> subprocess.CompletedProcess[str]:
 
 HOSTED = {
     "DJANGO_SECRET_KEY": "x" * 50,
+    "THROTTLE_KEY_SECRET": "y" * 50,
     "DJANGO_ALLOWED_HOSTS": "api.example.test",
     "DATABASE_URL": "postgres://u:p@h/db",
     "MAIL_HOST": "localhost",
@@ -226,3 +227,10 @@ def test_collectstatic_writes_the_swagger_assets(
     settings.STATIC_ROOT = tmp_path
     call_command("collectstatic", interactive=False, verbosity=0)
     assert list(tmp_path.glob("ninja/swagger-ui*"))
+
+
+@pytest.mark.parametrize("module", ["dev", "staging", "production"])
+def test_hosted_settings_refuse_a_short_throttle_secret(module: str) -> None:
+    result = _load(module, **dict(HOSTED, THROTTLE_KEY_SECRET="y" * 31))
+    assert result.returncode != 0
+    assert "THROTTLE_KEY_SECRET" in result.stderr

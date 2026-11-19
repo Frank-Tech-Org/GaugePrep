@@ -6,6 +6,7 @@ from pathlib import Path
 BACKEND = Path(__file__).resolve().parent.parent
 ENV = {
     "DJANGO_SECRET_KEY": "x" * 50,
+    "THROTTLE_KEY_SECRET": "y" * 50,
     "DJANGO_ALLOWED_HOSTS": "api.example.test",
     "DATABASE_URL": "postgres://app:p@h/db",
     "MAIL_HOST": "localhost",
