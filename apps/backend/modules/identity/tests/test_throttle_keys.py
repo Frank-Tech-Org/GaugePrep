@@ -56,18 +56,9 @@ def test_scopes_do_not_share_keys() -> None:
     )
 
 
-def test_keys_fit_the_column_and_are_not_a_plain_hash() -> None:
-    import hashlib
-
+def test_keys_fit_the_column() -> None:
     key = throttle.key_for(throttle.LOGIN_EMAIL_FAILURES, "ada@example.com")
     assert re.fullmatch(r"[0-9a-f]{64}", key)
-    for subject in ("ada@example.com", "203.0.113.7"):
-        for limit in (throttle.LOGIN_FAILURES, throttle.LOGIN_EMAIL_FAILURES):
-            plain = {
-                hashlib.sha256(text.encode()).hexdigest()
-                for text in (subject, f"{limit.scope}:{subject}")
-            }
-            assert throttle.key_for(limit, subject) not in plain
 
 
 def test_keys_change_with_the_secret() -> None:

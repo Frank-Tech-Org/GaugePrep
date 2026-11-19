@@ -209,19 +209,14 @@ def log_in(
     email = normalize_email(payload.email)
     # SECURITY: count before the check, so an error in it still costs an attempt.
     by_address = throttle.record(throttle.LOGIN_FAILURES, address)
-    by_email = throttle.record(throttle.LOGIN_EMAIL_FAILURES, email)
-    waits = [
-        wait
-        for wait in (
-            throttle.wait_if_over(throttle.LOGIN_FAILURES, by_address),
-            throttle.wait_if_over(throttle.LOGIN_EMAIL_FAILURES, by_email),
-        )
-        if wait is not None
-    ]
-    if waits:
+    wait = throttle.wait_if_over(throttle.LOGIN_FAILURES, by_address)
+    if wait is None:
+        by_email = throttle.record(throttle.LOGIN_EMAIL_FAILURES, email)
+        wait = throttle.wait_if_over(throttle.LOGIN_EMAIL_FAILURES, by_email)
+    if wait is not None:
         logger.info("event=login_throttled")
         return problem_for(
-            request, 429, "rate_limited", headers={"Retry-After": str(max(waits))}
+            request, 429, "rate_limited", headers={"Retry-After": str(wait)}
         )
     user = authenticate(request, email=payload.email, password=payload.password)
     if not isinstance(user, User):

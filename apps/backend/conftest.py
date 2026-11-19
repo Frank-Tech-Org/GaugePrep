@@ -8,6 +8,7 @@ from django.conf import settings
 
 
 def pytest_configure(config: pytest.Config) -> None:
+    config.addinivalue_line("markers", "slow: takes more than a few seconds")
     for kind in ("success", "not_found", "refused"):
         config.addinivalue_line(
             "markers", f"{kind}(operation): test covers this API operation"

@@ -1,3 +1,4 @@
+import hashlib
 import statistics
 import time
 from datetime import timedelta
@@ -75,9 +76,7 @@ def test_email_limit_refuses_the_right_password_too(learner: Api) -> None:
     assert good.status_code == 429
 
 
-def test_the_429_is_the_same_for_known_and_unknown_emails(
-    learner: Api, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_the_429_is_the_same_for_known_and_unknown_emails(learner: Api) -> None:
     fail_from_many_addresses("ada@example.com", 10)
     fail_from_many_addresses("ghost@example.com", 10)
     same_start = timezone.now() - timedelta(minutes=5)
@@ -135,8 +134,6 @@ def test_a_right_login_gives_its_counted_attempt_back(learner: Api) -> None:
 
 
 def test_throttle_keys_are_not_plain_hashes(learner: Api) -> None:
-    import hashlib
-
     attempt(**from_address("203.0.113.70"))
     plain = {
         hashlib.sha256(text.encode()).hexdigest()
@@ -167,6 +164,8 @@ def test_an_unknown_email_still_pays_for_a_password_hash(
     assert calls == [WRONG]
 
 
+@pytest.mark.slow
+@pytest.mark.timeout(180)
 def test_median_time_of_a_wrong_password_does_not_tell_known_from_unknown(
     learner: Api,
 ) -> None:
@@ -183,3 +182,19 @@ def test_median_time_of_a_wrong_password_does_not_tell_known_from_unknown(
         known.append(timed("ada@example.com", n))
         unknown.append(timed("ghost@example.com", n))
     assert abs(statistics.median(known) - statistics.median(unknown)) < 0.05
+
+
+def test_a_refused_address_does_not_count_against_the_emails(learner: Api) -> None:
+    emails = ["person" + str(n) + "@example.com" for n in range(5)]
+    codes = [
+        attempt(emails[n % 5], **from_address("203.0.113.90")).status_code
+        for n in range(50)
+    ]
+    assert codes.count(429) == 44
+    counts = []
+    for email in emails:
+        key = throttle.key_for(throttle.LOGIN_EMAIL_FAILURES, email)
+        row = Throttle.objects.filter(key=key).first()
+        counts.append(row.count if row else 0)
+    assert sum(counts) == 6
+    assert max(counts) <= 2

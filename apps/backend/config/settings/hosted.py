@@ -10,6 +10,8 @@ from .base import required_env, split_hosts, web_app_origin
 DEBUG = False
 SECRET_KEY = required_env("DJANGO_SECRET_KEY")
 THROTTLE_KEY_SECRET = required_env("THROTTLE_KEY_SECRET")
+if len(THROTTLE_KEY_SECRET) < 32:
+    raise ImproperlyConfigured("THROTTLE_KEY_SECRET must be at least 32 characters")
 ALLOWED_HOSTS = split_hosts(required_env("DJANGO_ALLOWED_HOSTS"))
 if not ALLOWED_HOSTS:
     raise ImproperlyConfigured("DJANGO_ALLOWED_HOSTS must list at least one host")
