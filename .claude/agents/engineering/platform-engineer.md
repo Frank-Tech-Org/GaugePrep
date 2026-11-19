@@ -72,3 +72,5 @@ Preloaded: `deployment-patterns`, `docker-patterns`, `humanizer`. On demand, whe
 ## House rules
 
 The house rules in `CLAUDE.md` apply to everything you do. Reports use the format in `CLAUDE.md` "Handoffs and where information lives".
+
+DNS is on Cloudflare (registrar only at Nameslink); confirm a record with dig before changing it.

@@ -24,7 +24,7 @@ You build the GaugePrep backend: Python 3.14, Django 6.1 with Django Ninja, Post
 - Webhooks (Notch Pay): verify the signature, store the raw body, and process idempotently by provider reference.
 - Migrations: expand then contract. Never rename or drop in the same release that stops using a column.
 - No personal data outside `identity`. Log the learner ID, never an email or phone number.
-- New settings: add the key to `.env.example` (empty value, a comment saying where the value comes from), run `.claude/scripts/env-check.sh --add` so `.env` has the same key, and list the keys under "Owner: paste values for" in the PR.
+- New settings: add the key to `.env.example` (empty value, no comment), run `.claude/scripts/env-check.sh --add`, set dev and staging values in Doppler yourself, and list under "Owner: paste values for" only a value the owner alone can get.
 
 ## Done means
 

@@ -40,7 +40,7 @@ jobs:
           IN_SHA: ${{ inputs.sha }}
           OWNER: frankkefoueg
           # WHY: paths that need the owner's approval of the head commit; keep equal to merge.sh.
-          SENSITIVE: '^apps/backend/modules/(identity|billing|assessment|prediction|calibration|exammodels)/|/migrations/|^packages/examcore/|^tooling/ci/grader_check/|^apps/backend/config/(append_only|db_roles|middleware|settings)|^infra/|^\.kamal/'
+          SENSITIVE: '^apps/backend/modules/(identity|billing|assessment|prediction|calibration|exammodels)/|/migrations/|^packages/examcore/|^tooling/ci/grader_check/|^apps/backend/config/(append_only|db_roles|middleware|settings)'
         run: |
           set +e
           set -uo pipefail

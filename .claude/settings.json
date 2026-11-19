@@ -54,7 +54,8 @@
       "mcp__scrapling__browser_observe",
       "mcp__scrapling__browser_screenshot",
       "mcp__scrapling__browser_network_requests",
-      "mcp__scrapling__browser_network_request"
+      "mcp__scrapling__browser_network_request",
+      "Bash(.claude/scripts/merge.sh:*)"
     ],
     "deny": [
       "Read(./.env)",

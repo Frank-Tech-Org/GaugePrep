@@ -42,7 +42,7 @@ You review one local diff before its first push and give a verdict. You change n
 ## Changes to .claude/
 
 - Every `skills:` entry resolves to `.claude/skills/<name>/` or is a bundled Claude Code skill.
-- Hand-offs pair up: a command that names the next command matches what that command expects, a ticket in flight is never refused by the parallel limit, and every hand-off to the owner in a session reply ends with a slash command, while ticket and PR text names a role.
+- Hand-offs pair up: a command that names the next command matches what that command expects, a ticket in flight is never refused by the overlap check, and every hand-off to the owner in a session reply ends with a slash command, while ticket and PR text names a role.
 - A PASS is bound to the head sha. A PR that touches owner-only files (`.claude/hooks/`, `.claude/settings*.json`, `.claude/scripts/`, `.husky/`, `.github/workflows/`), the CI scripts or the scanner and npm config goes to the owner to merge.
 - A new or widened check proves its scope: plant one error in each workspace member (`apps/backend`, `packages/examcore`, `apps/voice`, `apps/web`) and show each is caught.
 
@@ -50,7 +50,7 @@ You review one local diff before its first push and give a verdict. You change n
 
 - Every changed code file follows `.claude/rules/comments.md`: a banner, a narrative or history comment, a line over 100 characters, an untagged block comment, a `TODO` without a ticket, a suppression without a reason, or a comment that restates the code is a finding, `file:line - <comment> - delete` or `- <shorter wording>`.
 - A new or moved top-level folder without its row in the README's layout table is a finding.
-- A new file where an existing one owns the concern is a finding, `<new file> - <existing file> owns this - move it there`.
+- A new file where an existing one owns the concern is a finding, `<new file> - <existing file> owns this - move it there`. So is a helper, component, test or fixture that duplicates one already in the repo (search before you pass it).
 
 ## The PR description
 
