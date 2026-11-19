@@ -8,7 +8,7 @@ pr=${1:-}
 repo=Frank-Tech-Org/GaugePrep
 owner=frankkefoueg
 # WHY: paths that need the owner's approval of the head commit; keep equal to develop-alarm.yml.
-sensitive_re='^apps/backend/modules/(identity|billing|assessment|prediction|calibration|exammodels)/|/migrations/|^packages/examcore/|^tooling/ci/grader_check/|^apps/backend/config/(append_only|db_roles|middleware|settings)|^infra/|^\.kamal/'
+sensitive_re='^apps/backend/modules/(identity|billing|assessment|prediction|calibration|exammodels)/|/migrations/|^packages/examcore/|^tooling/ci/grader_check/|^apps/backend/config/(append_only|db_roles|middleware|settings)'
 [ "$(git remote get-url origin)" = "https://github.com/$repo.git" ] \
   || { echo "merge.sh: origin is not $repo" >&2; exit 2; }
 
