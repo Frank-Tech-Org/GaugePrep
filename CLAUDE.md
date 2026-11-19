@@ -42,7 +42,7 @@ Exam preparation platform for TCF Canada first: a responsive web app installable
 - **Green before you report.** Read the runs for the head sha (`gh run list --commit <sha>`), fix failures from `--log-failed`, and report a PR only when every check passes. If one can't go green, name it and why.
 - **Verify before you claim.** Read the source or measure first. Mark what is unverified, with the number and where it came from.
 - **CI minutes are metered.** Run the checks locally before pushing and batch fixes into one push; check a free plan's limits before relying on it.
-- **GitHub Free, private repo.** No design may depend on branch protection, required reviews or any paid GitHub feature; enforce in our scripts and CI.
+- **GitHub Free plan.** No design may depend on a paid GitHub feature; check the plan's limits for the repo's current visibility first, and enforce what the plan can't in our scripts and CI.
 - **Responsive web app, never "mobile".** Learners verify by email only: no SMS, no Twilio.
 - **Diagrams.** Use mermaid for structures, flows and gaps in docs and proposals.
 
