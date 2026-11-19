@@ -37,7 +37,7 @@ uv run python -c "import examcore"   # must import with no Django installed
 
 ## Run locally
 
-Starts PostgreSQL 18 and the backend, which migrates and then serves. Docker picks free host ports, so nothing clashes; `pnpm dev:up` prints the API address and the database URL. Set `BACKEND_PORT` or `POSTGRES_PORT` in `.env` only if you want fixed ones.
+Starts PostgreSQL 18 and the backend, which migrates and then serves. The host ports are fixed so they stay out of the way of other projects: API 18000, database 15432, Mailpit UI 18025. Override them with `BACKEND_PORT`, `POSTGRES_PORT` or `MAILPIT_UI_PORT` in `.env`; `pnpm dev:up` prints the API address and the database URL.
 
 ```sh
 pnpm dev:up                                      # prints API: http://127.0.0.1:<port>
