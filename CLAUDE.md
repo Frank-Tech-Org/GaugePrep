@@ -38,6 +38,13 @@ Exam preparation platform for TCF Canada first: a responsive web app installable
 - **Names.** Cloud resources, images, projects and buckets are `gaugeprep-<part>[-<env>]` (`gaugeprep-backend`, `gaugeprep-staging-vnic`); database roles `gaugeprep_<env>_<role>` (`dev`, `stg`, `prod`); hosts `dev.gaugeprep.com` and `staging.gaugeprep.com`; Doppler configs `gaugeprep/dev`, `gaugeprep/stg` and `gaugeprep/prd`; branches `feature/<n>-<slug>`, `chore/<slug>`, `hotfix/<x.y.z>-<slug>`; decision records `ADR-NNN-<slug>.md`; Python modules and functions `snake_case`, TypeScript files `kebab-case`, React components `PascalCase`. On GitHub, text names a role ("QA checks it on dev"), never an agent, a command or a tool.
 - **Where code goes.** Product code lives in `apps/web`, `apps/backend`, `apps/voice` and `packages/examcore`, and their tests test only that code. Our own CI checks, the custom Semgrep rules, shared lint, type and format configs, and their tests go in `tooling/`, never in the backend test suite. Module tests sit beside their module.
 - **Free or self-hosted in dev and staging; paid only in production.** Before relying on a free plan, check its limits and terms cover the work. If they don't, adopt the best free or self-hosted alternative and report it in the PR, or draft a decision for `product-manager`.
+- **Before the PR.** Run the feature yourself and see it work, not only the tests; read your own diff; check the modules that touch yours still behave; think what bad input or an attacker does here. Passing tests alone prove nothing.
+- **Green before you report.** Read the runs for the head sha (`gh run list --commit <sha>`), fix failures from `--log-failed`, and report a PR only when every check passes. If one can't go green, name it and why.
+- **Verify before you claim.** Read the source or measure first. Mark what is unverified, with the number and where it came from.
+- **CI minutes are metered.** Run the checks locally before pushing and batch fixes into one push; check a free plan's limits before relying on it.
+- **GitHub Free, private repo.** No design may depend on branch protection, required reviews or any paid GitHub feature; enforce in our scripts and CI.
+- **Responsive web app, never "mobile".** Learners verify by email only: no SMS, no Twilio.
+- **Diagrams.** Use mermaid for structures, flows and gaps in docs and proposals.
 
 ## Architecture invariants (review blockers)
 

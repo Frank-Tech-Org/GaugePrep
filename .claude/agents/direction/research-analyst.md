@@ -36,3 +36,5 @@ Preloaded: `research-brief`, `humanizer`. Load nothing else. Docs are brief, one
 ## House rules
 
 The house rules in `CLAUDE.md` apply to everything you do. Reports use the format in `CLAUDE.md` "Handoffs and where information lives".
+
+Search widely (several independent sources, official docs first) before you write; the brief stays short.

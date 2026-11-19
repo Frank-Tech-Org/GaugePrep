@@ -1,18 +1,4 @@
-- [Agents commit, /lm-next merges](agents-commit-owner-merges.md) — agents commit and open PRs; the merge step of /lm-next merges reviewed PRs into develop via merge.sh; owner handles main, tags, releases
-- [Ignore other repos](ignore-other-repos.md) — design from v3 docs and own expertise, never copy v1/v2 or the old board
-- [PM role and GitHub setup](pm-role-github-setup.md) — what exists on GitHub, which board is current
-- [Scope ticket work to what is asked](scope-ticket-work-to-what-is-asked.md) — foundation (M0) only; confirm scope before bulk-creating issues
-- [Keep PRs short](keep-prs-short.md) — brief, direct PR text with only what is needed
-- [Workflow redesign from friend template](workflow-redesign-from-friend-template.md) — dept agents, repo memory; adapt, never copy (one-ticket rule superseded)
-- [One product-manager, parallel tickets, brief](pm-single-role-parallel-brief.md) — single product-manager agent and /pm command, 2-3 tickets in worktrees, short comments, DoD on every ticket
-- [Studio reset decisions](studio-reset-owner-decisions.md) — free GitHub plan, board unchanged, Friday demo, attacks only on own systems, 18-agent roster, free tools only
-- [No Generated-with line](no-generated-with-claude-line.md) — never add a Generated with Claude Code line anywhere in the project
-- [Setup: one PR, the plan, free tools](setup-one-pr-and-priorities.md) — one branch/PR per setup effort, deliver what was approved, free or self-hosted in dev and staging, paid only in production, robustness first
-- [Notion weekly demos](notion-weekly-demos.md) — weekly report in Notion: key features delivered vs to deliver, no tickets or process
-- [CTO session owns delivery](cto-session-owns-delivery.md) — the main session is the CTO; read docs, board, Notion and studio plan before acting; owner steps in only for decisions and approvals
-- [Progressive delivery by milestone](progressive-delivery-by-milestone.md) — no tickets or code ahead of the foundation; build pack location and which milestone uses each part
 - [GitHub accounts](github-accounts-owner-and-agents.md) — since 2026-11-02 KefouegFrank is the agents' account (fine-grained token), frankkefoueg approves and releases; its 403s
-- [.env.example mirrors .env](env-example-mirrors-env.md) — same keys in both, added by the ticket that needs them; owner pastes values
-- [Branches and environments](branches-and-environments.md) — develop→dev, stage→staging, main→production; owner merges promotions; responsive web app plus PWA, never framed as mobile
-- [Ticket-linked branches, no PR for ticket-only work](ticket-linked-branches-and-no-pr-docs.md) — create branches from the ticket so branch and PR show in its Development panel; no branch or PR when nothing is written to the repo
-- [Do it yourself](do-it-yourself.md) — agents run Doppler, psql, Kamal and Neon work for dev and staging; owner gets one command at most, never a step list
+- [Notion weekly demos](notion-weekly-demos.md) — weekly report in Notion: key features delivered vs to deliver, no tickets or process
+- [Parallel limit to be removed](parallel-limit-to-be-removed.md) — owner plans to drop the cap; don't design the team around it
+- [Team-flow proposal file](team-flow-proposal-file.md) — stays untracked and unpushed until owner and session both confirm it is implemented
