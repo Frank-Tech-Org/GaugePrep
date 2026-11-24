@@ -12,18 +12,17 @@ SNAP_DIR="${SNAP_DIR:-./dns-snapshots}"
 die() { printf 'error: %s\n' "$*" >&2; exit 1; }
 [[ "$ACTION" =~ ^(attach|detach)$ && "$TARGET" =~ ^(dev|staging|both)$ ]] || die "usage: app-hosts.sh <attach|detach> <dev|staging|both>"
 
-# Args: token, method, path, then any curl options.
 cf() {
   local token="$1" method="$2" path="$3"
   shift 3
   curl -fsS -X "$method" -H "Authorization: Bearer $token" -H 'Content-Type: application/json' "$API$path" "$@"
 }
 
-# Args: snapshot file. Recreates its A and AAAA records with their saved proxied flag and ttl.
+# Recreates the A and AAAA records of the snapshot file given, with their proxied flag and ttl.
 restore_records() {
   jq -c '.[] | select(.type=="A" or .type=="AAAA") | {type, name, content, proxied, ttl: (.ttl // 1)}' "$1" |
     while read -r rec; do
-      cf "$DNS_TOKEN" POST "/zones/$ZONE_ID/dns_records" --data "$rec" > /dev/null
+      cf "$DNS_TOKEN" POST "/zones/$ZONE_ID/dns_records" --data "$rec" > /dev/null || return 1
     done
 }
 
@@ -58,7 +57,10 @@ for env in "${hosts[@]}"; do
       cf "$pages_token" POST "$domains" --data "{\"name\":\"$host\"}" > /dev/null || die "Pages refused the domain $host"
     fi
     if [ "$attached_dns" = false ]; then
-      for id in $ids; do cf "$DNS_TOKEN" DELETE "/zones/$ZONE_ID/dns_records/$id" > /dev/null; done
+      for id in $ids; do
+        cf "$DNS_TOKEN" DELETE "/zones/$ZONE_ID/dns_records/$id" > /dev/null ||
+          { restore_records "$snap-before.json"; die "deleting records for $host failed, old records restored"; }
+      done
       cf "$DNS_TOKEN" POST "/zones/$ZONE_ID/dns_records" \
         --data "{\"type\":\"CNAME\",\"name\":\"$host\",\"content\":\"$project.pages.dev\",\"proxied\":true,\"ttl\":1}" > /dev/null ||
         { restore_records "$snap-before.json"; die "CNAME for $host failed, old records restored"; }
@@ -72,7 +74,9 @@ for env in "${hosts[@]}"; do
     [ -n "$saved" ] || die "no attach snapshot with an A or AAAA record for $env in $SNAP_DIR"
     printf '%s\n' "$before" > "$snap-before.json"
     cf "$pages_token" DELETE "$domains/$host" > /dev/null 2>&1 || echo "domain was not attached to $project"
-    for id in $ids; do cf "$DNS_TOKEN" DELETE "/zones/$ZONE_ID/dns_records/$id" > /dev/null; done
+    for id in $ids; do
+      cf "$DNS_TOKEN" DELETE "/zones/$ZONE_ID/dns_records/$id" > /dev/null || die "deleting records for $host failed; rerun detach"
+    done
     restore_records "$saved" || die "restoring $host from $saved failed; the host has no DNS until it is rerun"
   fi
   after=$(cf "$DNS_TOKEN" GET "/zones/$ZONE_ID/dns_records?name=$host" | jq -c '[.result[] | {type, name, content, proxied, ttl}]')
