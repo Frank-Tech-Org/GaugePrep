@@ -18,7 +18,6 @@ cf() {
   curl -fsS -X "$method" -H "Authorization: Bearer $token" -H 'Content-Type: application/json' "$API$path" "$@"
 }
 
-# Recreates the A and AAAA records of the snapshot file given, with their proxied flag and ttl.
 restore_records() {
   jq -c '.[] | select(.type=="A" or .type=="AAAA") | {type, name, content, proxied, ttl: (.ttl // 1)}' "$1" |
     while read -r rec; do
@@ -59,11 +58,11 @@ for env in "${hosts[@]}"; do
     if [ "$attached_dns" = false ]; then
       for id in $ids; do
         cf "$DNS_TOKEN" DELETE "/zones/$ZONE_ID/dns_records/$id" > /dev/null ||
-          { restore_records "$snap-before.json"; die "deleting records for $host failed, old records restored"; }
+          { restore_records "$snap-before.json" || die "delete for $host failed and the old records are not back"; die "deleting records for $host failed, old records restored"; }
       done
       cf "$DNS_TOKEN" POST "/zones/$ZONE_ID/dns_records" \
         --data "{\"type\":\"CNAME\",\"name\":\"$host\",\"content\":\"$project.pages.dev\",\"proxied\":true,\"ttl\":1}" > /dev/null ||
-        { restore_records "$snap-before.json"; die "CNAME for $host failed, old records restored"; }
+        { restore_records "$snap-before.json" || die "CNAME for $host failed and the old records are not back"; die "CNAME for $host failed, old records restored"; }
     fi
   else
     # WHY: the newest snapshot with an A or AAAA record is the one worth restoring.
