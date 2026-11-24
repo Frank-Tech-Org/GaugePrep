@@ -133,6 +133,40 @@ A push to `develop` publishes `gaugeprep-dev`, a push to `stage` publishes `gaug
 2. Run Verify 1. Pass: the earlier commit.
 3. Revert the commit on the branch, or the next push publishes over the rollback.
 
+## App hosts
+
+### Trigger
+
+`dev.gaugeprep.com` or `staging.gaugeprep.com` does not show the placeholder. Each is a custom domain of its Pages project; the API hosts are not touched.
+
+### Prerequisites
+
+- [ ] A Cloudflare token with DNS edit on `gaugeprep.com`, asked for by the script and never stored. The Pages tokens in Doppler see no zone.
+- [ ] `doppler`, `jq` and `dig` installed.
+
+| Host | Record before | Record after | Pages project |
+|---|---|---|---|
+| `dev.gaugeprep.com` | A, server IP (`16.192.98.110`), DNS only | CNAME `gaugeprep-dev.pages.dev`, proxied | `gaugeprep-dev` |
+| `staging.gaugeprep.com` | A, server IP (`16.192.98.110`), DNS only | CNAME `gaugeprep-staging.pages.dev`, proxied | `gaugeprep-staging` |
+
+### Steps
+
+1. `bash infra/server/app-hosts.sh attach both`. Expect: before and after records per host, saved in `dns-snapshots/`, then status 200 for both.
+
+### Verify
+
+1. `curl -s -o /dev/null -w '%{http_code}\n' https://dev.gaugeprep.com` and the same for staging. Pass: 200.
+2. `dig +short dev.gaugeprep.com` and staging. Pass: Cloudflare addresses, not the server IP.
+3. `curl -s https://api.dev.gaugeprep.com/api/v1/health` and `api.staging`. Pass: `{"status": "ok", "database": "ok"}`.
+
+Once the staged deploy check is applied, each deploy also curls its own app host and API host and fails on a non-200.
+
+### Rollback
+
+1. `bash infra/server/app-hosts.sh detach both`. Expect: both domains detached, the saved A records back. It restores from the newest attach snapshot that has an A or AAAA record, and refuses, changing nothing, if none does.
+2. `dig +short dev.gaugeprep.com`. Pass: the server IP again, within 10 minutes.
+3. Run Verify 3. Pass: unchanged.
+
 ## Worker and mail
 
 ### Trigger
