@@ -217,11 +217,13 @@ def test_unknown_email_and_wrong_password_look_the_same(learner: Api) -> None:
 
 
 @pytest.mark.refused("POST /api/v1/auth/login")
-def test_sixth_failed_login_in_a_minute_is_refused(learner: Api) -> None:
+def test_seventh_login_from_one_address_is_refused_even_with_the_right_password(
+    learner: Api,
+) -> None:
     other = Api()
     bad = {"email": "ada@example.com", "password": "Wrong-Pass-1"}
-    codes = [other.post(LOGIN, bad).status_code for _ in range(5)]
-    assert codes == [401] * 5
+    codes = [other.post(LOGIN, bad).status_code for _ in range(6)]
+    assert codes == [401] * 6
     refused = other.post(LOGIN, bad)
     assert refused.status_code == 429
     assert problem(refused)["code"] == "rate_limited"

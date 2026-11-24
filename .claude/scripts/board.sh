@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Board helper for org project #6, shared by the /lm-* commands.
 #   board.sh list [Status]          issues on the board, optionally one column
-#   board.sh wip                    tickets in flight (In progress, In review, In QA); limit 3
+#   board.sh wip                    tickets in flight (In progress, In review, In QA)
 #   board.sh info <n>               type, area, priority, status, sprint, blockers
 #   board.sh move <n> <Status>      set the Status column (adds the issue to the board if missing)
 #   board.sh block <n> <blocker>    link "<n> blocked by <blocker>"; label unless it is resolved

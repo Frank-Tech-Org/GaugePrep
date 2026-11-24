@@ -1,6 +1,6 @@
 ---
 name: lm-next
-description: Move GaugePrep work forward until something only the owner can do. Works out from the board, branches, worktrees, open PRs and checkpoints which ticket is nearest done and runs it through build, local review, fix, push, PR, merge and QA, then starts the next ticket when there is room. Also records a blocker.
+description: Move GaugePrep work forward until something only the owner can do. Works out from the board, branches, worktrees, open PRs and checkpoints which ticket is nearest done and runs it through build, local review, fix, push, PR, merge and QA, then starts every other free ticket. Also records a blocker.
 argument-hint: "[#n to override] [block <#blocker or text>]"
 disable-model-invocation: true
 ---
@@ -25,7 +25,7 @@ First match wins:
 2. A hotfix in flight: stop and name `/lm-hotfix`.
 3. The current branch or worktree is `feature/<n>-*`: that ticket.
 4. The ticket in flight nearest the end: In QA, then In review, then In progress. An open `chore/*` PR with no verdict on its head counts as In review, with no ticket.
-5. Fewer tickets in flight than the limit (3; `owner-task` tickets don't count): ask `product-manager`, with the `cto` agent's technical read, for the next non-overlapping ticket in Ready. An `owner-task` ticket is handed to the owner, not built.
+5. A free ticket in Ready (no open blocker, no overlap with one in flight): ask `product-manager`, with the `cto` agent's technical read, for every such ticket, and start them together, each builder in its own worktree and background. An `owner-task` ticket is handed to the owner, not built.
 6. Nothing to do: name `/pm`.
 
 ## 2. Pick the step
@@ -98,7 +98,7 @@ The blocker is a `#number`, or free text that `product-manager` drafts as a tick
 
 ## End
 
-Post the checkpoint comment from `CLAUDE.md` on the ticket, naming roles, not commands. Then start the next ticket if there is room; stop only at an owner stop or a blocker. The reply to the owner is at most 10 lines:
+Post the checkpoint comment from `CLAUDE.md` on the ticket, naming roles, not commands. Then start the next free ticket; stop only at an owner stop or a blocker. The reply to the owner is at most 10 lines:
 
 ```text
 Done: <tickets moved, in words>

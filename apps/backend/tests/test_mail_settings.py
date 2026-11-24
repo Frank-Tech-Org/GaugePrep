@@ -127,6 +127,7 @@ def test_hosted_settings_have_no_health_inbox_default(module: str) -> None:
     }
     env.update(
         DJANGO_SECRET_KEY="x" * 50,
+        THROTTLE_KEY_SECRET="y" * 50,
         DJANGO_ALLOWED_HOSTS="a.test",
         DATABASE_URL="postgres://u:p@h/db",
         MAIL_HOST="h",

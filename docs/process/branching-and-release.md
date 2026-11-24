@@ -4,7 +4,7 @@ How a ticket moves from an idea to production, how code moves between branches, 
 
 ## 1. The parallel rule
 
-Up to **three** tickets may be in flight at once (In progress, In review or In QA). A ticket is in flight from **In progress** until **Ready to deploy**. The product manager picks the set; the build step refuses a ticket that would exceed the limit or overlap one in flight.
+There is no cap on tickets in flight. Every ticket in the current sprint sits in Ready, and any of them may start as soon as it is free: no unresolved blocker, no overlap with a ticket already in flight, and nobody else building it. A ticket is in flight from **In progress** until **Ready to deploy**. The product manager orders the sprint by dependency; the build step refuses only a ticket that is blocked or overlaps one in flight.
 
 Two tickets may run together only when all of this holds:
 
@@ -16,9 +16,9 @@ Each ticket has its own branch. The ticket being built is checked out in the own
 
 If a ticket in flight turns out to depend on another one, the build step marks the ticket on the current branch as blocked by it and sends it back to Ready (section 2, Blocked). The blocker is ordered first.
 
-A production hotfix (section 8) may exceed the limit. So may an owner-run ticket with no repository code (an account, a recording, a vendor request), labelled `owner-task`: it runs outside the limit, one at a time, except that one which is only waiting on a third party (a registration, a vendor reply) doesn't count, and needs no branch or worktree.
+An owner-run ticket with no repository code (an account, a recording, a vendor request), labelled `owner-task`, is handed to the owner, needs no branch or worktree and blocks nothing it isn't named as a blocker of.
 
-Why: a small parallel set keeps `develop` releasable, review load bounded and context small enough for one session each, while tickets that cannot conflict no longer wait for each other.
+Why: what limits parallel work is dependencies, overlap and the owner's approvals on sensitive PRs, not a count. Free tickets never wait for each other.
 
 ```mermaid
 flowchart LR
@@ -109,7 +109,7 @@ Delivery runs through build, review, push, merge and QA without stopping until s
 
 1. **Triage and refine.** New tickets land in Ideas. Planning brings each one to the Definition of Ready (section 2), splits anything over two days, and moves it to Ready. The owner closes duplicates and rejected ideas.
 2. **Plan the sprint.** Ready tickets go into the two-week Sprint iteration in dependency order. Sprints sit inside the product milestones (M0 to M8).
-3. **Pick.** The product manager names the tickets to start, up to the parallel limit: blockers first, then milestone, priority and size, and only tickets that cannot conflict.
+3. **Pick.** The product manager names every ticket that is free to start: blockers first, then milestone, priority and size, skipping any that would conflict with one in flight.
 4. **Build.** The ticket moves to In progress and `feature/<n>-<slug>` is created from the ticket, off an up-to-date `develop`, in the owner's checkout (or its own worktree when that holds another ticket in flight). Nothing is pushed yet.
 5. **Review, then one push.** Before the first push, `pnpm check` and the local mechanical checks run, and the reviewers read the local diff in a clean context, then post their verdict as a PR comment once the PR exists. Fixes are commits on the same branch, up to three review rounds; after that the ticket is blocked with what was tried. On `PASS` the branch is pushed once and the PR opened ready for review, not as a draft, because a draft runs CI as well (tested on PR #234). The ticket moves to In review.
 6. **Merge.** When the verdict ending `REVIEW: PASS <head sha>` names the PR's head and CI is green, the merge script squash-merges into `develop` and deletes the branch, and refuses unless the base is `develop`, the branch is `feature/*` or `chore/*`, every check is green, and the latest `REVIEW: PASS` names the PR's head sha. A PR that touches authentication, payments, personal data, migrations, append-only tables, scoring formulas or owner-only files needs the owner's approval of that same sha as well, a sign-off and not a second review; a push after the approval makes it stale. A PR that touches owner-only files is merged by the owner. The owner can still merge any PR by hand.
@@ -148,7 +148,7 @@ The release manager (the platform engineer) prepares every step and can run the 
 
 ## 8. Hotfix workflow
 
-For an urgent production bug: a Bug ticket with priority Urgent and the `hotfix` label. It is the one thing allowed to exceed the parallel limit. A checkpoint goes on each ticket in flight before the fix starts.
+For an urgent production bug: a Bug ticket with priority Urgent and the `hotfix` label. A checkpoint goes on each ticket in flight before the fix starts.
 
 1. Branch from `main`, never from `develop` or `stage`, so unreleased work cannot reach production:
    ```bash

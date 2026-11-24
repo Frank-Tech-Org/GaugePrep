@@ -197,23 +197,33 @@ def signup(
     summary="Log in",
     description=(
         "Access: public. A wrong password and an unknown email get the same answer. "
-        "After 5 failures in a minute from one address, the next attempt is refused."
+        "After 6 failed attempts in a minute from one address (an IPv6 /64 range "
+        "counts as one), or 10 in an hour against one email, the next attempt is "
+        "refused with a 429 and a Retry-After header."
     ),
 )
 def log_in(
     request: HttpRequest, payload: LoginIn
 ) -> Status[AccountSession] | HttpResponse:
     address = throttle.client_address(request)
-    wait = throttle.retry_after(throttle.LOGIN_FAILURES, address)
+    email = normalize_email(payload.email)
+    # SECURITY: count before the check, so an error in it still costs an attempt.
+    by_address = throttle.record(throttle.LOGIN_FAILURES, address)
+    wait = throttle.wait_if_over(throttle.LOGIN_FAILURES, by_address)
+    if wait is None:
+        by_email = throttle.record(throttle.LOGIN_EMAIL_FAILURES, email)
+        wait = throttle.wait_if_over(throttle.LOGIN_EMAIL_FAILURES, by_email)
     if wait is not None:
+        logger.info("event=login_throttled")
         return problem_for(
             request, 429, "rate_limited", headers={"Retry-After": str(wait)}
         )
     user = authenticate(request, email=payload.email, password=payload.password)
     if not isinstance(user, User):
-        throttle.record(throttle.LOGIN_FAILURES, address)
         logger.info("event=login_failed")
         return problem_for(request, 401, "invalid_credentials")
+    throttle.release(throttle.LOGIN_FAILURES, address)
+    throttle.release(throttle.LOGIN_EMAIL_FAILURES, email)
     login(request, user)
     logger.info("event=login_succeeded learner_id=%s", user.id)
     return Status(
