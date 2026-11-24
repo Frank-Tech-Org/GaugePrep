@@ -50,6 +50,8 @@ for env in "${hosts[@]}"; do
   else
     saved=$(printf "%s\n" "$SNAP_DIR/$env-attach-"*-before.json | sort | tail -1)
     [ -f "$saved" ] || die "no attach snapshot for $env in $SNAP_DIR"
+    # SECURITY: without an A or AAAA record to restore, detach would leave the host with no DNS.
+    jq -e 'any(.[]; .type=="A" or .type=="AAAA")' "$saved" > /dev/null || die "no A or AAAA record in $saved"
     cf "$pages_token" DELETE "/accounts/$account_id/pages/projects/$project/domains/$host" > /dev/null || echo "domain not attached"
     for id in $ids; do cf "$DNS_TOKEN" DELETE "/zones/$ZONE_ID/dns_records/$id" > /dev/null; done
     jq -c '.[] | select(.type=="A" or .type=="AAAA") | {type, name, content, proxied, ttl: 1}' "$saved" | while read -r rec; do

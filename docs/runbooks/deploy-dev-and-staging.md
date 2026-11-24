@@ -163,7 +163,7 @@ Each deploy also curls its own app host and API host and fails on a non-200.
 
 ### Rollback
 
-1. `bash infra/server/app-hosts.sh detach both`. Expect: both domains detached, the saved A records back.
+1. `bash infra/server/app-hosts.sh detach both`. Expect: both domains detached, the saved A records back. It refuses, changing nothing, if the attach snapshot has no A or AAAA record.
 2. `dig +short dev.gaugeprep.com`. Pass: the server IP again, within 10 minutes.
 3. Run Verify 3. Pass: unchanged.
 
