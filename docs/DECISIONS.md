@@ -187,7 +187,7 @@ Settled architecture choices become ADRs in `docs/adr/`. This file is for open q
 
 ### D-37: When does a change get its own ticket or PR?
 
-- Decided: 2026-11-25: by scope, not line count · the owner. A change confined to one file, or one small step, with no criteria of its own rides on the PR or setup branch it belongs to. A ticket gets one PR: review ticks every criterion before a PASS, and a gap found later is fixed in the open PR. Ruled out: a line limit (a 40-line edit to one file is still one step). Revisit if setup branches grow too big to review.
+- Decided: 2026-11-25: by scope, not line count · the owner. A change confined to one file, or one small step, with no criteria of its own rides on the PR or setup branch it belongs to. A ticket gets one PR: review ticks every criterion before a PASS, and a gap found in review is fixed in the open PR. Ruled out: a line limit (a 40-line edit to one file is still one step), and doing nothing (it produced one-file tickets and a second PR for #287). Revisit if setup branches grow too big to review.
 
 <!-- Move an entry here when answered, adding:
 - Decided: <YYYY-MM-DD>: <option> · <the owner's reason>
