@@ -134,4 +134,9 @@ jobs:
           echo "$body"
           echo "$body" | jq -e '.database == "ok"' > /dev/null
       - name: Check the app host
-        run: curl -sS --fail --retry 10 --retry-delay 3 --retry-all-errors -o /dev/null "https://${ENVIRONMENT}.gaugeprep.com/"
+        run: |
+          for url in "https://${ENVIRONMENT}.gaugeprep.com/" "https://$HOST/api/v1/health"; do
+            code=$(curl -sS --retry 10 --retry-delay 3 --retry-all-errors -o /dev/null -w '%{http_code}' "$url")
+            echo "$url: $code"
+            [ "$code" = 200 ] || { echo "::error title=Host check::$url answered $code"; exit 1; }
+          done
