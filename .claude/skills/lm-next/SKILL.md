@@ -74,7 +74,7 @@ Commit in logical steps, never `--amend`, staging only this ticket's paths: `git
 - `performance-engineer` for a learner page's bundle or media, a hot query, or the grading or voice path;
 - `qa-engineer` for the claims check if learner-facing claims or copy change.
 
-Each checks the DoD items in its area. The verdict is one comment in the same voice, at most 10 lines plus findings, verdict first: a verdict per reviewer, fixes as `label: file:line - problem - fix`, unmet criteria and unticked DoD items by name. The last line alone is `REVIEW: PASS <full head sha>` or `REVIEW: CHANGES <full head sha>`. A new commit makes it stale. On CHANGES, fix on the branch and review again locally; after three rounds, block the ticket with what was tried and move on. Checkpoint stage: In review.
+Before any PASS, each reviewer ticks every acceptance criterion and DoD item in its area against the diff; a criterion the diff does not meet is `REVIEW: CHANGES`. The verdict is one comment in the same voice, at most 10 lines plus findings, verdict first: a verdict per reviewer, fixes as `label: file:line - problem - fix`, unmet criteria and unticked DoD items by name. The last line alone is `REVIEW: PASS <full head sha>` or `REVIEW: CHANGES <full head sha>`. A new commit makes it stale. On CHANGES, fix on the branch and review again locally; after three rounds, block the ticket with what was tried and move on. Checkpoint stage: In review.
 
 ## 5. Merge
 

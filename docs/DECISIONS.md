@@ -181,6 +181,14 @@ Settled architecture choices become ADRs in `docs/adr/`. This file is for open q
 
 - Decided: 2026-11-19: yes, when dev cannot exercise the case, under D-11 · the product manager. Dev is reachable from one IPv4 address, so IPv6 ranges, mapped addresses and 200-request runs behind a 6 a minute limit can't be tried there. QA runs those on a build of the same commit and the ticket names the commit. First case: #260.
 
+### D-36: How are synthetic test accounts removed from dev and staging?
+
+- Decided: 2026-11-24: through the account deletion path of #268, never by switching off the append-only trigger, under D-11 · the CTO. Deletes fail today only because consent cascades from the account; #268 drops that key (D-33), so deleting an account leaves its consent rows under the bare ID. A non-production command then runs that deletion at once, without the cooling period, for accounts on a reserved test domain (`example.com`, `.test`) and refuses on production settings. Ruled out: disabling the trigger (an exception D-33 rejected), a synthetic flag column (a migration for test data), resetting the staging database (loses the rest of staging for four rows). Until it ships the four accounts stay; they hold no real person's data. Revisit if a test account needs a real mailbox.
+
+### D-37: When does a change get its own ticket or PR?
+
+- Decided: 2026-11-25: by scope, not line count · the owner. A change confined to one file, or one small step, with no criteria of its own rides on the PR or setup branch it belongs to. A ticket gets one PR: review ticks every criterion before a PASS, and a gap found in review is fixed in the open PR. Ruled out: a line limit (a 40-line edit to one file is still one step), and doing nothing (it produced one-file tickets and a second PR for #287). Revisit if setup branches grow too big to review.
+
 <!-- Move an entry here when answered, adding:
 - Decided: <YYYY-MM-DD>: <option> · <the owner's reason>
 -->
