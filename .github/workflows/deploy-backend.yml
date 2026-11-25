@@ -133,3 +133,5 @@ jobs:
           body=$(curl -sS --fail --retry 10 --retry-delay 3 --retry-all-errors "https://$HOST/api/v1/health")
           echo "$body"
           echo "$body" | jq -e '.database == "ok"' > /dev/null
+      - name: Check the app host
+        run: curl -sS --fail --retry 10 --retry-delay 3 --retry-all-errors -o /dev/null "https://${ENVIRONMENT}.gaugeprep.com/"
