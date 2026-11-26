@@ -404,3 +404,23 @@ def test_logs_hold_the_learner_id_and_no_personal_data(
     assert f"learner_id={response.json()['learner_id']}" in text
     for secret in ("private.person", "Zorba", "1990-01-02", "2001-02-03", PASSWORD):
         assert secret not in text
+
+
+def test_retry_after_is_readable_from_the_app_origin(api: Api) -> None:
+    for n in range(21):
+        response = api.sign_up(email=f"user{n}@example.com")
+    assert response.status_code == 429
+    assert response["Access-Control-Expose-Headers"] == "Retry-After"
+
+
+def test_login_right_after_signup_is_refused_alike_for_new_and_known_emails(
+    learner: Api,
+) -> None:
+    forget_mail_limits()
+    other = "Another-Pass-9921"
+    Api().sign_up(email="grace@example.com", password=other)
+    assert Api().sign_up(email="ada@example.com", password=other).status_code == 201
+    new = Api().post(LOGIN, {"email": "grace@example.com", "password": other})
+    known = Api().post(LOGIN, {"email": "ada@example.com", "password": other})
+    assert new.status_code == known.status_code == 401
+    assert new.content == known.content

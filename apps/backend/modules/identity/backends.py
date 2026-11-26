@@ -24,7 +24,9 @@ class EmailBackend(BaseBackend):
         if user is None or not user.has_usable_password():
             make_password(password)
             return None
-        return user if user.check_password(password) else None
+        # SECURITY: an unconfirmed address cannot sign in, so right after sign-up a new
+        # and a known email get the same refusal.
+        return user if user.check_password(password) and user.email_verified else None
 
     def get_user(self, user_id: Any) -> User | None:
         return get_user_model().objects.filter(pk=user_id).first()
