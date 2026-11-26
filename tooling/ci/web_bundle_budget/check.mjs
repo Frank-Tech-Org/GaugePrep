@@ -9,7 +9,7 @@ import { gzipSync } from "node:zlib";
 export const HOME_BASELINE_BYTES = 138_366;
 export const BUDGET_BYTES = Math.round(HOME_BASELINE_BYTES * 1.1);
 
-/** Script URLs a page loads in a modern browser: noModule fallbacks and inline scripts are skipped. */
+/** Script URLs a browser loads: noModule fallbacks and inline scripts are skipped. */
 export function scriptUrls(html) {
   const urls = [];
   for (const [tag] of html.matchAll(/<script\b[^>]*>/gi)) {

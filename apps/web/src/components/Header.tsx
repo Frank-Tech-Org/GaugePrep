@@ -63,7 +63,6 @@ export function Header() {
             alt={BRAND_NAME}
             width="858"
             height="256"
-            loading="lazy"
           />
           <img
             className={styles.logoDark}
@@ -71,7 +70,6 @@ export function Header() {
             alt={BRAND_NAME}
             width="858"
             height="256"
-            loading="lazy"
           />
         </a>
         <div className={styles.controls}>
