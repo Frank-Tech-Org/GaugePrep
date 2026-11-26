@@ -73,7 +73,7 @@ function main() {
     try {
       current = readFileSync(TARGET, "utf8");
     } catch {
-      // a missing file counts as different
+      // WHY: a missing file counts as different
     }
     if (current !== css) {
       process.stderr.write(

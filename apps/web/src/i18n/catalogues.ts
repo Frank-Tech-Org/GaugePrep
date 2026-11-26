@@ -6,7 +6,7 @@ import type { Locale } from "./locale";
 import type { Messages } from "./translate";
 
 const en = { shell: enShell, home: enHome };
-// Typed against English so a key missing in French fails the type check.
+// WHY: typed against English so a key missing in French fails the type check.
 const fr: typeof en = { shell: frShell, home: frHome };
 
 export type MessageKey = {

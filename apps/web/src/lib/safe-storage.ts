@@ -11,6 +11,6 @@ export function writeStored(key: string, value: string): void {
   try {
     window.localStorage.setItem(key, value);
   } catch {
-    // The choice still applies for this visit.
+    // WHY: the choice still applies for this visit.
   }
 }
