@@ -1,0 +1,640 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Auth flow</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="auth.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400..800&amp;family=Fraunces:opsz,wght@9..144,400..700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="gp" data-theme="{{theme}}" data-layout="{{layout}}" data-hero="{{heroAttr}}" data-screen="{{screenAttr}}" style="width: {{w}}px; height: {{h}}px">
+
+<sc-if value="{{heroOn}}" hint-placeholder-val="{{true}}">
+<section class="car" role="group" aria-roledescription="carousel" aria-label="{{t.carLabel}}" onTouchStart="{{touchStart}}" onTouchEnd="{{touchEnd}}">
+<div class="{{sl0}}" aria-hidden="{{ah0}}">
+<img src="/_blob/a6855578c62b7afe7efbfb2fb1a3c201" alt="" decoding="async">
+<div class="shade"></div>
+<div class="cap">
+<p class="eyebrow">{{e0}}</p>
+<h2 class="caph">{{h0}}</h2>
+<p class="caps">{{p0}}</p>
+</div>
+</div>
+<div class="{{sl1}}" aria-hidden="{{ah1}}">
+<img src="/_blob/2ee02b8b32848b5584ec97438dbb3900" alt="" decoding="async">
+<div class="shade"></div>
+<div class="cap">
+<p class="eyebrow">{{e1}}</p>
+<h2 class="caph">{{h1}}</h2>
+<p class="caps">{{p1}}</p>
+</div>
+</div>
+<div class="{{sl2}}" aria-hidden="{{ah2}}">
+<img src="/_blob/fb97efb43914ed6d040688baba3bc221" alt="" decoding="async">
+<div class="shade"></div>
+<div class="cap">
+<p class="eyebrow">{{e2}}</p>
+<h2 class="caph">{{h2}}</h2>
+<p class="caps">{{p2}}</p>
+</div>
+</div>
+<img class="carlogo" src="/_blob/2ba30fd54996baa317ccfa0d7811ddad" alt="GaugePrep">
+<div class="dots">
+<button type="button" class="{{dt0}}" aria-label="{{t.slide1}}" aria-current="{{cur0}}" onClick="{{go0}}"></button>
+<button type="button" class="{{dt1}}" aria-label="{{t.slide2}}" aria-current="{{cur1}}" onClick="{{go1}}"></button>
+<button type="button" class="{{dt2}}" aria-label="{{t.slide3}}" aria-current="{{cur2}}" onClick="{{go2}}"></button>
+<button type="button" class="pause" aria-label="{{pauseLabel}}" onClick="{{togglePause}}">
+<sc-if value="{{isPaused}}" hint-placeholder-val="{{false}}"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4l13 8-13 8z"/></svg></sc-if>
+<sc-if value="{{notPaused}}" hint-placeholder-val="{{true}}"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg></sc-if>
+</button>
+</div>
+</section>
+</sc-if>
+
+<sc-if value="{{isWelcome}}" hint-placeholder-val="{{false}}">
+<div class="welcta">
+<button type="button" class="btn btn-primary" onClick="{{toSignup}}">{{t.welcomeStart}}</button>
+<button type="button" class="btn btn-ghost" onClick="{{toSignin}}">{{t.welcomeHave}}</button>
+</div>
+</sc-if>
+
+<sc-if value="{{brandPanel}}" hint-placeholder-val="{{false}}">
+<aside class="panel">
+<img class="plogo" src="/_blob/2ba30fd54996baa317ccfa0d7811ddad" alt="GaugePrep">
+<div>
+<svg class="pfan" viewBox="64 14 352 218" aria-hidden="true">
+<path d="M202.3 222.6 L74.1 177.2 A176 176 0 0 1 95.0 136.3 L207.0 213.3 A40 40 0 0 0 202.3 222.6 Z" fill="#4FA89D"/>
+<path d="M208.3 211.6 L100.4 128.9 A176 176 0 0 1 132.9 96.4 L215.6 204.3 A40 40 0 0 0 208.3 211.6 Z" fill="#7CC2B8"/>
+<path d="M217.3 203.0 L140.3 91.0 A176 176 0 0 1 181.2 70.1 L226.6 198.3 A40 40 0 0 0 217.3 203.0 Z" fill="#B4DED6"/>
+<path d="M228.6 197.6 L179.8 32.7 A212 212 0 0 1 234.5 24.1 L239.0 196.0 A40 40 0 0 0 228.6 197.6 Z" fill="#F2A13B"/>
+<path d="M241.0 196.0 L244.6 60.1 A176 176 0 0 1 290.0 67.2 L251.4 197.6 A40 40 0 0 0 241.0 196.0 Z" fill="#2A5D63"/>
+<path d="M253.4 198.3 L298.8 70.1 A176 176 0 0 1 339.7 91.0 L262.7 203.0 A40 40 0 0 0 253.4 198.3 Z" fill="#2A5D63"/>
+<path d="M264.4 204.3 L347.1 96.4 A176 176 0 0 1 379.6 128.9 L271.7 211.6 A40 40 0 0 0 264.4 204.3 Z" fill="#2A5D63"/>
+<path d="M273.0 213.3 L385.0 136.3 A176 176 0 0 1 405.9 177.2 L277.7 222.6 A40 40 0 0 0 273.0 213.3 Z" fill="#2A5D63"/>
+</svg>
+<h2 class="ptag">{{t.tagline}}</h2>
+<p class="psub">{{t.panelSub}}</p>
+</div>
+<p class="ppill">{{t.pillars}}</p>
+</aside>
+</sc-if>
+
+<sc-if value="{{langOpen}}" hint-placeholder-val="{{false}}">
+<button type="button" class="scrim" tabindex="-1" aria-hidden="true" onClick="{{closeLang}}"></button>
+</sc-if>
+
+<div class="bar">
+<img class="barlogo" src="{{logo}}" alt="GaugePrep">
+<div class="langwrap" onKeyDown="{{langKey}}">
+<button type="button" class="langbtn" aria-haspopup="listbox" aria-expanded="{{langOpen}}" aria-label="{{t.langLabel}}" onClick="{{toggleLang}}">
+<svg class="globe" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15 15 0 0 1 0 20a15 15 0 0 1 0-20z"/></svg>
+<sc-if value="{{isEn}}" hint-placeholder-val="{{true}}"><svg class="flag" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" fill="#1F3F8F"/><path d="M0 0L24 24M24 0L0 24" stroke="#FFFFFF" stroke-width="4.5"/><path d="M0 0L24 24M24 0L0 24" stroke="#D8332A" stroke-width="1.6"/><path d="M12 0V24M0 12H24" stroke="#FFFFFF" stroke-width="7"/><path d="M12 0V24M0 12H24" stroke="#D8332A" stroke-width="4"/></svg></sc-if>
+<sc-if value="{{isFr}}" hint-placeholder-val="{{false}}"><svg class="flag" viewBox="0 0 24 24" aria-hidden="true"><rect width="8" height="24" fill="#1F4FA8"/><rect x="8" width="8" height="24" fill="#FFFFFF"/><rect x="16" width="8" height="24" fill="#D8332A"/></svg></sc-if>
+<span>{{langCode}}</span>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+</button>
+<sc-if value="{{langOpen}}" hint-placeholder-val="{{false}}">
+<ul class="langmenu" role="listbox" aria-label="{{t.langLabel}}">
+<li role="presentation"><button type="button" class="{{optEnCls}}" role="option" aria-selected="{{isEn}}" onClick="{{setEn}}"><svg class="flag" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" fill="#1F3F8F"/><path d="M0 0L24 24M24 0L0 24" stroke="#FFFFFF" stroke-width="4.5"/><path d="M0 0L24 24M24 0L0 24" stroke="#D8332A" stroke-width="1.6"/><path d="M12 0V24M0 12H24" stroke="#FFFFFF" stroke-width="7"/><path d="M12 0V24M0 12H24" stroke="#D8332A" stroke-width="4"/></svg><span>English</span><span class="code">EN</span><sc-if value="{{isEn}}" hint-placeholder-val="{{true}}"><svg class="tick" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg></sc-if></button></li>
+<li role="presentation"><button type="button" class="{{optFrCls}}" role="option" aria-selected="{{isFr}}" onClick="{{setFr}}"><svg class="flag" viewBox="0 0 24 24" aria-hidden="true"><rect width="8" height="24" fill="#1F4FA8"/><rect x="8" width="8" height="24" fill="#FFFFFF"/><rect x="16" width="8" height="24" fill="#D8332A"/></svg><span>Français</span><span class="code">FR</span><sc-if value="{{isFr}}" hint-placeholder-val="{{false}}"><svg class="tick" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg></sc-if></button></li>
+</ul>
+</sc-if>
+</div>
+</div>
+
+<sc-if value="{{notWelcome}}" hint-placeholder-val="{{true}}">
+<main class="pane">
+<div class="card">
+<form class="stack" onSubmit="{{submit}}" onKeyDown="{{enterKey}}" novalidate>
+
+<sc-if value="{{showBack}}" hint-placeholder-val="{{false}}">
+<button type="button" class="back" onClick="{{goBack}}">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+{{t.back}}
+</button>
+</sc-if>
+
+<sc-if value="{{showHead}}" hint-placeholder-val="{{true}}">
+<div>
+<sc-if value="{{showStep}}" hint-placeholder-val="{{false}}">
+<div class="stepline">
+<svg class="pf" viewBox="64 14 352 218" aria-hidden="true">
+<path class="{{pf1}}" d="M202.3 222.6 L74.1 177.2 A176 176 0 0 1 95.0 136.3 L207.0 213.3 A40 40 0 0 0 202.3 222.6 Z"/>
+<path class="{{pf2}}" d="M208.3 211.6 L100.4 128.9 A176 176 0 0 1 132.9 96.4 L215.6 204.3 A40 40 0 0 0 208.3 211.6 Z"/>
+<path class="{{pf3}}" d="M217.3 203.0 L140.3 91.0 A176 176 0 0 1 181.2 70.1 L226.6 198.3 A40 40 0 0 0 217.3 203.0 Z"/>
+<path class="{{pf4}}" d="M228.6 197.6 L179.8 32.7 A212 212 0 0 1 234.5 24.1 L239.0 196.0 A40 40 0 0 0 228.6 197.6 Z"/>
+<path class="{{pf5}}" d="M241.0 196.0 L244.6 60.1 A176 176 0 0 1 290.0 67.2 L251.4 197.6 A40 40 0 0 0 241.0 196.0 Z"/>
+<path class="{{pf6}}" d="M253.4 198.3 L298.8 70.1 A176 176 0 0 1 339.7 91.0 L262.7 203.0 A40 40 0 0 0 253.4 198.3 Z"/>
+<path class="{{pf7}}" d="M264.4 204.3 L347.1 96.4 A176 176 0 0 1 379.6 128.9 L271.7 211.6 A40 40 0 0 0 264.4 204.3 Z"/>
+<path class="{{pf8}}" d="M273.0 213.3 L385.0 136.3 A176 176 0 0 1 405.9 177.2 L277.7 222.6 A40 40 0 0 0 273.0 213.3 Z"/>
+</svg>
+<span>{{stepLabel}}</span>
+</div>
+</sc-if>
+<h1 class="title">{{title}}</h1>
+<p class="sub">{{sub}}<sc-if value="{{isCode}}" hint-placeholder-val="{{false}}"> <strong>{{contact}}</strong></sc-if></p>
+</div>
+</sc-if>
+
+<sc-if value="{{isU16}}" hint-placeholder-val="{{false}}">
+<div class="center">
+<div class="hero">
+<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
+</div>
+<h1 class="title">{{t.u16Title}}</h1>
+<p class="sub">{{t.u16Body}}</p>
+</div>
+</sc-if>
+
+<sc-if value="{{isDone}}" hint-placeholder-val="{{false}}">
+<div class="center">
+<svg class="fanopen" viewBox="64 14 352 218" aria-hidden="true">
+<path d="M202.3 222.6 L74.1 177.2 A176 176 0 0 1 95.0 136.3 L207.0 213.3 A40 40 0 0 0 202.3 222.6 Z" fill="#4FA89D"/>
+<path d="M208.3 211.6 L100.4 128.9 A176 176 0 0 1 132.9 96.4 L215.6 204.3 A40 40 0 0 0 208.3 211.6 Z" fill="#7CC2B8"/>
+<path d="M217.3 203.0 L140.3 91.0 A176 176 0 0 1 181.2 70.1 L226.6 198.3 A40 40 0 0 0 217.3 203.0 Z" fill="#B4DED6"/>
+<path d="M228.6 197.6 L179.8 32.7 A212 212 0 0 1 234.5 24.1 L239.0 196.0 A40 40 0 0 0 228.6 197.6 Z" fill="#F2A13B"/>
+<path d="M241.0 196.0 L244.6 60.1 A176 176 0 0 1 290.0 67.2 L251.4 197.6 A40 40 0 0 0 241.0 196.0 Z" fill="#2A5D63"/>
+<path d="M253.4 198.3 L298.8 70.1 A176 176 0 0 1 339.7 91.0 L262.7 203.0 A40 40 0 0 0 253.4 198.3 Z" fill="#2A5D63"/>
+<path d="M264.4 204.3 L347.1 96.4 A176 176 0 0 1 379.6 128.9 L271.7 211.6 A40 40 0 0 0 264.4 204.3 Z" fill="#2A5D63"/>
+<path d="M273.0 213.3 L385.0 136.3 A176 176 0 0 1 405.9 177.2 L277.7 222.6 A40 40 0 0 0 273.0 213.3 Z" fill="#2A5D63"/>
+</svg>
+<h1 class="title">{{t.doneTitle}}</h1>
+<p class="sub">{{t.doneSub}}</p>
+</div>
+</sc-if>
+
+<sc-if value="{{showNotice}}" hint-placeholder-val="{{false}}">
+<p class="banner info" role="status">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+<span>{{t.notice}}</span>
+</p>
+</sc-if>
+
+<sc-if value="{{showCredsError}}" hint-placeholder-val="{{false}}">
+<p class="banner" role="alert">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+<span>{{t.errCreds}}</span>
+</p>
+</sc-if>
+
+<sc-if value="{{isSignup}}" hint-placeholder-val="{{false}}">
+<label class="lbl"><span class="lbltext">{{t.nameLabel}}</span>
+<input class="field" type="text" autocomplete="name" placeholder="{{t.phName}}" value="{{name}}" onChange="{{setName}}" aria-invalid="{{invName}}">
+</label>
+<sc-if value="{{invName}}" hint-placeholder-val="{{false}}">
+<p class="err" role="alert"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg><span>{{t.errName}}</span></p>
+</sc-if>
+</sc-if>
+
+<sc-if value="{{showSeg}}" hint-placeholder-val="{{true}}">
+<div class="seg" role="group" aria-label="{{t.segLabel}}">
+<button type="button" class="{{segEmailCls}}" aria-pressed="{{isEmailMode}}" onClick="{{setModeEmail}}">{{t.segEmail}}</button>
+<button type="button" class="{{segPhoneCls}}" aria-pressed="{{isPhoneMode}}" onClick="{{setModePhone}}">{{t.segPhone}}</button>
+</div>
+</sc-if>
+
+<sc-if value="{{hasPhone}}" hint-placeholder-val="{{false}}">
+<div class="lbl"><span class="lbltext">{{t.phoneLabel}}</span>
+<div class="phonerow">
+<button type="button" class="field pre" aria-label="{{t.prefixLabel}}"><span>+237</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+<input class="field" type="tel" inputmode="tel" autocomplete="tel-national" aria-label="{{t.phoneLabel}}" placeholder="{{t.phPhone}}" value="{{phone}}" onChange="{{setPhone}}" aria-invalid="{{invId}}">
+</div>
+</div>
+<sc-if value="{{invId}}" hint-placeholder-val="{{false}}">
+<p class="err" role="alert"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg><span>{{idErrText}}</span></p>
+</sc-if>
+</sc-if>
+
+<sc-if value="{{hasEmail}}" hint-placeholder-val="{{true}}">
+<label class="lbl"><span class="lbltext">{{t.emailLabel}}</span>
+<input class="field" type="email" inputmode="email" autocomplete="email" placeholder="name@example.com" value="{{email}}" onChange="{{setEmail}}" aria-invalid="{{invId}}">
+</label>
+<sc-if value="{{invId}}" hint-placeholder-val="{{false}}">
+<p class="err" role="alert"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg><span>{{idErrText}}</span></p>
+</sc-if>
+</sc-if>
+
+<sc-if value="{{hasPassword}}" hint-placeholder-val="{{true}}">
+<div class="lbl"><span class="lbltext">{{pwLabel}}</span>
+<div class="pwwrap">
+<input class="field" type="{{pwType}}" aria-label="{{pwLabel}}" value="{{pw}}" onChange="{{setPw}}" aria-invalid="{{invPw}}">
+<button type="button" class="pwbtn" aria-pressed="{{showPw}}" onClick="{{togglePw}}">{{pwToggle}}</button>
+</div>
+</div>
+<sc-if value="{{invPw}}" hint-placeholder-val="{{false}}">
+<p class="err" role="alert"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg><span>{{pwErrText}}</span></p>
+</sc-if>
+<sc-if value="{{isSignin}}" hint-placeholder-val="{{true}}">
+<button type="button" class="link end" onClick="{{toForgot}}">{{t.forgot}}</button>
+</sc-if>
+<sc-if value="{{showMeter}}" hint-placeholder-val="{{false}}">
+<div>
+<div class="meter" aria-hidden="true"><span class="{{m1}}"></span><span class="{{m2}}"></span><span class="{{m3}}"></span><span class="{{m4}}"></span></div>
+<p class="hint" style="margin-top: 8px">{{strengthText}}</p>
+</div>
+</sc-if>
+</sc-if>
+
+<sc-if value="{{hasConfirm}}" hint-placeholder-val="{{false}}">
+<label class="lbl"><span class="lbltext">{{confirmLabel}}</span>
+<input class="field" type="{{pwType}}" autocomplete="new-password" value="{{pw2}}" onChange="{{setPw2}}" aria-invalid="{{invMatch}}">
+</label>
+<sc-if value="{{invMatch}}" hint-placeholder-val="{{false}}">
+<p class="err" role="alert"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg><span>{{t.errMatch}}</span></p>
+</sc-if>
+</sc-if>
+
+<sc-if value="{{isSignup}}" hint-placeholder-val="{{false}}">
+<fieldset class="lbl"><legend class="lbltext">{{t.dob}}</legend>
+<div class="dobrow">
+<label class="lbl"><span class="mini">{{t.day}}</span><input class="field" inputmode="numeric" maxlength="2" placeholder="{{t.phDay}}" autocomplete="bday-day" value="{{dd}}" onChange="{{setDd}}" aria-invalid="{{invDob}}"></label>
+<label class="lbl"><span class="mini">{{t.month}}</span><input class="field" inputmode="numeric" maxlength="2" placeholder="{{t.phMonth}}" autocomplete="bday-month" value="{{mm}}" onChange="{{setMm}}" aria-invalid="{{invDob}}"></label>
+<label class="lbl"><span class="mini">{{t.year}}</span><input class="field" inputmode="numeric" maxlength="4" placeholder="{{t.phYear}}" autocomplete="bday-year" value="{{yy}}" onChange="{{setYy}}" aria-invalid="{{invDob}}"></label>
+</div>
+</fieldset>
+<sc-if value="{{invDob}}" hint-placeholder-val="{{false}}">
+<p class="err" role="alert"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg><span>{{t.errDob}}</span></p>
+</sc-if>
+<sc-if value="{{notInvDob}}" hint-placeholder-val="{{true}}">
+<p class="hint" style="margin-top: -8px">{{t.dobHelp}}</p>
+</sc-if>
+<label class="check">
+<input type="checkbox" checked="{{consent}}" onChange="{{toggleConsent}}" aria-invalid="{{invConsent}}">
+<span class="box" aria-hidden="true"></span>
+<span>{{t.c1}}<a class="tl" href="#privacy">{{t.c2}}</a>{{t.c3}}</span>
+</label>
+<sc-if value="{{invConsent}}" hint-placeholder-val="{{false}}">
+<p class="err" role="alert" style="margin-top: -8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg><span>{{t.errConsent}}</span></p>
+</sc-if>
+</sc-if>
+
+<sc-if value="{{showSentNote}}" hint-placeholder-val="{{false}}">
+<p class="banner info" role="status"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><span>{{t.forgotNote}}</span></p>
+</sc-if>
+<sc-if value="{{showCodeErr}}" hint-placeholder-val="{{false}}">
+<p class="banner" role="alert"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg><span>{{codeErrText}}</span></p>
+</sc-if>
+<sc-if value="{{isCode}}" hint-placeholder-val="{{false}}">
+<label class="codebox"><span class="sr" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">{{t.codeLabel}}</span>
+<div class="cells" aria-hidden="true">
+<span class="{{c0}}">{{d0}}</span><span class="{{c1}}">{{d1}}</span><span class="{{c2}}">{{d2}}</span><span class="{{c3}}">{{d3}}</span><span class="{{c4}}">{{d4}}</span><span class="{{c5}}">{{d5}}</span>
+</div>
+<input class="codeinput" inputmode="numeric" autocomplete="one-time-code" maxlength="6" value="{{code}}" onChange="{{onCode}}">
+</label>
+<p class="hint">{{codeHelpText}}</p>
+</sc-if>
+
+<sc-if value="{{showPrimary}}" hint-placeholder-val="{{true}}">
+<button class="{{primaryCls}}" data-flow="{{flowTag}}" type="button" onClick="{{submit}}" disabled="{{primaryDisabled}}" aria-busy="{{loading}}">
+<sc-if value="{{loading}}" hint-placeholder-val="{{false}}">
+<svg class="ld" viewBox="64 14 352 218" aria-hidden="true">
+<path d="M202.3 222.6 L74.1 177.2 A176 176 0 0 1 95.0 136.3 L207.0 213.3 A40 40 0 0 0 202.3 222.6 Z"/>
+<path d="M208.3 211.6 L100.4 128.9 A176 176 0 0 1 132.9 96.4 L215.6 204.3 A40 40 0 0 0 208.3 211.6 Z"/>
+<path d="M217.3 203.0 L140.3 91.0 A176 176 0 0 1 181.2 70.1 L226.6 198.3 A40 40 0 0 0 217.3 203.0 Z"/>
+<path d="M228.6 197.6 L179.8 32.7 A212 212 0 0 1 234.5 24.1 L239.0 196.0 A40 40 0 0 0 228.6 197.6 Z"/>
+<path d="M241.0 196.0 L244.6 60.1 A176 176 0 0 1 290.0 67.2 L251.4 197.6 A40 40 0 0 0 241.0 196.0 Z"/>
+<path d="M253.4 198.3 L298.8 70.1 A176 176 0 0 1 339.7 91.0 L262.7 203.0 A40 40 0 0 0 253.4 198.3 Z"/>
+<path d="M264.4 204.3 L347.1 96.4 A176 176 0 0 1 379.6 128.9 L271.7 211.6 A40 40 0 0 0 264.4 204.3 Z"/>
+<path d="M273.0 213.3 L385.0 136.3 A176 176 0 0 1 405.9 177.2 L277.7 222.6 A40 40 0 0 0 273.0 213.3 Z"/>
+</svg>
+<span>{{t.loading}}</span>
+</sc-if>
+<sc-if value="{{notLoading}}" hint-placeholder-val="{{true}}">
+<span>{{primaryLabel}}</span>
+</sc-if>
+</button>
+</sc-if>
+
+<sc-if value="{{isSignup}}" hint-placeholder-val="{{false}}">
+<p class="legal">{{t.l1}}<a class="tl" href="#terms">{{t.l2}}</a>{{t.l3}}</p>
+</sc-if>
+
+<sc-if value="{{isCode}}" hint-placeholder-val="{{false}}">
+<p class="switch">{{resendNote}}</p>
+<button type="button" class="link" style="align-self: center; min-height: 44px" disabled="{{resendDisabled}}">{{t.resend}}</button>
+</sc-if>
+
+<sc-if value="{{isAuth}}" hint-placeholder-val="{{true}}">
+<div class="or" role="separator"><span>{{t.or}}</span></div>
+<button type="button" class="btn btn-google" onClick="{{viaGoogle}}">
+<svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+{{t.google}}
+</button>
+<p class="switch">{{alt}} <button type="button" class="link" onClick="{{altGo}}">{{altLink}}</button></p>
+</sc-if>
+
+<sc-if value="{{isForgot}}" hint-placeholder-val="{{false}}">
+<p class="hint" style="text-align: center">{{t.forgotNote}}</p>
+</sc-if>
+
+</form>
+</div>
+
+<footer class="foot">
+<a href="#help">{{t.help}}</a>
+<a href="#privacy">{{t.privacy}}</a>
+<a href="#terms">{{t.terms}}</a>
+</footer>
+</main>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"layout":{"editor":"enum","options":["s","m","l"],"default":"l","section":"View"},"lang":{"editor":"enum","options":["en","fr"],"default":"en","section":"View"},"theme":{"editor":"enum","options":["light","dark"],"default":"light","section":"View"},"start":{"editor":"enum","options":["welcome","signin","signup","code","forgot","newpw","under16","done"],"default":"signin","section":"Screen"},"demo":{"editor":"enum","options":["none","creds","validate","badcode","expired","mismatch","updated","loading"],"default":"none","section":"Screen"},"idm":{"editor":"enum","options":["email","phone"],"default":"email","section":"Screen"},"slide":{"editor":"enum","options":["0","1","2"],"default":"0","section":"Screen"},"error":{"editor":"boolean","default":false,"section":"Screen"},"autoplay":{"editor":null},"w":{"editor":null},"h":{"editor":null},"startCode":{"editor":null},"purpose":{"editor":null},"$preview":{"width":1280,"height":800}}'>
+const PHOTOS = [
+  '/_blob/a6855578c62b7afe7efbfb2fb1a3c201',
+  '/_blob/2ee02b8b32848b5584ec97438dbb3900',
+  '/_blob/fb97efb43914ed6d040688baba3bc221'
+];
+
+class Component extends DCLogic {
+  componentDidMount() {
+    const p = this.props || {};
+    const reduce = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if ((p.autoplay === true || p.autoplay === 'true') && !reduce) {
+      this._iv = setInterval(() => {
+        const st = this.state || {};
+        if (st.paused || st.langOpen) return;
+        const cur = st.slide ?? (Number(this.props.slide) || 0);
+        this.setState({ slide: (cur + 1) % 3 });
+      }, 6000);
+    }
+  }
+  componentWillUnmount() { clearTimeout(this._t); clearInterval(this._iv); }
+
+  renderVals() {
+    const p = this.props || {};
+    const s = this.state || {};
+    const layout = p.layout === 's' || p.layout === 'm' ? p.layout : 'l';
+    const theme = p.theme === 'dark' ? 'dark' : 'light';
+    const lang = s.lang ?? (p.lang === 'fr' ? 'fr' : 'en');
+    const fr = lang === 'fr';
+    const demo = p.demo || 'none';
+    let screen = s.screen ?? p.start ?? 'signin';
+    if (screen === 'welcome' && layout !== 's') screen = 'signin';
+    const idMode = s.idm ?? (p.idm === 'phone' ? 'phone' : 'email');
+    const isPhone = idMode === 'phone';
+    const purpose = s.purpose ?? p.purpose ?? 'signup';
+    const loading = !!s.loading || demo === 'loading';
+    const langOpen = !!s.langOpen;
+    const dims = { s: [390, 844], m: [820, 1180], l: [1280, 800] }[layout];
+    const w = Number(p.w) || dims[0];
+    const h = Number(p.h) || dims[1];
+
+    const T = {
+      en: {
+        tagline: "Know where you stand.", panelSub: "AI exam prep with an honest estimate in the exam’s own scale.", pillars: "Measure · Train · Rehearse",
+        langLabel: "Language", carLabel: "What GaugePrep does", slide1: "Show slide 1 of 3", slide2: "Show slide 2 of 3", slide3: "Show slide 3 of 3", pause: "Pause slideshow", play: "Play slideshow",
+        slides: [
+          { e: "Measure", h: "Know where you stand.", p: "Take a timed level test and get an honest estimate, in your exam’s own scale." },
+          { e: "Train", h: "Practise like exam day.", p: "Work on listening with real timing, then see exactly where you lose points." },
+          { e: "Rehearse", h: "Write, speak, improve.", p: "Get specific feedback on your writing and speaking that you can use today." }
+        ],
+        signinTitle: "Welcome back", signinSub: "Pick up where you left off.",
+        signupTitle: "Create your account", signupSub: "Free to start. Your first estimate takes about 30 minutes.",
+        google: "Continue with Google", or: "or",
+        nameLabel: "Full name", phName: "Your name", emailLabel: "Email address",
+        passLabel: "Password", newPassLabel: "New password", confirmLabel: "Confirm password", confirmNew: "Confirm new password", show: "Show", hide: "Hide", forgot: "Forgot password?",
+        signinBtn: "Sign in", signupBtn: "Create my account", loading: "One moment",
+        errCreds: "That email or password is not right. Check both and try again.",
+        errName: "Enter your name.", errEmail: "Enter your email address.", errEmailFmt: "Check your email address. It should look like name@example.com.", errPwEnter: "Enter your password.", errPwShort: "Use at least 8 characters.", errMatch: "The two passwords do not match.",
+        s1: "Too short", s2: "Weak. Add a number or more letters.", s3: "Good", s4: "Strong", pwHint: "Use at least 8 characters.",
+        dob: "Date of birth", day: "Day", month: "Month", year: "Year", phDay: "DD", phMonth: "MM", phYear: "YYYY", dobHelp: "You must be 16 or older to use GaugePrep.", errDob: "Enter your full date of birth.",
+        c1: "I agree to the processing of my personal data as described in the ", c2: "Privacy Policy", c3: ".", errConsent: "Please accept to create your account.",
+        l1: "By creating an account you accept the ", l2: "Terms of Use", l3: ".",
+        alt1: "New here?", alt1Link: "Create account", alt2: "Already have an account?", alt2Link: "Sign in",
+        back: "Back", stepOf: "Step {n} of 2",
+        codeTitle: "Check your email", codeSub: "We sent a 6-digit code to", codeLabel: "6-digit code", codeHelp: "The code works once and expires in 10 minutes. Check your spam folder if you do not see it.", verify: "Verify", resendIn: "You can ask for a new code in 0:42", resend: "Resend code",
+        forgotTitle: "Reset your password", forgotSub: "Enter your email address and we will send a single-use code.", send: "Send code", forgotNote: "If an account exists, the code is on its way.",
+        newTitle: "Choose a new password", newSub: "You will use it the next time you sign in.", save: "Save password", notice: "Password updated. Sign in with your new password.",
+        u16Title: "GaugePrep is for learners aged 16 and over", u16Body: "The exams we prepare you for are open from age 16. We have not created an account and we did not keep your date of birth. You are welcome back when you turn 16.", u16Btn: "Change date of birth",
+        doneTitle: "You are in.", doneSub: "Next, tell us your exam and your goal. It takes about a minute.", doneBtn: "Set my goal",
+        help: "Help", privacy: "Privacy", terms: "Terms",
+        welcomeStart: "Get started", welcomeHave: "I have an account", segLabel: "Sign in with", segEmail: "Email", segPhone: "Phone",
+        phoneLabel: "Phone number", phPhone: "6 77 12 34 56", phoneHint: "We send your code by SMS.", prefixLabel: "Country code",
+        errPhone: "Check your phone number. Enter the digits after the country code.", errPhoneEmpty: "Enter your phone number.",
+        forgotSubPhone: "Enter your phone number and we will text you a single-use code.", codeHelpSms: "The code works once and expires in 10 minutes. SMS can take a minute to arrive.",
+        errCode: "That code is not right. Check it and try again.", errExpired: "This code has expired. Ask for a new one.", resendNow: "You can ask for a new code now."
+      },
+      fr: {
+        tagline: "Sachez où vous en êtes.", panelSub: "Préparation d’examen par IA, avec une estimation honnête dans l’échelle propre à l’examen.", pillars: "Mesurer · S’entraîner · Répéter",
+        langLabel: "Langue", carLabel: "Ce que fait GaugePrep", slide1: "Afficher la diapositive 1 sur 3", slide2: "Afficher la diapositive 2 sur 3", slide3: "Afficher la diapositive 3 sur 3", pause: "Mettre le diaporama en pause", play: "Lancer le diaporama",
+        slides: [
+          { e: "Mesurer", h: "Sachez où vous en êtes.", p: "Passez un test de niveau chronométré et obtenez une estimation honnête, dans l’échelle de votre examen." },
+          { e: "S’entraîner", h: "Entraînez-vous comme le jour J.", p: "Travaillez la compréhension orale en conditions réelles, puis voyez précisément où vous perdez des points." },
+          { e: "Répéter", h: "Écrivez, parlez, progressez.", p: "Recevez des retours précis sur votre écrit et votre oral, utilisables dès aujourd’hui." }
+        ],
+        signinTitle: "Content de vous revoir", signinSub: "Reprenez là où vous vous êtes arrêté.",
+        signupTitle: "Créez votre compte", signupSub: "Gratuit pour commencer. Votre première estimation prend environ 30 minutes.",
+        google: "Continuer avec Google", or: "ou",
+        nameLabel: "Nom complet", phName: "Votre nom", emailLabel: "Adresse e-mail",
+        passLabel: "Mot de passe", newPassLabel: "Nouveau mot de passe", confirmLabel: "Confirmer le mot de passe", confirmNew: "Confirmer le nouveau mot de passe", show: "Afficher", hide: "Masquer", forgot: "Mot de passe oublié ?",
+        signinBtn: "Se connecter", signupBtn: "Créer mon compte", loading: "Un instant",
+        errCreds: "Cet e-mail ou ce mot de passe n’est pas correct. Vérifiez les deux et réessayez.",
+        errName: "Saisissez votre nom.", errEmail: "Saisissez votre adresse e-mail.", errEmailFmt: "Vérifiez votre adresse e-mail. Elle doit ressembler à nom@exemple.com.", errPwEnter: "Saisissez votre mot de passe.", errPwShort: "Utilisez au moins 8 caractères.", errMatch: "Les deux mots de passe ne correspondent pas.",
+        s1: "Trop court", s2: "Faible. Ajoutez un chiffre ou des lettres.", s3: "Correct", s4: "Solide", pwHint: "Utilisez au moins 8 caractères.",
+        dob: "Date de naissance", day: "Jour", month: "Mois", year: "Année", phDay: "JJ", phMonth: "MM", phYear: "AAAA", dobHelp: "Vous devez avoir 16 ans ou plus pour utiliser GaugePrep.", errDob: "Saisissez votre date de naissance complète.",
+        c1: "J’accepte le traitement de mes données personnelles décrit dans la ", c2: "Politique de confidentialité", c3: ".", errConsent: "Veuillez accepter pour créer votre compte.",
+        l1: "En créant un compte, vous acceptez les ", l2: "Conditions d’utilisation", l3: ".",
+        alt1: "Nouveau ici ?", alt1Link: "Créer un compte", alt2: "Vous avez déjà un compte ?", alt2Link: "Se connecter",
+        back: "Retour", stepOf: "Étape {n} sur 2",
+        codeTitle: "Vérifiez votre e-mail", codeSub: "Nous avons envoyé un code à 6 chiffres à", codeLabel: "Code à 6 chiffres", codeHelp: "Le code ne sert qu’une fois et expire dans 10 minutes. Pensez à vérifier vos courriers indésirables.", verify: "Vérifier", resendIn: "Vous pourrez demander un nouveau code dans 0:42", resend: "Renvoyer le code",
+        forgotTitle: "Réinitialisez votre mot de passe", forgotSub: "Saisissez votre adresse e-mail et nous enverrons un code à usage unique.", send: "Envoyer le code", forgotNote: "Si un compte existe, le code est en route.",
+        newTitle: "Choisissez un nouveau mot de passe", newSub: "Vous l’utiliserez à votre prochaine connexion.", save: "Enregistrer le mot de passe", notice: "Mot de passe mis à jour. Connectez-vous avec votre nouveau mot de passe.",
+        u16Title: "GaugePrep est réservé aux apprenants de 16 ans et plus", u16Body: "Les examens que nous préparons sont ouverts à partir de 16 ans. Nous n’avons pas créé de compte et nous n’avons pas conservé votre date de naissance. Revenez nous voir à vos 16 ans.", u16Btn: "Modifier la date de naissance",
+        doneTitle: "Vous y êtes.", doneSub: "Dites-nous maintenant votre examen et votre objectif. Cela prend environ une minute.", doneBtn: "Définir mon objectif",
+        help: "Aide", privacy: "Confidentialité", terms: "Conditions",
+        welcomeStart: "Commencer", welcomeHave: "J’ai déjà un compte", segLabel: "Se connecter avec", segEmail: "E-mail", segPhone: "Téléphone",
+        phoneLabel: "Numéro de téléphone", phPhone: "6 77 12 34 56", phoneHint: "Nous envoyons votre code par SMS.", prefixLabel: "Indicatif du pays",
+        errPhone: "Vérifiez votre numéro. Saisissez les chiffres après l’indicatif.", errPhoneEmpty: "Saisissez votre numéro de téléphone.",
+        forgotSubPhone: "Saisissez votre numéro de téléphone et nous enverrons un code à usage unique par SMS.", codeHelpSms: "Le code ne sert qu’une fois et expire dans 10 minutes. Le SMS peut mettre une minute à arriver.",
+        errCode: "Ce code n’est pas correct. Vérifiez-le et réessayez.", errExpired: "Ce code a expiré. Demandez-en un nouveau.", resendNow: "Vous pouvez demander un nouveau code maintenant."
+      }
+    };
+    const t = fr ? T.fr : T.en;
+
+    const V = demo === 'validate';
+    const name = s.name ?? (V ? '' : 'Amara Okafor');
+    const email = s.email ?? (V ? 'amara.okafor@' : 'amara.okafor@example.com');
+    const phone = s.phone ?? (V ? '6 77 12' : '6 77 12 34 56');
+    const pw = s.pw ?? (V ? 'gauge' : 'gauge2026');
+    const pw2 = s.pw2 ?? (V ? 'gaug' : demo === 'mismatch' ? 'gauge2025' : ((screen === 'newpw' || screen === 'signup') ? 'gauge2026' : ''));
+    const dd = s.dd ?? (V ? '31' : '14');
+    const mm = s.mm ?? (V ? '02' : '03');
+    const yy = s.yy ?? (V ? '' : '1996');
+    const consent = s.consent ?? false;
+    const code = s.code ?? (demo === 'badcode' ? '482913' : (p.startCode ?? ''));
+    const showPw = !!s.showPw;
+    const propErr = (p.error === true || p.error === 'true' || demo === 'creds') ? 'creds' : V ? 'multi' : demo === 'badcode' ? 'badcode' : demo === 'expired' ? 'expired' : demo === 'mismatch' ? 'match' : null;
+    const err = s.err !== undefined ? s.err : propErr;
+    const slide = ((s.slide ?? (Number(p.slide) || 0)) % 3 + 3) % 3;
+    const paused = !!s.paused;
+
+    const isSignin = screen === 'signin';
+    const isSignup = screen === 'signup';
+    const isAuth = isSignin || isSignup;
+    const isCode = screen === 'code';
+    const isForgot = screen === 'forgot';
+    const isNewpw = screen === 'newpw';
+    const isU16 = screen === 'under16';
+    const isDone = screen === 'done';
+    const isWelcome = screen === 'welcome';
+    const heroOn = isWelcome || isSignin || isSignup;
+
+    const delay = (fn, ms) => { clearTimeout(this._t); this._t = setTimeout(fn, ms); };
+    const go = (to, extra) => () => this.setState({ screen: to, err: null, loading: false, notice: false, ...(extra || {}) });
+    const finish = (next, extra) => {
+      this.setState({ loading: true, err: null });
+      delay(() => this.setState({ loading: false, screen: next, ...(extra || {}) }), 1000);
+    };
+    const setText = (k) => (e) => this.setState({ [k]: e.target.value, err: null });
+    const setDigits = (k, n) => (e) => this.setState({ [k]: e.target.value.replace(/\D/g, '').slice(0, n), err: null });
+    const emailOk = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
+
+    const submit = (e) => {
+      if (e && e.preventDefault) e.preventDefault();
+      if (loading || isDone) return;
+      if (isU16) return this.setState({ screen: 'signup', err: null });
+      if (isCode) {
+        if (code.length < 6) return;
+        return finish(purpose === 'reset' ? 'newpw' : 'done', purpose === 'reset' ? { pw: '', pw2: '' } : {});
+      }
+      if (isNewpw) {
+        if (pw.length < 8) return this.setState({ err: 'pw' });
+        if (pw !== pw2) return this.setState({ err: 'match' });
+        return finish('signin', { notice: true });
+      }
+      if (isSignup && !name.trim()) return this.setState({ err: 'name' });
+      if (isPhone ? phone.replace(/\D/g, '').length < 8 : !emailOk(email)) return this.setState({ err: 'id' });
+      if (isForgot) return finish('code', { purpose: 'reset', code: '' });
+      if (!pw) return this.setState({ err: 'pw' });
+      if (isSignin) return finish('done');
+      if (pw.length < 8) return this.setState({ err: 'pw' });
+      if (pw !== pw2) return this.setState({ err: 'match' });
+      const d = parseInt(dd, 10), m = parseInt(mm, 10), y = parseInt(yy, 10);
+      const dt = new Date(y, m - 1, d);
+      const valid = yy.length === 4 && y > 1900 && d >= 1 && m >= 1 && m <= 12 && dt.getFullYear() === y && dt.getMonth() === m - 1 && dt.getDate() === d;
+      if (!valid) return this.setState({ err: 'dob' });
+      const now = new Date();
+      let age = now.getFullYear() - y;
+      if (now.getMonth() < m - 1 || (now.getMonth() === m - 1 && now.getDate() < d)) age--;
+      if (age < 16) return this.setState({ screen: 'under16', err: null });
+      if (!consent) return this.setState({ err: 'consent' });
+      return finish('code', { purpose: 'signup', code: '' });
+    };
+
+    const len = pw.length;
+    let score = 0;
+    if (len >= 8) score = 1;
+    if (len >= 8 && /[a-zA-Z]/.test(pw) && /\d/.test(pw)) score = 2;
+    if (len >= 8 && (len >= 12 || (score >= 2 && /[^a-zA-Z0-9]/.test(pw)))) score = 3;
+    const lit = len === 0 ? 0 : (len < 8 ? 1 : score + 1);
+    const strengthText = len === 0 ? t.pwHint : (len < 8 ? t.s1 : [t.s2, t.s2, t.s3, t.s4][score]);
+    const mc = (i) => (i < lit ? (len < 8 ? 'bad' : 'on') : '');
+
+    const stepN = isSignup ? 1 : (isCode && purpose === 'signup' ? 2 : 0);
+    const litCount = stepN === 1 ? 3 : (stepN === 2 ? 6 : 0);
+    const pf = (i) => (i <= litCount ? 'lit' : '');
+    const title = isSignin ? t.signinTitle : isSignup ? t.signupTitle : isCode ? t.codeTitle : isForgot ? t.forgotTitle : t.newTitle;
+    const sub = isSignin ? t.signinSub : isSignup ? t.signupSub : isCode ? t.codeSub : isForgot ? (isPhone ? t.forgotSubPhone : t.forgotSub) : t.newSub;
+    const contact = isPhone ? ('+237 ' + phone.replace(/\s/g, '').replace(/^(\d)\d*(\d{2})$/, '$1•• •• •• $2')) : ((/^.@/.test(email) || !/@/.test(email)) ? email : email.replace(/^(.).*(@.*)$/, '$1•••$2'));
+    const primaryLabel = isSignin ? t.signinBtn : isSignup ? t.signupBtn : isForgot ? t.send : isCode ? t.verify : isNewpw ? t.save : isU16 ? t.u16Btn : t.doneBtn;
+    const idle = isCode && code.length < 6 && !loading;
+    const codeErr = isCode && (err === 'badcode' || err === 'expired');
+    const cells = [0, 1, 2, 3, 4, 5].map((i) => ({ ch: code[i] || '', cls: 'cell' + (err === 'badcode' ? ' bad' : (i === code.length ? ' on' : '')) }));
+    const idErrText = isPhone ? (phone.trim() ? t.errPhone : t.errPhoneEmpty) : (email.trim() ? t.errEmailFmt : t.errEmail);
+    const MU = err === 'multi';
+    const pwErrText = pw ? t.errPwShort : (isSignin ? t.errPwEnter : t.errPwShort);
+
+    const setSlide = (i) => () => this.setState({ slide: i });
+    let tx = 0;
+    const slideVals = {};
+    [0, 1, 2].forEach((i) => {
+      const sv = t.slides[i];
+      slideVals['sl' + i] = 'slide' + (i === slide ? ' on' : '');
+      slideVals['ah' + i] = i !== slide;
+      slideVals['img' + i] = PHOTOS[i];
+      slideVals['e' + i] = sv.e; slideVals['h' + i] = sv.h; slideVals['p' + i] = sv.p;
+      slideVals['dt' + i] = 'dot' + (i === slide ? ' on' : '');
+      slideVals['cur' + i] = i === slide ? 'true' : 'false';
+      slideVals['go' + i] = setSlide(i);
+    });
+
+    return {
+      w, h, layout, theme, t, ...slideVals,
+      heroOn, heroAttr: heroOn ? '1' : '0', brandPanel: layout !== 's' && !heroOn, screenAttr: screen, isWelcome, notWelcome: !isWelcome,
+      logo: (layout === 's' && heroOn) || theme === 'dark' ? '/_blob/2ba30fd54996baa317ccfa0d7811ddad' : '/_blob/19cb4670c91ff9f5f1dd92cb25c3c13b',
+      isEn: !fr, isFr: fr, langCode: fr ? 'FR' : 'EN', langOpen,
+      optEnCls: 'opt' + (fr ? '' : ' on'), optFrCls: 'opt' + (fr ? ' on' : ''),
+      toggleLang: () => this.setState({ langOpen: !langOpen }),
+      closeLang: () => this.setState({ langOpen: false }),
+      setEn: () => this.setState({ lang: 'en', langOpen: false }), setFr: () => this.setState({ lang: 'fr', langOpen: false }),
+      langKey: (e) => { if (e && e.key === 'Escape') this.setState({ langOpen: false }); },
+      isPaused: paused, notPaused: !paused, pauseLabel: paused ? t.play : t.pause,
+      togglePause: () => this.setState({ paused: !paused }),
+      touchStart: (e) => { tx = (e.touches && e.touches[0]) ? e.touches[0].clientX : 0; this._tx = tx; },
+      touchEnd: (e) => {
+        const x = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0].clientX : this._tx;
+        const dx = x - (this._tx || 0);
+        if (Math.abs(dx) > 40) this.setState({ slide: (slide + (dx < 0 ? 1 : 2)) % 3 });
+      },
+
+      isSignin, isSignup, isAuth, isCode, isForgot, isNewpw, isU16, isDone,
+      showBack: (isCode || isForgot) && !isWelcome,
+      showHead: isAuth || isCode || isForgot || isNewpw,
+      showStep: stepN > 0,
+      stepLabel: t.stepOf.replace('{n}', String(stepN || 1)),
+      pf1: pf(1), pf2: pf(2), pf3: pf(3), pf4: pf(4), pf5: pf(5), pf6: pf(6), pf7: pf(7), pf8: pf(8),
+      title, sub, contact,
+      showNotice: isSignin && (!!s.notice || demo === 'updated'),
+      showCredsError: isSignin && err === 'creds',
+
+      toSignin: go('signin'), toSignup: go('signup'), toForgot: go('forgot'),
+      goBack: isForgot ? go('signin') : go(purpose === 'reset' ? 'forgot' : 'signup'),
+      altGo: isSignin ? go('signup') : go('signin'),
+      alt: isSignin ? t.alt1 : t.alt2, altLink: isSignin ? t.alt1Link : t.alt2Link,
+      viaGoogle: () => finish('done'),
+
+      name, setName: setText('name'), invName: err === 'name' || MU,
+      showSeg: false, hasEmail: (isAuth || isForgot) && !isPhone, hasPhone: (isAuth || isForgot) && isPhone,
+      email, setEmail: setText('email'), phone, setPhone: setText('phone'), invId: err === 'id' || MU, idErrText,
+      segEmailCls: 'segbtn' + (isPhone ? '' : ' on'), segPhoneCls: 'segbtn' + (isPhone ? ' on' : ''), isEmailMode: !isPhone, isPhoneMode: isPhone,
+      setModeEmail: () => this.setState({ idm: 'email', err: null }), setModePhone: () => this.setState({ idm: 'phone', err: null }),
+
+      hasPassword: isAuth || isNewpw,
+      pwLabel: isNewpw ? t.newPassLabel : t.passLabel,
+      pw, pw2, pwType: showPw ? 'text' : 'password', showPw, pwToggle: showPw ? t.hide : t.show,
+      togglePw: () => this.setState({ showPw: !showPw }),
+      setPw: setText('pw'), setPw2: setText('pw2'),
+      invPw: err === 'pw' || MU, pwErrText,
+      hasConfirm: isSignup || isNewpw, confirmLabel: isNewpw ? t.confirmNew : t.confirmLabel, invMatch: err === 'match' || MU,
+      showMeter: isSignup || isNewpw, strengthText, m1: mc(0), m2: mc(1), m3: mc(2), m4: mc(3),
+
+      dd, mm, yy, setDd: setDigits('dd', 2), setMm: setDigits('mm', 2), setYy: setDigits('yy', 4),
+      invDob: err === 'dob' || MU, notInvDob: !(err === 'dob' || MU),
+      consent, toggleConsent: () => this.setState({ consent: !consent, err: null }), invConsent: err === 'consent' || MU,
+
+      code, onCode: setDigits('code', 6),
+      showSentNote: isCode && purpose === 'reset' && !codeErr, showCodeErr: codeErr, codeErrText: err === 'expired' ? t.errExpired : t.errCode,
+      codeHelpText: isPhone ? t.codeHelpSms : t.codeHelp, resendNote: err === 'expired' ? t.resendNow : t.resendIn, resendDisabled: err !== 'expired',
+      c0: cells[0].cls, c1: cells[1].cls, c2: cells[2].cls, c3: cells[3].cls, c4: cells[4].cls, c5: cells[5].cls,
+      d0: cells[0].ch, d1: cells[1].ch, d2: cells[2].ch, d3: cells[3].ch, d4: cells[4].ch, d5: cells[5].ch,
+
+      showPrimary: true,
+      flowTag: isDone ? 'next' : '', primaryLabel, loading, notLoading: !loading,
+      primaryCls: 'btn btn-primary' + (idle ? ' idle' : ''),
+      primaryDisabled: loading || idle,
+      enterKey: (e) => { if (e && e.key === 'Enter' && e.target && e.target.tagName === 'INPUT' && e.target.type !== 'checkbox') submit(e); }, submit
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -25,6 +25,7 @@
 | [ADR-024](ADR-024-resend-transactional-email-mailpit.md) | Resend for transactional email, Mailpit locally and in dev | Accepted |
 | [ADR-026](ADR-026-speech-recognition-corpus-benchmark.md) | Speech recognition chosen by a public-corpus benchmark: ElevenLabs Scribe v2, Deepgram Nova-3 as fallback | Accepted |
 | [ADR-027](ADR-027-app-api-hosts-cookies.md) | App and API hosts per environment, host-only cookies | Accepted |
+| [ADR-028](ADR-028-web-app-foundation.md) | Web app foundation: CSS Modules, own catalogues, Serwist CLI, subset fonts | Accepted |
 
 ## Template
 

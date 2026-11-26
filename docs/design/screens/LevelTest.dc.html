@@ -1,0 +1,633 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Level test</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="auth.css">
+<link rel="stylesheet" href="onboard.css">
+<link rel="stylesheet" href="leveltest.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400..800&amp;family=Fraunces:opsz,wght@9..144,400..700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="gp ob lt" data-theme="{{theme}}" data-layout="{{layout}}" style="width: {{w}}px; height: {{h}}px">
+
+<aside class="ob-side">
+<img class="ob-sl" src="/_blob/2ba30fd54996baa317ccfa0d7811ddad" alt="GaugePrep">
+<div><h2 class="ob-sh">{{t.sideTitle}}</h2><p class="ob-ss">{{t.sideSub}}</p><ul class="ob-pl"><li class="{{pr1Cls}}"><span class="ob-pk">{{t.sk1}}</span><span class="{{pr1ValCls}}">{{pr1Val}}</span></li><li class="{{pr2Cls}}"><span class="ob-pk">{{t.sk2}}</span><span class="{{pr2ValCls}}">{{pr2Val}}</span></li><li class="{{pr3Cls}}"><span class="ob-pk">{{t.sk3}}</span><span class="{{pr3ValCls}}">{{pr3Val}}</span></li><li class="{{pr4Cls}}"><span class="ob-pk">{{t.sk4}}</span><span class="{{pr4ValCls}}">{{pr4Val}}</span></li></ul></div>
+<div class="ob-sf"><svg class="pf" viewBox="64 14 352 218" aria-hidden="true"><path class="{{pf1}}" d="M202.3 222.6 L74.1 177.2 A176 176 0 0 1 95.0 136.3 L207.0 213.3 A40 40 0 0 0 202.3 222.6 Z"/><path class="{{pf2}}" d="M208.3 211.6 L100.4 128.9 A176 176 0 0 1 132.9 96.4 L215.6 204.3 A40 40 0 0 0 208.3 211.6 Z"/><path class="{{pf3}}" d="M217.3 203.0 L140.3 91.0 A176 176 0 0 1 181.2 70.1 L226.6 198.3 A40 40 0 0 0 217.3 203.0 Z"/><path class="{{pf4}}" d="M228.6 197.6 L179.8 32.7 A212 212 0 0 1 234.5 24.1 L239.0 196.0 A40 40 0 0 0 228.6 197.6 Z"/><path class="{{pf5}}" d="M241.0 196.0 L244.6 60.1 A176 176 0 0 1 290.0 67.2 L251.4 197.6 A40 40 0 0 0 241.0 196.0 Z"/><path class="{{pf6}}" d="M253.4 198.3 L298.8 70.1 A176 176 0 0 1 339.7 91.0 L262.7 203.0 A40 40 0 0 0 253.4 198.3 Z"/><path class="{{pf7}}" d="M264.4 204.3 L347.1 96.4 A176 176 0 0 1 379.6 128.9 L271.7 211.6 A40 40 0 0 0 264.4 204.3 Z"/><path class="{{pf8}}" d="M273.0 213.3 L385.0 136.3 A176 176 0 0 1 405.9 177.2 L277.7 222.6 A40 40 0 0 0 273.0 213.3 Z"/></svg><span>{{partLabel}}</span></div>
+</aside>
+
+<sc-if value="{{langOpen}}" hint-placeholder-val="{{false}}"><button type="button" class="scrim" tabindex="-1" aria-hidden="true" onClick="{{closeLang}}"></button></sc-if>
+
+<div class="ob-main">
+<header class="ob-lg"><img class="ob-logo" src="{{logo}}" alt="GaugePrep"></header>
+<main class="ob-shell">
+<div class="ob-top">
+<sc-if value="{{showLeave}}" hint-placeholder-val="{{false}}"><button type="button" class="lt-lv" aria-label="{{t.leave}}" onClick="{{openLeave}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg><span>{{leaveLabel}}</span></button></sc-if>
+<sc-if value="{{noLeave}}" hint-placeholder-val="{{true}}"><span class="ob-sp" aria-hidden="true"></span></sc-if>
+<div class="ob-prog"><svg class="pf" viewBox="64 14 352 218" aria-hidden="true"><path class="{{pf1}}" d="M202.3 222.6 L74.1 177.2 A176 176 0 0 1 95.0 136.3 L207.0 213.3 A40 40 0 0 0 202.3 222.6 Z"/><path class="{{pf2}}" d="M208.3 211.6 L100.4 128.9 A176 176 0 0 1 132.9 96.4 L215.6 204.3 A40 40 0 0 0 208.3 211.6 Z"/><path class="{{pf3}}" d="M217.3 203.0 L140.3 91.0 A176 176 0 0 1 181.2 70.1 L226.6 198.3 A40 40 0 0 0 217.3 203.0 Z"/><path class="{{pf4}}" d="M228.6 197.6 L179.8 32.7 A212 212 0 0 1 234.5 24.1 L239.0 196.0 A40 40 0 0 0 228.6 197.6 Z"/><path class="{{pf5}}" d="M241.0 196.0 L244.6 60.1 A176 176 0 0 1 290.0 67.2 L251.4 197.6 A40 40 0 0 0 241.0 196.0 Z"/><path class="{{pf6}}" d="M253.4 198.3 L298.8 70.1 A176 176 0 0 1 339.7 91.0 L262.7 203.0 A40 40 0 0 0 253.4 198.3 Z"/><path class="{{pf7}}" d="M264.4 204.3 L347.1 96.4 A176 176 0 0 1 379.6 128.9 L271.7 211.6 A40 40 0 0 0 264.4 204.3 Z"/><path class="{{pf8}}" d="M273.0 213.3 L385.0 136.3 A176 176 0 0 1 405.9 177.2 L277.7 222.6 A40 40 0 0 0 273.0 213.3 Z"/></svg><span>{{partLabel}}</span></div>
+<div class="langwrap" onKeyDown="{{langKey}}"><button type="button" class="langbtn" aria-haspopup="listbox" aria-expanded="{{langOpen}}" aria-label="{{t.langLabel}}" onClick="{{toggleLang}}"><svg class="globe" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15 15 0 0 1 0 20a15 15 0 0 1 0-20z"/></svg><sc-if value="{{isEn}}" hint-placeholder-val="{{true}}"><svg class="flag" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" fill="#1F3F8F"/><path d="M0 0L24 24M24 0L0 24" stroke="#FFFFFF" stroke-width="4.5"/><path d="M0 0L24 24M24 0L0 24" stroke="#D8332A" stroke-width="1.6"/><path d="M12 0V24M0 12H24" stroke="#FFFFFF" stroke-width="7"/><path d="M12 0V24M0 12H24" stroke="#D8332A" stroke-width="4"/></svg></sc-if><sc-if value="{{isFr}}" hint-placeholder-val="{{false}}"><svg class="flag" viewBox="0 0 24 24" aria-hidden="true"><rect width="8" height="24" fill="#1F4FA8"/><rect x="8" width="8" height="24" fill="#FFFFFF"/><rect x="16" width="8" height="24" fill="#D8332A"/></svg></sc-if><span>{{langCode}}</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button><sc-if value="{{langOpen}}" hint-placeholder-val="{{false}}"><ul class="langmenu" role="listbox" aria-label="{{t.langLabel}}"><li role="presentation"><button type="button" class="{{optEnCls}}" role="option" aria-selected="{{isEn}}" onClick="{{setEn}}"><svg class="flag" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" fill="#1F3F8F"/><path d="M0 0L24 24M24 0L0 24" stroke="#FFFFFF" stroke-width="4.5"/><path d="M0 0L24 24M24 0L0 24" stroke="#D8332A" stroke-width="1.6"/><path d="M12 0V24M0 12H24" stroke="#FFFFFF" stroke-width="7"/><path d="M12 0V24M0 12H24" stroke="#D8332A" stroke-width="4"/></svg><span>English</span><span class="code">EN</span><sc-if value="{{isEn}}" hint-placeholder-val="{{true}}"><svg class="tick" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg></sc-if></button></li><li role="presentation"><button type="button" class="{{optFrCls}}" role="option" aria-selected="{{isFr}}" onClick="{{setFr}}"><svg class="flag" viewBox="0 0 24 24" aria-hidden="true"><rect width="8" height="24" fill="#1F4FA8"/><rect x="8" width="8" height="24" fill="#FFFFFF"/><rect x="16" width="8" height="24" fill="#D8332A"/></svg><span>Français</span><span class="code">FR</span><sc-if value="{{isFr}}" hint-placeholder-val="{{false}}"><svg class="tick" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg></sc-if></button></li></ul></sc-if></div>
+</div>
+<form class="ob-form" onSubmit="{{submit}}" onKeyDown="{{enterKey}}" novalidate>
+<div class="ob-scroll"><div class="{{cardCls}}">
+<sc-if value="{{offline}}" hint-placeholder-val="{{false}}"><div class="lt-banner" role="status"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 8.8a15 15 0 0 1 4-2.4"/><path d="M5 12.5a10 10 0 0 1 3.5-2"/><path d="M12 20h.01"/><path d="M3 3l18 18"/></svg><span>{{t.offline}}</span></div></sc-if>
+<sc-if value="{{hasEyebrow}}" hint-placeholder-val="{{false}}"><p class="lt-eyebrow">{{eyebrow}}</p></sc-if>
+<h1 class="title" tabindex="-1" data-ob-title>{{title}}</h1>
+<sc-if value="{{hasSub}}" hint-placeholder-val="{{true}}"><p class="sub">{{sub}}</p></sc-if>
+
+<sc-if value="{{isIntro}}" hint-placeholder-val="{{true}}"><ul class="lt-parts"><li class="lt-pt"><span class="ob-ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19 6a9 9 0 0 1 0 12"/></svg></span><span class="lt-pn"><b>{{t.sk1}}</b><span>{{pd1}}</span></span><span class="lt-pm">{{pm1}}</span></li><li class="lt-pt"><span class="ob-ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 5.5v16"/></svg></span><span class="lt-pn"><b>{{t.sk2}}</b><span>{{pd2}}</span></span><span class="lt-pm">{{pm2}}</span></li><li class="lt-pt"><span class="ob-ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l4-1 11-11-3-3L5 16z"/><path d="M14 6l3 3"/></svg></span><span class="lt-pn"><b>{{t.sk3}}</b><span>{{pd3}}</span></span><span class="lt-pm">{{pm3}}</span></li><li class="lt-pt"><span class="ob-ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/></svg></span><span class="lt-pn"><b>{{t.sk4}}</b><span>{{pd4}}</span></span><span class="lt-pm">{{pm4}}</span></li></ul>
+<div class="lt-tips"><h2>{{t.tipsH}}</h2>
+<p class="ob-live"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 15v-3a8 8 0 0 1 16 0v3"/><path d="M4 15a2 2 0 0 1 2-2h1v6H6a2 2 0 0 1-2-2z"/><path d="M20 15a2 2 0 0 0-2-2h-1v6h1a2 2 0 0 0 2-2z"/></svg><span>{{t.tip1}}</span></p><p class="ob-live"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 16a8 8 0 1 1 16 0"/><path d="M12 16l4-5"/></svg><span>{{t.tip2}}</span></p><p class="ob-live"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h18"/><path d="M7 8v8"/><path d="M17 8v8"/></svg><span>{{t.tip3}}</span></p></div></sc-if>
+
+<sc-if value="{{isSound}}" hint-placeholder-val="{{false}}"><div class="lt-au">
+<button type="button" class="lt-play" disabled="{{soundBtnOff}}" onClick="{{playTest}}"><span class="lt-pi" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></span><span>{{soundBtn}}</span></button>
+<sc-if value="{{soundAsked}}" hint-placeholder-val="{{false}}"><p class="lt-st" id="lt-ask">{{t.sdAsk}}</p><div class="lt-yn" role="group" aria-labelledby="lt-ask"><button type="button" class="lt-yb" aria-pressed="{{yesPressed}}" onClick="{{soundYes}}">{{t.sdYes}}</button><button type="button" class="lt-yb" aria-pressed="{{noPressed}}" onClick="{{soundNoFn}}">{{t.sdNo}}</button></div></sc-if>
+<sc-if value="{{soundOk}}" hint-placeholder-val="{{false}}"><p class="lt-st ok" role="status">{{t.sdOk}}</p></sc-if>
+<sc-if value="{{soundNo}}" hint-placeholder-val="{{false}}"><p class="lt-st" role="status">{{t.sdHelp}}</p></sc-if>
+</div><sc-if value="{{hasErr}}" hint-placeholder-val="{{false}}"><p class="err lt-err" role="alert"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg><span>{{errText}}</span></p></sc-if></sc-if>
+
+<sc-if value="{{isL}}" hint-placeholder-val="{{true}}"><div class="{{audioCls}}">
+<sc-if value="{{showAudioBtn}}" hint-placeholder-val="{{true}}"><button type="button" class="lt-play" disabled="{{audioBtnOff}}" onClick="{{playAudio}}"><span class="lt-pi" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></span><span>{{audioBtnLabel}}</span></button></sc-if>
+<sc-if value="{{audioFail}}" hint-placeholder-val="{{false}}"><button type="button" class="lt-play" onClick="{{retryAudio}}"><span class="lt-pi" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg></span><span>{{t.lRetry}}</span></button></sc-if>
+<div class="{{barCls}}" aria-hidden="true"><i></i></div>
+<p class="{{audioMsgCls}}" role="status">{{audioMsg}}</p></div>
+<sc-if value="{{showScript}}" hint-placeholder-val="{{false}}"><p class="lt-proto"><b>{{t.script}}</b><span lang="fr">{{scriptText}}</span></p></sc-if></sc-if>
+
+<sc-if value="{{isR}}" hint-placeholder-val="{{false}}"><p class="lt-tl">{{t.txtLabel}}</p><p class="lt-txt" lang="fr">{{passage}}</p></sc-if>
+
+<sc-if value="{{isItem}}" hint-placeholder-val="{{true}}"><p class="lt-q" id="lt-q" lang="fr">{{qText}}</p>
+<div class="lt-ol" role="radiogroup" aria-labelledby="lt-q" onKeyDown="{{keyOpt}}"><button type="button" role="radio" class="ob-o lt-o" aria-checked="{{o1On}}" tabindex="{{o1Tab}}" disabled="{{optsOff}}" onClick="{{o1Pick}}"><span class="lt-let" aria-hidden="true">A</span><span class="ob-ot"><span class="ob-on" lang="fr">{{o1Text}}</span></span><span class="ob-k" aria-hidden="true">1</span><span class="ob-r" aria-hidden="true"></span></button><button type="button" role="radio" class="ob-o lt-o" aria-checked="{{o2On}}" tabindex="{{o2Tab}}" disabled="{{optsOff}}" onClick="{{o2Pick}}"><span class="lt-let" aria-hidden="true">B</span><span class="ob-ot"><span class="ob-on" lang="fr">{{o2Text}}</span></span><span class="ob-k" aria-hidden="true">2</span><span class="ob-r" aria-hidden="true"></span></button><button type="button" role="radio" class="ob-o lt-o" aria-checked="{{o3On}}" tabindex="{{o3Tab}}" disabled="{{optsOff}}" onClick="{{o3Pick}}"><span class="lt-let" aria-hidden="true">C</span><span class="ob-ot"><span class="ob-on" lang="fr">{{o3Text}}</span></span><span class="ob-k" aria-hidden="true">3</span><span class="ob-r" aria-hidden="true"></span></button><button type="button" role="radio" class="ob-o lt-o" aria-checked="{{o4On}}" tabindex="{{o4Tab}}" disabled="{{optsOff}}" onClick="{{o4Pick}}"><span class="lt-let" aria-hidden="true">D</span><span class="ob-ot"><span class="ob-on" lang="fr">{{o4Text}}</span></span><span class="ob-k" aria-hidden="true">4</span><span class="ob-r" aria-hidden="true"></span></button><button type="button" role="radio" class="ob-o lt-dk" aria-checked="{{o5On}}" tabindex="{{o5Tab}}" disabled="{{optsOff}}" onClick="{{o5Pick}}"><span class="ob-ot"><span class="ob-on">{{t.dk}}</span></span><span class="ob-k" aria-hidden="true">5</span><span class="ob-r" aria-hidden="true"></span></button></div><sc-if value="{{hasErr}}" hint-placeholder-val="{{false}}"><p class="err lt-err" role="alert"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg><span>{{errText}}</span></p></sc-if></sc-if>
+
+<sc-if value="{{isCp}}" hint-placeholder-val="{{false}}"><ul class="lt-ps"><li class="lt-pr"><span>{{t.sk1}}</span><span class="ob-pill">{{pr1Val}}</span></li><li class="lt-pr"><span>{{t.sk2}}</span><span class="ob-pill">{{pr2Val}}</span></li><li class="lt-pr"><span>{{t.sk3}}</span><span class="ob-pill">{{pr3Val}}</span></li><li class="lt-pr"><span>{{t.sk4}}</span><span class="ob-pill">{{pr4Val}}</span></li></ul></sc-if>
+
+<sc-if value="{{isW}}" hint-placeholder-val="{{false}}"><p class="hint" style="margin-top:12px">{{t.wTip}}</p><p class="lt-txt" lang="fr" style="margin-top:16px">{{wPrompt}}</p>
+<label class="lt-lab"><span class="lbltext">{{t.wLabel}}</span><textarea class="field lt-ta" lang="fr" value="{{text}}" onChange="{{setText}}" aria-invalid="{{invW}}" aria-describedby="lt-cnt" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea></label>
+<div class="lt-cnt" id="lt-cnt"><b>{{wCount}}</b><span>{{t.wAim}}</span></div><sc-if value="{{hasErr}}" hint-placeholder-val="{{false}}"><p class="err lt-err" role="alert"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg><span>{{errText}}</span></p></sc-if></sc-if>
+
+<sc-if value="{{isMic}}" hint-placeholder-val="{{false}}"><div class="lt-mic" aria-hidden="true"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/></svg></div>
+<div class="lt-tips"><p class="ob-live"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 11v5"/><path d="M12 8h.01"/></svg><span>{{t.mInfo1}}</span></p><p class="ob-live"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 15v-3a8 8 0 0 1 16 0v3"/><path d="M4 15a2 2 0 0 1 2-2h1v6H6a2 2 0 0 1-2-2z"/><path d="M20 15a2 2 0 0 0-2-2h-1v6h1a2 2 0 0 0 2-2z"/></svg><span>{{t.mInfo2}}</span></p></div></sc-if>
+<sc-if value="{{isMicDenied}}" hint-placeholder-val="{{false}}"><div class="lt-mic" aria-hidden="true"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/><path d="M3 3l18 18"/></svg></div>
+<ol class="lt-steps"><li>{{t.dS1}}</li><li>{{t.dS2}}</li><li>{{t.dS3}}</li></ol></sc-if>
+
+<sc-if value="{{isS}}" hint-placeholder-val="{{false}}"><p class="lt-txt" lang="fr">{{speakQ}}</p>
+<div class="lt-rec"><div class="{{waveCls}}" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+<sc-if value="{{rec}}" hint-placeholder-val="{{false}}"><div class="lt-live"><span class="lt-dot" aria-hidden="true"></span><span role="status">{{t.sRec}}</span></div><div class="lt-tm">{{recTime}} <small>/ {{recMax}}</small></div></sc-if>
+<sc-if value="{{notRec}}" hint-placeholder-val="{{true}}"><p class="lt-st">{{t.sReady}}</p></sc-if></div></sc-if>
+
+<sc-if value="{{isCalc}}" hint-placeholder-val="{{false}}"><div class="lt-calc" role="status"><svg class="lt-fan spin" viewBox="64 14 352 218" aria-hidden="true"><path d="M202.3 222.6 L74.1 177.2 A176 176 0 0 1 95.0 136.3 L207.0 213.3 A40 40 0 0 0 202.3 222.6 Z"/><path d="M208.3 211.6 L100.4 128.9 A176 176 0 0 1 132.9 96.4 L215.6 204.3 A40 40 0 0 0 208.3 211.6 Z"/><path d="M217.3 203.0 L140.3 91.0 A176 176 0 0 1 181.2 70.1 L226.6 198.3 A40 40 0 0 0 217.3 203.0 Z"/><path d="M228.6 197.6 L179.8 32.7 A212 212 0 0 1 234.5 24.1 L239.0 196.0 A40 40 0 0 0 228.6 197.6 Z"/><path d="M241.0 196.0 L244.6 60.1 A176 176 0 0 1 290.0 67.2 L251.4 197.6 A40 40 0 0 0 241.0 196.0 Z"/><path d="M253.4 198.3 L298.8 70.1 A176 176 0 0 1 339.7 91.0 L262.7 203.0 A40 40 0 0 0 253.4 198.3 Z"/><path d="M264.4 204.3 L347.1 96.4 A176 176 0 0 1 379.6 128.9 L271.7 211.6 A40 40 0 0 0 264.4 204.3 Z"/><path d="M273.0 213.3 L385.0 136.3 A176 176 0 0 1 405.9 177.2 L277.7 222.6 A40 40 0 0 0 273.0 213.3 Z"/></svg></div></sc-if>
+
+<sc-if value="{{isResult}}" hint-placeholder-val="{{false}}">
+<button type="button" class="ob-what" aria-expanded="{{lvlOpen}}" aria-controls="lt-lvl" onClick="{{toggleLvl}}">{{t.lvlBtn}}</button>
+<sc-if value="{{lvlOpen}}" hint-placeholder-val="{{false}}"><div class="ob-expl" id="lt-lvl" role="note"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 11v5"/><path d="M12 8h.01"/></svg><p>{{lvlText}}</p></div></sc-if>
+<sc-if value="{{showLegend}}" hint-placeholder-val="{{true}}"><div class="lt-leg"><span><i class="lt-sw" aria-hidden="true"></i>{{t.legRange}}</span><span><i class="lt-sd" aria-hidden="true"></i>{{t.legTarget}}</span></div></sc-if>
+<div class="lt-res"><div class="{{r1Cls}}"><div class="lt-rh"><h2 class="lt-rn">{{r1Name}}</h2><sc-if value="{{r1Show}}" hint-placeholder-val="{{true}}"><span class="lt-cefr">{{r1Cefr}}</span></sc-if></div>
+<sc-if value="{{r1Show}}" hint-placeholder-val="{{true}}"><sc-if value="{{r1ShowNclc}}" hint-placeholder-val="{{true}}"><p class="lt-rl">{{r1Line}}</p></sc-if><p class="lt-rd">{{r1Desc}}</p><sc-if value="{{r1ShowScale}}" hint-placeholder-val="{{true}}"><div class="lt-sc" role="img" aria-label="{{r1RangeAria}}"><div class="lt-trk"><div class="lt-rg" style="left: {{r1L}}; width: {{r1W}}"></div><div class="lt-tg"></div></div><div class="lt-nums" aria-hidden="true"><span>&lt;4</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span></div></div></sc-if><sc-if value="{{r1ShowNclc}}" hint-placeholder-val="{{true}}"><span class="lt-gap">{{r1Gap}}</span></sc-if></sc-if>
+<sc-if value="{{r1Not}}" hint-placeholder-val="{{false}}"><p class="lt-rd">{{t.notMeasured}}</p><button type="button" class="lt-add" aria-label="{{r1Aria}}" onClick="{{r1Add}}">{{r1AddLabel}}</button></sc-if></div><div class="{{r2Cls}}"><div class="lt-rh"><h2 class="lt-rn">{{r2Name}}</h2><sc-if value="{{r2Show}}" hint-placeholder-val="{{true}}"><span class="lt-cefr">{{r2Cefr}}</span></sc-if></div>
+<sc-if value="{{r2Show}}" hint-placeholder-val="{{true}}"><sc-if value="{{r2ShowNclc}}" hint-placeholder-val="{{true}}"><p class="lt-rl">{{r2Line}}</p></sc-if><p class="lt-rd">{{r2Desc}}</p><sc-if value="{{r2ShowScale}}" hint-placeholder-val="{{true}}"><div class="lt-sc" role="img" aria-label="{{r2RangeAria}}"><div class="lt-trk"><div class="lt-rg" style="left: {{r2L}}; width: {{r2W}}"></div><div class="lt-tg"></div></div><div class="lt-nums" aria-hidden="true"><span>&lt;4</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span></div></div></sc-if><sc-if value="{{r2ShowNclc}}" hint-placeholder-val="{{true}}"><span class="lt-gap">{{r2Gap}}</span></sc-if></sc-if>
+<sc-if value="{{r2Not}}" hint-placeholder-val="{{false}}"><p class="lt-rd">{{t.notMeasured}}</p><button type="button" class="lt-add" aria-label="{{r2Aria}}" onClick="{{r2Add}}">{{r2AddLabel}}</button></sc-if></div><div class="{{r3Cls}}"><div class="lt-rh"><h2 class="lt-rn">{{r3Name}}</h2><sc-if value="{{r3Show}}" hint-placeholder-val="{{true}}"><span class="lt-cefr">{{r3Cefr}}</span></sc-if></div>
+<sc-if value="{{r3Show}}" hint-placeholder-val="{{true}}"><sc-if value="{{r3ShowNclc}}" hint-placeholder-val="{{true}}"><p class="lt-rl">{{r3Line}}</p></sc-if><p class="lt-rd">{{r3Desc}}</p><sc-if value="{{r3ShowScale}}" hint-placeholder-val="{{true}}"><div class="lt-sc" role="img" aria-label="{{r3RangeAria}}"><div class="lt-trk"><div class="lt-rg" style="left: {{r3L}}; width: {{r3W}}"></div><div class="lt-tg"></div></div><div class="lt-nums" aria-hidden="true"><span>&lt;4</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span></div></div></sc-if><sc-if value="{{r3ShowNclc}}" hint-placeholder-val="{{true}}"><span class="lt-gap">{{r3Gap}}</span></sc-if></sc-if>
+<sc-if value="{{r3Not}}" hint-placeholder-val="{{false}}"><p class="lt-rd">{{t.notMeasured}}</p><button type="button" class="lt-add" aria-label="{{r3Aria}}" onClick="{{r3Add}}">{{r3AddLabel}}</button></sc-if></div><div class="{{r4Cls}}"><div class="lt-rh"><h2 class="lt-rn">{{r4Name}}</h2><sc-if value="{{r4Show}}" hint-placeholder-val="{{true}}"><span class="lt-cefr">{{r4Cefr}}</span></sc-if></div>
+<sc-if value="{{r4Show}}" hint-placeholder-val="{{true}}"><sc-if value="{{r4ShowNclc}}" hint-placeholder-val="{{true}}"><p class="lt-rl">{{r4Line}}</p></sc-if><p class="lt-rd">{{r4Desc}}</p><sc-if value="{{r4ShowScale}}" hint-placeholder-val="{{true}}"><div class="lt-sc" role="img" aria-label="{{r4RangeAria}}"><div class="lt-trk"><div class="lt-rg" style="left: {{r4L}}; width: {{r4W}}"></div><div class="lt-tg"></div></div><div class="lt-nums" aria-hidden="true"><span>&lt;4</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span></div></div></sc-if><sc-if value="{{r4ShowNclc}}" hint-placeholder-val="{{true}}"><span class="lt-gap">{{r4Gap}}</span></sc-if></sc-if>
+<sc-if value="{{r4Not}}" hint-placeholder-val="{{false}}"><p class="lt-rd">{{t.notMeasured}}</p><button type="button" class="lt-add" aria-label="{{r4Aria}}" onClick="{{r4Add}}">{{r4AddLabel}}</button></sc-if></div></div>
+<div class="ob-expl" role="note" style="margin-top:20px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 11v5"/><path d="M12 8h.01"/></svg><div><p><strong>{{t.estH}}</strong> <span class="lt-conf">{{confLabel}}</span></p><p style="margin-top:6px">{{t.retest}}</p>
+<button type="button" class="ob-what" aria-expanded="{{accOpen}}" aria-controls="lt-acc" onClick="{{toggleAcc}}">{{t.accBtn}}</button>
+<sc-if value="{{accOpen}}" hint-placeholder-val="{{false}}"><p id="lt-acc">{{t.accText}}</p></sc-if></div></div></sc-if>
+
+<sc-if value="{{showHeroFan}}" hint-placeholder-val="{{false}}"><svg class="lt-fan" viewBox="64 14 352 218" aria-hidden="true"><path class="{{pf1}}" d="M202.3 222.6 L74.1 177.2 A176 176 0 0 1 95.0 136.3 L207.0 213.3 A40 40 0 0 0 202.3 222.6 Z"/><path class="{{pf2}}" d="M208.3 211.6 L100.4 128.9 A176 176 0 0 1 132.9 96.4 L215.6 204.3 A40 40 0 0 0 208.3 211.6 Z"/><path class="{{pf3}}" d="M217.3 203.0 L140.3 91.0 A176 176 0 0 1 181.2 70.1 L226.6 198.3 A40 40 0 0 0 217.3 203.0 Z"/><path class="{{pf4}}" d="M228.6 197.6 L179.8 32.7 A212 212 0 0 1 234.5 24.1 L239.0 196.0 A40 40 0 0 0 228.6 197.6 Z"/><path class="{{pf5}}" d="M241.0 196.0 L244.6 60.1 A176 176 0 0 1 290.0 67.2 L251.4 197.6 A40 40 0 0 0 241.0 196.0 Z"/><path class="{{pf6}}" d="M253.4 198.3 L298.8 70.1 A176 176 0 0 1 339.7 91.0 L262.7 203.0 A40 40 0 0 0 253.4 198.3 Z"/><path class="{{pf7}}" d="M264.4 204.3 L347.1 96.4 A176 176 0 0 1 379.6 128.9 L271.7 211.6 A40 40 0 0 0 264.4 204.3 Z"/><path class="{{pf8}}" d="M273.0 213.3 L385.0 136.3 A176 176 0 0 1 405.9 177.2 L277.7 222.6 A40 40 0 0 0 273.0 213.3 Z"/></svg></sc-if>
+<sc-if value="{{leaveListen}}" hint-placeholder-val="{{false}}"><p class="hint" style="margin-top:16px">{{t.lvListen}}</p></sc-if>
+</div></div>
+<sc-if value="{{showBar}}" hint-placeholder-val="{{true}}"><div class="ob-bar"><div class="{{barRowCls}}">
+<sc-if value="{{showSec}}" hint-placeholder-val="{{false}}"><button type="button" class="ob-skip" onClick="{{secondary}}">{{secLabel}}</button></sc-if>
+<button class="{{primaryCls}}" data-flow="{{flowTag}}" type="button" onClick="{{submit}}" disabled="{{loading}}" aria-busy="{{loading}}">
+<sc-if value="{{loading}}" hint-placeholder-val="{{false}}"><svg class="ld" viewBox="64 14 352 218" aria-hidden="true"><path d="M202.3 222.6 L74.1 177.2 A176 176 0 0 1 95.0 136.3 L207.0 213.3 A40 40 0 0 0 202.3 222.6 Z"/><path d="M208.3 211.6 L100.4 128.9 A176 176 0 0 1 132.9 96.4 L215.6 204.3 A40 40 0 0 0 208.3 211.6 Z"/><path d="M217.3 203.0 L140.3 91.0 A176 176 0 0 1 181.2 70.1 L226.6 198.3 A40 40 0 0 0 217.3 203.0 Z"/><path d="M228.6 197.6 L179.8 32.7 A212 212 0 0 1 234.5 24.1 L239.0 196.0 A40 40 0 0 0 228.6 197.6 Z"/><path d="M241.0 196.0 L244.6 60.1 A176 176 0 0 1 290.0 67.2 L251.4 197.6 A40 40 0 0 0 241.0 196.0 Z"/><path d="M253.4 198.3 L298.8 70.1 A176 176 0 0 1 339.7 91.0 L262.7 203.0 A40 40 0 0 0 253.4 198.3 Z"/><path d="M264.4 204.3 L347.1 96.4 A176 176 0 0 1 379.6 128.9 L271.7 211.6 A40 40 0 0 0 264.4 204.3 Z"/><path d="M273.0 213.3 L385.0 136.3 A176 176 0 0 1 405.9 177.2 L277.7 222.6 A40 40 0 0 0 273.0 213.3 Z"/></svg><span>{{t.loading}}</span></sc-if>
+<sc-if value="{{notLoading}}" hint-placeholder-val="{{true}}"><span>{{primaryLabel}}</span></sc-if>
+</button></div></div></sc-if>
+</form>
+</main>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"layout": {"editor": "enum", "options": ["s", "m", "l"], "default": "l", "section": "View"}, "lang": {"editor": "enum", "options": ["en", "fr"], "default": "en", "section": "View"}, "theme": {"editor": "enum", "options": ["light", "dark"], "default": "light", "section": "View"}, "screen": {"editor": "enum", "options": ["intro", "sound", "l", "r", "cp", "w", "wskip", "mic", "s", "calc", "result", "leave", "paused"], "default": "intro", "section": "Screen"}, "track": {"editor": "enum", "options": ["tcf", "free"], "default": "tcf", "section": "Screen"}, "edge": {"editor": "enum", "options": ["none", "offline", "micdenied"], "default": "none", "section": "Screen"}, "transcript": {"editor": "boolean", "default": false, "section": "Prototype"}, "w": {"editor": null}, "h": {"editor": null}, "$preview": {"width": 1280, "height": 800}}'>
+const ITEMS = {
+  l: [
+    { a: 'Le train pour Montréal part à quinze heures trente, quai quatre.', q: 'À quelle heure part le train ?', o: ['À 14 h 30', 'À 15 h 30', 'À 15 h 13', 'À 16 h 30'], c: 2 },
+    { a: 'La pharmacie est fermée le dimanche, mais elle est ouverte le samedi jusqu’à vingt heures.', q: 'Jusqu’à quelle heure la pharmacie est-elle ouverte le samedi ?', o: ['Jusqu’à 18 h', 'Jusqu’à 22 h', 'Elle est fermée', 'Jusqu’à 20 h'], c: 4 },
+    { a: 'Bonjour, c’est Julie. Je ne pourrai pas venir à la réunion de mardi, car mon fils est malade. Pouvez-vous m’envoyer le compte rendu ?', q: 'Que demande Julie ?', o: ['De lui envoyer le compte rendu', 'De déplacer la réunion', 'De garder son fils', 'De l’appeler mardi'], c: 1 }
+  ],
+  r: [
+    { a: 'Bibliothèque municipale. Fermeture exceptionnelle le lundi 3 mars. Les livres peuvent être rendus dans la boîte à l’entrée.', q: 'Que peut-on faire le lundi 3 mars ?', o: ['Emprunter des livres', 'Lire sur place', 'Rendre des livres dans la boîte', 'Parler à la bibliothécaire'], c: 3 },
+    { a: 'Objet : changement d’horaire. À partir du 1er avril, notre équipe commencera à 8 h 30 au lieu de 9 h. Ce changement permet de réduire les retards liés au transport. Merci de confirmer votre présence.', q: 'Pourquoi l’horaire change-t-il ?', o: ['Pour éviter des retards', 'Pour finir plus tôt', 'Pour recevoir plus de clients', 'Pour fermer le vendredi'], c: 1 },
+    { a: 'Malgré la hausse des prix d’entrée, la fréquentation du musée a progressé de douze pour cent cette année, ce que la directrice attribue à la nouvelle programmation.', q: 'À quoi la directrice attribue-t-elle cette hausse de fréquentation ?', o: ['À la baisse des prix', 'À une campagne de publicité', 'À des travaux dans le musée', 'Aux nouvelles expositions'], c: 4 }
+  ]
+};
+const SPEAK = [
+  'Présentez-vous : comment vous appelez-vous, d’où venez-vous et que faites-vous dans la vie ?',
+  'Parlez d’un endroit que vous aimez dans votre ville ou votre village. Pourquoi l’aimez-vous ?'
+];
+const W_PROMPT = 'Vous organisez une petite fête pour votre anniversaire. Écrivez un message à un ami pour l’inviter. Donnez la date, le lieu et ce qu’il peut apporter.';
+const W_SAMPLE = 'Salut Marie ! Je fête mon anniversaire samedi 14 mars à 18 heures chez moi, au 25 rue des Lilas. Je prépare un grand repas avec de la musique. Peux-tu apporter un dessert ou une boisson ? J’espère que tu pourras venir. À bientôt !';
+const MINS = { l: 8, r: 10, w: 8, s: 3 };
+const COUNTS = { l: 3, r: 3, w: 1, s: 2 };
+const PARTS = ['l', 'r', 'w', 's'];
+const NEXT = { l: 'r', r: 'w', w: 's' };
+const DEMOS = {
+  mid: { l: [true, true, false], r: [true, true, true] },
+  strong: { l: [true, true, true], r: [true, true, true] },
+  low: { l: [true, false, false], r: [true, false, false] },
+  partial: { l: [true, true, false], r: [true, false, false], wsk: true, ssk: true },
+  zero: { l: [false, false, false], r: [false, false, false] }
+};
+const LEVELS = [
+  { cefr: 'A1', below: true, lo: 0, hi: 3 },
+  { cefr: 'A2', below: true, lo: 0, hi: 3 },
+  { cefr: 'B1', below: false, lo: 4, hi: 5 },
+  { cefr: 'B2', below: false, lo: 6, hi: 7 }
+];
+const TARGET = 7;
+
+const T = {
+  en: {
+    langLabel: 'Language', loading: 'One moment', continue: 'Continue', leave: 'Save and leave', leaveShort: 'Leave',
+    levelTest: 'Level test', levelTestS: 'Level test', yourEstimate: 'Your estimate', partOf: 'Part {n} of 4', minLeft: 'About {m} min left', qOf: 'Question {q} of 2',
+    sk1: 'Listening', sk2: 'Reading', sk3: 'Writing', sk4: 'Speaking',
+    sideTitle: 'Your level test', sideSub: 'Four short parts. Stop and pick up again any time.',
+    stDone: 'Done', stNow: 'In progress', stUp: 'Up next', stSkip: 'Not measured',
+    iTitle: 'Let’s find your starting level', iSub: 'Four short parts, about 25 to 35 minutes in all. You can stop and pick up again whenever you like.',
+    pd1: 'Short recordings, each played once.', pd2: 'Short texts and questions.', pd3: 'One short message. You can skip it.', pd4: 'Two questions, answered out loud. You can skip it.',
+    pm: '{m} min', tipsH: 'Before you begin',
+    tip1: 'Use headphones in a quiet place if you can.', tip2: 'This is not a mock exam. Questions get easier or harder as you go, so not knowing some answers is normal.', tip3: 'You get an estimate with a range, not a pass or a fail.',
+    sdTitle: 'Check your sound', sdSub: 'Recordings play only once, so check now that you can hear. Headphones help.',
+    sdPlay: 'Play a test sound', sdAgain: 'Play it again', sdPlaying: 'Playing', sdAsk: 'Did you hear it?', sdYes: 'Yes, I heard it', sdNo: 'No, I did not',
+    sdOk: 'Good. You are ready to start.', sdHelp: 'Check that your volume is up and your device is not on silent, then play the sound again. If it still does not work, you can skip listening for now. It will show as not measured.',
+    sdStart: 'Start listening', sdSkip: 'Skip listening', errSound: 'Play the test sound and tell us you heard it.',
+    lTitle: 'Listen to the recording', lSub: 'You can listen once, like in the exam.', lPlay: 'Play when ready', lPlaying: 'Playing', lReady: 'It plays once, so get comfortable first. Then choose your answer.',
+    lWait: 'Playing. Listen carefully.', lDone: 'Finished. Now choose your answer.',
+    lFail: 'The audio did not load. Your place is kept, and this does not use up your one listen. Check your connection and try again.', lRetry: 'Try again',
+    rTitle: 'Read the text', rSub: 'Then answer the question.', txtLabel: 'Text', dk: 'I don’t know', answers: 'Answers',
+    errPick: 'Choose an answer, or “I don’t know”.', errAudio: 'Play the recording first.', script: 'Transcript, prototype only',
+    cpDone: '{x} done', cpSkip: '{x} skipped',
+    cpSubDone: 'Your answers are saved. Next: {y}, about {m} minutes.', cpSubSkip: 'It will show as not measured, and you can add it any time. Next: {y}, about {m} minutes.',
+    cpLater: 'Continue later',
+    wTitle: 'Write a short message', wSub: 'Write in French. Aim for 40 to 60 words.', wTip: 'Write on your own, without a translator, so we can estimate your own French.',
+    wLabel: 'Your message', wCount: '{n} words', wAim: 'Aim for 40 to 60', errW: 'Write at least 15 words, or skip this part.', skipPart: 'Skip this part',
+    wsTitle: 'We will skip writing for now', wsSub: 'Reading is done. Writing tasks start at around level A2, so we will leave this one for later. It will show as not measured, and you can add it any time.',
+    mTitle: 'Now, speaking', mSub: 'You will answer two short questions out loud, in French. It takes under 3 minutes.',
+    mInfo1: 'We record your answers to estimate your speaking level.', mInfo2: 'Find a quiet spot. There is no right answer: just speak naturally.', mAllow: 'Allow microphone',
+    dTitle: 'The microphone is blocked', dSub: 'Your browser is not letting GaugePrep use the microphone. You can fix this in a few steps, or skip speaking.',
+    dS1: 'Select the lock or settings icon next to the web address.', dS2: 'Set Microphone to Allow.', dS3: 'Come back here and try again.', dRetry: 'Try again',
+    sTitle: 'Answer out loud', sSub: 'Speak in French. You have up to 45 seconds.', sReady: 'Press the button when you are ready to speak.', sRec: 'Recording', sStart: 'Start answering', sFinish: 'Finish answer', sOf: '{a} of {b}',
+    cTitle: 'Working out your estimate', cSub: 'This takes less than a minute.',
+    rsTitle: 'Your first estimate', rsSub: 'Here is where you likely stand in each skill, and how far that is from your target. It gets sharper as you practise.',
+    rsSubFree: 'Here is your French level in each skill. It gets sharper as you practise.',
+    legRange: 'Likely range', legTarget: 'Your target: NCLC 7',
+    below4: 'Below NCLC 4', likely: 'Likely NCLC {r}', rangeTo: '{a} to {b}',
+    notMeasured: 'Not measured yet', addPart: 'Add this part',
+    gapAt: 'At or above your target', gapCould: 'Could reach your target', gapOne: '{n} level to go', gapRange: '{a} to {b} levels to go', gapMany: 'Several levels to go',
+    d_A1: 'Very simple everyday phrases.', d_A2: 'Simple, familiar everyday situations.', d_B1: 'The main points on familiar topics.', d_B2: 'Most everyday and work situations with ease.',
+    lvlWord: 'Level', lvlBtn: 'What do these levels mean?', lvlText: 'CEFR (A1 to C2) is the international scale for language level. NCLC (1 to 12) is the scale Canadian immigration programmes use. We show both so you can see how they line up.', lvlTextFree: 'CEFR is the international scale for language level, from A1 (beginner) to C2 (near native). Most people start learning at A1 or A2.',
+    ab1: 'Listening', ab2: 'Reading', ab3: 'Writing', ab4: 'Speaking',
+    estH: 'This is an estimate, not an exam score.', conf: 'Confidence: low', accBtn: 'How accurate is this?',
+    accText: 'A first estimate from about 25 minutes of answers is rough, so we show a range. It gets more accurate as you practise and take full mock exams. We publish how close our estimates are to real results.',
+    retest: 'We will suggest a new check in 30 days.', plan: 'See my study plan',
+    lvTitle: 'Take a break?', lvSub: 'Your answers are saved. You can pick up exactly where you stopped.', lvListen: 'A recording you have already played will not play again.', lvKeep: 'Keep going', lvOut: 'Leave for now',
+    pzTitle: 'Your test is saved', pzSub: 'Come back any time and pick up where you stopped.', pzResume: 'Resume my test',
+    offline: 'You are offline. Your answers so far are saved. We will reconnect and carry on.'
+  },
+  fr: {
+    langLabel: 'Langue', loading: 'Un instant', continue: 'Continuer', leave: 'Enregistrer et quitter', leaveShort: 'Quitter',
+    levelTest: 'Test de niveau', levelTestS: 'Test', yourEstimate: 'Votre estimation', partOf: 'Partie {n} sur 4', minLeft: 'Encore environ {m} min', qOf: 'Question {q} sur 2',
+    sk1: 'Compréhension orale', sk2: 'Compréhension écrite', sk3: 'Expression écrite', sk4: 'Expression orale',
+    sideTitle: 'Votre test de niveau', sideSub: 'Quatre courtes parties. Arrêtez-vous et reprenez à tout moment.',
+    stDone: 'Terminée', stNow: 'En cours', stUp: 'À venir', stSkip: 'Non mesurée',
+    iTitle: 'Trouvons votre niveau de départ', iSub: 'Quatre courtes parties, environ 25 à 35 minutes au total. Vous pouvez vous arrêter et reprendre quand vous voulez.',
+    pd1: 'Courts enregistrements, écoutés une seule fois.', pd2: 'Courts textes et questions.', pd3: 'Un court message. Vous pouvez passer cette partie.', pd4: 'Deux questions, avec réponse à voix haute. Vous pouvez passer cette partie.',
+    pm: '{m} min', tipsH: 'Avant de commencer',
+    tip1: 'Si possible, mettez un casque et installez-vous au calme.', tip2: 'Ce n’est pas un examen blanc. Les questions deviennent plus faciles ou plus difficiles selon vos réponses : ne pas savoir répondre à certaines est normal.', tip3: 'Vous obtenez une estimation avec une fourchette, pas une réussite ou un échec.',
+    sdTitle: 'Vérifiez votre son', sdSub: 'Les enregistrements ne passent qu’une fois : vérifiez dès maintenant que vous entendez bien. Un casque aide.',
+    sdPlay: 'Écouter un son de test', sdAgain: 'Le réécouter', sdPlaying: 'Lecture en cours', sdAsk: 'L’avez-vous entendu ?', sdYes: 'Oui, je l’ai entendu', sdNo: 'Non, je n’ai rien entendu',
+    sdOk: 'Parfait. Vous êtes prêt à commencer.', sdHelp: 'Vérifiez que le volume est monté et que l’appareil n’est pas en mode silencieux, puis réécoutez le son. Si cela ne marche toujours pas, vous pouvez passer l’écoute pour l’instant. Elle sera indiquée comme non mesurée.',
+    sdStart: 'Commencer l’écoute', sdSkip: 'Passer l’écoute', errSound: 'Écoutez le son de test et dites-nous si vous l’avez entendu.',
+    lTitle: 'Écoutez l’enregistrement', lSub: 'Vous pouvez l’écouter une seule fois, comme à l’examen.', lPlay: 'Lancer l’écoute', lPlaying: 'Lecture en cours', lReady: 'Il ne passe qu’une fois : installez-vous d’abord. Puis choisissez votre réponse.',
+    lWait: 'Lecture en cours. Écoutez bien.', lDone: 'Terminé. Choisissez maintenant votre réponse.',
+    lFail: 'L’audio ne s’est pas chargé. Votre place est conservée et cela ne compte pas comme votre écoute unique. Vérifiez votre connexion et réessayez.', lRetry: 'Réessayer',
+    rTitle: 'Lisez le texte', rSub: 'Puis répondez à la question.', txtLabel: 'Texte', dk: 'Je ne sais pas', answers: 'Réponses',
+    errPick: 'Choisissez une réponse, ou « Je ne sais pas ».', errAudio: 'Écoutez d’abord l’enregistrement.', script: 'Transcription, prototype seulement',
+    cpDone: '{x} terminée', cpSkip: '{x} passée',
+    cpSubDone: 'Vos réponses sont enregistrées. Ensuite : {y}, environ {m} minutes.', cpSubSkip: 'Elle sera indiquée comme non mesurée, et vous pourrez l’ajouter quand vous voulez. Ensuite : {y}, environ {m} minutes.',
+    cpLater: 'Continuer plus tard',
+    wTitle: 'Écrivez un court message', wSub: 'Écrivez en français. Visez 40 à 60 mots.', wTip: 'Écrivez par vous-même, sans traducteur, pour que nous estimions votre propre français.',
+    wLabel: 'Votre message', wCount: '{n} mots', wAim: 'Visez 40 à 60', errW: 'Écrivez au moins 15 mots, ou passez cette partie.', skipPart: 'Passer cette partie',
+    wsTitle: 'Nous passons l’expression écrite pour l’instant', wsSub: 'La compréhension écrite est terminée. Les tâches d’écriture commencent vers le niveau A2 : nous la laissons pour plus tard. Elle sera indiquée comme non mesurée et vous pourrez l’ajouter quand vous voulez.',
+    mTitle: 'Passons à l’oral', mSub: 'Vous répondrez à voix haute, en français, à deux courtes questions. Cela prend moins de 3 minutes.',
+    mInfo1: 'Nous enregistrons vos réponses pour estimer votre niveau à l’oral.', mInfo2: 'Installez-vous au calme. Il n’y a pas de bonne réponse : parlez naturellement.', mAllow: 'Autoriser le micro',
+    dTitle: 'Le micro est bloqué', dSub: 'Votre navigateur n’autorise pas GaugePrep à utiliser le micro. Vous pouvez régler cela en quelques étapes, ou passer l’oral.',
+    dS1: 'Touchez l’icône de cadenas ou de réglages à côté de l’adresse web.', dS2: 'Réglez Micro sur Autoriser.', dS3: 'Revenez ici et réessayez.', dRetry: 'Réessayer',
+    sTitle: 'Répondez à voix haute', sSub: 'Parlez en français. Vous avez jusqu’à 45 secondes.', sReady: 'Appuyez sur le bouton quand vous êtes prêt à parler.', sRec: 'Enregistrement', sStart: 'Commencer à répondre', sFinish: 'Terminer la réponse', sOf: '{a} sur {b}',
+    cTitle: 'Calcul de votre estimation', cSub: 'Cela prend moins d’une minute.',
+    rsTitle: 'Votre première estimation', rsSub: 'Voici où vous en êtes probablement dans chaque compétence, et l’écart avec votre objectif. L’estimation s’affine avec la pratique.',
+    rsSubFree: 'Voici votre niveau de français dans chaque compétence. L’estimation s’affine avec la pratique.',
+    legRange: 'Fourchette probable', legTarget: 'Votre objectif : NCLC 7',
+    below4: 'Sous le NCLC 4', likely: 'Probablement NCLC {r}', rangeTo: '{a} à {b}',
+    notMeasured: 'Pas encore mesurée', addPart: 'Ajouter cette partie',
+    gapAt: 'À votre objectif ou au-delà', gapCould: 'Objectif possible', gapOne: '{n} niveau à franchir', gapRange: '{a} à {b} niveaux à franchir', gapMany: 'Plusieurs niveaux à franchir',
+    d_A1: 'Des phrases quotidiennes très simples.', d_A2: 'Des situations quotidiennes simples et familières.', d_B1: 'L’essentiel sur des sujets familiers.', d_B2: 'La plupart des situations du quotidien et du travail avec aisance.',
+    lvlWord: 'Niveau', lvlBtn: 'Que signifient ces niveaux ?', lvlText: 'Le CECR (A1 à C2) est l’échelle internationale du niveau de langue. Le NCLC (1 à 12) est l’échelle utilisée par les programmes d’immigration canadiens. Nous affichons les deux pour montrer comment ils se correspondent.', lvlTextFree: 'Le CECR est l’échelle internationale du niveau de langue, de A1 (débutant) à C2 (quasi natif). La plupart des gens commencent à A1 ou A2.',
+    ab1: 'CO', ab2: 'CE', ab3: 'EE', ab4: 'EO',
+    estH: 'Ceci est une estimation, pas une note d’examen.', conf: 'Fiabilité : faible', accBtn: 'Quelle est la précision ?',
+    accText: 'Une première estimation basée sur environ 25 minutes de réponses reste approximative : nous affichons donc une fourchette. Elle gagne en précision avec la pratique et les examens blancs complets. Nous publions l’écart entre nos estimations et les résultats réels.',
+    retest: 'Nous vous proposerons un nouveau point dans 30 jours.', plan: 'Voir mon plan d’étude',
+    lvTitle: 'Faire une pause ?', lvSub: 'Vos réponses sont enregistrées. Vous reprendrez exactement là où vous vous êtes arrêté.', lvListen: 'Un enregistrement déjà écouté ne sera pas rejoué.', lvKeep: 'Continuer', lvOut: 'Quitter pour l’instant',
+    pzTitle: 'Votre test est enregistré', pzSub: 'Revenez quand vous voulez et reprenez là où vous vous êtes arrêté.', pzResume: 'Reprendre mon test',
+    offline: 'Vous êtes hors ligne. Vos réponses sont enregistrées. Nous nous reconnecterons et vous pourrez continuer.'
+  }
+};
+
+class Component extends DCLogic {
+  componentWillUnmount() { clearTimeout(this._ta); clearTimeout(this._tr); clearTimeout(this._tc); clearTimeout(this._tf); clearTimeout(this._ts); }
+
+  renderVals() {
+    const p = this.props || {};
+    const s = this.state || {};
+    const g = (k, d) => (s[k] !== undefined ? s[k] : d);
+    const layout = p.layout === 's' || p.layout === 'm' ? p.layout : 'l';
+    const theme = p.theme === 'dark' ? 'dark' : 'light';
+    const lang = s.lang ?? (p.lang === 'fr' ? 'fr' : 'en');
+    const fr = lang === 'fr';
+    const dims = { s: [390, 844], m: [820, 1000], l: [1280, 800] }[layout];
+    const w = Number(p.w) || dims[0];
+    const h = Number(p.h) || dims[1];
+    const t = fr ? T.fr : T.en;
+    const langOpen = !!s.langOpen;
+    const loading = !!s.loading;
+    const bool = (v) => v === true || v === 'true';
+    const free = (p.track || 'tcf') === 'free';
+    const showScript = p.transcript === true || p.transcript === 'true';
+
+    // ---- state with prop presets ----
+    const demo = DEMOS[p.demo] || DEMOS.mid;
+    const screen = g('screen', p.screen || 'intro');
+    const n = g('n', Number(p.n) || 0);
+    const back = g('back', p.from || 'l');
+    const cpPart = g('cpPart', p.cpPart || 'l');
+    const skipPre = bool(p.skipped);
+    const skip = g('skip', { l: skipPre && (p.cpPart || 'l') === 'l' && screen === 'cp', r: false, w: (!!demo.wsk && screen === 'result') || (skipPre && p.cpPart === 'w' && screen === 'cp'), s: !!demo.ssk && screen === 'result' });
+    const ansL = g('ansL', screen === 'result' ? demo.l : []);
+    const ansR = g('ansR', screen === 'result' ? demo.r : []);
+    const sel = g('sel', Number(p.pick) || 0);
+    const lc = g('lc', p.audio || 'ready');
+    const sound = g('sound', p.sound || 'idle');
+    const text = g('text', bool(p.filled) || screen === 'result' ? W_SAMPLE : '');
+    const rec = g('rec', bool(p.rec));
+    const recSec = g('recSec', Number(p.recSec) || 12);
+    const micOk = g('micOk', false);
+    const accOpen = g('accOpen', false);
+    const adding = !!s.adding;
+    const err = g('err', null);
+    const edge = p.edge || 'none';
+    const eff = screen === 'leave' || screen === 'paused' ? back : screen;
+    const cpU = eff === 'cp' ? ({ l: 3, r: 6, w: 7 }[cpPart] || 0) : 0;
+    const done = g('done', { l: cpU >= 3 || eff === 'result', r: cpU >= 6 || eff === 'result', w: cpU >= 7 || eff === 'result', s: eff === 'result' });
+    const partOfScreen = { l: 'l', r: 'r', w: 'w', wskip: 'w', mic: 's', s: 's' }[eff] || null;
+
+    // ---- scoring ----
+    const countOf = (a) => a.filter(Boolean).length;
+    const lScore = countOf(ansL), rScore = countOf(ansR);
+    const wc = text.trim() ? text.trim().split(/\s+/).filter(Boolean).length : 0;
+    const res = (k) => {
+      if (k === 'l' || k === 'r') {
+        if (skip[k]) return null;
+        const lv = LEVELS[k === 'l' ? lScore : rScore];
+        return lv;
+      }
+      if (k === 'w') {
+        if (skip.w) return null;
+        if (wc >= 40) return { cefr: 'B1', below: false, lo: 5, hi: 6 };
+        return { cefr: 'A2', below: true, lo: 0, hi: 3 };
+      }
+      if (skip.s) return null;
+      return { cefr: 'B1', below: false, lo: 5, hi: 6 };
+    };
+
+    // ---- progress (units: 3 listening, 3 reading, 1 writing, 2 speaking) ----
+    const unitsDone = (() => {
+      if (eff === 'intro' || eff === 'sound') return 0;
+      if (eff === 'l') return n;
+      if (eff === 'r') return 3 + n;
+      if (eff === 'w') return 6;
+      if (eff === 'wskip' || eff === 'mic') return 7;
+      if (eff === 's') return 7 + n;
+      if (eff === 'cp') return { l: 3, r: 6, w: 7 }[cpPart] || 0;
+      return 9;
+    })();
+    const lit = Math.ceil((8 * unitsDone) / 9);
+    const pfv = {};
+    for (let i = 1; i <= 8; i++) pfv['pf' + i] = i <= lit ? 'lit' : '';
+
+    // ---- labels ----
+    const fmt = (str, o) => str.replace(/\{(\w+)\}/g, (m, k) => (o[k] !== undefined ? o[k] : m));
+    const minsLeft = (k, i) => Math.max(1, Math.round((MINS[k] * (COUNTS[k] - i)) / COUNTS[k]));
+    const partIdx = { l: 1, r: 2, w: 3, s: 4 };
+    const itemScreens = eff === 'l' || eff === 'r';
+    let eyebrow = '';
+    const quiet = screen === 'leave' || screen === 'paused';
+    if (itemScreens || eff === 'w') eyebrow = fmt(t.partOf, { n: partIdx[eff] }) + ' · ' + t['sk' + partIdx[eff]] + ' · ' + fmt(t.minLeft, { m: minsLeft(eff, eff === 'w' ? 0 : n) });
+    else if (eff === 's') eyebrow = fmt(t.partOf, { n: 4 }) + ' · ' + t.sk4 + ' · ' + fmt(t.qOf, { q: n + 1 });
+    else if (eff === 'mic') eyebrow = fmt(t.partOf, { n: 4 }) + ' · ' + t.sk4;
+    const partLabel = partOfScreen ? (layout === 's' ? t['ab' + partIdx[partOfScreen]] : t['sk' + partIdx[partOfScreen]]) : eff === 'result' || eff === 'calc' ? t.yourEstimate : (layout === 's' ? t.levelTestS : t.levelTest);
+
+    // ---- current item ----
+    const item = (eff === 'l' || eff === 'r') && ITEMS[eff][Math.min(n, 2)] ? ITEMS[eff][Math.min(n, 2)] : ITEMS.l[0];
+    const optOrder = [0, 1, 2, 3];
+    const letters = ['A', 'B', 'C', 'D'];
+
+    // ---- actions ----
+    const focusTitle = (e) => {
+      const root = e && e.currentTarget && e.currentTarget.closest ? e.currentTarget.closest('.ob') : null;
+      setTimeout(() => { const el = root && root.querySelector('[data-ob-title]'); if (el) el.focus({ preventScroll: true }); }, 40);
+    };
+    const set = (o) => this.setState({ err: null, ...o });
+    const go = (e, o) => { set(o); focusTitle(e); };
+    const resetItem = { sel: 0, lc: 'ready', err: null };
+    const startPart = (e, k) => {
+      const base = { n: 0, skip: { ...skip, [k]: false }, ...resetItem };
+      if (k === 'r') return go(e, { screen: 'r', ...base });
+      if (k === 'w') return go(e, { screen: 'w', ...base });
+      if (k === 's') return go(e, { screen: 'mic', ...base });
+      return go(e, { screen: 'l', ...base });
+    };
+    const startCalc = (e) => {
+      go(e, { screen: 'calc' });
+      clearTimeout(this._tc);
+      this._tc = setTimeout(() => this.setState({ screen: 'result' }), 2400);
+    };
+    const finishPart = (e, k, extraAns) => {
+      const nd = { ...done, [k]: true };
+      const base = { done: nd, ...extraAns };
+      if (adding) { this.setState({ ...base, adding: false }); return startCalc(e); }
+      if (k === 's') { this.setState({ ...base }); return startCalc(e); }
+      if (k === 'r' && (extraAns && extraAns.ansR ? countOf(extraAns.ansR) : rScore) === 0) {
+        return go(e, { ...base, skip: { ...skip, w: true }, screen: 'wskip' });
+      }
+      go(e, { ...base, screen: 'cp', cpPart: k });
+    };
+    const skipPart = (e, k) => {
+      const ns = { ...skip, [k]: true };
+      if (adding) { this.setState({ skip: ns, adding: false }); return startCalc(e); }
+      if (k === 's') { this.setState({ skip: ns }); return startCalc(e); }
+      go(e, { skip: ns, screen: 'cp', cpPart: k });
+    };
+    const answer = (e) => {
+      const arr = eff === 'l' ? ansL : ansR;
+      const key = eff === 'l' ? 'ansL' : 'ansR';
+      const ok = sel >= 1 && sel <= 4 && sel === item.c;
+      const na = arr.slice(); na[n] = ok;
+      if (n + 1 < 3) return go(e, { [key]: na, n: n + 1, ...resetItem });
+      finishPart(e, eff, { [key]: na });
+    };
+    const stopRec = (e) => {
+      clearTimeout(this._tr);
+      const nextN = n + 1;
+      if (nextN < 2) return set({ n: nextN, rec: false, recSec: 0 });
+      this.setState({ rec: false, recSec: 0 });
+      finishPart(e, 's', {});
+    };
+    const tick = () => {
+      this._tr = setTimeout(() => {
+        const sec = (this.state && this.state.recSec ? this.state.recSec : 0) + 1;
+        if (sec >= 45) { this.setState({ recSec: 45 }); return; }
+        this.setState({ recSec: sec }); tick();
+      }, 1000);
+    };
+    const playTest = () => {
+      clearTimeout(this._ts);
+      this.setState({ sound: 'playing', err: null });
+      this._ts = setTimeout(() => this.setState({ sound: 'asked' }), 1500);
+    };
+    const playAudio = () => {
+      clearTimeout(this._ta);
+      this.setState({ lc: 'playing', err: null });
+      this._ta = setTimeout(() => this.setState({ lc: 'done' }), 3500);
+    };
+    const submit = (e) => {
+      if (e && e.preventDefault) e.preventDefault();
+      if (loading) return;
+      if (screen === 'intro') return go(e, { screen: 'sound' });
+      if (screen === 'sound') { if (sound !== 'ok') return this.setState({ err: 'sound' }); return startPart(e, 'l'); }
+      if (screen === 'l' || screen === 'r') {
+        if (screen === 'l' && lc !== 'done') return this.setState({ err: 'audio' });
+        if (sel === 0) return this.setState({ err: 'pick' });
+        return answer(e);
+      }
+      if (screen === 'cp') return startPart(e, NEXT[cpPart]);
+      if (screen === 'wskip') return startPart(e, 's');
+      if (screen === 'w') {
+        if (wc < 15) return this.setState({ err: 'w' });
+        return finishPart(e, 'w', {});
+      }
+      if (screen === 'mic') {
+        if (edge === 'micdenied' && !micOk) return this.setState({ err: null, micOk: true });
+        return go(e, { screen: 's', n: 0, rec: false, recSec: 0, micOk: true });
+      }
+      if (screen === 's') {
+        if (!rec) { this.setState({ rec: true, recSec: 0 }); tick(); return; }
+        return stopRec(e);
+      }
+      if (screen === 'result') {
+        this.setState({ loading: true });
+        clearTimeout(this._tf);
+        this._tf = setTimeout(() => this.setState({ loading: false, screen: 'intro', done: { l: false, r: false, w: false, s: false }, skip: { l: false, r: false, w: false, s: false }, ansL: [], ansR: [], text: '', sound: 'idle', n: 0, sel: 0, lc: 'ready' }), 1100);
+        return;
+      }
+      if (screen === 'leave') return go(e, { screen: back });
+      if (screen === 'paused') return go(e, { screen: back });
+    };
+    const secondary = (e) => {
+      if (screen === 'sound') return skipPart(e, 'l');
+      if (screen === 'w') return skipPart(e, 'w');
+      if (screen === 'mic' || screen === 's') return skipPart(e, 's');
+      if (screen === 'cp') return go(e, { back: 'cp', screen: 'paused' });
+      if (screen === 'leave') return go(e, { screen: 'paused' });
+    };
+    const openLeave = (e) => go(e, { back: screen, screen: 'leave' });
+
+    const arrows = (arr, cur, apply) => (e) => {
+      const k = e && e.key; if (!k) return;
+      const i = arr.indexOf(cur); let ni = -1;
+      if (k === 'ArrowDown' || k === 'ArrowRight') ni = i < 0 ? 0 : (i + 1) % arr.length;
+      else if (k === 'ArrowUp' || k === 'ArrowLeft') ni = i < 0 ? arr.length - 1 : (i - 1 + arr.length) % arr.length;
+      else if (layout === 'l' && /^[1-5]$/.test(k) && arr[Number(k) - 1] !== undefined) ni = Number(k) - 1;
+      if (ni < 0) return;
+      e.preventDefault();
+      const grp = e.currentTarget;
+      apply(arr[ni]);
+      setTimeout(() => { const el = grp && grp.querySelector('[aria-checked="true"]'); if (el) el.focus(); }, 30);
+    };
+    const optVals = {};
+    const optsOff = eff === 'l' && lc !== 'done';
+    [1, 2, 3, 4, 5].forEach((i) => {
+      optVals['o' + i + 'On'] = sel === i;
+      optVals['o' + i + 'Tab'] = sel === i || (sel === 0 && i === 1) ? 0 : -1;
+      optVals['o' + i + 'Pick'] = () => set({ sel: i });
+      if (i <= 4) optVals['o' + i + 'Text'] = item.o[optOrder[i - 1]];
+    });
+
+    // ---- panels: status per part ----
+    const statusOf = (k) => {
+      if (skip[k]) return { cls: 'ob-pr', val: t.stSkip, vcls: 'ob-pv none' };
+      if (done[k] || (screen === 'result' || screen === 'calc')) return { cls: 'ob-pr done', val: t.stDone, vcls: 'ob-pv' };
+      if (partOfScreen === k) return { cls: 'ob-pr cur', val: t.stNow, vcls: 'ob-pv' };
+      return { cls: 'ob-pr', val: t.stUp, vcls: 'ob-pv none' };
+    };
+    const rows = {};
+    PARTS.forEach((k, i) => {
+      const st = statusOf(k);
+      rows['pr' + (i + 1) + 'Cls'] = st.cls; rows['pr' + (i + 1) + 'Val'] = st.val; rows['pr' + (i + 1) + 'ValCls'] = st.vcls;
+      // checkpoint rows
+      const d = !!done[k] || (screen === 'result');
+      let text2 = st.val; let pill = 'ob-pill';
+      if (!skip[k] && !done[k] && screen === 'cp' && NEXT[cpPart] === k) text2 = t.stUp;
+      rows['cp' + (i + 1) + 'Val'] = text2;
+      rows['pd' + (i + 1)] = t['pd' + (i + 1)];
+      rows['pm' + (i + 1)] = fmt(t.pm, { m: MINS[k] });
+    });
+
+    // ---- titles & subs ----
+    const nextPartKey = NEXT[cpPart];
+    const nextName = nextPartKey ? t['sk' + partIdx[nextPartKey]] : '';
+    const cpName = t['sk' + partIdx[cpPart]];
+    const cpSkipped = !!skip[cpPart];
+    const titles = {
+      intro: t.iTitle, sound: t.sdTitle, l: t.lTitle, r: t.rTitle,
+      cp: fmt(cpSkipped ? t.cpSkip : t.cpDone, { x: cpName }),
+      w: t.wTitle, wskip: t.wsTitle, mic: edge === 'micdenied' && !micOk ? t.dTitle : t.mTitle, s: t.sTitle,
+      calc: t.cTitle, result: t.rsTitle, leave: t.lvTitle, paused: t.pzTitle
+    };
+    const subs = {
+      intro: t.iSub, sound: t.sdSub, l: t.lSub, r: t.rSub,
+      cp: nextPartKey ? fmt(cpSkipped ? t.cpSubSkip : t.cpSubDone, { y: nextName, m: MINS[nextPartKey] }) : '',
+      w: t.wSub, wskip: t.wsSub, mic: edge === 'micdenied' && !micOk ? t.dSub : t.mSub, s: t.sSub,
+      calc: t.cSub, result: free ? t.rsSubFree : t.rsSub, leave: t.lvSub, paused: t.pzSub
+    };
+    const micDenied = screen === 'mic' && edge === 'micdenied' && !micOk;
+    const noBar = screen === 'calc';
+    let primaryLabel = t.continue;
+    if (screen === 'sound') primaryLabel = t.sdStart;
+    else if (screen === 'mic') primaryLabel = micDenied ? t.dRetry : t.mAllow;
+    else if (screen === 's') primaryLabel = rec ? t.sFinish : t.sStart;
+    else if (screen === 'result') primaryLabel = t.plan;
+    else if (screen === 'leave') primaryLabel = t.lvKeep;
+    else if (screen === 'paused') primaryLabel = t.pzResume;
+    let secLabel = '';
+    if (screen === 'sound') secLabel = t.sdSkip;
+    else if (screen === 'w' || screen === 'mic' || (screen === 's' && !rec)) secLabel = t.skipPart;
+    else if (screen === 'cp') secLabel = t.cpLater;
+    else if (screen === 'leave') secLabel = t.lvOut;
+    const showSec = secLabel !== '';
+    const idle = (screen === 'sound' && sound !== 'ok') || ((screen === 'l' || screen === 'r') && (sel === 0 || (screen === 'l' && lc !== 'done'))) || (screen === 'w' && wc < 15);
+    const errText = { sound: t.errSound, audio: t.errAudio, pick: t.errPick, w: t.errW }[err] || '';
+
+    // ---- result cards ----
+    const cards = {};
+    [1, 2, 3, 4].forEach((i) => {
+      const k = PARTS[i - 1];
+      const r = res(k);
+      cards['r' + i + 'Name'] = t['sk' + i];
+      cards['r' + i + 'Show'] = !!r; cards['r' + i + 'Not'] = !r;
+      cards['r' + i + 'Cls'] = 'lt-rc' + (r ? '' : ' none');
+      cards['r' + i + 'Add'] = (e) => { this.setState({ adding: true }); startPart(e, k); };
+      cards['r' + i + 'AddLabel'] = t.addPart;
+      if (!r) { cards['r' + i + 'Aria'] = t.addPart + ': ' + t['sk' + i]; return; }
+      cards['r' + i + 'Aria'] = '';
+      cards['r' + i + 'Cefr'] = t.lvlWord + ' ' + r.cefr;
+      cards['r' + i + 'Desc'] = t['d_' + r.cefr];
+      cards['r' + i + 'ShowNclc'] = !free;
+      cards['r' + i + 'ShowScale'] = !free && !r.below;
+      let line;
+      if (r.below) line = t.below4;
+      else line = fmt(t.likely, { r: r.lo === r.hi ? String(r.lo) : fmt(t.rangeTo, { a: r.lo, b: r.hi }) });
+      cards['r' + i + 'Line'] = line;
+      cards['r' + i + 'L'] = (((r.lo - 3) / 8) * 100).toFixed(3) + '%';
+      cards['r' + i + 'W'] = (((r.hi - r.lo + 1) / 8) * 100).toFixed(3) + '%';
+      let gap;
+      if (r.below) gap = t.gapMany;
+      else if (r.lo >= TARGET) gap = t.gapAt;
+      else if (r.hi >= TARGET) gap = t.gapCould;
+      else { const a = TARGET - r.hi, b = TARGET - r.lo; gap = a === b ? fmt(t.gapOne, { n: b }) : fmt(t.gapRange, { a, b }); }
+      cards['r' + i + 'Gap'] = gap;
+      cards['r' + i + 'RangeAria'] = line;
+    });
+    const resultOrder = true;
+    const waveBars = rec;
+    const mm = (sec) => Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');
+    const audioState = lc;
+    const pausedFan = screen === 'paused' || screen === 'leave' || screen === 'cp';
+    if (quiet) eyebrow = '';
+    const hasEyebrow = eyebrow !== '';
+    const wide = screen === 'result';
+
+    return {
+      w, h, layout, theme, t, ...pfv, ...optVals, ...rows, ...cards,
+      logo: theme === 'dark' ? '/_blob/2ba30fd54996baa317ccfa0d7811ddad' : '/_blob/19cb4670c91ff9f5f1dd92cb25c3c13b',
+      isEn: !fr, isFr: fr, langCode: fr ? 'FR' : 'EN', langOpen,
+      optEnCls: 'opt' + (fr ? '' : ' on'), optFrCls: 'opt' + (fr ? ' on' : ''),
+      toggleLang: () => this.setState({ langOpen: !langOpen }),
+      closeLang: () => this.setState({ langOpen: false }),
+      setEn: () => this.setState({ lang: 'en', langOpen: false }), setFr: () => this.setState({ lang: 'fr', langOpen: false }),
+      langKey: (e) => { if (e && e.key === 'Escape') this.setState({ langOpen: false }); },
+      title: titles[screen], sub: subs[screen], hasSub: !!subs[screen], eyebrow, hasEyebrow, partLabel,
+      cardCls: 'ob-card' + (wide ? ' wide' : ''),
+      isIntro: screen === 'intro', isSound: screen === 'sound', isL: screen === 'l', isR: screen === 'r', isItem: screen === 'l' || screen === 'r',
+      isCp: screen === 'cp', isW: screen === 'w', isWskip: screen === 'wskip', isMic: screen === 'mic' && !micDenied, isMicDenied: micDenied,
+      isS: screen === 's', isCalc: screen === 'calc', isResult: screen === 'result', isLeave: screen === 'leave', isPaused: screen === 'paused',
+      showHeroFan: screen === 'cp' || screen === 'leave' || screen === 'paused',
+      showLeave: ['l', 'r', 'w', 'wskip', 'mic', 's', 'cp'].indexOf(screen) >= 0, noLeave: ['l', 'r', 'w', 'wskip', 'mic', 's', 'cp'].indexOf(screen) < 0,
+      leaveLabel: layout === 's' ? t.leaveShort : t.leave, openLeave,
+      offline: edge === 'offline' && (screen === 'l' || screen === 'r'),
+      // sound
+      soundIdle: sound === 'idle', soundPlaying: sound === 'playing', soundAsked: sound === 'asked' || sound === 'no' || sound === 'ok', soundOk: sound === 'ok', soundNo: sound === 'no',
+      soundBtn: sound === 'idle' ? t.sdPlay : sound === 'playing' ? t.sdPlaying : t.sdAgain, playTest,
+      soundBtnOff: sound === 'playing',
+      yesPressed: sound === 'ok', noPressed: sound === 'no',
+      soundYes: () => set({ sound: 'ok' }), soundNoFn: () => set({ sound: 'no' }),
+      // audio
+      audioReady: audioState === 'ready', audioPlaying: audioState === 'playing', audioDone: audioState === 'done', audioFail: audioState === 'fail',
+      audioCls: 'lt-au' + (audioState === 'fail' ? ' fail' : ''),
+      barCls: 'lt-bar' + (audioState === 'playing' ? ' run' : audioState === 'done' ? ' full' : ''),
+      playAudio, retryAudio: () => set({ lc: 'ready' }),
+      audioMsg: audioState === 'ready' ? t.lReady : audioState === 'playing' ? t.lWait : audioState === 'done' ? t.lDone : t.lFail,
+      audioMsgCls: 'lt-st' + (audioState === 'fail' ? ' bad' : audioState === 'done' ? ' ok' : ''),
+      showAudioBtn: audioState === 'ready' || audioState === 'playing', audioBtnOff: audioState === 'playing',
+      audioBtnLabel: audioState === 'playing' ? t.lPlaying : t.lPlay,
+      showScript: showScript && eff === 'l', scriptText: item.a,
+      qText: eff === 'r' || eff === 'l' ? item.q : '', passage: item.a,
+      optsOff, keyOpt: arrows([1, 2, 3, 4, 5], sel, (k) => set({ sel: k })),
+      hasErr: errText !== '', errText,
+      // checkpoint
+      cpHasNext: !!nextPartKey,
+      // writing
+      text, setText: (e) => set({ text: e.target.value }), wCount: fmt(t.wCount, { n: wc }), wPrompt: W_PROMPT, invW: err === 'w',
+      // speaking
+      speakQ: SPEAK[Math.min(n, 1)], rec, notRec: !rec, recTime: mm(recSec), recMax: '0:45', waveCls: 'lt-wave' + (rec ? ' on' : ''),
+      // result
+      showLegend: !free, isFree: free, accOpen, toggleAcc: () => this.setState({ accOpen: !accOpen }),
+      confLabel: t.conf,
+      // controls
+      enterKey: (e) => { if (e && e.key === 'Enter' && e.target && e.target.tagName === 'INPUT' && e.target.type !== 'checkbox') submit(e); }, submit, secondary, secLabel, showSec, showBar: !noBar,
+      flowTag: screen === 'result' ? 'next' : '', primaryCls: 'btn btn-primary' + (idle ? ' idle' : ''), primaryLabel, loading, notLoading: !loading,
+      barRowCls: 'ob-barin' + (layout === 's' && showSec ? ' col' : ''),
+      leaveListen: screen === 'leave' && back === 'l',
+      lvlOpen: g('lvlOpen', false), toggleLvl: () => this.setState({ lvlOpen: !g('lvlOpen', false) }), lvlText: free ? t.lvlTextFree : t.lvlText
+    };
+  }
+}
+</script>
+</body>
+</html>

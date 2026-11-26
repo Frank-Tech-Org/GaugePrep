@@ -1,0 +1,13 @@
+<!-- @dsCard group="Levels" height=88 subtitle="Reading, target, neutral" -->
+<!doctype html>
+<html><head><meta charset="utf-8"><title>LevelBadge</title></head>
+<body>
+<div id="root" class="gp-row"></div>
+<script>
+  var G = window.GaugePrep, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(h(React.Fragment, null,
+    h(G.LevelBadge, { level: 'B1', label: 'Intermediate' }),
+    h(G.LevelBadge, { level: 'NCLC 7', label: 'Your estimate', tone: 'reading' }),
+    h(G.LevelBadge, { level: 'NCLC 9', label: 'Your target', tone: 'target' })));
+</script>
+</body></html>

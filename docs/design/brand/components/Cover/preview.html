@@ -1,0 +1,48 @@
+<!-- @dsCard height=288 -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>GaugePrep</title>
+<style>
+  html, body { margin:0; height:100%; }
+  body { background:var(--paper); color:var(--ink); font-family:var(--font-sans); overflow:hidden; }
+  .cover { position:relative; height:288px; overflow:hidden; background:var(--paper); }
+  .art { position:absolute; top:0; left:480px; width:480px; height:288px; overflow:hidden; }
+  .art svg { display:block; width:480px; height:288px; }
+  .slab { fill:var(--ink); }
+  .tint { fill:var(--mist); }
+  .sea { fill:var(--sea); } .lagoon { fill:var(--lagoon); } .mist { fill:var(--mist); }
+  .amber { fill:var(--amber); } .unreached { fill:var(--unreached); }
+  .words { position:absolute; left:var(--space-8); bottom:var(--space-8); max-width:440px; }
+  .name { margin:0; font-size:80px; line-height:.92; font-weight:650; letter-spacing:-.025em; color:var(--ink); }
+  .tag { margin:var(--space-3) 0 0 4px; font-size:14px; line-height:20px; color:var(--depth); }
+</style>
+</head>
+<body>
+<div class="cover">
+<div class="art" aria-hidden="true">
+<svg viewBox="0 0 480 288" width="480" height="288">
+<!--
+  blocks      ink slab 400x300 bleeding off the top and right (the bubble, the brand's largest colour) · mist tint 72x120 (relief) · amber only as the reading page — about 45% of 960x288
+  arrangement one tall ink slab with a mist satellite at its foot, bottoms on one line space-8 above the edge
+  pattern     the literal motif: the six fanned pages of the mark, sectors cut from the slab around one centre, the amber page reaching furthest ("the amber page is your reading")
+  scales      corners radius-lg; satellite sides space-12 and space-16 multiples; gutter space-4; page gaps follow the mark's own angles
+-->
+<rect class="tint" x="16" y="136" width="72" height="120" rx="20"/>
+<rect class="slab" x="104" y="-32" width="400" height="288" rx="20"/>
+<path class="sea" d="M257.7 230.4 L137.4 186.6 A156 156 0 0 1 162.8 141.8 L262.2 222.4 A28 28 0 0 0 257.7 230.4 Z"/>
+<path class="sea" d="M263.5 220.9 L169.9 133.6 A156 156 0 0 1 210.8 102.3 L270.9 215.3 A28 28 0 0 0 263.5 220.9 Z"/>
+<path class="lagoon" d="M272.6 214.4 L220.5 97.5 A156 156 0 0 1 270.4 84.6 L281.6 212.1 A28 28 0 0 0 272.6 214.4 Z"/>
+<path class="mist" d="M283.5 212.0 L281.3 84.0 A156 156 0 0 1 332.2 91.6 L292.7 213.4 A28 28 0 0 0 283.5 212.0 Z"/>
+<path class="amber" d="M294.5 214.0 L357.4 58.3 A196 196 0 0 1 415.1 94.3 L302.7 219.2 A28 28 0 0 0 294.5 214.0 Z"/>
+<path class="unreached" d="M304.1 220.5 L396.2 131.6 A156 156 0 0 1 425.4 174.1 L309.4 228.2 A28 28 0 0 0 304.1 220.5 Z"/>
+</svg>
+</div>
+<div class="words">
+<h1 class="name">GaugePrep</h1>
+<p class="tag">Know where you stand. The honest gauge for high-stakes language exams.</p>
+</div>
+</div>
+</body>
+</html>

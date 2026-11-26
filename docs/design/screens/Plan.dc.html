@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Plan</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="auth.css">
+<link rel="stylesheet" href="plan.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400..800&amp;family=Fraunces:opsz,wght@9..144,400..700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="gp pl" data-theme="{{theme}}" data-layout="{{layout}}" data-fit="{{fit}}" style="width: {{w}}px; height: {{h}}px">
+<nav class="pl-nav" aria-label="{{t.navLabel}}">
+<img class="pl-brand" src="{{logo}}" alt="GaugePrep">
+<button type="button" class="pl-ni on" aria-current="page"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg><span>{{t.nPlan}}</span></button><button type="button" class="pl-ni"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"></path><path d="M4 21V5"></path></svg><span>{{t.nLearn}}</span></button><button type="button" class="pl-ni"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v10"></path><rect x="9" y="3" width="6" height="10" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg><span>{{t.nPractise}}</span></button><button type="button" class="pl-ni"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"></path></svg><span>{{t.nProgress}}</span></button>
+<div class="pl-sp"></div>
+<button type="button" class="pl-ni"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg><span>{{t.nSettings}}</span></button>
+</nav>
+<main class="pl-main">
+<div class="pl-top">
+<div class="pl-tl"><img src="{{logo}}" alt="GaugePrep"></div>
+<button type="button" class="pl-ib" aria-label="{{t.notif}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 8 3 8H3s3-1 3-8"></path><path d="M10 21a2 2 0 0 0 4 0"></path></svg></button>
+</div>
+<div class="pl-body">
+<div class="pl-a">
+<header>
+<p class="pl-eb">{{eyebrow}}</p>
+<h1 class="pl-h">{{title}}</h1>
+<p class="pl-sub">{{sub}}</p>
+</header>
+<sc-if value="{{showAlert}}" hint-placeholder-val="{{false}}">
+<section class="pl-card pl-late" role="alert">
+<h2><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l10 18H2z"></path><path d="M12 10v5M12 18h.01"></path></svg><span>{{t.lateT}}</span></h2>
+<p>{{t.lateP}}</p>
+<div class="pl-split"><button type="button" class="btn btn-dark">{{t.late60}}</button><button type="button" class="btn btn-line">{{t.late30}}</button></div>
+</section>
+</sc-if>
+<sc-if value="{{showAdd}}" hint-placeholder-val="{{false}}">
+<section class="pl-card soft">
+<h2>{{t.addT}}</h2>
+<p>{{t.addP}}</p>
+<button type="button" class="btn btn-line">{{t.addB}}</button>
+</section>
+</sc-if>
+<sc-if value="{{showTest}}" hint-placeholder-val="{{false}}">
+<section class="pl-card pl-empty">
+<svg class="fanopen" viewBox="64 14 352 218" aria-hidden="true"><path d="M202.3 222.6 L74.1 177.2 A176 176 0 0 1 95.0 136.3 L207.0 213.3 A40 40 0 0 0 202.3 222.6 Z" fill="#4FA89D"></path><path d="M208.3 211.6 L100.4 128.9 A176 176 0 0 1 132.9 96.4 L215.6 204.3 A40 40 0 0 0 208.3 211.6 Z" fill="#7CC2B8"></path><path d="M217.3 203.0 L140.3 91.0 A176 176 0 0 1 181.2 70.1 L226.6 198.3 A40 40 0 0 0 217.3 203.0 Z" fill="#B4DED6"></path><path d="M228.6 197.6 L179.8 32.7 A212 212 0 0 1 234.5 24.1 L239.0 196.0 A40 40 0 0 0 228.6 197.6 Z" fill="#F2A13B"></path><path d="M241.0 196.0 L244.6 60.1 A176 176 0 0 1 290.0 67.2 L251.4 197.6 A40 40 0 0 0 241.0 196.0 Z" fill="#2A5D63"></path><path d="M253.4 198.3 L298.8 70.1 A176 176 0 0 1 339.7 91.0 L262.7 203.0 A40 40 0 0 0 253.4 198.3 Z" fill="#2A5D63"></path><path d="M264.4 204.3 L347.1 96.4 A176 176 0 0 1 379.6 128.9 L271.7 211.6 A40 40 0 0 0 264.4 204.3 Z" fill="#2A5D63"></path><path d="M273.0 213.3 L385.0 136.3 A176 176 0 0 1 405.9 177.2 L277.7 222.6 A40 40 0 0 0 273.0 213.3 Z" fill="#2A5D63"></path></svg>
+<h2>{{t.testT}}</h2>
+<p>{{t.testP}}</p>
+<button type="button" class="btn btn-primary">{{t.testB}}</button>
+</section>
+</sc-if>
+<sc-if value="{{showToday}}" hint-placeholder-val="{{true}}">
+<section class="pl-card pl-today" aria-label="{{t.today}}">
+<p class="pl-kick">{{t.today}}</p>
+<h2>{{todayT}}</h2>
+<div class="pl-meta"><span>{{todayM}}</span></div>
+<div class="pl-why"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 8h.01M11 12h1v5h1"></path></svg><span>{{todayW}}</span></div>
+<button type="button" class="btn btn-primary">{{t.start}}</button>
+</section>
+</sc-if>
+<sc-if value="{{showWeek}}" hint-placeholder-val="{{true}}">
+<section>
+<h2 class="pl-sec">{{t.week}}</h2>
+<ul class="pl-week"><li class="{{r0c}}"><div class="pl-dt"><b>{{r0d}}</b><span>{{r0n}}</span></div><div class="pl-wt"><strong>{{r0s}}</strong><small>{{r0t}}</small></div><span class="pl-wm">{{r0m}}</span></li><li class="{{r1c}}"><div class="pl-dt"><b>{{r1d}}</b><span>{{r1n}}</span></div><div class="pl-wt"><strong>{{r1s}}</strong><small>{{r1t}}</small></div><span class="pl-wm">{{r1m}}</span></li><li class="{{r2c}}"><div class="pl-dt"><b>{{r2d}}</b><span>{{r2n}}</span></div><div class="pl-wt"><strong>{{r2s}}</strong><small>{{r2t}}</small></div><span class="pl-wm">{{r2m}}</span></li><li class="{{r3c}}"><div class="pl-dt"><b>{{r3d}}</b><span>{{r3n}}</span></div><div class="pl-wt"><strong>{{r3s}}</strong><small>{{r3t}}</small></div><span class="pl-wm">{{r3m}}</span></li><li class="{{r4c}}"><div class="pl-dt"><b>{{r4d}}</b><span>{{r4n}}</span></div><div class="pl-wt"><strong>{{r4s}}</strong><small>{{r4t}}</small></div><span class="pl-wm">{{r4m}}</span></li><li class="{{r5c}}"><div class="pl-dt"><b>{{r5d}}</b><span>{{r5n}}</span></div><div class="pl-wt"><strong>{{r5s}}</strong><small>{{r5t}}</small></div><span class="pl-wm">{{r5m}}</span></li><li class="{{r6c}}"><div class="pl-dt"><b>{{r6d}}</b><span>{{r6n}}</span></div><div class="pl-wt"><strong>{{r6s}}</strong><small>{{r6t}}</small></div><span class="pl-wm">{{r6m}}</span></li></ul>
+</section>
+</sc-if>
+</div>
+<div class="pl-b">
+<sc-if value="{{showWhat}}" hint-placeholder-val="{{false}}">
+<section class="pl-card">
+<h2>{{t.whatT}}</h2>
+<ul class="pl-sk" style="margin-top: 12px">
+<li class="pl-wt"><strong>{{t.w1}}</strong><small>{{t.w1d}}</small></li>
+<li class="pl-wt"><strong>{{t.w2}}</strong><small>{{t.w2d}}</small></li>
+<li class="pl-wt"><strong>{{t.w3}}</strong><small>{{t.w3d}}</small></li>
+</ul>
+</section>
+</sc-if>
+<sc-if value="{{showSkills}}" hint-placeholder-val="{{true}}">
+<section class="pl-card">
+<h2 class="pl-sec">{{t.stand}}</h2>
+<ul class="pl-sk"><li class="pl-sr"><div class="pl-sh"><b>{{k0n}}</b><span>{{k0v}}</span></div><div class="pl-tr" role="img" aria-label="{{k0a}}"><i style="left: 0; width: {{k0hi}}; opacity: .35"></i><i style="left: 0; width: {{k0lo}}"></i><u style="left: {{k0tg}}"></u></div><div class="pl-sd">{{k0d}}</div></li><li class="pl-sr"><div class="pl-sh"><b>{{k1n}}</b><span>{{k1v}}</span></div><div class="pl-tr" role="img" aria-label="{{k1a}}"><i style="left: 0; width: {{k1hi}}; opacity: .35"></i><i style="left: 0; width: {{k1lo}}"></i><u style="left: {{k1tg}}"></u></div><div class="pl-sd">{{k1d}}</div></li><li class="pl-sr"><div class="pl-sh"><b>{{k2n}}</b><span>{{k2v}}</span></div><div class="pl-tr" role="img" aria-label="{{k2a}}"><i style="left: 0; width: {{k2hi}}; opacity: .35"></i><i style="left: 0; width: {{k2lo}}"></i><u style="left: {{k2tg}}"></u></div><div class="pl-sd">{{k2d}}</div></li><li class="pl-sr"><div class="pl-sh"><b>{{k3n}}</b><span>{{k3v}}</span></div><div class="pl-tr" role="img" aria-label="{{k3a}}"><i style="left: 0; width: {{k3hi}}; opacity: .35"></i><i style="left: 0; width: {{k3lo}}"></i><u style="left: {{k3tg}}"></u></div><div class="pl-sd">{{k3d}}</div></li></ul>
+<p class="pl-note">{{skNote}}</p>
+</section>
+</sc-if>
+<sc-if value="{{showBridge}}" hint-placeholder-val="{{false}}">
+<section class="pl-card soft">
+<h2>{{t.brT}}</h2>
+<p>{{t.brP}}</p>
+<button type="button" class="btn btn-primary">{{t.brB}}</button>
+</section>
+</sc-if>
+<sc-if value="{{showRem}}" hint-placeholder-val="{{true}}">
+<section class="{{remCls}}">
+<h2>{{remT}}</h2>
+<p>{{remP}}</p>
+<sc-if value="{{showTimes}}" hint-placeholder-val="{{true}}"><div class="pl-times" role="group" aria-label="{{t.remTimeLabel}}"><button type="button" class="{{tm0c}}" aria-pressed="{{tm0p}}" onClick="{{tm0f}}">{{tm0}}</button><button type="button" class="{{tm1c}}" aria-pressed="{{tm1p}}" onClick="{{tm1f}}">{{tm1}}</button><button type="button" class="{{tm2c}}" aria-pressed="{{tm2p}}" onClick="{{tm2f}}">{{tm2}}</button><button type="button" class="{{tm3c}}" aria-pressed="{{tm3p}}" onClick="{{tm3f}}">{{tm3}}</button></div></sc-if>
+<button type="button" class="btn btn-line" onClick="{{remAct}}">{{remB}}</button>
+<sc-if value="{{showRemNote}}" hint-placeholder-val="{{true}}"><p class="pl-note">{{remN}}</p></sc-if>
+</section>
+</sc-if>
+<sc-if value="{{showRetest}}" hint-placeholder-val="{{true}}">
+<section class="pl-card">
+<h2>{{t.rtT}}</h2>
+<p>{{t.rtP}}</p>
+</section>
+</sc-if>
+</div>
+</div>
+</main>
+<nav class="pl-tabs" aria-label="{{t.navLabel}}">
+<button type="button" class="pl-tab on" aria-current="page"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg><span>{{t.nPlan}}</span></button><button type="button" class="pl-tab"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"></path><path d="M4 21V5"></path></svg><span>{{t.nLearn}}</span></button><button type="button" class="pl-tab"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v10"></path><rect x="9" y="3" width="6" height="10" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0M12 18v3"></path></svg><span>{{t.nPractise}}</span></button><button type="button" class="pl-tab"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"></path></svg><span>{{t.nProgress}}</span></button>
+</nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"layout":{"editor":"enum","options":["s","m","l"],"default":"l","section":"View"},"lang":{"editor":"enum","options":["en","fr"],"default":"en","section":"View"},"theme":{"editor":"enum","options":["light","dark"],"default":"light","section":"View"},"state":{"editor":"enum","options":["default","remon","remblocked","late","nodate","free","notest"],"default":"default","section":"Screen"},"w":{"editor":null},"h":{"editor":null},"$preview":{"width":1280,"height":900}}'>
+const S = {
+en: {
+navLabel:'Main', nPlan:'Plan', nLearn:'Learn', nPractise:'Practise', nProgress:'Progress', nSettings:'Settings', notif:'Notifications',
+today:'Today', start:'Start today’s session', week:'This week', stand:'Where you stand',
+lateT:'Your exam is in 3 weeks', lateP:'At 30 minutes a day you may reach NCLC 6 in Listening, not 7. More time each day gives you the best chance.', late60:'Study 60 min a day', late30:'Keep 30 min',
+addT:'Add your exam date', addP:'With a date, your plan fits the weeks you have left and tells you if you are on track.', addB:'Add exam date',
+testT:'Take the level test first', testP:'Four short parts: listening, reading, writing and speaking. You can pause and come back. Your plan is built from the result.', testB:'Start my level test',
+whatT:'What you get after the test',
+w1:'Your level in each skill', w1d:'Shown as a range, because a short test gives an estimate.',
+w2:'A plan for your weeks', w2d:'Built from your gap to your goal and the weeks before your exam.',
+w3:'A clear message on readiness', w3d:'You will know if your goal is realistic by your exam date.',
+brT:'Ready for an exam?', brP:'Switch to TCF Canada practice. We build a plan around your exam date and your NCLC goal.', brB:'Switch to TCF Canada',
+remTimeLabel:'Reminder time', rtT:'Level re-test on 20 Dec', rtP:'A short check every 30 days keeps your plan matched to your real level.'
+},
+fr: {
+navLabel:'Principal', nPlan:'Plan', nLearn:'Apprendre', nPractise:'S’exercer', nProgress:'Progrès', nSettings:'Réglages', notif:'Notifications',
+today:'Aujourd’hui', start:'Commencer la séance', week:'Cette semaine', stand:'Où vous en êtes',
+lateT:'Votre examen est dans 3 semaines', lateP:'À 30 minutes par jour, vous pourriez atteindre le NCLC 6 en compréhension orale, pas le 7. Plus de temps chaque jour vous donne les meilleures chances.', late60:'Étudier 60 min par jour', late30:'Garder 30 min',
+addT:'Ajoutez la date de votre examen', addP:'Avec une date, votre plan suit les semaines qu’il vous reste et vous dit si vous êtes dans les temps.', addB:'Ajouter la date',
+testT:'Commencez par le test de niveau', testP:'Quatre courtes parties : oral, lecture, écriture et expression orale. Vous pouvez faire une pause et revenir. Votre plan se construit à partir du résultat.', testB:'Commencer mon test',
+whatT:'Ce que vous obtenez après le test',
+w1:'Votre niveau dans chaque compétence', w1d:'Affiché en fourchette, car un test court donne une estimation.',
+w2:'Un plan pour vos semaines', w2d:'Construit à partir de votre écart avec l’objectif et des semaines avant l’examen.',
+w3:'Un message clair sur votre préparation', w3d:'Vous saurez si votre objectif est réaliste d’ici l’examen.',
+brT:'Prêt pour un examen ?', brP:'Passez à la préparation au TCF Canada. Nous construisons un plan autour de votre date d’examen et de votre objectif NCLC.', brB:'Passer au TCF Canada',
+remTimeLabel:'Heure du rappel', rtT:'Nouveau test de niveau le 20 déc.', rtP:'Un court test tous les 30 jours garde votre plan en phase avec votre vrai niveau.'
+}};
+const DAYS = { en:['Fri','Sat','Sun','Mon','Tue','Wed','Thu'], fr:['Ven','Sam','Dim','Lun','Mar','Mer','Jeu'] };
+const SK = {
+en:{L:'Listening',R:'Reading',W:'Writing',S:'Speaking'}, fr:{L:'Compréhension orale',R:'Compréhension écrite',W:'Expression écrite',S:'Expression orale'}
+};
+// weekly tasks: [skill key, topic EN, topic FR]
+const WEEK_EXAM = [
+ ['L','Numbers and times','Chiffres et heures'],
+ ['W','A formal email','Un courriel formel'],
+ ['S','Describe your day','Décrire sa journée'],
+ ['L','Announcements','Annonces'],
+ ['R','Short notices','Avis courts'],
+ ['W','An opinion paragraph','Un paragraphe d’opinion'],
+ ['R','Week review','Bilan de la semaine']
+];
+const WEEK_FREE = [
+ ['R','Everyday signs','Panneaux du quotidien'],
+ ['L','Simple conversations','Conversations simples'],
+ ['W','Short messages','Messages courts'],
+ ['S','Introduce yourself','Se présenter'],
+ ['L','Shops and prices','Magasins et prix'],
+ ['R','Short stories','Petits récits'],
+ ['W','Week review','Bilan de la semaine']
+];
+const NCLC = [ // key, lo, hi, goal text, pct lo/hi (scale NCLC 3 to 8)
+ ['L',4,5,'2 to 3 levels to go','2 à 3 niveaux à gagner'],
+ ['R',6,7,'You may be there already','Vous y êtes peut-être déjà'],
+ ['W',5,6,'1 to 2 levels to go','1 à 2 niveaux à gagner'],
+ ['S',5,6,'1 to 2 levels to go','1 à 2 niveaux à gagner']
+];
+const CEFR = [ ['L','A1','A2','A1 to A2'],['R','A2','A2','A2'],['W','A1','A1','A1'],['S','A1','A2','A1 to A2'] ];
+
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props || {};
+    const s = this.state || {};
+    const layout = p.layout === 's' || p.layout === 'm' ? p.layout : 'l';
+    const theme = p.theme === 'dark' ? 'dark' : 'light';
+    const lang = s.lang ?? (p.lang === 'fr' ? 'fr' : 'en');
+    const fr = lang === 'fr';
+    const t = S[lang];
+    const st = s.state ?? p.state ?? 'default';
+    const isFree = st === 'free', isNoTest = st === 'notest', isLate = st === 'late', isNoDate = st === 'nodate';
+    const remMode = s.rem ?? (st === 'remon' ? 'on' : st === 'remblocked' ? 'blocked' : 'off');
+    const selT = s.time ?? (st === 'remon' ? 2 : 2);
+    const TIMES = ['07:00', '12:00', '18:00', '21:00'];
+    const v = {};
+    // header
+    const mins = isFree ? 20 : 30;
+    v.eyebrow = isNoTest ? (fr ? 'Étape 1' : 'Step 1') : isNoDate ? (fr ? 'Cette semaine' : 'This week') : isFree ? (fr ? 'Parcours libre, semaine 1' : 'Free track, week 1') : isLate ? (fr ? 'Semaine 1 sur 3' : 'Week 1 of 3') : (fr ? 'Semaine 1 sur 9' : 'Week 1 of 9');
+    v.title = isNoTest ? (fr ? 'Votre plan commence ici' : 'Your plan starts here') : (fr ? 'Votre plan de la semaine' : 'Your plan for this week');
+    v.sub = isNoTest ? (fr ? 'Environ 15 minutes. Le résultat construit votre plan.' : 'About 15 minutes. The result builds your plan.')
+      : isNoDate ? (fr ? 'Pas encore de date d’examen. Un rythme régulier, 30 minutes par jour.' : 'No exam date yet. A steady rhythm, 30 minutes a day.')
+      : isFree ? (fr ? 'Parcours libre. 20 minutes par jour, sans date d’examen. 2 h 20 par semaine.' : 'Free track. 20 minutes a day, no exam date. 2 h 20 a week.')
+      : isLate ? (fr ? '3 semaines avant votre TCF Canada, le 12 déc. 2027 → 2026. 30 minutes par jour.' : '3 weeks to your TCF Canada on 12 Dec 2026. 30 minutes a day.')
+      : (fr ? '9 semaines avant votre TCF Canada, le 22 janv. 2027. 30 minutes par jour, 3 h 30 par semaine.' : '9 weeks to your TCF Canada on 22 Jan 2027. 30 minutes a day, 3 h 30 a week.');
+    if (isLate && fr) v.sub = '3 semaines avant votre TCF Canada, le 12 déc. 2026. 30 minutes par jour.';
+    // blocks
+    v.showAlert = isLate; v.showAdd = isNoDate; v.showTest = isNoTest; v.showWhat = isNoTest;
+    v.showToday = !isNoTest; v.showWeek = !isNoTest; v.showSkills = !isNoTest; v.showBridge = isFree;
+    v.showRem = !isNoTest; v.showRetest = !isNoTest;
+    // today
+    const wk = isFree ? WEEK_FREE : WEEK_EXAM;
+    const w0 = wk[0];
+    v.todayT = (fr ? SK.fr[w0[0]] : SK.en[w0[0]]) + (fr ? ' : ' : ': ') + (fr ? w0[2] : w0[1]).toLowerCase();
+    v.todayM = isFree ? (fr ? '20 min · 3 exercices courts' : '20 min · 3 short exercises') : (fr ? '30 min · 4 exercices courts' : '30 min · 4 short exercises');
+    v.todayW = isFree ? (fr ? 'Choisi pour construire vos bases en compréhension écrite.' : 'Chosen to build your base in reading.')
+      : (fr ? 'Choisi parce que la compréhension orale est votre plus grand écart avec le NCLC 7.' : 'Chosen because Listening is your biggest gap to NCLC 7.');
+    if (isLate) v.todayW = fr ? 'Choisi parce que la compréhension orale est votre plus grand écart et que le temps presse.' : 'Chosen because Listening is your biggest gap and time is short.';
+    // week
+    for (let i = 0; i < 7; i++) {
+      v['r' + i + 'c'] = 'pl-wr' + (i === 0 ? ' now' : '');
+      v['r' + i + 'd'] = DAYS[lang][i]; v['r' + i + 'n'] = String(20 + i);
+      v['r' + i + 's'] = (fr ? SK.fr : SK.en)[wk[i][0]];
+      v['r' + i + 't'] = fr ? wk[i][2] : wk[i][1];
+      v['r' + i + 'm'] = (i === 6 ? 15 : mins) + ' min';
+    }
+    // skills
+    const pct = (n) => ((n - 3) / 5 * 100) + '%';
+    const cp = (i) => (i / 5 * 100) + '%';
+    const idx = { A1: 0, A2: 1, B1: 2, B2: 3, C1: 4 };
+    for (let i = 0; i < 4; i++) {
+      if (isFree) {
+        const c = CEFR[i];
+        v['k' + i + 'n'] = SK[lang][c[0]];
+        v['k' + i + 'v'] = fr ? c[3].replace(' to ', ' à ') : c[3];
+        v['k' + i + 'lo'] = cp(idx[c[1]] + 0.5); v['k' + i + 'hi'] = cp(idx[c[2]] + 0.5); v['k' + i + 'tg'] = cp(2.5);
+        v['k' + i + 'd'] = fr ? 'Objectif : B1' : 'Goal: B1';
+        v['k' + i + 'a'] = SK[lang][c[0]] + ' ' + c[3];
+      } else {
+        const c = NCLC[i];
+        v['k' + i + 'n'] = SK[lang][c[0]];
+        v['k' + i + 'v'] = 'NCLC ' + c[1] + (fr ? ' à ' : ' to ') + c[2];
+        v['k' + i + 'lo'] = pct(c[1]); v['k' + i + 'hi'] = pct(c[2]); v['k' + i + 'tg'] = pct(7);
+        v['k' + i + 'd'] = (fr ? 'Objectif 7 · ' : 'Goal 7 · ') + (fr ? c[4] : c[3]);
+        v['k' + i + 'a'] = SK[lang][c[0]] + ' NCLC ' + c[1] + (fr ? ' à ' : ' to ') + c[2] + (fr ? ', objectif 7' : ', goal 7');
+      }
+    }
+    v.skNote = fr ? 'Estimé à partir de votre test de niveau. La barre pleine est le bas de la fourchette, le trait ambre est votre objectif.' : 'Estimated from your level test. The solid bar is the low end of the range, the amber line is your goal.';
+    // reminders
+    const blocked = remMode === 'blocked', on = remMode === 'on';
+    v.remCls = 'pl-card' + (blocked ? ' pl-late' : '');
+    v.remT = blocked ? (fr ? 'Les notifications sont bloquées' : 'Notifications are blocked') : on ? (fr ? 'Rappel activé' : 'Reminder is on') : (fr ? 'Rappel quotidien' : 'Daily reminder');
+    v.remP = blocked ? (fr ? 'Votre navigateur bloque les notifications de GaugePrep. Autorisez-les dans les réglages du navigateur, puis réessayez.' : 'Your browser is blocking notifications from GaugePrep. Allow them in your browser settings, then try again.')
+      : on ? (fr ? 'Nous vous enverrons un rappel chaque jour à ' + TIMES[selT] + '.' : 'We will remind you every day at ' + TIMES[selT] + '.')
+      : (fr ? 'Choisissez une heure et nous vous rappelons votre séance du jour.' : 'Pick a time and we remind you of today’s session.');
+    v.showTimes = !blocked;
+    v.remB = blocked ? (fr ? 'Comment autoriser' : 'How to allow') : on ? (fr ? 'Désactiver le rappel' : 'Turn off reminder') : (fr ? 'Activer le rappel' : 'Turn on reminder');
+    v.showRemNote = !on && !blocked;
+    v.remN = fr ? 'Votre navigateur vous demandera la permission.' : 'Your browser will ask for permission.';
+    v.remAct = () => this.setState({ rem: on ? 'off' : 'on' });
+    for (let i = 0; i < 4; i++) {
+      v['tm' + i] = TIMES[i]; v['tm' + i + 'c'] = 'pl-time' + (i === selT ? ' on' : ''); v['tm' + i + 'p'] = i === selT;
+      v['tm' + i + 'f'] = () => this.setState({ time: i });
+    }
+    return Object.assign({ logo: theme === 'dark' ? '/_blob/2ba30fd54996baa317ccfa0d7811ddad' : '/_blob/19cb4670c91ff9f5f1dd92cb25c3c13b', layout, theme, fit: p.fit === 'true' || p.fit === true ? '1' : '0', w: layout === 's' ? 390 : layout === 'm' ? 820 : 1280, h: Number(p.h) || (layout === 's' ? 844 : layout === 'm' ? 1180 : 900), t }, v);
+  }
+}
+
+</script>
+</body>
+</html>

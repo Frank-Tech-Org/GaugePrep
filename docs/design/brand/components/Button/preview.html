@@ -1,0 +1,14 @@
+<!-- @dsCard group="Actions" height=96 subtitle="Primary once per view" -->
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Button</title></head>
+<body>
+<div id="root" class="gp-row"></div>
+<script>
+  var G = window.GaugePrep, h = React.createElement;
+  ReactDOM.createRoot(document.getElementById('root')).render(h(React.Fragment, null,
+    h(G.Button, { variant: 'primary' }, 'Start the simulation'),
+    h(G.Button, { variant: 'secondary' }, 'Practise one skill'),
+    h(G.Button, { variant: 'ghost' }, 'See how we estimate'),
+    h(G.Button, { variant: 'secondary', size: 'sm', disabled: true }, 'Submitted')));
+</script>
+</body></html>

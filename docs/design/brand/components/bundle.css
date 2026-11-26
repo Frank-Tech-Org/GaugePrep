@@ -1,0 +1,26 @@
+body { margin: 0; font-family: var(--font-sans); background: var(--bg); color: var(--text); }
+.gp-row { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; padding: var(--space-4); }
+
+.gp-btn { font: inherit; font-weight: 650; border-radius: var(--radius-md); border: 1.5px solid transparent; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); }
+.gp-btn-md { min-height: var(--tap-min); padding: 0 var(--space-6); font-size: 16px; }
+.gp-btn-sm { min-height: 36px; padding: 0 var(--space-4); font-size: 14px; }
+.gp-btn-primary { background: var(--accent); color: var(--on-accent); }
+.gp-btn-primary:hover { background: #E8932A; }
+.gp-btn-secondary { background: var(--surface); color: var(--text); border-color: var(--line-strong); }
+.gp-btn-secondary:hover { border-color: var(--text); }
+.gp-btn-ghost { background: transparent; color: var(--link); text-decoration: underline; text-underline-offset: 3px; }
+.gp-btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.gp-btn:disabled { opacity: .45; cursor: not-allowed; }
+
+.gp-badge { display: inline-flex; align-items: center; gap: var(--space-2); min-height: 32px; padding: 0 var(--space-3) 0 var(--space-1); border-radius: var(--radius-full); border: 1.5px solid var(--line); background: var(--surface); color: var(--text); font-size: 14px; font-weight: 500; }
+.gp-badge-level { display: inline-grid; place-items: center; min-width: 24px; height: 24px; padding: 0 6px; border-radius: var(--radius-full); background: var(--text); color: var(--bg); font-size: 12px; font-weight: 700; letter-spacing: .02em; font-variant-numeric: tabular-nums; }
+.gp-badge-reading { background: var(--accent-soft); border-color: var(--accent); }
+.gp-badge-reading .gp-badge-level { background: var(--accent); color: var(--on-accent); }
+.gp-badge-target { border-style: dashed; border-color: var(--line-strong); }
+
+.gp-gauge { margin: 0; background: var(--ink); border: 1.5px solid var(--line); color: var(--paper); border-radius: var(--radius-lg); padding: var(--space-6) var(--space-6) var(--space-6); display: grid; gap: var(--space-2); justify-items: center; max-width: 320px; text-align: center; }
+.gp-gauge-dial { width: 100%; max-width: 240px; height: auto; display: block; }
+.gp-gauge-text { display: grid; gap: var(--space-1); }
+.gp-gauge-label { font-size: 13px; line-height: 16px; font-weight: 650; letter-spacing: .06em; text-transform: uppercase; color: var(--mist); }
+.gp-gauge-value { font-size: 44px; line-height: 48px; font-weight: 700; letter-spacing: -.02em; color: var(--amber); font-variant-numeric: tabular-nums; }
+.gp-gauge-caption { font-size: 14px; line-height: 20px; color: var(--mist); }
