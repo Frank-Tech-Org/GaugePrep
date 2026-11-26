@@ -40,6 +40,16 @@ CATALOG: Texts = {
             "L'adresse e-mail ou le mot de passe est incorrect.",
         ),
     },
+    "invalid_code": {
+        "en": (
+            "Code not accepted",
+            "This code is wrong, expired or already used. Request a new code.",
+        ),
+        "fr": (
+            "Code refusé",
+            "Ce code est incorrect, expiré ou déjà utilisé. Demandez un nouveau code.",
+        ),
+    },
     "rate_limited": {
         "en": ("Too many attempts", "Too many attempts. Try again in a moment."),
         "fr": ("Trop de tentatives", "Trop de tentatives. Réessayez dans un instant."),

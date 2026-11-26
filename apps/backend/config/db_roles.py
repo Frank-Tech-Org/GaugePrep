@@ -158,7 +158,8 @@ ALTER DEFAULT PRIVILEGES FOR ROLE {m} GRANT USAGE, SELECT ON SEQUENCES TO {s};
 """ + (_worker_sql(w) if w else "")
 
 
-# WHY: the worker reaches the job tables only, so a leaked URL exposes no learner data.
+# WHY: the worker reaches the job tables and the mail outbox, so a leaked URL exposes no
+# account data beyond the addresses of mails still waiting to go out.
 def _worker_sql(w: str) -> str:
     return f"""
 GRANT USAGE ON SCHEMA public TO {w};
@@ -177,6 +178,8 @@ BEGIN
     END IF;
   END LOOP;
 END $$;
+GRANT USAGE ON SCHEMA identity TO {w};
+GRANT SELECT, DELETE ON "identity"."mail_outbox" TO {w};
 """
 
 

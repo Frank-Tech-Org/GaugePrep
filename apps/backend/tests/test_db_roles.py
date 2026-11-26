@@ -141,6 +141,10 @@ def test_worker_role_reaches_only_the_job_tables(roles: tuple[str, str]) -> None
     )
     for table in ("t_ordinary", "t_grades", "django_migrations"):
         _refused(worker, f"SELECT * FROM public.{table}")
+    _as(worker, 'SELECT count(*) FROM "identity"."mail_outbox"')
+    _as(worker, 'DELETE FROM "identity"."mail_outbox"')
+    _refused(worker, 'UPDATE "identity"."mail_outbox" SET nonce = \'\'')
+    _refused(worker, 'SELECT * FROM "identity"."user"')
     _refused(worker, "CREATE TABLE public.t_forbidden (id int)")
     _refused(worker, "DROP TABLE public.procrastinate_jobs")
     _refused(worker, "TRUNCATE public.procrastinate_jobs")

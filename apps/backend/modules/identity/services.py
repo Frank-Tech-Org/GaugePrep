@@ -10,6 +10,7 @@ from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
 from django.utils import timezone
 
+from . import verification
 from .models import Consent, User
 
 MINIMUM_AGE = 16
@@ -24,6 +25,12 @@ class AccountRefused(Exception):
 
 class EmailTaken(Exception):
     pass
+
+
+class MailRateLimited(Exception):
+    def __init__(self, wait: int) -> None:
+        super().__init__(wait)
+        self.wait = wait
 
 
 @dataclass(frozen=True)
@@ -48,6 +55,13 @@ def is_old_enough(born: date, today: date | None = None) -> bool:
     return age_on(born, today or timezone.now().date()) >= MINIMUM_AGE
 
 
+def ensure_eligible(date_of_birth: date, processing_consent: bool) -> None:
+    if not is_old_enough(date_of_birth):
+        raise AccountRefused("age_below_minimum")
+    if not processing_consent:
+        raise AccountRefused("consent_required")
+
+
 def create_account(
     *,
     email: str,
@@ -61,10 +75,7 @@ def create_account(
     Every sign-in method calls this. Raises AccountRefused (age_below_minimum,
     consent_required) before anything is stored, and EmailTaken for a used email.
     """
-    if not is_old_enough(date_of_birth):
-        raise AccountRefused("age_below_minimum")
-    if not processing_consent:
-        raise AccountRefused("consent_required")
+    ensure_eligible(date_of_birth, processing_consent)
     address = normalize_email(email)
     user = User(
         email=address,
@@ -114,17 +125,24 @@ def decoy_profile(details: AccountDetails, learner_id: str) -> dict[str, Any]:
 def register(
     details: AccountDetails, password: str
 ) -> tuple[User | None, dict[str, Any]]:
-    """Create an account with a password; return it and the profile to show.
+    """Create an account with a password and queue its code mail.
 
-    A used email returns no user and a made-up profile, so the answer looks the same.
-    Call inside one transaction: the account, its consent and its hash commit together.
+    Returns the user and the profile to show. A used email gets the "account exists"
+    mail and a made-up profile, so the answer looks the same. Raises AccountRefused or
+    MailRateLimited before anything is kept. Call inside one transaction: the account,
+    its consent, its hash and its mail commit together.
     """
     try:
         validate_password(password)
     except ValidationError:
         raise AccountRefused("weak_password") from None
+    ensure_eligible(details.date_of_birth, details.processing_consent)
     # WHY: hash first so a used email takes the same time
     hashed = make_password(password)
+    address = normalize_email(details.email)
+    wait = verification.reserve_mail(address)
+    if wait is not None:
+        raise MailRateLimited(wait)
     try:
         user = create_account(
             email=details.email,
@@ -134,7 +152,9 @@ def register(
             display_name=details.display_name,
         )
     except EmailTaken:
+        verification.queue_exists_mail(address)
         return None, decoy_profile(details, str(uuid.uuid4()))
     user.password = hashed
     user.save(update_fields=["password"])
+    verification.queue_code_mail(user)
     return user, profile_of(user)

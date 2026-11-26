@@ -10,10 +10,22 @@ from pydantic import Field, field_validator
 LanguageCode = Literal["fr", "en"]
 
 
-class SignUpIn(Schema):
+class EmailIn(Schema):
     email: str = Field(
         max_length=254, description="Email address; compared without case."
     )
+
+    @field_validator("email")
+    @classmethod
+    def email_has_a_valid_shape(cls, value: str) -> str:
+        try:
+            validate_email(value.strip())
+        except DjangoValidationError:
+            raise ValueError("invalid email") from None
+        return value
+
+
+class SignUpIn(EmailIn):
     password: str = Field(
         min_length=1,
         max_length=128,
@@ -35,14 +47,17 @@ class SignUpIn(Schema):
         default=False, description="Must be true: consent to process learning data."
     )
 
-    @field_validator("email")
-    @classmethod
-    def email_has_a_valid_shape(cls, value: str) -> str:
-        try:
-            validate_email(value.strip())
-        except DjangoValidationError:
-            raise ValueError("invalid email") from None
-        return value
+
+class VerifyEmailIn(EmailIn):
+    code: str = Field(
+        pattern=r"^\d{6}$", description="The six digits from the verification mail."
+    )
+
+
+class ResendAccepted(Schema):
+    resend_available_in: int = Field(
+        description="Seconds before another code can be requested."
+    )
 
 
 class LoginIn(Schema):
