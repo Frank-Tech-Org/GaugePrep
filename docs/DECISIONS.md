@@ -15,7 +15,32 @@ Settled architecture choices become ADRs in `docs/adr/`. This file is for open q
 - Blocks: #<issue>, ...
 -->
 
+### D-39: How does the level test estimate a learner's level?
+
+- Raised: 2026-11-26 by the product manager on the web build plan
+- Context: the level test places a learner from short parts and says how sure it is. The item count, the stopping rule and the width of the shown range feed a scoring formula, so the ruling is yours.
+- Options: A, listening and reading only at first, on the existing Rasch scoring, with writing and speaking shown as "not measured"; stop at a narrow enough range or an item cap · B, all four skills from the start, with short writing and speaking tasks graded (needs the M3 and M4 grader and speech work first) · C, a fixed short quiz with no adaptive stopping: cheaper, with a wider and less honest range
+- Recommendation: A, because it uses scoring that exists, reaches learners in M2 and says plainly what it did not measure.
+- Cost of delay: the level test tickets are not written until you rule; they sit in M2, so nothing slips before then, and each week after moves the first measured plan by a week.
+- Reversible: yes (the method is versioned data)
+- Blocks: the level test tickets
+
+### D-40: Does the study plan show a progress forecast?
+
+- Raised: 2026-11-26 by the product manager on the web build plan
+- Context: a forecast ("you reach your target by a date") predicts the learner's result, so it falls under the scoring rules. With no measured level there is nothing honest to forecast from.
+- Options: A, hidden until you rule and until a level test exists; the plan shows time and an even split only · B, shown from the goal alone with the estimate notice · C, shown only after the level test, as a range with its confidence
+- Recommendation: A now and C after the level test, because a date promised before any measurement can mislead a learner about a visa deadline.
+- Cost of delay: none for the first plan, which ships with the forecast hidden; the forecast tickets wait.
+- Reversible: yes
+- Blocks: the progress forecast in the plan
+
 ## Decided
+
+### D-38: Is the design canvas the approved design for the web build?
+
+- Decided: 2026-11-26: yes, the canvas is the approved design · the owner. Web tickets build from it at phone, tablet and desktop, in French and English, light and dark. No photo enters the repository without a recorded source and licence, and phones download none of the carousel photos.
+- Effect: #267 closed; the web build is planned in tickets and does not start until the owner has reviewed them. Route JavaScript cannot stay under 100 kB (the framework alone is 135 kB gzipped, ADR-028), so each route's limit is set from the shell's measured number, under D-11 · the product manager.
 
 ### D-2: Do owner-run tickets (accounts, recordings, vendor requests) count against the in-flight limit?
 
