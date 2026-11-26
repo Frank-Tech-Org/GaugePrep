@@ -399,7 +399,7 @@ The chained pipeline is used instead of a speech-to-speech model because grading
 - Next.js 16 in static export mode: one HTML file per route, served from Cloudflare's edge, including Douala.
 - React and TypeScript in strict mode; the API client is generated from the backend OpenAPI contract.
 - Public pages (landing, pricing, accuracy page, help) are pre-rendered for search engines; the learner app runs client-side after sign-in.
-- Interface text in French and English through message catalogues; the content language is the exam's language.
+- Interface text in French and English through message catalogues; the content language is the exam's language. Styles, catalogues, fonts and the worker build: ADR-028.
 
 ### 10.2 Offline and resilience
 
@@ -643,8 +643,8 @@ Content production (items, prompts, lessons, anchors) runs in parallel from M1 u
 | Procrastinate | 3.10.0 (23 September 2026) | PyPI |
 | PostgreSQL | 18 (18.6, supported to November 2030) | PostgreSQL support table via WZ-IT |
 | Neon | Postgres 18 GA (May 2026); Free and Launch plans; Frankfurt region | neon.com pricing, regions, changelog |
-| Next.js | 16.4.2 (21 October 2026), static export | versio.io release tracking; nextjs.org docs |
-| Serwist | Service worker library referenced by the Next.js PWA guide | nextjs.org PWA guide |
+| Next.js | 16.4.6 (9 November 2026), static export; React 19.3 | GitHub releases; nextjs.org docs |
+| Serwist | 9.6, built with `@serwist/cli` on the export output (ADR-028) | npm registry; serwist.pages.dev |
 | LiveKit Agents | 1.8.8 (15 October 2026), Python 3.10 to 3.14 | PyPI |
 | LiveKit Cloud | Build free: 1,000 agent minutes, 5 concurrent sessions | livekit.com pricing |
 | Claude Sonnet 5.5, Haiku 5.5 | $2/$10 and $0.10/$0.50 per million tokens; no retirement before September and October 2027 | Anthropic pricing and model deprecations pages |

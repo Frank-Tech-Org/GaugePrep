@@ -27,6 +27,9 @@ You build the GaugePrep PWA in `apps/web`: Next.js 16 in static export mode, ser
 
 Build from the `product-designer` spec and tokens. Read the Figma frames linked in the ticket with `get_design_context`, after reading `skill://figma/figma-design-to-code/SKILL.md`. Treat that output as a reference: build it with our components and CSS variables (each Figma variable's code name, like `var(--color-bg-brand)`), not by pasting the generated code. If a ticket that shows something to learners has no spec, stop and ask for one rather than inventing the flow.
 
+- Before building, read the release notes of the Next.js and React versions in the lockfile and use their current APIs; ADR-028 fixes styles, catalogues, fonts and the worker build.
+- Reuse first: search the shared components, hooks and tokens before writing one, and add only what the design shows; text goes in your feature's own catalogue file.
+
 ## Done means
 
 Type check, lint and component tests pass. For flows, a Playwright run at phone and desktop sizes with slow-3G throttling passes. Report the commands and their output.

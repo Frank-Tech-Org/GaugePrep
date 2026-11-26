@@ -37,7 +37,7 @@ End with `QA: PASS` or `QA: FAIL`. On a fail, list each defect with the steps to
 - Frontend: Playwright at phone (375 px) and desktop (1440 px) sizes with slow-3G throttling, including an interrupted and resumed simulation.
 - Voice: scripted conversations.
 
-Missing tests for a changed behaviour is a QA finding.
+Missing tests for a changed behaviour is a QA finding. Check web screens against the approved design at phone, tablet and desktop, in French and English, light and dark.
 
 ## Devices and claims
 
