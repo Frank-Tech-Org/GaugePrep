@@ -15,7 +15,6 @@
   font: inherit;
   font-size: var(--type-body-s-size);
   font-weight: 700;
-  letter-spacing: 0.05em;
   list-style: none;
   cursor: pointer;
 }
@@ -33,7 +32,9 @@
   inset-inline-end: 0;
   top: calc(100% + var(--space-2));
   z-index: 10;
-  min-width: 216px;
+  width: max-content;
+  min-width: min(216px, calc(100vw - 2rem));
+  max-width: min(240px, calc(100vw - 2rem));
   margin: 0;
   padding: var(--space-2);
   border: 1px solid var(--line);
@@ -43,12 +44,18 @@
 }
 
 .legend {
+  float: left;
+  width: 100%;
   padding: var(--space-2) var(--space-3);
   color: var(--text-muted);
   font-size: var(--type-label-size);
   font-weight: var(--type-label-weight);
   letter-spacing: var(--type-label-tracking);
   text-transform: uppercase;
+}
+
+.legend + .option {
+  clear: both;
 }
 
 .option {
@@ -67,8 +74,9 @@
 }
 
 .option input {
-  width: 20px;
-  height: 20px;
+  flex: none;
+  width: 24px;
+  height: 24px;
   margin: 0;
   accent-color: var(--text);
 }

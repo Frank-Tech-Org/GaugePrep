@@ -14,11 +14,20 @@
 }
 
 .logo {
-  display: block;
+  display: flex;
+  align-items: center;
   flex: none;
-  width: 96px;
-  height: var(--tap-min);
-  background: url("/brand/lockup.svg") left center / contain no-repeat;
+  width: 120px;
+  min-height: var(--tap-min);
+}
+
+.logo img {
+  width: 100%;
+  height: auto;
+}
+
+.logo .logoDark {
+  display: none;
 }
 
 .controls {
@@ -27,22 +36,25 @@
   gap: var(--space-2);
 }
 
-.visuallyHidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
+.code {
+  letter-spacing: 0.05em;
 }
 
-:global(:root[data-theme="dark"]) .logo {
-  background-image: url("/brand/lockup-white.svg");
+:global(:root[data-theme="dark"]) .logo .logoLight {
+  display: none;
+}
+
+:global(:root[data-theme="dark"]) .logo .logoDark {
+  display: block;
 }
 
 @media (prefers-color-scheme: dark) {
-  :global(:root:not([data-theme="light"])) .logo {
-    background-image: url("/brand/lockup-white.svg");
+  :global(:root:not([data-theme="light"])) .logo .logoLight {
+    display: none;
+  }
+
+  :global(:root:not([data-theme="light"])) .logo .logoDark {
+    display: block;
   }
 }
 

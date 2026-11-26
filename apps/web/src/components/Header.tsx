@@ -9,6 +9,9 @@ import { THEME_CHOICES, type ThemeChoice } from "../theme/theme";
 import styles from "./Header.module.css";
 import { SettingMenu, type SettingOption } from "./SettingMenu";
 
+// WHY: the product name is the same in both languages, so it stays out of the catalogues.
+const BRAND_NAME = "GaugePrep";
+
 const LANGUAGE_LABELS: Record<Locale, MessageKey> = {
   fr: "shell.languageFr",
   en: "shell.languageEn",
@@ -54,9 +57,22 @@ export function Header() {
     <header className={styles.header}>
       <div className={styles.inner}>
         <a href="/" className={styles.logo}>
-          <span className={styles.visuallyHidden}>
-            <Msg id="shell.logoLabel" />
-          </span>
+          <img
+            className={styles.logoLight}
+            src="/brand/lockup.svg"
+            alt={BRAND_NAME}
+            width="858"
+            height="256"
+            loading="lazy"
+          />
+          <img
+            className={styles.logoDark}
+            src="/brand/lockup-white.svg"
+            alt={BRAND_NAME}
+            width="858"
+            height="256"
+            loading="lazy"
+          />
         </a>
         <div className={styles.controls}>
           <SettingMenu
@@ -84,7 +100,9 @@ export function Header() {
                   <circle cx="12" cy="12" r="9" />
                   <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
                 </Icon>
-                <Msg id="shell.languageCurrent" />
+                <span className={styles.code}>
+                  <Msg id="shell.languageCurrent" />
+                </span>
               </>
             }
             options={LANGUAGE_OPTIONS}
