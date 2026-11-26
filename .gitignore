@@ -39,3 +39,4 @@ graphify-out/
 .schemathesis/
 
 dns-snapshots/
+apps/web/next-env.d.ts

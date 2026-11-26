@@ -1,3 +1,6 @@
 import base from "../../tooling/eslint/base.js";
 
-export default base;
+export default [
+  { ignores: [".next/**", "out/**", "next-env.d.ts", "dist/**"] },
+  ...base,
+];
