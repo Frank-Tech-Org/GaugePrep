@@ -1,12 +1,12 @@
 import { expect, test, type Page } from "@playwright/test";
+import { brandRgb } from "./tokens";
 
 // WHY: on slow 3G the framework JavaScript lands after the page is read, so the shell's own
 // controls must work from the HTML and the boot script alone (D-39).
-async function openWithoutScripts(page: Page, locale: string) {
+async function openWithoutScripts(page: Page) {
   await page.route(/\/_next\/static\/.*\.js$/, (route) => route.abort());
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-  expect(locale).toBeTruthy();
 }
 
 test.use({ viewport: { width: 360, height: 740 }, locale: "fr-CA" });
@@ -14,7 +14,7 @@ test.use({ viewport: { width: 360, height: 740 }, locale: "fr-CA" });
 test("a French browser reads French before any framework script", async ({
   page,
 }) => {
-  await openWithoutScripts(page, "fr-CA");
+  await openWithoutScripts(page);
   await expect(page.getByText("Sachez où vous en êtes.")).toBeVisible();
   await expect(page.getByText("Know where you stand.")).toBeHidden();
 });
@@ -22,7 +22,7 @@ test("a French browser reads French before any framework script", async ({
 test("the language menu opens, switches every string and remembers the pick", async ({
   page,
 }) => {
-  await openWithoutScripts(page, "fr-CA");
+  await openWithoutScripts(page);
   await page.locator("summary", { hasText: "FR" }).click();
   await page.getByRole("radio", { name: "English" }).check();
   await expect(page.getByText("Know where you stand.")).toBeVisible();
@@ -36,16 +36,16 @@ test("the theme menu applies a pick that survives a reload", async ({
   page,
 }) => {
   await page.emulateMedia({ colorScheme: "dark" });
-  await openWithoutScripts(page, "fr-CA");
+  await openWithoutScripts(page);
   await expect(page.locator("body")).toHaveCSS(
     "background-color",
-    "rgb(9, 39, 44)",
+    brandRgb("bg", "dark"),
   );
   await page.locator("summary", { hasText: "Thème" }).click();
   await page.getByRole("radio", { name: "Clair" }).check();
   await expect(page.locator("body")).toHaveCSS(
     "background-color",
-    "rgb(246, 243, 236)",
+    brandRgb("bg", "light"),
   );
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
@@ -54,7 +54,7 @@ test("the theme menu applies a pick that survives a reload", async ({
 test("both menus work by keyboard alone and keep 44 px targets", async ({
   page,
 }) => {
-  await openWithoutScripts(page, "fr-CA");
+  await openWithoutScripts(page);
   const language = page.locator("summary", { hasText: "FR" });
   const theme = page.locator("summary", { hasText: "Thème" });
   for (const summary of [theme, language]) {
