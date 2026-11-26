@@ -16,7 +16,12 @@
   font-size: var(--type-body-s-size);
   font-weight: 700;
   letter-spacing: 0.05em;
+  list-style: none;
   cursor: pointer;
+}
+
+.button::-webkit-details-marker {
+  display: none;
 }
 
 .button:hover {
@@ -35,10 +40,6 @@
   border-radius: var(--radius-lg);
   background: var(--surface);
   box-shadow: var(--shadow-card);
-}
-
-.panel[hidden] {
-  display: none;
 }
 
 .legend {

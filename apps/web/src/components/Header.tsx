@@ -60,6 +60,7 @@ export function Header() {
         </a>
         <div className={styles.controls}>
           <SettingMenu
+            setting="theme"
             legendKey="shell.theme"
             trigger={
               <>
@@ -75,6 +76,7 @@ export function Header() {
             onChange={setChoice}
           />
           <SettingMenu
+            setting="locale"
             legendKey="shell.language"
             trigger={
               <>

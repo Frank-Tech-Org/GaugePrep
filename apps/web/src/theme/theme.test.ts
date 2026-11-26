@@ -68,3 +68,76 @@ describe("boot script", () => {
     expect(root.lang).toBe(expected);
   });
 });
+
+describe("boot script menus", () => {
+  const root = document.documentElement;
+
+  function menu(setting: string, values: string[]) {
+    const details = document.createElement("details");
+    details.open = true;
+    const summary = document.createElement("summary");
+    summary.tabIndex = 0;
+    details.append(summary);
+    for (const value of values) {
+      const input = document.createElement("input");
+      input.type = "radio";
+      input.name = setting;
+      input.value = value;
+      input.dataset.setting = setting;
+      details.append(input);
+    }
+    document.body.append(details);
+    return details;
+  }
+
+  function change(input: Element | undefined) {
+    input?.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+
+  beforeEach(() => {
+    localStorage.clear();
+    root.removeAttribute("data-theme");
+    document.body.replaceChildren();
+    new Function(BOOT_SCRIPT)();
+  });
+
+  it("applies and stores a language pick, then closes the menu", () => {
+    const details = menu("locale", ["fr", "en"]);
+    change(details.querySelectorAll("input")[0]);
+    expect(root.lang).toBe("fr");
+    expect(localStorage.getItem("gp.locale")).toBe("fr");
+    expect(details.open).toBe(false);
+  });
+
+  it("applies a theme pick and clears it for the system", () => {
+    const details = menu("theme", ["system", "light", "dark"]);
+    const [system, , dark] = Array.from(details.querySelectorAll("input"));
+    change(dark);
+    expect(root.dataset.theme).toBe("dark");
+    expect(localStorage.getItem("gp.theme")).toBe("dark");
+    change(system);
+    expect(root.hasAttribute("data-theme")).toBe(false);
+  });
+
+  it("ignores a value it does not know", () => {
+    const details = menu("locale", ["de"]);
+    change(details.querySelector("input") ?? undefined);
+    expect(localStorage.getItem("gp.locale")).toBeNull();
+    expect(details.open).toBe(true);
+  });
+
+  it("closes on Escape and returns focus to the summary", () => {
+    const details = menu("locale", ["fr", "en"]);
+    document.body.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+    );
+    expect(details.open).toBe(false);
+    expect(document.activeElement).toBe(details.querySelector("summary"));
+  });
+
+  it("closes on a click outside", () => {
+    const details = menu("locale", ["fr", "en"]);
+    document.body.click();
+    expect(details.open).toBe(false);
+  });
+});

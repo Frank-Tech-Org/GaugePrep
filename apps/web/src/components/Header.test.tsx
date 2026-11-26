@@ -44,7 +44,7 @@ describe("shell language and theme", () => {
     setBrowserLanguages(["fr-FR"]);
     const user = userEvent.setup();
     renderShell();
-    await user.click(await screen.findByRole("button", { name: /FR/ }));
+    await screen.findByText("FR");
     await user.click(screen.getByRole("radio", { name: "English" }));
     expect(screen.getByText("Know where you stand.")).toBeTruthy();
     expect(screen.queryByText("Sachez où vous en êtes.")).toBeNull();
@@ -54,23 +54,10 @@ describe("shell language and theme", () => {
     expect(await screen.findByText("Know where you stand.")).toBeTruthy();
   });
 
-  it("works by keyboard alone", async () => {
-    const user = userEvent.setup();
-    renderShell();
-    const button = await screen.findByRole("button", { name: /EN/ });
-    button.focus();
-    await user.keyboard("{Enter}");
-    expect(button.getAttribute("aria-expanded")).toBe("true");
-    await user.keyboard("{ArrowUp}{Escape}");
-    expect(button.getAttribute("aria-expanded")).toBe("false");
-    expect(document.activeElement).toBe(button);
-  });
-
   it("keeps a light pick and sets it on the page", async () => {
     const user = userEvent.setup();
     renderShell();
-    await user.click(await screen.findByRole("button", { name: /Theme/ }));
-    await user.click(screen.getByRole("radio", { name: "Light" }));
+    await user.click(await screen.findByRole("radio", { name: "Light" }));
     expect(document.documentElement.dataset.theme).toBe("light");
     expect(localStorage.getItem("gp.theme")).toBe("light");
   });
