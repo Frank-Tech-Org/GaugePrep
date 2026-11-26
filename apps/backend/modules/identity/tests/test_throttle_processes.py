@@ -60,5 +60,5 @@ def test_two_worker_processes_share_one_failed_login_counter(
             key=throttle.key_for(throttle.LOGIN_FAILURES, ADDRESS)
         )
         assert row.count == 6
-        assert throttle.retry_after(throttle.LOGIN_FAILURES, ADDRESS) is not None
-        assert throttle.retry_after(throttle.LOGIN_FAILURES, "203.0.113.78") is None
+        other = throttle.key_for(throttle.LOGIN_FAILURES, "203.0.113.78")
+        assert not Throttle.objects.filter(key=other).exists()
