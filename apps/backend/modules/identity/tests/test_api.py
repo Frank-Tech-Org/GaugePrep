@@ -14,7 +14,10 @@ from .conftest import (
     ME,
     PASSWORD,
     SIGNUP,
+    VERIFY,
     Api,
+    forget_mail_limits,
+    queued_code,
     signup_body,
     too_young,
 )
@@ -63,9 +66,14 @@ def test_signup_creates_account_session_and_profile(api: Api) -> None:
         True,
         "signup",
     )
+    assert not body["email_verified"]
+    assert api.get(ME).status_code == 401
+    code = {"email": "ada@example.com", "code": queued_code()}
+    assert api.post(VERIFY, code).status_code == 200
     me = api.get(ME)
     assert me.status_code == 200
     assert me.json()["interface_language"] == "fr"
+    assert me.json()["email_verified"]
 
 
 @pytest.mark.not_found("POST /api/v1/auth/signup")
@@ -123,9 +131,9 @@ def test_duplicate_email_in_any_case_looks_like_a_new_signup(learner: Api) -> No
 
 def test_duplicate_and_new_signups_set_the_same_cookies(api: Api, learner: Api) -> None:
     fresh = Api().sign_up(email="grace@example.com")
+    forget_mail_limits()
     duplicate = Api().sign_up(email="ada@example.com", password="Another-Pass-9921")
     assert fresh.cookies.keys() == duplicate.cookies.keys()
-    assert "gp_session" in duplicate.cookies
 
 
 def test_idempotent_replay_stores_no_name_or_email(api: Api) -> None:
@@ -144,7 +152,6 @@ def test_idempotent_replay_of_a_duplicate_email_matches_the_first_answer(
     second = Api().post(SIGNUP, body, HTTP_IDEMPOTENCY_KEY=key)
     assert first.json()["learner_id"] == second.json()["learner_id"]
     assert second.json()["display_name"] == "Eve"
-    assert "gp_session" in second.cookies
 
 
 def test_write_without_csrf_token_is_refused(api: Api) -> None:
@@ -372,10 +379,9 @@ def test_preflight_lists_methods_headers_and_max_age(api: Api) -> None:
     assert "Access-Control-Allow-Origin" not in foreign
 
 
-def test_session_and_csrf_cookie_attributes(api: Api) -> None:
-    api.sign_up()
-    session = api.client.cookies[settings.SESSION_COOKIE_NAME]
-    csrf = api.client.cookies[settings.CSRF_COOKIE_NAME]
+def test_session_and_csrf_cookie_attributes(learner: Api) -> None:
+    session = learner.client.cookies[settings.SESSION_COOKIE_NAME]
+    csrf = learner.client.cookies[settings.CSRF_COOKIE_NAME]
     assert session["httponly"]
     assert session["samesite"] == "Lax"
     assert session["path"] == "/"

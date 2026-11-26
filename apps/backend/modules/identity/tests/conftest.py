@@ -6,6 +6,10 @@ import pytest
 from django.conf import settings
 from django.test import Client
 
+from modules.identity import throttle
+from modules.identity.models import MailOutbox, Throttle
+from modules.identity.verification import code_for
+
 PASSWORD = "Sturdy-Pelican-4821"
 ADULT = "1990-01-02"
 SIGNUP = "/api/v1/auth/signup"
@@ -13,6 +17,8 @@ LOGIN = "/api/v1/auth/login"
 LOGOUT = "/api/v1/auth/logout"
 CSRF = "/api/v1/auth/csrf"
 ME = "/api/v1/me"
+VERIFY = "/api/v1/auth/verify-email"
+RESEND = "/api/v1/auth/verify-email/resend"
 
 
 def too_young() -> str:
@@ -79,6 +85,28 @@ class Api:
         return self.post(SIGNUP, signup_body(**overrides))
 
 
+def queued_code(email: str = "ada@example.com") -> str:
+    """The code in the newest verification mail waiting for this address."""
+    row = (
+        MailOutbox.objects.filter(
+            recipient=email, kind=MailOutbox.Kind.VERIFICATION_CODE
+        )
+        .order_by("-created_at")
+        .first()
+    )
+    assert row is not None, "no verification mail is waiting"
+    return code_for(row.nonce)
+
+
+def forget_mail_limits() -> None:
+    """Let the next mail through, as if an hour had passed."""
+    keys = [
+        throttle.key_for(limit, "ada@example.com")
+        for limit in (throttle.MAILS_PER_MINUTE, throttle.MAILS_PER_HOUR)
+    ]
+    Throttle.objects.filter(key__in=keys).delete()
+
+
 @pytest.fixture
 def api() -> Api:
     return Api()
@@ -87,4 +115,11 @@ def api() -> Api:
 @pytest.fixture
 def learner(api: Api, db: None) -> Api:
     assert api.sign_up().status_code == 201
+    assert (
+        api.post(
+            VERIFY, {"email": "ada@example.com", "code": queued_code()}
+        ).status_code
+        == 200
+    )
+    forget_mail_limits()
     return api
