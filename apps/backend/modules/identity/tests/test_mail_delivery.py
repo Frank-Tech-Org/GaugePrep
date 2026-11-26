@@ -4,11 +4,10 @@ import pytest
 from django.core import mail
 from django.db import connection, transaction
 
-from modules.identity.mail import deliver, purge_unsent
+from modules.identity.mail import code_for, deliver, purge_unsent
 from modules.identity.models import MailOutbox
 from modules.identity.services import create_account
 from modules.identity.tasks import queue_mail
-from modules.identity.verification import code_for
 
 from .conftest import Api
 
@@ -67,7 +66,7 @@ def test_a_known_address_gets_the_notice_without_a_code() -> None:
     Api().sign_up()
     deliver(str(MailOutbox.objects.get().id))
     assert "déjà" in mail.outbox[0].subject
-    assert not any(ch.isdigit() for ch in mail.outbox[0].body)
+    assert not any(ch.isdigit() for ch in str(mail.outbox[0].body))
 
 
 def test_a_job_run_twice_sends_once() -> None:

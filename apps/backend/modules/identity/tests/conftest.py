@@ -7,8 +7,8 @@ from django.conf import settings
 from django.test import Client
 
 from modules.identity import throttle
+from modules.identity.mail import code_for
 from modules.identity.models import MailOutbox, Throttle
-from modules.identity.verification import code_for
 
 PASSWORD = "Sturdy-Pelican-4821"
 ADULT = "1990-01-02"

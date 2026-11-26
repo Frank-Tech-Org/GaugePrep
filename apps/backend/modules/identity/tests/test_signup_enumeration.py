@@ -85,13 +85,14 @@ def test_resend_and_verify_answer_alike_for_known_and_unknown() -> None:
 
 
 def median_gap(call_known: Any, call_unknown: Any) -> float:
-    known, unknown = [], []
+    known: list[float] = []
+    unknown: list[float] = []
     for n in range(200):
         for calls, sink in ((call_known, known), (call_unknown, unknown)):
             started = time.perf_counter()
             calls(n)
             sink.append(time.perf_counter() - started)
-    return abs(statistics.median(known) - statistics.median(unknown))
+    return float(abs(statistics.median(known) - statistics.median(unknown)))
 
 
 @pytest.mark.timeout(600)

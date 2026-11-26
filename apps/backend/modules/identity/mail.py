@@ -3,12 +3,14 @@ from datetime import timedelta
 
 from django.core.mail import send_mail
 from django.utils import timezone
+from django.utils.crypto import salted_hmac
 
 from .models import MailOutbox
 
 logger = logging.getLogger(__name__)
 
 KEEP_UNSENT = timedelta(hours=1)
+CODE_DIGITS = 6
 
 TEXTS: dict[str, dict[str, tuple[str, str]]] = {
     MailOutbox.Kind.VERIFICATION_CODE: {
@@ -46,9 +48,14 @@ TEXTS: dict[str, dict[str, tuple[str, str]]] = {
 }
 
 
-def render(row: MailOutbox) -> tuple[str, str]:
-    from .verification import code_for  # WHY: verification imports the job module
+def code_for(nonce: str) -> str:
+    """The six digits a nonce stands for; only the mail job ever computes them."""
+    digest = salted_hmac("identity.email_code.digits", nonce, algorithm="sha256")
+    number = int.from_bytes(digest.digest()[:8]) % 10**CODE_DIGITS
+    return f"{number:0{CODE_DIGITS}d}"
 
+
+def render(row: MailOutbox) -> tuple[str, str]:
     subject, body = TEXTS[row.kind][row.language]
     code = code_for(row.nonce) if row.nonce else ""
     return subject, body.format(code=code)

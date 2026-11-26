@@ -9,22 +9,15 @@ from django.utils import timezone
 from django.utils.crypto import salted_hmac
 
 from . import throttle
+from .mail import code_for
 from .models import EmailCode, MailOutbox, User
 from .tasks import queue_mail
 
 logger = logging.getLogger(__name__)
 
-CODE_DIGITS = 6
 CODE_LIFETIME = timedelta(minutes=10)
 MAX_WRONG_ATTEMPTS = 5
 _NO_ACCOUNT = uuid.UUID(int=0)
-
-
-def code_for(nonce: str) -> str:
-    """The six digits a nonce stands for; only the mail job ever computes them."""
-    digest = salted_hmac("identity.email_code.digits", nonce, algorithm="sha256")
-    number = int.from_bytes(digest.digest()[:8]) % 10**CODE_DIGITS
-    return f"{number:0{CODE_DIGITS}d}"
 
 
 def _hash(user_id: uuid.UUID, code: str) -> str:

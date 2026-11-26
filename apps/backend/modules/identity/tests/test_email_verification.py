@@ -10,6 +10,7 @@ from django.db.models import F
 from django.utils import timezone
 
 from modules.identity import throttle, verification
+from modules.identity.mail import code_for
 from modules.identity.models import EmailCode, MailOutbox, Throttle, User
 from modules.identity.services import create_account
 
@@ -195,7 +196,7 @@ def test_the_code_is_compared_in_constant_time(
         seen.append((a, b))
         return real(a, b)
 
-    monkeypatch.setattr(verification.hmac, "compare_digest", spy)
+    monkeypatch.setattr(hmac, "compare_digest", spy)
     enter(pending, wrong_code())
     enter(pending, wrong_code(), email="ghost@example.com")
     assert len(seen) == 2
@@ -221,7 +222,7 @@ def test_a_code_from_the_mail_matches_the_stored_hash(pending: Api) -> None:
     assert row.recipient == EMAIL
     assert row.nonce
     assert EmailCode.objects.get().code_hash == verification._hash(
-        user.id, verification.code_for(row.nonce)
+        user.id, code_for(row.nonce)
     )
 
 
