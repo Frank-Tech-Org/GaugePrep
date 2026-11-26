@@ -1,3 +1,5 @@
+from typing import Any
+
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from modules.identity import public as identity
@@ -5,10 +7,25 @@ from ninja import NinjaAPI
 from ninja.errors import AuthenticationError, ValidationError
 
 from .health import router as health_router
-from .problems import FieldProblem
+from .problems import PROBLEM_CONTENT_TYPE, FieldProblem
+
+
+class ProblemAPI(NinjaAPI):
+    """Declares every error answer as problem+json, the type the server sends."""
+
+    def get_openapi_schema(self, **kwargs: Any) -> Any:
+        schema = super().get_openapi_schema(**kwargs)
+        for item in schema["paths"].values():
+            for operation in item.values():
+                for status, response in operation.get("responses", {}).items():
+                    content = response.get("content")
+                    if int(status) >= 400 and content and "application/json" in content:
+                        content[PROBLEM_CONTENT_TYPE] = content.pop("application/json")
+        return schema
+
 
 # The docs page is local only; openapi.json is served everywhere.
-api = NinjaAPI(
+api = ProblemAPI(
     title="GaugePrep API",
     version="1",
     description="Public HTTP API. Errors are RFC 9457 problem details.",
