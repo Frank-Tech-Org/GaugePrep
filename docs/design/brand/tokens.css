@@ -1,0 +1,171 @@
+/* GaugePrep — generated from tokens.json */
+:root, [data-theme="light"] {
+  --bg: #f6f3ec; /* Page background. Paper in light, a deeper ink in dark. */
+  --surface: #fffdf8; /* Cards, panels, inputs and the exam sheet. */
+  --line: #ded8cb; /* Hairlines and dividers that separate, never the only cue for a control. */
+  --line-strong: #7e8e8a; /* Input and control borders. 3:1 or more on bg and surface in both themes. */
+  --text: #0e3b43; /* Body copy and headings on bg and surface (11:1 or more in both themes). */
+  --text-muted: #1f6f6b; /* Secondary text, captions, metadata on bg and surface (5.3:1 light, 8.3:1 dark). */
+  --accent: var(--amber); /* The reading and the one primary action per view. A fill, never text on bg. */
+  --on-accent: #0e3b43; /* Text and icons on an accent fill (5.8:1). Never white. */
+  --accent-soft: #fbe7c6; /* Tinted ground behind text that marks the learner's current reading. */
+  --link: var(--depth); /* Inline links on bg and surface. Underlined, so colour is never the only cue. */
+  --focus: #0e3b43; /* Keyboard focus ring: solid 2px, 2px offset. 5.7:1 or more on every ground. */
+  --danger: #b23b26; /* Errors and failed submissions, always with a word and an icon. Text on bg and surface (5.1:1 or more). */
+  --danger-soft: #f9e0d9; /* Ground behind danger text in error banners. */
+  --ink: #0e3b43; /* Brand Ink. The bubble of the mark, dark bands, the gauge disc. Fixed in both themes. */
+  --depth: #1f6f6b; /* Brand Depth. The mark's shadow layer, secondary brand fills. */
+  --sea: #4fa89d; /* Brand Sea. Gauge pages for levels already reached. Decoration only, never text. */
+  --lagoon: #7cc2b8; /* Brand Lagoon. Gauge pages, illustration fills. Never text on light grounds. */
+  --mist: #b4ded6; /* Brand Mist. The page just before the reading; text only on Ink. */
+  --unreached: #2a5d63; /* Brand Unreached. Gauge pages for levels not reached yet, always on Ink. */
+  --amber: #f2a13b; /* Brand Amber. The reading. On Ink or as a fill with Ink text; never as text on Paper. */
+  --paper: #f6f3ec; /* Brand Paper. The book in the mark, light grounds, Ink-on-Paper print. */
+  --shadow-card: 0 1px 2px rgba(14,59,67,0.06), 0 6px 20px rgba(14,59,67,0.07); /* Raised cards and sheets. Flat cards use line instead. */
+}
+[data-theme="dark"] {
+  --bg: #09272c;
+  --surface: #0e3b43;
+  --line: #1e4c53;
+  --line-strong: #6e9a97;
+  --text: #f6f3ec;
+  --text-muted: #b4ded6;
+  --accent: var(--amber);
+  --on-accent: #0e3b43;
+  --accent-soft: #3b3020;
+  --link: var(--mist);
+  --focus: #f2a13b;
+  --danger: #f28c72;
+  --danger-soft: #3a221c;
+  --shadow-card: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.25);
+}
+:root {
+  --space-1: 4px; /* Icon to label gap. */
+  --space-2: 8px; /* Tight groups: chips, inline controls. */
+  --space-3: 12px; /* Form field gaps, list rows. */
+  --space-4: 16px; /* Card padding on mobile, minimum side gutter. */
+  --space-6: 24px; /* Card padding on tablet and desktop, gaps between cards. */
+  --space-8: 32px; /* Between sections inside a screen. */
+  --space-12: 48px; /* Between page sections on mobile. */
+  --space-16: 64px; /* Between page sections on desktop. */
+  --radius-sm: 6px; /* Chips, tags, small inputs. */
+  --radius-md: 12px; /* Buttons, inputs, menus. */
+  --radius-lg: 20px; /* Cards, sheets, modals. */
+  --radius-full: 999px; /* Level badges, avatars, the gauge disc. */
+  --tap-min: 44px; /* Minimum height and width of anything tappable. */
+  --content-max: 1120px; /* Maximum content width on desktop. */
+  --read-max: 680px; /* Maximum width of running text and exam passages. */
+  --font-sans: Figtree, "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-serif: Fraunces, Georgia, "Times New Roman", serif;
+  --text-headline-xl: 600 64px/68px var(--font-serif); /* Hero headlines on the site and campaign posters. One per page. */
+  --text-headline-l: 560 44px/50px var(--font-serif); /* Section openers, social post headlines. Mobile hero size. */
+  --text-title-1: 650 32px/40px var(--font-sans); /* Screen titles. */
+  --text-title-2: 650 24px/32px var(--font-sans); /* Card and section titles. */
+  --text-title-3: 600 19px/26px var(--font-sans); /* Sub-sections, dialog titles. */
+  --text-body-l: 400 18px/28px var(--font-sans); /* Lead paragraphs, exam instructions. */
+  --text-body: 400 16px/24px var(--font-sans); /* Default text. Never smaller for running copy on mobile. */
+  --text-body-s: 450 14px/20px var(--font-sans); /* Captions, helper text, metadata. */
+  --text-label: 650 13px/16px var(--font-sans); /* Eyebrows and tags, set in capitals. */
+  --text-score: 700 48px/48px var(--font-sans); /* The reading in the exam's own scale. Tabular figures. */
+  --text-wordmark: 600 28px/32px var(--font-sans); /* Reference only: the wordmark is artwork. Use the lockup files, never live text. */
+}
+.headline-xl {
+  font-family: var(--font-serif);
+  font-size: 64px;
+  line-height: 68px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variation-settings: 'opsz' 96;
+}
+.headline-l {
+  font-family: var(--font-serif);
+  font-size: 44px;
+  line-height: 50px;
+  font-weight: 560;
+  letter-spacing: -0.015em;
+  font-variation-settings: 'opsz' 72;
+}
+.title-1 {
+  font-family: var(--font-sans);
+  font-size: 32px;
+  line-height: 40px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+.title-2 {
+  font-family: var(--font-sans);
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 650;
+  letter-spacing: 0;
+}
+.title-3 {
+  font-family: var(--font-sans);
+  font-size: 19px;
+  line-height: 26px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.body-l {
+  font-family: var(--font-sans);
+  font-size: 18px;
+  line-height: 28px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.body {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.body-s {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 450;
+  letter-spacing: 0;
+}
+.label {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 16px;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+}
+.score {
+  font-family: var(--font-sans);
+  font-size: 48px;
+  line-height: 48px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.wordmark {
+  font-family: var(--font-sans);
+  font-size: 28px;
+  line-height: 32px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+@font-face {
+  font-family: "Figtree";
+  src: url("fonts/Figtree-Variable.woff2") format("woff2");
+  font-weight: 300 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Figtree";
+  src: url("fonts/Figtree-Italic-Variable.woff2") format("woff2");
+  font-weight: 300 900;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Fraunces";
+  src: url("fonts/Fraunces-Variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}

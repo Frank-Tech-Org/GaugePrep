@@ -1,0 +1,2541 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "AUTH-01-S.dc.html": {
+      "h": 844,
+      "page": "page-auth",
+      "title": "AUTH-01 Welcome · S",
+      "w": 390,
+      "x": 360,
+      "y": 220
+    },
+    "AUTH-02-L.dc.html": {
+      "h": 800,
+      "page": "page-auth",
+      "title": "AUTH-02 Sign in · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 1234
+    },
+    "AUTH-02-M.dc.html": {
+      "h": 1180,
+      "page": "page-auth",
+      "title": "AUTH-02 Sign in · M",
+      "w": 820,
+      "x": 870,
+      "y": 1234
+    },
+    "AUTH-02-S.dc.html": {
+      "h": 844,
+      "page": "page-auth",
+      "title": "AUTH-02 Sign in · S",
+      "w": 390,
+      "x": 360,
+      "y": 1234
+    },
+    "AUTH-03-L.dc.html": {
+      "h": 800,
+      "page": "page-auth",
+      "title": "AUTH-03 Sign in, wrong password · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 2584
+    },
+    "AUTH-03-M.dc.html": {
+      "h": 1180,
+      "page": "page-auth",
+      "title": "AUTH-03 Sign in, wrong password · M",
+      "w": 820,
+      "x": 870,
+      "y": 2584
+    },
+    "AUTH-03-S.dc.html": {
+      "h": 844,
+      "page": "page-auth",
+      "title": "AUTH-03 Sign in, wrong password · S",
+      "w": 390,
+      "x": 360,
+      "y": 2584
+    },
+    "AUTH-05-L.dc.html": {
+      "h": 800,
+      "page": "page-auth",
+      "title": "AUTH-05 Sign in, loading · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 3934
+    },
+    "AUTH-05-M.dc.html": {
+      "h": 1180,
+      "page": "page-auth",
+      "title": "AUTH-05 Sign in, loading · M",
+      "w": 820,
+      "x": 870,
+      "y": 3934
+    },
+    "AUTH-05-S.dc.html": {
+      "h": 844,
+      "page": "page-auth",
+      "title": "AUTH-05 Sign in, loading · S",
+      "w": 390,
+      "x": 360,
+      "y": 3934
+    },
+    "AUTH-06-L.dc.html": {
+      "h": 800,
+      "page": "page-auth",
+      "title": "AUTH-06 Sign in, password updated · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 5284
+    },
+    "AUTH-06-M.dc.html": {
+      "h": 1180,
+      "page": "page-auth",
+      "title": "AUTH-06 Sign in, password updated · M",
+      "w": 820,
+      "x": 870,
+      "y": 5284
+    },
+    "AUTH-06-S.dc.html": {
+      "h": 844,
+      "page": "page-auth",
+      "title": "AUTH-06 Sign in, password updated · S",
+      "w": 390,
+      "x": 360,
+      "y": 5284
+    },
+    "AUTH-07-L.dc.html": {
+      "h": 800,
+      "page": "page-auth",
+      "title": "AUTH-07 Sign up, step 1 · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 6634
+    },
+    "AUTH-07-M.dc.html": {
+      "h": 1180,
+      "page": "page-auth",
+      "title": "AUTH-07 Sign up, step 1 · M",
+      "w": 820,
+      "x": 870,
+      "y": 6634
+    },
+    "AUTH-07-S.dc.html": {
+      "h": 1250,
+      "page": "page-auth",
+      "title": "AUTH-07 Sign up, step 1 · S",
+      "w": 390,
+      "x": 360,
+      "y": 6634
+    },
+    "AUTH-08-L.dc.html": {
+      "h": 800,
+      "page": "page-auth",
+      "title": "AUTH-08 Sign up, errors shown · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 8054
+    },
+    "AUTH-08-M.dc.html": {
+      "h": 1180,
+      "page": "page-auth",
+      "title": "AUTH-08 Sign up, errors shown · M",
+      "w": 820,
+      "x": 870,
+      "y": 8054
+    },
+    "AUTH-08-S.dc.html": {
+      "h": 1460,
+      "page": "page-auth",
+      "title": "AUTH-08 Sign up, errors shown · S",
+      "w": 390,
+      "x": 360,
+      "y": 8054
+    },
+    "AUTH-10-L.dc.html": {
+      "h": 800,
+      "page": "page-auth",
+      "title": "AUTH-10 Verify code · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 9684
+    },
+    "AUTH-10-M.dc.html": {
+      "h": 1180,
+      "page": "page-auth",
+      "title": "AUTH-10 Verify code · M",
+      "w": 820,
+      "x": 870,
+      "y": 9684
+    },
+    "AUTH-10-S.dc.html": {
+      "h": 844,
+      "page": "page-auth",
+      "title": "AUTH-10 Verify code · S",
+      "w": 390,
+      "x": 360,
+      "y": 9684
+    },
+    "AUTH-11-L.dc.html": {
+      "h": 800,
+      "page": "page-auth",
+      "title": "AUTH-11 Verify code, wrong · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 11034
+    },
+    "AUTH-11-M.dc.html": {
+      "h": 1180,
+      "page": "page-auth",
+      "title": "AUTH-11 Verify code, wrong · M",
+      "w": 820,
+      "x": 870,
+      "y": 11034
+    },
+    "AUTH-11-S.dc.html": {
+      "h": 844,
+      "page": "page-auth",
+      "title": "AUTH-11 Verify code, wrong · S",
+      "w": 390,
+      "x": 360,
+      "y": 11034
+    },
+    "AUTH-12-L.dc.html": {
+      "h": 800,
+      "page": "page-auth",
+      "title": "AUTH-12 Verify code, expired · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 12384
+    },
+    "AUTH-12-M.dc.html": {
+      "h": 1180,
+      "page": "page-auth",
+      "title": "AUTH-12 Verify code, expired · M",
+      "w": 820,
+      "x": 870,
+      "y": 12384
+    },
+    "AUTH-12-S.dc.html": {
+      "h": 844,
+      "page": "page-auth",
+      "title": "AUTH-12 Verify code, expired · S",
+      "w": 390,
+      "x": 360,
+      "y": 12384
+    },
+    "AUTH-14-L.dc.html": {
+      "h": 800,
+      "page": "page-auth",
+      "title": "AUTH-14 Forgot password · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 13734
+    },
+    "AUTH-14-M.dc.html": {
+      "h": 1180,
+      "page": "page-auth",
+      "title": "AUTH-14 Forgot password · M",
+      "w": 820,
+      "x": 870,
+      "y": 13734
+    },
+    "AUTH-14-S.dc.html": {
+      "h": 844,
+      "page": "page-auth",
+      "title": "AUTH-14 Forgot password · S",
+      "w": 390,
+      "x": 360,
+      "y": 13734
+    },
+    "AUTH-16-L.dc.html": {
+      "h": 800,
+      "page": "page-auth",
+      "title": "AUTH-16 Reset code sent · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 15084
+    },
+    "AUTH-16-M.dc.html": {
+      "h": 1180,
+      "page": "page-auth",
+      "title": "AUTH-16 Reset code sent · M",
+      "w": 820,
+      "x": 870,
+      "y": 15084
+    },
+    "AUTH-16-S.dc.html": {
+      "h": 844,
+      "page": "page-auth",
+      "title": "AUTH-16 Reset code sent · S",
+      "w": 390,
+      "x": 360,
+      "y": 15084
+    },
+    "AUTH-17-L.dc.html": {
+      "h": 800,
+      "page": "page-auth",
+      "title": "AUTH-17 New password · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 16434
+    },
+    "AUTH-17-M.dc.html": {
+      "h": 1180,
+      "page": "page-auth",
+      "title": "AUTH-17 New password · M",
+      "w": 820,
+      "x": 870,
+      "y": 16434
+    },
+    "AUTH-17-S.dc.html": {
+      "h": 844,
+      "page": "page-auth",
+      "title": "AUTH-17 New password · S",
+      "w": 390,
+      "x": 360,
+      "y": 16434
+    },
+    "AUTH-18-L.dc.html": {
+      "h": 800,
+      "page": "page-auth",
+      "title": "AUTH-18 New password, mismatch · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 17784
+    },
+    "AUTH-18-M.dc.html": {
+      "h": 1180,
+      "page": "page-auth",
+      "title": "AUTH-18 New password, mismatch · M",
+      "w": 820,
+      "x": 870,
+      "y": 17784
+    },
+    "AUTH-18-S.dc.html": {
+      "h": 844,
+      "page": "page-auth",
+      "title": "AUTH-18 New password, mismatch · S",
+      "w": 390,
+      "x": 360,
+      "y": 17784
+    },
+    "AUTH-19-L.dc.html": {
+      "h": 800,
+      "page": "page-auth",
+      "title": "AUTH-19 Under 16 · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 19134
+    },
+    "AUTH-19-M.dc.html": {
+      "h": 1180,
+      "page": "page-auth",
+      "title": "AUTH-19 Under 16 · M",
+      "w": 820,
+      "x": 870,
+      "y": 19134
+    },
+    "AUTH-19-S.dc.html": {
+      "h": 844,
+      "page": "page-auth",
+      "title": "AUTH-19 Under 16 · S",
+      "w": 390,
+      "x": 360,
+      "y": 19134
+    },
+    "AUTH-20-L.dc.html": {
+      "h": 800,
+      "page": "page-auth",
+      "title": "AUTH-20 Account created · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 20484
+    },
+    "AUTH-20-M.dc.html": {
+      "h": 1180,
+      "page": "page-auth",
+      "title": "AUTH-20 Account created · M",
+      "w": 820,
+      "x": 870,
+      "y": 20484
+    },
+    "AUTH-20-S.dc.html": {
+      "h": 844,
+      "page": "page-auth",
+      "title": "AUTH-20 Account created · S",
+      "w": 390,
+      "x": 360,
+      "y": 20484
+    },
+    "Artboard-oa70.dc.html": {
+      "h": 600,
+      "handmade": true,
+      "page": "page-cllos3",
+      "title": "Artboard 1",
+      "w": 800,
+      "x": 0,
+      "y": 0
+    },
+    "Auth.dc.html": {
+      "h": 800,
+      "is_interactive": true,
+      "page": "page-proto",
+      "title": "Playground",
+      "w": 1280,
+      "x": 0,
+      "y": 1500
+    },
+    "Cover.dc.html": {
+      "h": 900,
+      "page": "page-cover",
+      "title": "GaugePrep map",
+      "w": 1280,
+      "x": 0,
+      "y": 0
+    },
+    "LVL-01-L.dc.html": {
+      "h": 820,
+      "page": "page-lt",
+      "title": "LVL-01 Before you start · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 220
+    },
+    "LVL-01-M.dc.html": {
+      "h": 1180,
+      "page": "page-lt",
+      "title": "LVL-01 Before you start · M",
+      "w": 820,
+      "x": 870,
+      "y": 220
+    },
+    "LVL-01-S.dc.html": {
+      "h": 890,
+      "page": "page-lt",
+      "title": "LVL-01 Before you start · S",
+      "w": 390,
+      "x": 360,
+      "y": 220
+    },
+    "LVL-02-L.dc.html": {
+      "h": 800,
+      "page": "page-lt",
+      "title": "LVL-02 Sound check, heard it · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 1570
+    },
+    "LVL-02-M.dc.html": {
+      "h": 1180,
+      "page": "page-lt",
+      "title": "LVL-02 Sound check, heard it · M",
+      "w": 820,
+      "x": 870,
+      "y": 1570
+    },
+    "LVL-02-S.dc.html": {
+      "h": 844,
+      "page": "page-lt",
+      "title": "LVL-02 Sound check, heard it · S",
+      "w": 390,
+      "x": 360,
+      "y": 1570
+    },
+    "LVL-03-L.dc.html": {
+      "h": 800,
+      "page": "page-lt",
+      "title": "LVL-03 Sound check, could not hear · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 2920
+    },
+    "LVL-03-M.dc.html": {
+      "h": 1180,
+      "page": "page-lt",
+      "title": "LVL-03 Sound check, could not hear · M",
+      "w": 820,
+      "x": 870,
+      "y": 2920
+    },
+    "LVL-03-S.dc.html": {
+      "h": 844,
+      "page": "page-lt",
+      "title": "LVL-03 Sound check, could not hear · S",
+      "w": 390,
+      "x": 360,
+      "y": 2920
+    },
+    "LVL-04-L.dc.html": {
+      "h": 910,
+      "page": "page-lt",
+      "title": "LVL-04 Listening, before play · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 4270
+    },
+    "LVL-04-M.dc.html": {
+      "h": 1180,
+      "page": "page-lt",
+      "title": "LVL-04 Listening, before play · M",
+      "w": 820,
+      "x": 870,
+      "y": 4270
+    },
+    "LVL-04-S.dc.html": {
+      "h": 890,
+      "page": "page-lt",
+      "title": "LVL-04 Listening, before play · S",
+      "w": 390,
+      "x": 360,
+      "y": 4270
+    },
+    "LVL-05-L.dc.html": {
+      "h": 870,
+      "page": "page-lt",
+      "title": "LVL-05 Listening, answer chosen · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 5620
+    },
+    "LVL-05-M.dc.html": {
+      "h": 1180,
+      "page": "page-lt",
+      "title": "LVL-05 Listening, answer chosen · M",
+      "w": 820,
+      "x": 870,
+      "y": 5620
+    },
+    "LVL-05-S.dc.html": {
+      "h": 844,
+      "page": "page-lt",
+      "title": "LVL-05 Listening, answer chosen · S",
+      "w": 390,
+      "x": 360,
+      "y": 5620
+    },
+    "LVL-06-L.dc.html": {
+      "h": 920,
+      "page": "page-lt",
+      "title": "LVL-06 Reading · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 6970
+    },
+    "LVL-06-M.dc.html": {
+      "h": 1180,
+      "page": "page-lt",
+      "title": "LVL-06 Reading · M",
+      "w": 820,
+      "x": 870,
+      "y": 6970
+    },
+    "LVL-06-S.dc.html": {
+      "h": 940,
+      "page": "page-lt",
+      "title": "LVL-06 Reading · S",
+      "w": 390,
+      "x": 360,
+      "y": 6970
+    },
+    "LVL-07-L.dc.html": {
+      "h": 800,
+      "page": "page-lt",
+      "title": "LVL-07 Between parts · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 8320
+    },
+    "LVL-07-M.dc.html": {
+      "h": 1180,
+      "page": "page-lt",
+      "title": "LVL-07 Between parts · M",
+      "w": 820,
+      "x": 870,
+      "y": 8320
+    },
+    "LVL-07-S.dc.html": {
+      "h": 844,
+      "page": "page-lt",
+      "title": "LVL-07 Between parts · S",
+      "w": 390,
+      "x": 360,
+      "y": 8320
+    },
+    "LVL-08-L.dc.html": {
+      "h": 800,
+      "page": "page-lt",
+      "title": "LVL-08 Writing · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 9670
+    },
+    "LVL-08-M.dc.html": {
+      "h": 1180,
+      "page": "page-lt",
+      "title": "LVL-08 Writing · M",
+      "w": 820,
+      "x": 870,
+      "y": 9670
+    },
+    "LVL-08-S.dc.html": {
+      "h": 844,
+      "page": "page-lt",
+      "title": "LVL-08 Writing · S",
+      "w": 390,
+      "x": 360,
+      "y": 9670
+    },
+    "LVL-09-L.dc.html": {
+      "h": 800,
+      "page": "page-lt",
+      "title": "LVL-09 Writing skipped for now · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 11020
+    },
+    "LVL-09-M.dc.html": {
+      "h": 1180,
+      "page": "page-lt",
+      "title": "LVL-09 Writing skipped for now · M",
+      "w": 820,
+      "x": 870,
+      "y": 11020
+    },
+    "LVL-09-S.dc.html": {
+      "h": 844,
+      "page": "page-lt",
+      "title": "LVL-09 Writing skipped for now · S",
+      "w": 390,
+      "x": 360,
+      "y": 11020
+    },
+    "LVL-10-L.dc.html": {
+      "h": 800,
+      "page": "page-lt",
+      "title": "LVL-10 Speaking, microphone · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 12370
+    },
+    "LVL-10-M.dc.html": {
+      "h": 1180,
+      "page": "page-lt",
+      "title": "LVL-10 Speaking, microphone · M",
+      "w": 820,
+      "x": 870,
+      "y": 12370
+    },
+    "LVL-10-S.dc.html": {
+      "h": 844,
+      "page": "page-lt",
+      "title": "LVL-10 Speaking, microphone · S",
+      "w": 390,
+      "x": 360,
+      "y": 12370
+    },
+    "LVL-11-L.dc.html": {
+      "h": 800,
+      "page": "page-lt",
+      "title": "LVL-11 Speaking, microphone blocked · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 13720
+    },
+    "LVL-11-M.dc.html": {
+      "h": 1180,
+      "page": "page-lt",
+      "title": "LVL-11 Speaking, microphone blocked · M",
+      "w": 820,
+      "x": 870,
+      "y": 13720
+    },
+    "LVL-11-S.dc.html": {
+      "h": 844,
+      "page": "page-lt",
+      "title": "LVL-11 Speaking, microphone blocked · S",
+      "w": 390,
+      "x": 360,
+      "y": 13720
+    },
+    "LVL-12-L.dc.html": {
+      "h": 800,
+      "page": "page-lt",
+      "title": "LVL-12 Speaking, ready · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 15070
+    },
+    "LVL-12-M.dc.html": {
+      "h": 1180,
+      "page": "page-lt",
+      "title": "LVL-12 Speaking, ready · M",
+      "w": 820,
+      "x": 870,
+      "y": 15070
+    },
+    "LVL-12-S.dc.html": {
+      "h": 844,
+      "page": "page-lt",
+      "title": "LVL-12 Speaking, ready · S",
+      "w": 390,
+      "x": 360,
+      "y": 15070
+    },
+    "LVL-13-L.dc.html": {
+      "h": 800,
+      "page": "page-lt",
+      "title": "LVL-13 Speaking, recording · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 16420
+    },
+    "LVL-13-M.dc.html": {
+      "h": 1180,
+      "page": "page-lt",
+      "title": "LVL-13 Speaking, recording · M",
+      "w": 820,
+      "x": 870,
+      "y": 16420
+    },
+    "LVL-13-S.dc.html": {
+      "h": 844,
+      "page": "page-lt",
+      "title": "LVL-13 Speaking, recording · S",
+      "w": 390,
+      "x": 360,
+      "y": 16420
+    },
+    "LVL-14-L.dc.html": {
+      "h": 800,
+      "page": "page-lt",
+      "title": "LVL-14 Working out the estimate · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 17770
+    },
+    "LVL-14-M.dc.html": {
+      "h": 1180,
+      "page": "page-lt",
+      "title": "LVL-14 Working out the estimate · M",
+      "w": 820,
+      "x": 870,
+      "y": 17770
+    },
+    "LVL-14-S.dc.html": {
+      "h": 844,
+      "page": "page-lt",
+      "title": "LVL-14 Working out the estimate · S",
+      "w": 390,
+      "x": 360,
+      "y": 17770
+    },
+    "LVL-15-L.dc.html": {
+      "h": 1040,
+      "page": "page-lt",
+      "title": "LVL-15 Result, exam track · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 19120
+    },
+    "LVL-15-M.dc.html": {
+      "h": 1470,
+      "page": "page-lt",
+      "title": "LVL-15 Result, exam track · M",
+      "w": 820,
+      "x": 870,
+      "y": 19120
+    },
+    "LVL-15-S.dc.html": {
+      "h": 1490,
+      "page": "page-lt",
+      "title": "LVL-15 Result, exam track · S",
+      "w": 390,
+      "x": 360,
+      "y": 19120
+    },
+    "LVL-16-L.dc.html": {
+      "h": 950,
+      "page": "page-lt",
+      "title": "LVL-16 Result, two parts not measured · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 20780
+    },
+    "LVL-16-M.dc.html": {
+      "h": 1270,
+      "page": "page-lt",
+      "title": "LVL-16 Result, two parts not measured · M",
+      "w": 820,
+      "x": 870,
+      "y": 20780
+    },
+    "LVL-16-S.dc.html": {
+      "h": 1290,
+      "page": "page-lt",
+      "title": "LVL-16 Result, two parts not measured · S",
+      "w": 390,
+      "x": 360,
+      "y": 20780
+    },
+    "LVL-17-L.dc.html": {
+      "h": 800,
+      "page": "page-lt",
+      "title": "LVL-17 Result, free French track · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 22240
+    },
+    "LVL-17-M.dc.html": {
+      "h": 1180,
+      "page": "page-lt",
+      "title": "LVL-17 Result, free French track · M",
+      "w": 820,
+      "x": 870,
+      "y": 22240
+    },
+    "LVL-17-S.dc.html": {
+      "h": 960,
+      "page": "page-lt",
+      "title": "LVL-17 Result, free French track · S",
+      "w": 390,
+      "x": 360,
+      "y": 22240
+    },
+    "LVL-18-L.dc.html": {
+      "h": 800,
+      "page": "page-lt",
+      "title": "LVL-18 Part skipped · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 23590
+    },
+    "LVL-18-M.dc.html": {
+      "h": 1180,
+      "page": "page-lt",
+      "title": "LVL-18 Part skipped · M",
+      "w": 820,
+      "x": 870,
+      "y": 23590
+    },
+    "LVL-18-S.dc.html": {
+      "h": 844,
+      "page": "page-lt",
+      "title": "LVL-18 Part skipped · S",
+      "w": 390,
+      "x": 360,
+      "y": 23590
+    },
+    "LVL-19-L.dc.html": {
+      "h": 800,
+      "page": "page-lt",
+      "title": "LVL-19 Save and leave · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 24940
+    },
+    "LVL-19-M.dc.html": {
+      "h": 1180,
+      "page": "page-lt",
+      "title": "LVL-19 Save and leave · M",
+      "w": 820,
+      "x": 870,
+      "y": 24940
+    },
+    "LVL-19-S.dc.html": {
+      "h": 844,
+      "page": "page-lt",
+      "title": "LVL-19 Save and leave · S",
+      "w": 390,
+      "x": 360,
+      "y": 24940
+    },
+    "LVL-20-L.dc.html": {
+      "h": 800,
+      "page": "page-lt",
+      "title": "LVL-20 Test saved · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 26290
+    },
+    "LVL-20-M.dc.html": {
+      "h": 1180,
+      "page": "page-lt",
+      "title": "LVL-20 Test saved · M",
+      "w": 820,
+      "x": 870,
+      "y": 26290
+    },
+    "LVL-20-S.dc.html": {
+      "h": 844,
+      "page": "page-lt",
+      "title": "LVL-20 Test saved · S",
+      "w": 390,
+      "x": 360,
+      "y": 26290
+    },
+    "LVL-21-L.dc.html": {
+      "h": 950,
+      "page": "page-lt",
+      "title": "LVL-21 Offline · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 27640
+    },
+    "LVL-21-M.dc.html": {
+      "h": 1180,
+      "page": "page-lt",
+      "title": "LVL-21 Offline · M",
+      "w": 820,
+      "x": 870,
+      "y": 27640
+    },
+    "LVL-21-S.dc.html": {
+      "h": 910,
+      "page": "page-lt",
+      "title": "LVL-21 Offline · S",
+      "w": 390,
+      "x": 360,
+      "y": 27640
+    },
+    "LVL-22-L.dc.html": {
+      "h": 930,
+      "page": "page-lt",
+      "title": "LVL-22 Audio did not load · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 28990
+    },
+    "LVL-22-M.dc.html": {
+      "h": 1180,
+      "page": "page-lt",
+      "title": "LVL-22 Audio did not load · M",
+      "w": 820,
+      "x": 870,
+      "y": 28990
+    },
+    "LVL-22-S.dc.html": {
+      "h": 910,
+      "page": "page-lt",
+      "title": "LVL-22 Audio did not load · S",
+      "w": 390,
+      "x": 360,
+      "y": 28990
+    },
+    "LevelTest.dc.html": {
+      "h": 800,
+      "is_interactive": true,
+      "page": "page-proto",
+      "title": "Level test playground",
+      "w": 1280,
+      "x": 2800,
+      "y": 1500
+    },
+    "ONB-01-L.dc.html": {
+      "h": 1340,
+      "page": "page-onb",
+      "title": "ONB-01 Step 1, exam · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 220
+    },
+    "ONB-01-M.dc.html": {
+      "h": 1360,
+      "page": "page-onb",
+      "title": "ONB-01 Step 1, exam · M",
+      "w": 820,
+      "x": 870,
+      "y": 220
+    },
+    "ONB-01-S.dc.html": {
+      "h": 1340,
+      "page": "page-onb",
+      "title": "ONB-01 Step 1, exam · S",
+      "w": 390,
+      "x": 360,
+      "y": 220
+    },
+    "ONB-02-L.dc.html": {
+      "h": 1450,
+      "page": "page-onb",
+      "title": "ONB-02 Step 1, other exam, name missing · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 1750
+    },
+    "ONB-02-M.dc.html": {
+      "h": 1470,
+      "page": "page-onb",
+      "title": "ONB-02 Step 1, other exam, name missing · M",
+      "w": 820,
+      "x": 870,
+      "y": 1750
+    },
+    "ONB-02-S.dc.html": {
+      "h": 1460,
+      "page": "page-onb",
+      "title": "ONB-02 Step 1, other exam, name missing · S",
+      "w": 390,
+      "x": 360,
+      "y": 1750
+    },
+    "ONB-03-L.dc.html": {
+      "h": 800,
+      "page": "page-onb",
+      "title": "ONB-03 Exam coming soon · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 3390
+    },
+    "ONB-03-M.dc.html": {
+      "h": 1180,
+      "page": "page-onb",
+      "title": "ONB-03 Exam coming soon · M",
+      "w": 820,
+      "x": 870,
+      "y": 3390
+    },
+    "ONB-03-S.dc.html": {
+      "h": 844,
+      "page": "page-onb",
+      "title": "ONB-03 Exam coming soon · S",
+      "w": 390,
+      "x": 360,
+      "y": 3390
+    },
+    "ONB-04-L.dc.html": {
+      "h": 810,
+      "page": "page-onb",
+      "title": "ONB-04 Step 2, goal · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 4740
+    },
+    "ONB-04-M.dc.html": {
+      "h": 1180,
+      "page": "page-onb",
+      "title": "ONB-04 Step 2, goal · M",
+      "w": 820,
+      "x": 870,
+      "y": 4740
+    },
+    "ONB-04-S.dc.html": {
+      "h": 870,
+      "page": "page-onb",
+      "title": "ONB-04 Step 2, goal · S",
+      "w": 390,
+      "x": 360,
+      "y": 4740
+    },
+    "ONB-05-L.dc.html": {
+      "h": 900,
+      "page": "page-onb",
+      "title": "ONB-05 Step 2, what is NCLC · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 6090
+    },
+    "ONB-05-M.dc.html": {
+      "h": 1180,
+      "page": "page-onb",
+      "title": "ONB-05 Step 2, what is NCLC · M",
+      "w": 820,
+      "x": 870,
+      "y": 6090
+    },
+    "ONB-05-S.dc.html": {
+      "h": 1020,
+      "page": "page-onb",
+      "title": "ONB-05 Step 2, what is NCLC · S",
+      "w": 390,
+      "x": 360,
+      "y": 6090
+    },
+    "ONB-06-L.dc.html": {
+      "h": 1130,
+      "page": "page-onb",
+      "title": "ONB-06 Step 2, exact levels · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 7440
+    },
+    "ONB-06-M.dc.html": {
+      "h": 1180,
+      "page": "page-onb",
+      "title": "ONB-06 Step 2, exact levels · M",
+      "w": 820,
+      "x": 870,
+      "y": 7440
+    },
+    "ONB-06-S.dc.html": {
+      "h": 1200,
+      "page": "page-onb",
+      "title": "ONB-06 Step 2, exact levels · S",
+      "w": 390,
+      "x": 360,
+      "y": 7440
+    },
+    "ONB-07-L.dc.html": {
+      "h": 800,
+      "page": "page-onb",
+      "title": "ONB-07 Step 3, exam date · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 8810
+    },
+    "ONB-07-M.dc.html": {
+      "h": 1180,
+      "page": "page-onb",
+      "title": "ONB-07 Step 3, exam date · M",
+      "w": 820,
+      "x": 870,
+      "y": 8810
+    },
+    "ONB-07-S.dc.html": {
+      "h": 844,
+      "page": "page-onb",
+      "title": "ONB-07 Step 3, exam date · S",
+      "w": 390,
+      "x": 360,
+      "y": 8810
+    },
+    "ONB-08-L.dc.html": {
+      "h": 800,
+      "page": "page-onb",
+      "title": "ONB-08 Step 3, date error · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 10160
+    },
+    "ONB-08-M.dc.html": {
+      "h": 1180,
+      "page": "page-onb",
+      "title": "ONB-08 Step 3, date error · M",
+      "w": 820,
+      "x": 870,
+      "y": 10160
+    },
+    "ONB-08-S.dc.html": {
+      "h": 844,
+      "page": "page-onb",
+      "title": "ONB-08 Step 3, date error · S",
+      "w": 390,
+      "x": 360,
+      "y": 10160
+    },
+    "ONB-09-L.dc.html": {
+      "h": 800,
+      "page": "page-onb",
+      "title": "ONB-09 Step 3, no date yet · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 11510
+    },
+    "ONB-09-M.dc.html": {
+      "h": 1180,
+      "page": "page-onb",
+      "title": "ONB-09 Step 3, no date yet · M",
+      "w": 820,
+      "x": 870,
+      "y": 11510
+    },
+    "ONB-09-S.dc.html": {
+      "h": 844,
+      "page": "page-onb",
+      "title": "ONB-09 Step 3, no date yet · S",
+      "w": 390,
+      "x": 360,
+      "y": 11510
+    },
+    "ONB-10-L.dc.html": {
+      "h": 800,
+      "page": "page-onb",
+      "title": "ONB-10 Step 4, study time · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 12860
+    },
+    "ONB-10-M.dc.html": {
+      "h": 1180,
+      "page": "page-onb",
+      "title": "ONB-10 Step 4, study time · M",
+      "w": 820,
+      "x": 870,
+      "y": 12860
+    },
+    "ONB-10-S.dc.html": {
+      "h": 844,
+      "page": "page-onb",
+      "title": "ONB-10 Step 4, study time · S",
+      "w": 390,
+      "x": 360,
+      "y": 12860
+    },
+    "ONB-11-L.dc.html": {
+      "h": 800,
+      "page": "page-onb",
+      "title": "ONB-11 Step 4, exam is close · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 14210
+    },
+    "ONB-11-M.dc.html": {
+      "h": 1180,
+      "page": "page-onb",
+      "title": "ONB-11 Step 4, exam is close · M",
+      "w": 820,
+      "x": 870,
+      "y": 14210
+    },
+    "ONB-11-S.dc.html": {
+      "h": 844,
+      "page": "page-onb",
+      "title": "ONB-11 Step 4, exam is close · S",
+      "w": 390,
+      "x": 360,
+      "y": 14210
+    },
+    "ONB-12-L.dc.html": {
+      "h": 960,
+      "page": "page-onb",
+      "title": "ONB-12 Step 5, summary · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 15560
+    },
+    "ONB-12-M.dc.html": {
+      "h": 1180,
+      "page": "page-onb",
+      "title": "ONB-12 Step 5, summary · M",
+      "w": 820,
+      "x": 870,
+      "y": 15560
+    },
+    "ONB-12-S.dc.html": {
+      "h": 950,
+      "page": "page-onb",
+      "title": "ONB-12 Step 5, summary · S",
+      "w": 390,
+      "x": 360,
+      "y": 15560
+    },
+    "ONB-13-L.dc.html": {
+      "h": 960,
+      "page": "page-onb",
+      "title": "ONB-13 Step 5, summary, no date · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 16910
+    },
+    "ONB-13-M.dc.html": {
+      "h": 1180,
+      "page": "page-onb",
+      "title": "ONB-13 Step 5, summary, no date · M",
+      "w": 820,
+      "x": 870,
+      "y": 16910
+    },
+    "ONB-13-S.dc.html": {
+      "h": 950,
+      "page": "page-onb",
+      "title": "ONB-13 Step 5, summary, no date · S",
+      "w": 390,
+      "x": 360,
+      "y": 16910
+    },
+    "ONB-14-L.dc.html": {
+      "h": 800,
+      "page": "page-onb",
+      "title": "ONB-14 Free track, step 4 · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 18260
+    },
+    "ONB-14-M.dc.html": {
+      "h": 1180,
+      "page": "page-onb",
+      "title": "ONB-14 Free track, step 4 · M",
+      "w": 820,
+      "x": 870,
+      "y": 18260
+    },
+    "ONB-14-S.dc.html": {
+      "h": 844,
+      "page": "page-onb",
+      "title": "ONB-14 Free track, step 4 · S",
+      "w": 390,
+      "x": 360,
+      "y": 18260
+    },
+    "ONB-15-L.dc.html": {
+      "h": 810,
+      "page": "page-onb",
+      "title": "ONB-15 Free track, step 5 · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 19610
+    },
+    "ONB-15-M.dc.html": {
+      "h": 1180,
+      "page": "page-onb",
+      "title": "ONB-15 Free track, step 5 · M",
+      "w": 820,
+      "x": 870,
+      "y": 19610
+    },
+    "ONB-15-S.dc.html": {
+      "h": 844,
+      "page": "page-onb",
+      "title": "ONB-15 Free track, step 5 · S",
+      "w": 390,
+      "x": 360,
+      "y": 19610
+    },
+    "Onboard.dc.html": {
+      "h": 800,
+      "is_interactive": true,
+      "page": "page-proto",
+      "title": "Onboarding playground",
+      "w": 1280,
+      "x": 1400,
+      "y": 1500
+    },
+    "PLN-01-L.dc.html": {
+      "h": 1008,
+      "page": "page-plan",
+      "title": "PLN-01 Default · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 220
+    },
+    "PLN-01-M.dc.html": {
+      "h": 1061,
+      "page": "page-plan",
+      "title": "PLN-01 Default · M",
+      "w": 820,
+      "x": 870,
+      "y": 220
+    },
+    "PLN-01-S.dc.html": {
+      "h": 1897,
+      "page": "page-plan",
+      "title": "PLN-01 Default · S",
+      "w": 390,
+      "x": 360,
+      "y": 220
+    },
+    "PLN-02-L.dc.html": {
+      "h": 1008,
+      "page": "page-plan",
+      "title": "PLN-02 Reminders on · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 2287
+    },
+    "PLN-02-M.dc.html": {
+      "h": 1061,
+      "page": "page-plan",
+      "title": "PLN-02 Reminders on · M",
+      "w": 820,
+      "x": 870,
+      "y": 2287
+    },
+    "PLN-02-S.dc.html": {
+      "h": 1848,
+      "page": "page-plan",
+      "title": "PLN-02 Reminders on · S",
+      "w": 390,
+      "x": 360,
+      "y": 2287
+    },
+    "PLN-03-L.dc.html": {
+      "h": 1008,
+      "page": "page-plan",
+      "title": "PLN-03 Reminders blocked · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 4305
+    },
+    "PLN-03-M.dc.html": {
+      "h": 1061,
+      "page": "page-plan",
+      "title": "PLN-03 Reminders blocked · M",
+      "w": 820,
+      "x": 870,
+      "y": 4305
+    },
+    "PLN-03-S.dc.html": {
+      "h": 1833,
+      "page": "page-plan",
+      "title": "PLN-03 Reminders blocked · S",
+      "w": 390,
+      "x": 360,
+      "y": 4305
+    },
+    "PLN-04-L.dc.html": {
+      "h": 1178,
+      "page": "page-plan",
+      "title": "PLN-04 Tight timeline · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 6308
+    },
+    "PLN-04-M.dc.html": {
+      "h": 1334,
+      "page": "page-plan",
+      "title": "PLN-04 Tight timeline · M",
+      "w": 820,
+      "x": 870,
+      "y": 6308
+    },
+    "PLN-04-S.dc.html": {
+      "h": 2118,
+      "page": "page-plan",
+      "title": "PLN-04 Tight timeline · S",
+      "w": 390,
+      "x": 360,
+      "y": 6308
+    },
+    "PLN-05-L.dc.html": {
+      "h": 1180,
+      "page": "page-plan",
+      "title": "PLN-05 No exam date · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 8596
+    },
+    "PLN-05-M.dc.html": {
+      "h": 1257,
+      "page": "page-plan",
+      "title": "PLN-05 No exam date · M",
+      "w": 820,
+      "x": 870,
+      "y": 8596
+    },
+    "PLN-05-S.dc.html": {
+      "h": 2093,
+      "page": "page-plan",
+      "title": "PLN-05 No exam date · S",
+      "w": 390,
+      "x": 360,
+      "y": 8596
+    },
+    "PLN-06-L.dc.html": {
+      "h": 1151,
+      "page": "page-plan",
+      "title": "PLN-06 Free track · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 10859
+    },
+    "PLN-06-M.dc.html": {
+      "h": 1230,
+      "page": "page-plan",
+      "title": "PLN-06 Free track · M",
+      "w": 820,
+      "x": 870,
+      "y": 10859
+    },
+    "PLN-06-S.dc.html": {
+      "h": 2094,
+      "page": "page-plan",
+      "title": "PLN-06 Free track · S",
+      "w": 390,
+      "x": 360,
+      "y": 10859
+    },
+    "PLN-07-L.dc.html": {
+      "h": 800,
+      "page": "page-plan",
+      "title": "PLN-07 No level test yet · L",
+      "w": 1280,
+      "x": 1810,
+      "y": 13123
+    },
+    "PLN-07-M.dc.html": {
+      "h": 1000,
+      "page": "page-plan",
+      "title": "PLN-07 No level test yet · M",
+      "w": 820,
+      "x": 870,
+      "y": 13123
+    },
+    "PLN-07-S.dc.html": {
+      "h": 922,
+      "page": "page-plan",
+      "title": "PLN-07 No level test yet · S",
+      "w": 390,
+      "x": 360,
+      "y": 13123
+    },
+    "PROTO-L.dc.html": {
+      "h": 800,
+      "is_interactive": true,
+      "page": "page-proto",
+      "title": "Desktop prototype · sign up to first plan",
+      "w": 1280,
+      "x": 1370,
+      "y": 200
+    },
+    "PROTO-M.dc.html": {
+      "h": 1180,
+      "is_interactive": true,
+      "page": "page-proto",
+      "title": "Tablet prototype · sign up to first plan",
+      "w": 820,
+      "x": 470,
+      "y": 200
+    },
+    "PROTO-S.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "page-proto",
+      "title": "Phone prototype · sign up to first plan",
+      "w": 390,
+      "x": 0,
+      "y": 200
+    },
+    "Plan.dc.html": {
+      "h": 900,
+      "w": 1280,
+      "x": 4160,
+      "y": 0
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-11-20T08:50:00Z",
+    "v": 1
+  },
+  "designSystems": [],
+  "launch": {},
+  "noteOrder": [
+    "auth-col-L",
+    "auth-col-M",
+    "auth-col-S",
+    "auth-na-L",
+    "auth-na-M",
+    "auth-row-01",
+    "auth-row-02",
+    "auth-row-03",
+    "auth-row-05",
+    "auth-row-06",
+    "auth-row-07",
+    "auth-row-08",
+    "auth-row-10",
+    "auth-row-11",
+    "auth-row-12",
+    "auth-row-14",
+    "auth-row-16",
+    "auth-row-17",
+    "auth-row-18",
+    "auth-row-19",
+    "auth-row-20",
+    "auth-title",
+    "proto-title",
+    "ONB-title",
+    "ONB-col-S",
+    "ONB-col-M",
+    "ONB-col-L",
+    "ONB-row-01",
+    "ONB-row-02",
+    "ONB-row-03",
+    "ONB-row-04",
+    "ONB-row-05",
+    "ONB-row-06",
+    "ONB-row-07",
+    "ONB-row-08",
+    "ONB-row-09",
+    "ONB-row-10",
+    "ONB-row-11",
+    "ONB-row-12",
+    "ONB-row-13",
+    "ONB-row-14",
+    "ONB-row-15",
+    "LVL-title",
+    "LVL-col-S",
+    "LVL-col-M",
+    "LVL-col-L",
+    "LVL-row-01",
+    "LVL-row-02",
+    "LVL-row-03",
+    "LVL-row-04",
+    "LVL-row-05",
+    "LVL-row-06",
+    "LVL-row-07",
+    "LVL-row-08",
+    "LVL-row-09",
+    "LVL-row-10",
+    "LVL-row-11",
+    "LVL-row-12",
+    "LVL-row-13",
+    "LVL-row-14",
+    "LVL-row-15",
+    "LVL-row-16",
+    "LVL-row-17",
+    "LVL-row-18",
+    "LVL-row-19",
+    "LVL-row-20",
+    "LVL-row-21",
+    "LVL-row-22",
+    "PLN-title",
+    "PLN-col-S",
+    "PLN-col-M",
+    "PLN-col-L",
+    "PLN-row-01",
+    "PLN-row-02",
+    "PLN-row-03",
+    "PLN-row-04",
+    "PLN-row-05",
+    "PLN-row-06",
+    "PLN-row-07",
+    "proto-sub"
+  ],
+  "notes": {
+    "LVL-col-L": {
+      "kind": "title1",
+      "maxW": 900,
+      "page": "page-lt",
+      "size": 50,
+      "text": "Desktop · 1280 wide, 50/50 split",
+      "w": 420,
+      "x": 2000,
+      "y": -12
+    },
+    "LVL-col-M": {
+      "kind": "title1",
+      "maxW": 900,
+      "page": "page-lt",
+      "size": 50,
+      "text": "Tablet · 820 wide, 40/60 split",
+      "w": 420,
+      "x": 944,
+      "y": -12
+    },
+    "LVL-col-S": {
+      "kind": "title1",
+      "maxW": 900,
+      "page": "page-lt",
+      "size": 50,
+      "text": "Phone · 390 wide",
+      "w": 420,
+      "x": 355,
+      "y": -13
+    },
+    "LVL-row-01": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-lt",
+      "text": "LVL-01 Before you start",
+      "w": 300,
+      "x": 0,
+      "y": 220
+    },
+    "LVL-row-02": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-lt",
+      "text": "LVL-02 Sound check, heard it",
+      "w": 300,
+      "x": 0,
+      "y": 1570
+    },
+    "LVL-row-03": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-lt",
+      "text": "LVL-03 Sound check, could not hear",
+      "w": 300,
+      "x": 0,
+      "y": 2920
+    },
+    "LVL-row-04": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-lt",
+      "text": "LVL-04 Listening, before play",
+      "w": 300,
+      "x": 0,
+      "y": 4270
+    },
+    "LVL-row-05": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-lt",
+      "text": "LVL-05 Listening, answer chosen",
+      "w": 300,
+      "x": 0,
+      "y": 5620
+    },
+    "LVL-row-06": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-lt",
+      "text": "LVL-06 Reading",
+      "w": 300,
+      "x": 0,
+      "y": 6970
+    },
+    "LVL-row-07": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-lt",
+      "text": "LVL-07 Between parts",
+      "w": 300,
+      "x": 0,
+      "y": 8320
+    },
+    "LVL-row-08": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-lt",
+      "text": "LVL-08 Writing",
+      "w": 300,
+      "x": 0,
+      "y": 9670
+    },
+    "LVL-row-09": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-lt",
+      "text": "LVL-09 Writing skipped for now",
+      "w": 300,
+      "x": 0,
+      "y": 11020
+    },
+    "LVL-row-10": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-lt",
+      "text": "LVL-10 Speaking, microphone",
+      "w": 300,
+      "x": 0,
+      "y": 12370
+    },
+    "LVL-row-11": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-lt",
+      "text": "LVL-11 Speaking, microphone blocked",
+      "w": 300,
+      "x": 0,
+      "y": 13720
+    },
+    "LVL-row-12": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-lt",
+      "text": "LVL-12 Speaking, ready",
+      "w": 300,
+      "x": 0,
+      "y": 15070
+    },
+    "LVL-row-13": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-lt",
+      "text": "LVL-13 Speaking, recording",
+      "w": 300,
+      "x": 0,
+      "y": 16420
+    },
+    "LVL-row-14": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-lt",
+      "text": "LVL-14 Working out the estimate",
+      "w": 300,
+      "x": 0,
+      "y": 17770
+    },
+    "LVL-row-15": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-lt",
+      "text": "LVL-15 Result, exam track",
+      "w": 300,
+      "x": 0,
+      "y": 19120
+    },
+    "LVL-row-16": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-lt",
+      "text": "LVL-16 Result, two parts not measured",
+      "w": 300,
+      "x": 0,
+      "y": 20780
+    },
+    "LVL-row-17": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-lt",
+      "text": "LVL-17 Result, free French track",
+      "w": 300,
+      "x": 0,
+      "y": 22240
+    },
+    "LVL-row-18": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-lt",
+      "text": "LVL-18 Part skipped",
+      "w": 300,
+      "x": 0,
+      "y": 23590
+    },
+    "LVL-row-19": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-lt",
+      "text": "LVL-19 Save and leave",
+      "w": 300,
+      "x": 0,
+      "y": 24940
+    },
+    "LVL-row-20": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-lt",
+      "text": "LVL-20 Test saved",
+      "w": 300,
+      "x": 0,
+      "y": 26290
+    },
+    "LVL-row-21": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-lt",
+      "text": "LVL-21 Offline",
+      "w": 300,
+      "x": 0,
+      "y": 27640
+    },
+    "LVL-row-22": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-lt",
+      "text": "LVL-22 Audio did not load",
+      "w": 300,
+      "x": 0,
+      "y": 28990
+    },
+    "LVL-title": {
+      "kind": "title1",
+      "maxW": 2700,
+      "page": "page-lt",
+      "text": "Level test: before you start, four parts, estimate, result, save and leave, offline, audio errors",
+      "w": 900,
+      "x": 43,
+      "y": -255
+    },
+    "ONB-col-L": {
+      "kind": "title1",
+      "maxW": 900,
+      "page": "page-onb",
+      "text": "Desktop · 1280 wide, 50/50 split",
+      "w": 420,
+      "x": 1969,
+      "y": -38
+    },
+    "ONB-col-M": {
+      "kind": "title1",
+      "maxW": 900,
+      "page": "page-onb",
+      "text": "Tablet · 820 wide, 40/60 split",
+      "w": 420,
+      "x": 870,
+      "y": -46
+    },
+    "ONB-col-S": {
+      "kind": "title1",
+      "maxW": 900,
+      "page": "page-onb",
+      "text": "Phone · 390 wide",
+      "w": 420,
+      "x": 185,
+      "y": -49
+    },
+    "ONB-row-01": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-onb",
+      "text": "ONB-01 Step 1, exam",
+      "w": 300,
+      "x": 0,
+      "y": 220
+    },
+    "ONB-row-02": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-onb",
+      "text": "ONB-02 Step 1, other exam, name missing",
+      "w": 300,
+      "x": 0,
+      "y": 1750
+    },
+    "ONB-row-03": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-onb",
+      "text": "ONB-03 Exam coming soon",
+      "w": 300,
+      "x": 0,
+      "y": 3390
+    },
+    "ONB-row-04": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-onb",
+      "text": "ONB-04 Step 2, goal",
+      "w": 300,
+      "x": 0,
+      "y": 4740
+    },
+    "ONB-row-05": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-onb",
+      "text": "ONB-05 Step 2, what is NCLC",
+      "w": 300,
+      "x": 0,
+      "y": 6090
+    },
+    "ONB-row-06": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-onb",
+      "text": "ONB-06 Step 2, exact levels",
+      "w": 300,
+      "x": 0,
+      "y": 7440
+    },
+    "ONB-row-07": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-onb",
+      "text": "ONB-07 Step 3, exam date",
+      "w": 300,
+      "x": 0,
+      "y": 8810
+    },
+    "ONB-row-08": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-onb",
+      "text": "ONB-08 Step 3, date error",
+      "w": 300,
+      "x": 0,
+      "y": 10160
+    },
+    "ONB-row-09": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-onb",
+      "text": "ONB-09 Step 3, no date yet",
+      "w": 300,
+      "x": 0,
+      "y": 11510
+    },
+    "ONB-row-10": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-onb",
+      "text": "ONB-10 Step 4, study time",
+      "w": 300,
+      "x": 0,
+      "y": 12860
+    },
+    "ONB-row-11": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-onb",
+      "text": "ONB-11 Step 4, exam is close",
+      "w": 300,
+      "x": 0,
+      "y": 14210
+    },
+    "ONB-row-12": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-onb",
+      "text": "ONB-12 Step 5, summary",
+      "w": 300,
+      "x": 0,
+      "y": 15560
+    },
+    "ONB-row-13": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-onb",
+      "text": "ONB-13 Step 5, summary, no date",
+      "w": 300,
+      "x": 0,
+      "y": 16910
+    },
+    "ONB-row-14": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-onb",
+      "text": "ONB-14 Free track, step 4",
+      "w": 300,
+      "x": 0,
+      "y": 18260
+    },
+    "ONB-row-15": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-onb",
+      "text": "ONB-15 Free track, step 5",
+      "w": 300,
+      "x": 0,
+      "y": 19610
+    },
+    "ONB-title": {
+      "kind": "title1",
+      "maxW": 2700,
+      "page": "page-onb",
+      "text": "Onboarding: set your goal. Exam, level, date, study time, summary",
+      "w": 900,
+      "x": 26,
+      "y": -403
+    },
+    "PLN-col-L": {
+      "kind": "title1",
+      "maxW": 900,
+      "page": "page-plan",
+      "text": "Desktop · 1280 wide, sidebar",
+      "w": 420,
+      "x": 1969,
+      "y": -38
+    },
+    "PLN-col-M": {
+      "kind": "title1",
+      "maxW": 900,
+      "page": "page-plan",
+      "text": "Tablet · 820 wide, side rail",
+      "w": 420,
+      "x": 870,
+      "y": -46
+    },
+    "PLN-col-S": {
+      "kind": "title1",
+      "maxW": 900,
+      "page": "page-plan",
+      "text": "Phone · 390 wide",
+      "w": 420,
+      "x": 185,
+      "y": -49
+    },
+    "PLN-row-01": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-plan",
+      "text": "PLN-01 Default",
+      "w": 300,
+      "x": 0,
+      "y": 220
+    },
+    "PLN-row-02": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-plan",
+      "text": "PLN-02 Reminders on",
+      "w": 300,
+      "x": 0,
+      "y": 2287
+    },
+    "PLN-row-03": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-plan",
+      "text": "PLN-03 Reminders blocked",
+      "w": 300,
+      "x": 0,
+      "y": 4305
+    },
+    "PLN-row-04": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-plan",
+      "text": "PLN-04 Tight timeline",
+      "w": 300,
+      "x": 0,
+      "y": 6308
+    },
+    "PLN-row-05": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-plan",
+      "text": "PLN-05 No exam date",
+      "w": 300,
+      "x": 0,
+      "y": 8596
+    },
+    "PLN-row-06": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-plan",
+      "text": "PLN-06 Free track",
+      "w": 300,
+      "x": 0,
+      "y": 10859
+    },
+    "PLN-row-07": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-plan",
+      "text": "PLN-07 No level test yet",
+      "w": 300,
+      "x": 0,
+      "y": 13123
+    },
+    "PLN-title": {
+      "kind": "title1",
+      "maxW": 2700,
+      "page": "page-plan",
+      "text": "First plan: this week, reminders, warnings, no date, free track, no level test yet",
+      "w": 900,
+      "x": 26,
+      "y": -403
+    },
+    "auth-col-L": {
+      "kind": "title1",
+      "maxW": 900,
+      "page": "page-auth",
+      "text": "Desktop · 1280 wide, 50/50 split",
+      "w": 420,
+      "x": 1876,
+      "y": 27
+    },
+    "auth-col-M": {
+      "kind": "title1",
+      "maxW": 900,
+      "page": "page-auth",
+      "text": "Tablet · 820 wide, 40/60 split",
+      "w": 420,
+      "x": 870,
+      "y": 3
+    },
+    "auth-col-S": {
+      "kind": "title1",
+      "maxW": 900,
+      "page": "page-auth",
+      "size": 40,
+      "text": "Phone · 390 wide",
+      "w": 420,
+      "x": 395,
+      "y": 27
+    },
+    "auth-na-L": {
+      "kind": "title1",
+      "maxW": 700,
+      "page": "page-auth",
+      "text": "Not needed here. Sign in carries the photo panel.",
+      "w": 420,
+      "x": 1876,
+      "y": 482
+    },
+    "auth-na-M": {
+      "kind": "title1",
+      "maxW": 700,
+      "page": "page-auth",
+      "text": "Not needed here. Sign in carries the photo panel.",
+      "w": 420,
+      "x": 870,
+      "y": 482
+    },
+    "auth-row-01": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-auth",
+      "text": "AUTH-01 Welcome",
+      "w": 300,
+      "x": 0,
+      "y": 220
+    },
+    "auth-row-02": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-auth",
+      "text": "AUTH-02 Sign in",
+      "w": 300,
+      "x": 0,
+      "y": 1234
+    },
+    "auth-row-03": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-auth",
+      "text": "AUTH-03 Sign in, wrong password",
+      "w": 300,
+      "x": 0,
+      "y": 2584
+    },
+    "auth-row-05": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-auth",
+      "text": "AUTH-05 Sign in, loading",
+      "w": 300,
+      "x": 0,
+      "y": 3934
+    },
+    "auth-row-06": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-auth",
+      "text": "AUTH-06 Sign in, password updated",
+      "w": 300,
+      "x": 0,
+      "y": 5284
+    },
+    "auth-row-07": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-auth",
+      "text": "AUTH-07 Sign up, step 1",
+      "w": 300,
+      "x": 0,
+      "y": 6634
+    },
+    "auth-row-08": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-auth",
+      "text": "AUTH-08 Sign up, errors shown",
+      "w": 300,
+      "x": 0,
+      "y": 8054
+    },
+    "auth-row-10": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-auth",
+      "text": "AUTH-10 Verify code",
+      "w": 300,
+      "x": 0,
+      "y": 9684
+    },
+    "auth-row-11": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-auth",
+      "text": "AUTH-11 Verify code, wrong",
+      "w": 300,
+      "x": 0,
+      "y": 11034
+    },
+    "auth-row-12": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-auth",
+      "text": "AUTH-12 Verify code, expired",
+      "w": 300,
+      "x": 0,
+      "y": 12384
+    },
+    "auth-row-14": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-auth",
+      "text": "AUTH-14 Forgot password",
+      "w": 300,
+      "x": 0,
+      "y": 13734
+    },
+    "auth-row-16": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-auth",
+      "text": "AUTH-16 Reset code sent",
+      "w": 300,
+      "x": 0,
+      "y": 15084
+    },
+    "auth-row-17": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-auth",
+      "text": "AUTH-17 New password",
+      "w": 300,
+      "x": 0,
+      "y": 16434
+    },
+    "auth-row-18": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-auth",
+      "text": "AUTH-18 New password, mismatch",
+      "w": 300,
+      "x": 0,
+      "y": 17784
+    },
+    "auth-row-19": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-auth",
+      "text": "AUTH-19 Under 16",
+      "w": 300,
+      "x": 0,
+      "y": 19134
+    },
+    "auth-row-20": {
+      "kind": "title1",
+      "maxW": 300,
+      "page": "page-auth",
+      "text": "AUTH-20 Account created",
+      "w": 300,
+      "x": 0,
+      "y": 20484
+    },
+    "auth-title": {
+      "kind": "title1",
+      "maxW": 2700,
+      "page": "page-auth",
+      "text": "Auth: welcome, sign in, sign up, verify, reset. Phone 390, tablet 820, desktop 1280",
+      "w": 900,
+      "x": -30,
+      "y": -116
+    },
+    "proto-sub": {
+      "kind": "title1",
+      "maxW": 1280,
+      "page": "page-proto",
+      "text": "Single flows, for testing",
+      "w": 600,
+      "x": 0,
+      "y": 1330
+    },
+    "proto-title": {
+      "kind": "title1",
+      "maxW": 1280,
+      "page": "page-proto",
+      "text": "Prototypes: one end-to-end per size. Sign up, goal, level test, first plan",
+      "w": 900,
+      "x": 0,
+      "y": 60
+    }
+  },
+  "order": [
+    "Cover.dc.html",
+    "AUTH-01-S.dc.html",
+    "AUTH-02-L.dc.html",
+    "AUTH-02-M.dc.html",
+    "AUTH-02-S.dc.html",
+    "AUTH-03-L.dc.html",
+    "AUTH-03-M.dc.html",
+    "AUTH-03-S.dc.html",
+    "AUTH-05-L.dc.html",
+    "AUTH-05-M.dc.html",
+    "AUTH-05-S.dc.html",
+    "AUTH-06-L.dc.html",
+    "AUTH-06-M.dc.html",
+    "AUTH-06-S.dc.html",
+    "AUTH-07-L.dc.html",
+    "AUTH-07-M.dc.html",
+    "AUTH-07-S.dc.html",
+    "AUTH-08-L.dc.html",
+    "AUTH-08-M.dc.html",
+    "AUTH-08-S.dc.html",
+    "AUTH-10-L.dc.html",
+    "AUTH-10-M.dc.html",
+    "AUTH-10-S.dc.html",
+    "AUTH-11-L.dc.html",
+    "AUTH-11-M.dc.html",
+    "AUTH-11-S.dc.html",
+    "AUTH-12-L.dc.html",
+    "AUTH-12-M.dc.html",
+    "AUTH-12-S.dc.html",
+    "AUTH-14-L.dc.html",
+    "AUTH-14-M.dc.html",
+    "AUTH-14-S.dc.html",
+    "AUTH-16-L.dc.html",
+    "AUTH-16-M.dc.html",
+    "AUTH-16-S.dc.html",
+    "AUTH-17-L.dc.html",
+    "AUTH-17-M.dc.html",
+    "AUTH-17-S.dc.html",
+    "AUTH-18-L.dc.html",
+    "AUTH-18-M.dc.html",
+    "AUTH-18-S.dc.html",
+    "AUTH-19-L.dc.html",
+    "AUTH-19-M.dc.html",
+    "AUTH-19-S.dc.html",
+    "AUTH-20-L.dc.html",
+    "AUTH-20-M.dc.html",
+    "AUTH-20-S.dc.html",
+    "Auth.dc.html",
+    "Onboard.dc.html",
+    "LevelTest.dc.html",
+    "Artboard-oa70.dc.html",
+    "ONB-01-L.dc.html",
+    "ONB-01-M.dc.html",
+    "ONB-01-S.dc.html",
+    "ONB-02-L.dc.html",
+    "ONB-02-M.dc.html",
+    "ONB-02-S.dc.html",
+    "ONB-03-L.dc.html",
+    "ONB-03-M.dc.html",
+    "ONB-03-S.dc.html",
+    "ONB-04-L.dc.html",
+    "ONB-04-M.dc.html",
+    "ONB-04-S.dc.html",
+    "ONB-05-L.dc.html",
+    "ONB-05-M.dc.html",
+    "ONB-05-S.dc.html",
+    "ONB-06-L.dc.html",
+    "ONB-06-M.dc.html",
+    "ONB-06-S.dc.html",
+    "ONB-07-L.dc.html",
+    "ONB-07-M.dc.html",
+    "ONB-07-S.dc.html",
+    "ONB-08-L.dc.html",
+    "ONB-08-M.dc.html",
+    "ONB-08-S.dc.html",
+    "ONB-09-L.dc.html",
+    "ONB-09-M.dc.html",
+    "ONB-09-S.dc.html",
+    "ONB-10-L.dc.html",
+    "ONB-10-M.dc.html",
+    "ONB-10-S.dc.html",
+    "ONB-11-L.dc.html",
+    "ONB-11-M.dc.html",
+    "ONB-11-S.dc.html",
+    "ONB-12-L.dc.html",
+    "ONB-12-M.dc.html",
+    "ONB-12-S.dc.html",
+    "ONB-13-L.dc.html",
+    "ONB-13-M.dc.html",
+    "ONB-13-S.dc.html",
+    "ONB-14-L.dc.html",
+    "ONB-14-M.dc.html",
+    "ONB-14-S.dc.html",
+    "ONB-15-L.dc.html",
+    "ONB-15-M.dc.html",
+    "ONB-15-S.dc.html",
+    "LVL-01-L.dc.html",
+    "LVL-01-M.dc.html",
+    "LVL-01-S.dc.html",
+    "LVL-02-L.dc.html",
+    "LVL-02-M.dc.html",
+    "LVL-02-S.dc.html",
+    "LVL-03-L.dc.html",
+    "LVL-03-M.dc.html",
+    "LVL-03-S.dc.html",
+    "LVL-04-L.dc.html",
+    "LVL-04-M.dc.html",
+    "LVL-04-S.dc.html",
+    "LVL-05-L.dc.html",
+    "LVL-05-M.dc.html",
+    "LVL-05-S.dc.html",
+    "LVL-06-L.dc.html",
+    "LVL-06-M.dc.html",
+    "LVL-06-S.dc.html",
+    "LVL-07-L.dc.html",
+    "LVL-07-M.dc.html",
+    "LVL-07-S.dc.html",
+    "LVL-08-L.dc.html",
+    "LVL-08-M.dc.html",
+    "LVL-08-S.dc.html",
+    "LVL-09-L.dc.html",
+    "LVL-09-M.dc.html",
+    "LVL-09-S.dc.html",
+    "LVL-10-L.dc.html",
+    "LVL-10-M.dc.html",
+    "LVL-10-S.dc.html",
+    "LVL-11-L.dc.html",
+    "LVL-11-M.dc.html",
+    "LVL-11-S.dc.html",
+    "LVL-12-L.dc.html",
+    "LVL-12-M.dc.html",
+    "LVL-12-S.dc.html",
+    "LVL-13-L.dc.html",
+    "LVL-13-M.dc.html",
+    "LVL-13-S.dc.html",
+    "LVL-14-L.dc.html",
+    "LVL-14-M.dc.html",
+    "LVL-14-S.dc.html",
+    "LVL-15-L.dc.html",
+    "LVL-15-M.dc.html",
+    "LVL-15-S.dc.html",
+    "LVL-16-L.dc.html",
+    "LVL-16-M.dc.html",
+    "LVL-16-S.dc.html",
+    "LVL-17-L.dc.html",
+    "LVL-17-M.dc.html",
+    "LVL-17-S.dc.html",
+    "LVL-18-L.dc.html",
+    "LVL-18-M.dc.html",
+    "LVL-18-S.dc.html",
+    "LVL-19-L.dc.html",
+    "LVL-19-M.dc.html",
+    "LVL-19-S.dc.html",
+    "LVL-20-L.dc.html",
+    "LVL-20-M.dc.html",
+    "LVL-20-S.dc.html",
+    "LVL-21-L.dc.html",
+    "LVL-21-M.dc.html",
+    "LVL-21-S.dc.html",
+    "LVL-22-L.dc.html",
+    "LVL-22-M.dc.html",
+    "LVL-22-S.dc.html",
+    "PLN-01-S.dc.html",
+    "PLN-01-M.dc.html",
+    "PLN-01-L.dc.html",
+    "PLN-02-S.dc.html",
+    "PLN-02-M.dc.html",
+    "PLN-02-L.dc.html",
+    "PLN-03-S.dc.html",
+    "PLN-03-M.dc.html",
+    "PLN-03-L.dc.html",
+    "PLN-04-S.dc.html",
+    "PLN-04-M.dc.html",
+    "PLN-04-L.dc.html",
+    "PLN-05-S.dc.html",
+    "PLN-05-M.dc.html",
+    "PLN-05-L.dc.html",
+    "PLN-06-S.dc.html",
+    "PLN-06-M.dc.html",
+    "PLN-06-L.dc.html",
+    "PLN-07-S.dc.html",
+    "PLN-07-M.dc.html",
+    "PLN-07-L.dc.html",
+    "PROTO-S.dc.html",
+    "PROTO-M.dc.html",
+    "PROTO-L.dc.html",
+    "Plan.dc.html"
+  ],
+  "pages": [
+    {
+      "id": "page-cover",
+      "name": "00 Cover"
+    },
+    {
+      "id": "page-auth",
+      "name": "01 Auth"
+    },
+    {
+      "id": "page-onb",
+      "name": "02 Onboarding"
+    },
+    {
+      "id": "page-lt",
+      "name": "03 Level test"
+    },
+    {
+      "id": "page-plan",
+      "name": "04 First plan"
+    },
+    {
+      "id": "page-proto",
+      "name": "05 Prototypes"
+    },
+    {
+      "id": "page-cllos3",
+      "name": "Page 2"
+    }
+  ],
+  "title": "GaugePrep App UI"
+}

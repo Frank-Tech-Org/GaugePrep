@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Onboarding, goal setting</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="auth.css">
+<link rel="stylesheet" href="onboard.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400..800&amp;family=Fraunces:opsz,wght@9..144,400..700&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<sc-if value="{{inTest}}" hint-placeholder-val="{{false}}"><dc-import name="LevelTest" layout="{{layout}}" lang="{{lang}}" theme="{{theme}}" screen="intro" w="{{w}}" h="{{h}}" transcript="true" hint-size="{{w}}px,{{h}}px"></dc-import></sc-if>
+<sc-if value="{{notInTest}}" hint-placeholder-val="{{true}}">
+<div class="gp ob" data-theme="{{theme}}" data-layout="{{layout}}" style="width: {{w}}px; height: {{h}}px">
+
+<aside class="ob-side">
+<img class="ob-sl" src="/_blob/2ba30fd54996baa317ccfa0d7811ddad" alt="GaugePrep">
+<div>
+<h2 class="ob-sh">{{t.planTitle}}</h2>
+<p class="ob-ss">{{t.planSub}}</p>
+<ul class="ob-pl"><li class="{{pr1Cls}}"><span class="ob-pk">{{t.row1}}</span><span class="{{pr1ValCls}}">{{pr1Val}}</span></li><sc-if value="{{showTcf}}" hint-placeholder-val="{{true}}"><li class="{{pr2Cls}}"><span class="ob-pk">{{t.row2}}</span><span class="{{pr2ValCls}}">{{pr2Val}}</span></li></sc-if><sc-if value="{{showTcf}}" hint-placeholder-val="{{true}}"><li class="{{pr3Cls}}"><span class="ob-pk">{{t.row3}}</span><span class="{{pr3ValCls}}">{{pr3Val}}</span></li></sc-if><li class="{{pr4Cls}}"><span class="ob-pk">{{t.row4}}</span><span class="{{pr4ValCls}}">{{pr4Val}}</span></li></ul>
+</div>
+<div class="ob-sf"><svg class="pf" viewBox="64 14 352 218" aria-hidden="true"><path class="{{pf1}}" d="M202.3 222.6 L74.1 177.2 A176 176 0 0 1 95.0 136.3 L207.0 213.3 A40 40 0 0 0 202.3 222.6 Z"/><path class="{{pf2}}" d="M208.3 211.6 L100.4 128.9 A176 176 0 0 1 132.9 96.4 L215.6 204.3 A40 40 0 0 0 208.3 211.6 Z"/><path class="{{pf3}}" d="M217.3 203.0 L140.3 91.0 A176 176 0 0 1 181.2 70.1 L226.6 198.3 A40 40 0 0 0 217.3 203.0 Z"/><path class="{{pf4}}" d="M228.6 197.6 L179.8 32.7 A212 212 0 0 1 234.5 24.1 L239.0 196.0 A40 40 0 0 0 228.6 197.6 Z"/><path class="{{pf5}}" d="M241.0 196.0 L244.6 60.1 A176 176 0 0 1 290.0 67.2 L251.4 197.6 A40 40 0 0 0 241.0 196.0 Z"/><path class="{{pf6}}" d="M253.4 198.3 L298.8 70.1 A176 176 0 0 1 339.7 91.0 L262.7 203.0 A40 40 0 0 0 253.4 198.3 Z"/><path class="{{pf7}}" d="M264.4 204.3 L347.1 96.4 A176 176 0 0 1 379.6 128.9 L271.7 211.6 A40 40 0 0 0 264.4 204.3 Z"/><path class="{{pf8}}" d="M273.0 213.3 L385.0 136.3 A176 176 0 0 1 405.9 177.2 L277.7 222.6 A40 40 0 0 0 273.0 213.3 Z"/></svg><span>{{stepLabel}}</span></div>
+</aside>
+
+<sc-if value="{{langOpen}}" hint-placeholder-val="{{false}}"><button type="button" class="scrim" tabindex="-1" aria-hidden="true" onClick="{{closeLang}}"></button></sc-if>
+
+<div class="ob-main">
+<header class="ob-lg"><img class="ob-logo" src="{{logo}}" alt="GaugePrep"></header>
+<main class="ob-shell">
+<div class="ob-top">
+<sc-if value="{{showBack}}" hint-placeholder-val="{{false}}"><button type="button" class="ob-ib" aria-label="{{t.back}}" onClick="{{goBack}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg></button></sc-if>
+<sc-if value="{{noBack}}" hint-placeholder-val="{{true}}"><span class="ob-sp" aria-hidden="true"></span></sc-if>
+<sc-if value="{{showProg}}" hint-placeholder-val="{{true}}"><div class="ob-prog"><svg class="pf" viewBox="64 14 352 218" aria-hidden="true"><path class="{{pf1}}" d="M202.3 222.6 L74.1 177.2 A176 176 0 0 1 95.0 136.3 L207.0 213.3 A40 40 0 0 0 202.3 222.6 Z"/><path class="{{pf2}}" d="M208.3 211.6 L100.4 128.9 A176 176 0 0 1 132.9 96.4 L215.6 204.3 A40 40 0 0 0 208.3 211.6 Z"/><path class="{{pf3}}" d="M217.3 203.0 L140.3 91.0 A176 176 0 0 1 181.2 70.1 L226.6 198.3 A40 40 0 0 0 217.3 203.0 Z"/><path class="{{pf4}}" d="M228.6 197.6 L179.8 32.7 A212 212 0 0 1 234.5 24.1 L239.0 196.0 A40 40 0 0 0 228.6 197.6 Z"/><path class="{{pf5}}" d="M241.0 196.0 L244.6 60.1 A176 176 0 0 1 290.0 67.2 L251.4 197.6 A40 40 0 0 0 241.0 196.0 Z"/><path class="{{pf6}}" d="M253.4 198.3 L298.8 70.1 A176 176 0 0 1 339.7 91.0 L262.7 203.0 A40 40 0 0 0 253.4 198.3 Z"/><path class="{{pf7}}" d="M264.4 204.3 L347.1 96.4 A176 176 0 0 1 379.6 128.9 L271.7 211.6 A40 40 0 0 0 264.4 204.3 Z"/><path class="{{pf8}}" d="M273.0 213.3 L385.0 136.3 A176 176 0 0 1 405.9 177.2 L277.7 222.6 A40 40 0 0 0 273.0 213.3 Z"/></svg><span>{{stepLabel}}</span></div></sc-if><sc-if value="{{noProg}}" hint-placeholder-val="{{false}}"><div class="ob-prog"></div></sc-if>
+<div class="langwrap" onKeyDown="{{langKey}}"><button type="button" class="langbtn" aria-haspopup="listbox" aria-expanded="{{langOpen}}" aria-label="{{t.langLabel}}" onClick="{{toggleLang}}"><svg class="globe" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15 15 0 0 1 0 20a15 15 0 0 1 0-20z"/></svg><sc-if value="{{isEn}}" hint-placeholder-val="{{true}}"><svg class="flag" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" fill="#1F3F8F"/><path d="M0 0L24 24M24 0L0 24" stroke="#FFFFFF" stroke-width="4.5"/><path d="M0 0L24 24M24 0L0 24" stroke="#D8332A" stroke-width="1.6"/><path d="M12 0V24M0 12H24" stroke="#FFFFFF" stroke-width="7"/><path d="M12 0V24M0 12H24" stroke="#D8332A" stroke-width="4"/></svg></sc-if><sc-if value="{{isFr}}" hint-placeholder-val="{{false}}"><svg class="flag" viewBox="0 0 24 24" aria-hidden="true"><rect width="8" height="24" fill="#1F4FA8"/><rect x="8" width="8" height="24" fill="#FFFFFF"/><rect x="16" width="8" height="24" fill="#D8332A"/></svg></sc-if><span>{{langCode}}</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button><sc-if value="{{langOpen}}" hint-placeholder-val="{{false}}"><ul class="langmenu" role="listbox" aria-label="{{t.langLabel}}"><li role="presentation"><button type="button" class="{{optEnCls}}" role="option" aria-selected="{{isEn}}" onClick="{{setEn}}"><svg class="flag" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" fill="#1F3F8F"/><path d="M0 0L24 24M24 0L0 24" stroke="#FFFFFF" stroke-width="4.5"/><path d="M0 0L24 24M24 0L0 24" stroke="#D8332A" stroke-width="1.6"/><path d="M12 0V24M0 12H24" stroke="#FFFFFF" stroke-width="7"/><path d="M12 0V24M0 12H24" stroke="#D8332A" stroke-width="4"/></svg><span>English</span><span class="code">EN</span><sc-if value="{{isEn}}" hint-placeholder-val="{{true}}"><svg class="tick" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg></sc-if></button></li><li role="presentation"><button type="button" class="{{optFrCls}}" role="option" aria-selected="{{isFr}}" onClick="{{setFr}}"><svg class="flag" viewBox="0 0 24 24" aria-hidden="true"><rect width="8" height="24" fill="#1F4FA8"/><rect x="8" width="8" height="24" fill="#FFFFFF"/><rect x="16" width="8" height="24" fill="#D8332A"/></svg><span>Français</span><span class="code">FR</span><sc-if value="{{isFr}}" hint-placeholder-val="{{false}}"><svg class="tick" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg></sc-if></button></li></ul></sc-if></div>
+</div>
+<form class="ob-form" onSubmit="{{submit}}" onKeyDown="{{enterKey}}" novalidate>
+<div class="ob-scroll"><div class="ob-card">
+<h1 class="title" tabindex="-1" data-ob-title>{{title}}</h1>
+<p class="sub">{{sub}}</p>
+<sc-if value="{{isS1}}" hint-placeholder-val="{{true}}"><div class="ob-list" role="radiogroup" aria-label="{{title}}" onKeyDown="{{keyEx}}"><p class="ob-gh" aria-hidden="true">{{t.ready}}</p><button type="button" role="radio" class="ob-o" aria-checked="{{ex1On}}" tabindex="{{ex1Tab}}" onClick="{{ex1Pick}}"><span class="ob-ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 16a8 8 0 1 1 16 0"/><path d="M12 16l4-5"/></svg></span><span class="ob-ot"><span class="ob-on">{{t.ex1t}}</span><span class="ob-od">{{t.ex1d}}</span></span><span class="ob-k" aria-hidden="true">1</span><span class="ob-r" aria-hidden="true"></span></button><button type="button" role="radio" class="ob-o" aria-checked="{{ex2On}}" tabindex="{{ex2Tab}}" onClick="{{ex2Pick}}"><span class="ob-ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M4 5.5v16"/></svg></span><span class="ob-ot"><span class="ob-on">{{t.ex2t}}</span><span class="ob-od">{{t.ex2d}}</span></span><span class="ob-k" aria-hidden="true">2</span><span class="ob-r" aria-hidden="true"></span></button><p class="ob-gh" aria-hidden="true">{{t.gFr}}</p><button type="button" role="radio" class="ob-o soon" aria-checked="{{sn1On}}" tabindex="{{sn1Tab}}" onClick="{{sn1Pick}}"><span class="ob-ot"><span class="ob-on">{{t.sn1t}}</span></span><span class="ob-pill">{{t.soon}}</span><span class="ob-r" aria-hidden="true"></span></button><button type="button" role="radio" class="ob-o soon" aria-checked="{{sn2On}}" tabindex="{{sn2Tab}}" onClick="{{sn2Pick}}"><span class="ob-ot"><span class="ob-on">{{t.sn2t}}</span></span><span class="ob-pill">{{t.soon}}</span><span class="ob-r" aria-hidden="true"></span></button><button type="button" role="radio" class="ob-o soon" aria-checked="{{sn3On}}" tabindex="{{sn3Tab}}" onClick="{{sn3Pick}}"><span class="ob-ot"><span class="ob-on">{{t.sn3t}}</span></span><span class="ob-pill">{{t.soon}}</span><span class="ob-r" aria-hidden="true"></span></button><p class="ob-gh" aria-hidden="true">{{t.gDe}}</p><button type="button" role="radio" class="ob-o soon" aria-checked="{{sn4On}}" tabindex="{{sn4Tab}}" onClick="{{sn4Pick}}"><span class="ob-ot"><span class="ob-on">{{t.sn4t}}</span></span><span class="ob-pill">{{t.soon}}</span><span class="ob-r" aria-hidden="true"></span></button><button type="button" role="radio" class="ob-o soon" aria-checked="{{sn5On}}" tabindex="{{sn5Tab}}" onClick="{{sn5Pick}}"><span class="ob-ot"><span class="ob-on">{{t.sn5t}}</span></span><span class="ob-pill">{{t.soon}}</span><span class="ob-r" aria-hidden="true"></span></button><button type="button" role="radio" class="ob-o soon" aria-checked="{{sn6On}}" tabindex="{{sn6Tab}}" onClick="{{sn6Pick}}"><span class="ob-ot"><span class="ob-on">{{t.sn6t}}</span></span><span class="ob-pill">{{t.soon}}</span><span class="ob-r" aria-hidden="true"></span></button><p class="ob-gh" aria-hidden="true">{{t.gEn}}</p><button type="button" role="radio" class="ob-o soon" aria-checked="{{sn7On}}" tabindex="{{sn7Tab}}" onClick="{{sn7Pick}}"><span class="ob-ot"><span class="ob-on">{{t.sn7t}}</span></span><span class="ob-pill">{{t.soon}}</span><span class="ob-r" aria-hidden="true"></span></button><button type="button" role="radio" class="ob-o soon" aria-checked="{{sn8On}}" tabindex="{{sn8Tab}}" onClick="{{sn8Pick}}"><span class="ob-ot"><span class="ob-on">{{t.sn8t}}</span></span><span class="ob-pill">{{t.soon}}</span><span class="ob-r" aria-hidden="true"></span></button><p class="ob-gh" aria-hidden="true">{{t.otH}}</p><button type="button" role="radio" class="ob-o soon" aria-checked="{{otOn}}" tabindex="{{otTab}}" onClick="{{otPick}}"><span class="ob-ot"><span class="ob-on">{{t.otT}}</span><span class="ob-od">{{t.otD}}</span></span><span class="ob-r" aria-hidden="true"></span></button><sc-if value="{{showOther}}" hint-placeholder-val="{{false}}"><label class="ob-more"><span class="lbltext">{{t.otherLabel}}</span><input class="field" type="text" placeholder="{{t.otherPh}}" value="{{otherText}}" onChange="{{setOther}}" aria-invalid="{{invOther}}"></label></sc-if><sc-if value="{{invOther}}" hint-placeholder-val="{{false}}"><p class="err" role="alert" style="margin-top:-4px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg><span>{{t.errOther}}</span></p></sc-if></div></sc-if>
+<sc-if value="{{isS2}}" hint-placeholder-val="{{false}}"><button type="button" class="ob-what" aria-expanded="{{explainOpen}}" aria-controls="ob-expl" onClick="{{toggleExplain}}">{{t.whatBtn}}</button><sc-if value="{{explainOpen}}" hint-placeholder-val="{{false}}"><div class="ob-expl" id="ob-expl" role="note"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 11v5"/><path d="M12 8h.01"/></svg><p>{{t.explain}}</p></div></sc-if><div class="ob-list" role="radiogroup" aria-label="{{title}}" onKeyDown="{{keyTg}}"><button type="button" role="radio" class="ob-o" aria-checked="{{tg1On}}" tabindex="{{tg1Tab}}" onClick="{{tg1Pick}}"><span class="ob-ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></span><span class="ob-ot"><span class="ob-on">{{t.tg1t}}</span><span class="ob-od">{{t.tg1d}}</span></span><span class="ob-k" aria-hidden="true">1</span><span class="ob-r" aria-hidden="true"></span></button><button type="button" role="radio" class="ob-o" aria-checked="{{tg2On}}" tabindex="{{tg2Tab}}" onClick="{{tg2Pick}}"><span class="ob-ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 17l6-6 4 4 6-7"/><path d="M15 8h5v5"/></svg></span><span class="ob-ot"><span class="ob-on">{{t.tg2t}}</span><span class="ob-od">{{t.tg2d}}</span></span><span class="ob-k" aria-hidden="true">2</span><span class="ob-r" aria-hidden="true"></span></button><button type="button" role="radio" class="ob-o" aria-checked="{{tg3On}}" tabindex="{{tg3Tab}}" onClick="{{tg3Pick}}"><span class="ob-ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h10"/><path d="M18 7h2"/><circle cx="16" cy="7" r="2"/><path d="M4 17h2"/><path d="M10 17h10"/><circle cx="8" cy="17" r="2"/></svg></span><span class="ob-ot"><span class="ob-on">{{t.tg3t}}</span><span class="ob-od">{{t.tg3d}}</span></span><span class="ob-k" aria-hidden="true">3</span><span class="ob-r" aria-hidden="true"></span></button><button type="button" role="radio" class="ob-o" aria-checked="{{tg4On}}" tabindex="{{tg4Tab}}" onClick="{{tg4Pick}}"><span class="ob-ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7"/><path d="M12 17h.01"/></svg></span><span class="ob-ot"><span class="ob-on">{{t.tg4t}}</span><span class="ob-od">{{t.tg4d}}</span></span><span class="ob-k" aria-hidden="true">4</span><span class="ob-r" aria-hidden="true"></span></button></div><sc-if value="{{showCustom}}" hint-placeholder-val="{{false}}"><p class="hint" style="margin-top:20px">{{t.stepHint}}</p><div class="ob-steps" role="group" aria-label="{{t.stepGroup}}"><div class="ob-st"><span class="ob-sn" id="obs1">{{t.sk1}}<small>{{t.ab1}}</small></span><button type="button" class="ob-sb" aria-label="{{t.dec1}}" disabled="{{sk1DecOff}}" onClick="{{sk1Dec}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"/></svg></button><span class="ob-sv" role="status"><span class="vh">{{t.sk1}}: </span>{{sk1Val}}</span><button type="button" class="ob-sb" aria-label="{{t.inc1}}" disabled="{{sk1IncOff}}" onClick="{{sk1Inc}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg></button></div><div class="ob-st"><span class="ob-sn" id="obs2">{{t.sk2}}<small>{{t.ab2}}</small></span><button type="button" class="ob-sb" aria-label="{{t.dec2}}" disabled="{{sk2DecOff}}" onClick="{{sk2Dec}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"/></svg></button><span class="ob-sv" role="status"><span class="vh">{{t.sk2}}: </span>{{sk2Val}}</span><button type="button" class="ob-sb" aria-label="{{t.inc2}}" disabled="{{sk2IncOff}}" onClick="{{sk2Inc}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg></button></div><div class="ob-st"><span class="ob-sn" id="obs3">{{t.sk3}}<small>{{t.ab3}}</small></span><button type="button" class="ob-sb" aria-label="{{t.dec3}}" disabled="{{sk3DecOff}}" onClick="{{sk3Dec}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"/></svg></button><span class="ob-sv" role="status"><span class="vh">{{t.sk3}}: </span>{{sk3Val}}</span><button type="button" class="ob-sb" aria-label="{{t.inc3}}" disabled="{{sk3IncOff}}" onClick="{{sk3Inc}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg></button></div><div class="ob-st"><span class="ob-sn" id="obs4">{{t.sk4}}<small>{{t.ab4}}</small></span><button type="button" class="ob-sb" aria-label="{{t.dec4}}" disabled="{{sk4DecOff}}" onClick="{{sk4Dec}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"/></svg></button><span class="ob-sv" role="status"><span class="vh">{{t.sk4}}: </span>{{sk4Val}}</span><button type="button" class="ob-sb" aria-label="{{t.inc4}}" disabled="{{sk4IncOff}}" onClick="{{sk4Inc}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg></button></div></div></sc-if></sc-if>
+<sc-if value="{{isS3}}" hint-placeholder-val="{{false}}"><div class="ob-dates"><fieldset class="lbl"><legend class="lbltext">{{t.dateLabel}}</legend><div class="dobrow"><label class="lbl"><span class="mini">{{t.day}}</span><input class="field" inputmode="numeric" maxlength="2" placeholder="{{t.phDay}}" value="{{dd}}" disabled="{{noDate}}" onChange="{{setDd}}" aria-invalid="{{invDate}}"></label><label class="lbl"><span class="mini">{{t.month}}</span><select class="field sel" disabled="{{noDate}}" onChange="{{setMm}}" aria-invalid="{{invDate}}"><option value="" selected="{{selNone}}">{{t.monthPick}}</option><option value="1" selected="{{sel1}}">{{t.m1}}</option><option value="2" selected="{{sel2}}">{{t.m2}}</option><option value="3" selected="{{sel3}}">{{t.m3}}</option><option value="4" selected="{{sel4}}">{{t.m4}}</option><option value="5" selected="{{sel5}}">{{t.m5}}</option><option value="6" selected="{{sel6}}">{{t.m6}}</option><option value="7" selected="{{sel7}}">{{t.m7}}</option><option value="8" selected="{{sel8}}">{{t.m8}}</option><option value="9" selected="{{sel9}}">{{t.m9}}</option><option value="10" selected="{{sel10}}">{{t.m10}}</option><option value="11" selected="{{sel11}}">{{t.m11}}</option><option value="12" selected="{{sel12}}">{{t.m12}}</option></select></label><label class="lbl"><span class="mini">{{t.year}}</span><input class="field" inputmode="numeric" maxlength="4" placeholder="{{t.phYear}}" value="{{yy}}" disabled="{{noDate}}" onChange="{{setYy}}" aria-invalid="{{invDate}}"></label></div></fieldset></div><sc-if value="{{invDate}}" hint-placeholder-val="{{false}}"><p class="err" role="alert" style="margin-top:12px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg><span>{{t.errDate}}</span></p></sc-if><div class="ob-note"><label class="check"><input type="checkbox" checked="{{noDate}}" onChange="{{toggleNoDate}}"><span class="box" aria-hidden="true"></span><span>{{t.noDate}}</span></label></div></sc-if>
+<sc-if value="{{isS4}}" hint-placeholder-val="{{false}}"><div class="ob-chips" role="radiogroup" aria-label="{{t.minGroup}}" onKeyDown="{{keyMn}}"><button type="button" role="radio" class="ob-ch" aria-checked="{{mn1On}}" tabindex="{{mn1Tab}}" onClick="{{mn1Pick}}"><span class="ob-r" aria-hidden="true"></span><span class="ob-cn">{{t.mn1n}}</span><span class="ob-cu">{{t.minUnit}}</span><span class="ob-cl">{{t.mn1l}}</span></button><button type="button" role="radio" class="ob-ch" aria-checked="{{mn2On}}" tabindex="{{mn2Tab}}" onClick="{{mn2Pick}}"><span class="ob-r" aria-hidden="true"></span><span class="ob-cn">{{t.mn2n}}</span><span class="ob-cu">{{t.minUnit}}</span><span class="ob-cl">{{t.mn2l}}</span></button><button type="button" role="radio" class="ob-ch" aria-checked="{{mn3On}}" tabindex="{{mn3Tab}}" onClick="{{mn3Pick}}"><span class="ob-r" aria-hidden="true"></span><span class="ob-cn">{{t.mn3n}}</span><span class="ob-cu">{{t.minUnit}}</span><span class="ob-cl">{{t.mn3l}}</span></button><button type="button" role="radio" class="ob-ch" aria-checked="{{mn4On}}" tabindex="{{mn4Tab}}" onClick="{{mn4Pick}}"><span class="ob-r" aria-hidden="true"></span><span class="ob-cn">{{t.mn4n}}</span><span class="ob-cu">{{t.minUnit}}</span><span class="ob-cl">{{t.mn4l}}</span></button></div><p class="ob-live" aria-live="polite"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 11v5"/><path d="M12 8h.01"/></svg><span>{{liveLine}}</span></p><sc-if value="{{showLate}}" hint-placeholder-val="{{false}}"><p class="banner info" style="margin-top:16px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 11v5"/><path d="M12 8h.01"/></svg><span>{{t.late}}</span></p></sc-if></sc-if>
+<sc-if value="{{isS5}}" hint-placeholder-val="{{false}}"><ul class="ob-sum"><li class="ob-sr"><div class="ob-sk"><b>{{t.row1}}</b><span>{{sum1}}</span></div><button type="button" class="ob-ed" aria-label="{{t.edit}}: {{t.row1}}" onClick="{{edit1}}">{{t.edit}}</button></li><sc-if value="{{showTcf}}" hint-placeholder-val="{{true}}"><li class="ob-sr"><div class="ob-sk"><b>{{t.row2}}</b><span>{{sum2}}</span><sc-if value="{{sum2b}}" hint-placeholder-val="{{false}}"><i>{{sum2bText}}</i></sc-if></div><button type="button" class="ob-ed" aria-label="{{t.edit}}: {{t.row2}}" onClick="{{edit2}}">{{t.edit}}</button></li><li class="ob-sr"><div class="ob-sk"><b>{{t.row3}}</b><span>{{sum3}}</span></div><button type="button" class="ob-ed" aria-label="{{t.edit}}: {{t.row3}}" onClick="{{edit3}}">{{t.edit}}</button></li></sc-if><li class="ob-sr"><div class="ob-sk"><b>{{t.row4}}</b><span>{{sum4}}</span></div><button type="button" class="ob-ed" aria-label="{{t.edit}}: {{t.row4}}" onClick="{{edit4}}">{{t.edit}}</button></li></ul><sc-if value="{{showOtherNote}}" hint-placeholder-val="{{false}}"><p class="hint" style="margin-top:12px">{{otherNote}}</p></sc-if><div class="ob-nx"><img src="/_blob/fb97efb43914ed6d040688baba3bc221" alt="" decoding="async"><div><h2>{{t.nextTitle}}</h2><p>{{t.nextBody}}</p></div></div><div class="ob-opt"><h2>{{t.optTitle}}</h2><p class="hint">{{t.optSub}}</p><label class="check"><input type="checkbox" checked="{{cq}}" onChange="{{toggleQ}}"><span class="box" aria-hidden="true"></span><span>{{t.cq}}</span></label><label class="check"><input type="checkbox" checked="{{cm}}" onChange="{{toggleM}}"><span class="box" aria-hidden="true"></span><span>{{t.cm}}</span></label></div></sc-if>
+<sc-if value="{{isSoon}}" hint-placeholder-val="{{false}}"><div class="ob-soonbox"><span class="hero" aria-hidden="true"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span></div><label class="check" style="margin-top:24px"><input type="checkbox" checked="{{notify}}" onChange="{{toggleNotify}}"><span class="box" aria-hidden="true"></span><span>{{t.notify}}</span></label><p class="hint" style="margin-top:12px">{{t.notifyHint}}</p></sc-if>
+</div></div>
+<div class="ob-bar"><div class="{{barCls}}">
+<sc-if value="{{showSkip}}" hint-placeholder-val="{{false}}"><button type="button" class="ob-skip" onClick="{{skip}}">{{skipLabel}}</button></sc-if>
+<button class="{{primaryCls}}" data-flow="{{flowTag}}" type="button" onClick="{{submit}}" disabled="{{loading}}" aria-busy="{{loading}}">
+<sc-if value="{{loading}}" hint-placeholder-val="{{false}}"><svg class="ld" viewBox="64 14 352 218" aria-hidden="true"><path d="M202.3 222.6 L74.1 177.2 A176 176 0 0 1 95.0 136.3 L207.0 213.3 A40 40 0 0 0 202.3 222.6 Z"/><path d="M208.3 211.6 L100.4 128.9 A176 176 0 0 1 132.9 96.4 L215.6 204.3 A40 40 0 0 0 208.3 211.6 Z"/><path d="M217.3 203.0 L140.3 91.0 A176 176 0 0 1 181.2 70.1 L226.6 198.3 A40 40 0 0 0 217.3 203.0 Z"/><path d="M228.6 197.6 L179.8 32.7 A212 212 0 0 1 234.5 24.1 L239.0 196.0 A40 40 0 0 0 228.6 197.6 Z"/><path d="M241.0 196.0 L244.6 60.1 A176 176 0 0 1 290.0 67.2 L251.4 197.6 A40 40 0 0 0 241.0 196.0 Z"/><path d="M253.4 198.3 L298.8 70.1 A176 176 0 0 1 339.7 91.0 L262.7 203.0 A40 40 0 0 0 253.4 198.3 Z"/><path d="M264.4 204.3 L347.1 96.4 A176 176 0 0 1 379.6 128.9 L271.7 211.6 A40 40 0 0 0 264.4 204.3 Z"/><path d="M273.0 213.3 L385.0 136.3 A176 176 0 0 1 405.9 177.2 L277.7 222.6 A40 40 0 0 0 273.0 213.3 Z"/></svg><span>{{t.loading}}</span></sc-if>
+<sc-if value="{{notLoading}}" hint-placeholder-val="{{true}}"><span>{{primaryLabel}}</span></sc-if>
+</button>
+</div></div>
+</form>
+</main>
+</div>
+</div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"layout": {"editor": "enum", "options": ["s", "m", "l"], "default": "l", "section": "View"}, "lang": {"editor": "enum", "options": ["en", "fr"], "default": "en", "section": "View"}, "theme": {"editor": "enum", "options": ["light", "dark"], "default": "light", "section": "View"}, "step": {"editor": "enum", "options": ["1", "2", "3", "4", "5", "soon"], "default": "1", "section": "Screen"}, "exam": {"editor": "enum", "options": ["tcf", "free", "tef", "tcfx", "goethe", "telc", "testdaf", "ielts", "pte", "delf", "other"], "default": "tcf", "section": "Screen"}, "goal": {"editor": "enum", "options": ["move", "points", "exact", "unsure"], "default": "move", "section": "Screen"}, "explain": {"editor": "boolean", "default": false, "section": "Screen"}, "demo": {"editor": "enum", "options": ["none", "dateerr", "late", "nodate", "otherq"], "default": "none", "section": "Screen"}, "w": {"editor": null}, "h": {"editor": null}, "$preview": {"width": 1280, "height": 800}}'>
+const PHOTO = '/_blob/fb97efb43914ed6d040688baba3bc221';
+const TODAY = Date.UTC(2026, 10, 20); // fixed "today" so the prototype is deterministic
+const MONTHS = {
+  en: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+  fr: ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.']
+};
+
+class Component extends DCLogic {
+  componentWillUnmount() { clearTimeout(this._t); }
+
+  renderVals() {
+    const p = this.props || {};
+    const s = this.state || {};
+    const layout = p.layout === 's' || p.layout === 'm' ? p.layout : 'l';
+    const theme = p.theme === 'dark' ? 'dark' : 'light';
+    const lang = s.lang ?? (p.lang === 'fr' ? 'fr' : 'en');
+    const fr = lang === 'fr';
+    const dims = { s: [390, 844], m: [820, 1000], l: [1280, 800] }[layout];
+    const w = Number(p.w) || dims[0];
+    const h = Number(p.h) || dims[1];
+    const langOpen = !!s.langOpen;
+    const loading = !!s.loading;
+
+    const T = {
+      en: {
+        langLabel: 'Language', back: 'Back', loading: 'One moment', continue: 'Continue', skip: 'Skip for now', edit: 'Edit',
+        stepOf: 'Step {n} of {t}', planTitle: 'Your plan', planSub: 'It builds as you answer.', notChosen: 'Not chosen yet',
+        row1: 'Exam', row2: 'Level to reach', row3: 'Exam date', row4: 'Study time',
+        s1Title: 'Which exam are you preparing for?', s1Sub: 'Pick one. You can change it later in settings.',
+        ready: 'Ready now', otH: 'Not in the list?', soon: 'Coming soon',
+        ex1t: 'TCF Canada', ex1d: 'Four skills, estimated in the exam’s own scale.',
+        ex2t: 'Free French track', ex2d: 'Learn French step by step. No exam date needed.',
+        sn1t: 'TEF Canada', sn2t: 'TCF IRN, TCF Québec, TCF tout public', sn3t: 'DELF', sn4t: 'Goethe-Zertifikat', sn5t: 'telc Deutsch', sn6t: 'TestDaF', sn7t: 'IELTS', sn8t: 'PTE',
+        gFr: 'Coming soon · French exams', gDe: 'Coming soon · German exams', gEn: 'Coming soon · English exams',
+        otT: 'My exam isn’t here', otD: 'Tell us which one and we will note it.',
+        otherLabel: 'Which exam?', otherPh: 'For example, DELF B2', errOther: 'Tell us which exam you have in mind.',
+        soonTitle: '{x} is not ready yet', soonSub: 'We are building it. Nothing is lost: you can follow the free French track now or choose another exam.',
+        soonOtherTitle: 'We have noted your exam', soonOtherSub: 'We cannot promise a date. You can follow the free French track now or choose another exam.',
+        notify: 'Email me once, when it is ready.', notifyHint: 'We use the email on your account, only for this. You can change your mind at any time in settings.',
+        tryFree: 'Try the free French track', pickOther: 'Choose another exam',
+        s2Title: 'What do you need the exam for?', s2Sub: 'This helps us suggest a level to aim for. You can change it later.',
+        whatBtn: 'What is NCLC?', explain: 'NCLC is the scale Canada uses to measure French level, from 1 to 12. Immigration programmes ask for a minimum level in each skill: listening, reading, writing and speaking.',
+        tg1t: 'Move to Canada (Express Entry)', tg1d: 'A common aim is NCLC 7: good working French.',
+        tg2t: 'Earn as many points as I can', tg2d: 'Aim for NCLC 9 or higher. Higher levels can earn more points.',
+        tg3t: 'My programme names exact levels', tg3d: 'Set a level for each skill yourself.',
+        tg4t: 'I’m not sure yet', tg4d: 'We start at NCLC 7. After your level test we can suggest a realistic target.',
+        stepHint: 'Use the levels your programme asks for, and check them on the official page. Levels run from 4 to 10.', stepGroup: 'Level for each skill',
+        goal1: 'Move to Canada', goal2: 'Earn as many points as possible', goal3: 'Exact levels from my programme', goal4: 'Not sure yet, to confirm',
+        sk1: 'Listening', sk2: 'Reading', sk3: 'Writing', sk4: 'Speaking', ab1: 'L', ab2: 'R', ab3: 'W', ab4: 'S',
+        dec1: 'Lower the listening target', inc1: 'Raise the listening target', dec2: 'Lower the reading target', inc2: 'Raise the reading target',
+        dec3: 'Lower the writing target', inc3: 'Raise the writing target', dec4: 'Lower the speaking target', inc4: 'Raise the speaking target',
+        s3Title: 'When is your exam?', s3Sub: 'We will plan around it. You can add it later.',
+        m1:'January',m2:'February',m3:'March',m4:'April',m5:'May',m6:'June',m7:'July',m8:'August',m9:'September',m10:'October',m11:'November',m12:'December',monthPick:'Select',dateLabel: 'Exam date', day: 'Day', month: 'Month', year: 'Year', phDay: 'DD', phMonth: 'MM', phYear: 'YYYY',
+        noDate: 'I don’t have a date yet', errDate: 'Enter a full date in the future.',
+        s4Title: 'How much can you study each day?', s4Sub: 'Pick what you can keep up. We will build your plan around it.',
+        minGroup: 'Study time per day', minUnit: 'min a day', mn1n: '15', mn1l: 'Light', mn2n: '30', mn2l: 'Steady', mn3n: '60', mn3l: 'Focused', mn4n: '90', mn4l: 'Intensive',
+        late: 'Your exam is close. A short, focused plan can still help, and we will start with what moves your estimate most.',
+        s5Title: 'Your goal is set', s5Sub: 'This is what we will plan around. You can change any of it later.',
+        noDateVal: 'No date yet', perDay: '{n} min a day',
+        nextTitle: 'Next: your level test', nextBody: 'About 25 to 35 minutes, and you can do it in parts. You get an honest estimate with a range, labelled as an estimate.',
+        optTitle: 'Optional', optSub: 'You can change these at any time in settings.',
+        cq: 'Use my answers to improve GaugePrep’s feedback.', cm: 'Send me study reminders and tips by email.',
+        start: 'Start my level test', later: 'Do it later', otherPrefix: 'Other: '
+      },
+      fr: {
+        langLabel: 'Langue', back: 'Retour', loading: 'Un instant', continue: 'Continuer', skip: 'Passer pour l’instant', edit: 'Modifier',
+        stepOf: 'Étape {n} sur {t}', planTitle: 'Votre plan', planSub: 'Il se construit au fil de vos réponses.', notChosen: 'Pas encore choisi',
+        row1: 'Examen', row2: 'Niveau à atteindre', row3: 'Date d’examen', row4: 'Temps d’étude',
+        s1Title: 'Pour quel examen vous préparez-vous ?', s1Sub: 'Choisissez-en un. Vous pourrez changer plus tard dans les réglages.',
+        ready: 'Disponible maintenant', otH: 'Pas dans la liste ?', soon: 'Bientôt',
+        ex1t: 'TCF Canada', ex1d: 'Quatre compétences, estimées dans l’échelle propre à l’examen.',
+        ex2t: 'Parcours de français libre', ex2d: 'Apprenez le français pas à pas. Aucune date d’examen requise.',
+        sn1t: 'TEF Canada', sn2t: 'TCF IRN, TCF Québec, TCF tout public', sn3t: 'DELF', sn4t: 'Goethe-Zertifikat', sn5t: 'telc Deutsch', sn6t: 'TestDaF', sn7t: 'IELTS', sn8t: 'PTE',
+        gFr: 'Bientôt · examens de français', gDe: 'Bientôt · examens d’allemand', gEn: 'Bientôt · examens d’anglais',
+        otT: 'Mon examen n’est pas ici', otD: 'Dites-nous lequel et nous le noterons.',
+        otherLabel: 'Quel examen ?', otherPh: 'Par exemple, DELF B2', errOther: 'Dites-nous quel examen vous visez.',
+        soonTitle: '{x} n’est pas encore prêt', soonSub: 'Nous le construisons. Rien n’est perdu : vous pouvez suivre dès maintenant le parcours de français libre ou choisir un autre examen.',
+        soonOtherTitle: 'Nous avons noté votre examen', soonOtherSub: 'Nous ne pouvons pas promettre de date. Vous pouvez suivre dès maintenant le parcours de français libre ou choisir un autre examen.',
+        notify: 'M’envoyer un e-mail, une seule fois, quand il sera prêt.', notifyHint: 'Nous utilisons l’adresse e-mail de votre compte, uniquement pour cela. Vous pouvez changer d’avis à tout moment dans les réglages.',
+        tryFree: 'Essayer le parcours de français libre', pickOther: 'Choisir un autre examen',
+        s2Title: 'À quoi vous sert l’examen ?', s2Sub: 'Cela nous aide à vous suggérer un niveau à viser. Vous pourrez le changer plus tard.',
+        whatBtn: 'Qu’est-ce que le NCLC ?', explain: 'Le NCLC est l’échelle utilisée au Canada pour mesurer le niveau de français, de 1 à 12. Les programmes d’immigration demandent un niveau minimum dans chaque compétence : compréhension orale, compréhension écrite, expression écrite et expression orale.',
+        tg1t: 'M’installer au Canada (Entrée express)', tg1d: 'Un objectif courant est le NCLC 7 : un bon français de travail.',
+        tg2t: 'Obtenir le plus de points possible', tg2d: 'Visez le NCLC 9 ou plus. Les niveaux plus élevés peuvent rapporter plus de points.',
+        tg3t: 'Mon programme exige des niveaux précis', tg3d: 'Fixez vous-même un niveau pour chaque compétence.',
+        tg4t: 'Je ne sais pas encore', tg4d: 'Nous partons du NCLC 7. Après votre test de niveau, nous pourrons suggérer un objectif réaliste.',
+        stepHint: 'Utilisez les niveaux demandés par votre programme et vérifiez-les sur la page officielle. Les niveaux vont de 4 à 10.', stepGroup: 'Niveau pour chaque compétence',
+        goal1: 'M’installer au Canada', goal2: 'Obtenir le plus de points possible', goal3: 'Niveaux exacts de mon programme', goal4: 'Pas encore sûr, à confirmer',
+        sk1: 'Compréhension orale', sk2: 'Compréhension écrite', sk3: 'Expression écrite', sk4: 'Expression orale', ab1: 'CO', ab2: 'CE', ab3: 'EE', ab4: 'EO',
+        dec1: 'Baisser l’objectif de compréhension orale', inc1: 'Monter l’objectif de compréhension orale', dec2: 'Baisser l’objectif de compréhension écrite', inc2: 'Monter l’objectif de compréhension écrite',
+        dec3: 'Baisser l’objectif d’expression écrite', inc3: 'Monter l’objectif d’expression écrite', dec4: 'Baisser l’objectif d’expression orale', inc4: 'Monter l’objectif d’expression orale',
+        s3Title: 'Quand passez-vous votre examen ?', s3Sub: 'Nous planifierons autour de cette date. Vous pourrez l’ajouter plus tard.',
+        m1:'janvier',m2:'février',m3:'mars',m4:'avril',m5:'mai',m6:'juin',m7:'juillet',m8:'août',m9:'septembre',m10:'octobre',m11:'novembre',m12:'décembre',monthPick:'Choisir',dateLabel: 'Date de l’examen', day: 'Jour', month: 'Mois', year: 'Année', phDay: 'JJ', phMonth: 'MM', phYear: 'AAAA',
+        noDate: 'Je n’ai pas encore de date', errDate: 'Saisissez une date complète dans le futur.',
+        s4Title: 'Combien de temps pouvez-vous étudier par jour ?', s4Sub: 'Choisissez ce que vous pouvez tenir. Nous bâtirons votre plan autour.',
+        minGroup: 'Temps d’étude par jour', minUnit: 'min par jour', mn1n: '15', mn1l: 'Léger', mn2n: '30', mn2l: 'Régulier', mn3n: '60', mn3l: 'Soutenu', mn4n: '90', mn4l: 'Intensif',
+        late: 'Votre examen approche. Un plan court et ciblé peut encore aider, et nous commencerons par ce qui fait le plus progresser votre estimation.',
+        s5Title: 'Votre objectif est défini', s5Sub: 'Voici ce autour de quoi nous planifierons. Vous pourrez tout modifier plus tard.',
+        noDateVal: 'Pas de date pour l’instant', perDay: '{n} min par jour',
+        nextTitle: 'Ensuite : votre test de niveau', nextBody: 'Environ 25 à 35 minutes, que vous pouvez faire en plusieurs fois. Vous obtenez une estimation honnête avec une fourchette, présentée comme une estimation.',
+        optTitle: 'Facultatif', optSub: 'Vous pourrez les modifier à tout moment dans les réglages.',
+        cq: 'Utiliser mes réponses pour améliorer les retours de GaugePrep.', cm: 'M’envoyer des rappels et des conseils d’étude par e-mail.',
+        start: 'Lancer mon test', later: 'Le faire plus tard', otherPrefix: 'Autre : '
+      }
+    };
+    const t = fr ? T.fr : T.en;
+
+    // ---- state ----
+    const exam = s.exam ?? p.exam ?? 'tcf';
+    const otherText = s.otherText ?? '';
+    const goal = s.goal ?? p.goal ?? 'move';
+    const explainOpen = s.explainOpen ?? (p.explain === 'true' || p.explain === true);
+    const notify = !!s.notify;
+    const skills = s.skills ?? [7, 7, 7, 7];
+    const demo = p.demo || 'none';
+    const lateD = new Date(TODAY + 20 * 86400000);
+    const pad2 = (n) => (n < 10 ? '0' : '') + n;
+    const dd = s.dd ?? (demo === 'dateerr' ? '31' : demo === 'late' ? pad2(lateD.getUTCDate()) : '22');
+    const mm = s.mm ?? (demo === 'dateerr' ? '02' : demo === 'late' ? pad2(lateD.getUTCMonth() + 1) : '01');
+    const yy = s.yy ?? (demo === 'late' ? String(lateD.getUTCFullYear()) : '2027');
+    const noDate = s.noDate !== undefined ? !!s.noDate : demo === 'nodate';
+    const minutes = s.minutes ?? 30;
+    const cq = !!s.cq, cm = !!s.cm;
+    const err = s.err ?? (demo === 'dateerr' ? 'date' : demo === 'otherq' ? 'other' : null);
+
+    const isTcf = exam === 'tcf';
+    const list = isTcf ? [1, 2, 3, 4, 5] : [1, 4, 5];
+    const SOON = ['tef', 'tcfx', 'delf', 'goethe', 'telc', 'testdaf', 'ielts', 'pte'];
+    const isSoonExam = SOON.indexOf(exam) >= 0 || exam === 'other';
+    const rawStep = s.step ?? p.step ?? 1;
+    let step = rawStep === 'soon' ? 'soon' : (Number(rawStep) || 1);
+    if (step !== 'soon' && list.indexOf(step) < 0) step = list.find((n) => n > step) || 5;
+    const idx = step === 'soon' ? 0 : list.indexOf(step);
+    const total = list.length;
+
+    // ---- derived ----
+    const dayN = parseInt(dd, 10), monN = parseInt(mm, 10), yrN = parseInt(yy, 10);
+    let dateMs = null;
+    if (dd && mm && yy.length === 4 && monN >= 1 && monN <= 12 && dayN >= 1 && dayN <= 31) {
+      const d = new Date(Date.UTC(yrN, monN - 1, dayN));
+      if (d.getUTCFullYear() === yrN && d.getUTCMonth() === monN - 1 && d.getUTCDate() === dayN) dateMs = d.getTime();
+    }
+    const dateOk = dateMs !== null && dateMs > TODAY;
+    const hasDate = isTcf && !noDate && dateOk;
+    const days = dateOk ? Math.round((dateMs - TODAY) / 86400000) : 0;
+    const weeks = Math.max(1, Math.ceil(days / 7));
+    const dateText = dateOk ? (dayN + ' ' + MONTHS[lang][monN - 1] + ' ' + yrN) : '';
+
+    const fmtMin = (m) => { const hh = Math.floor(m / 60), r = m % 60; return hh ? (hh + ' h' + (r ? ' ' + r + ' min' : '')) : (r + ' min'); };
+    const weekly = fmtMin(minutes * 7);
+    let liveLine;
+    if (hasDate) {
+      liveLine = fr
+        ? 'Environ ' + weeks + (weeks > 1 ? ' semaines' : ' semaine') + ' avant votre examen. Cela représente environ ' + weekly + ' d’étude par semaine.'
+        : 'About ' + weeks + (weeks > 1 ? ' weeks' : ' week') + ' until your exam. That is about ' + weekly + ' of study a week.';
+    } else {
+      liveLine = fr ? 'Nous bâtirons un plan hebdomadaire que vous pourrez ajuster à tout moment.' : 'We will build a weekly plan you can adjust at any time.';
+    }
+    const showLate = hasDate && weeks < 4;
+
+    const levelOf = { move: '7', points: '9', unsure: '7' };
+    const targetText = goal === 'exact'
+      ? 'NCLC · ' + [1, 2, 3, 4].map((i) => t['ab' + i] + ' ' + skills[i - 1]).join(' · ')
+      : 'NCLC ' + levelOf[goal] + (goal === 'points' ? '+' : '');
+    const goalText = { move: t.goal1, points: t.goal2, exact: t.goal3, unsure: t.goal4 }[goal];
+    const soonNames = { tef: 'sn1t', tcfx: 'sn2t', delf: 'sn3t', goethe: 'sn4t', telc: 'sn5t', testdaf: 'sn6t', ielts: 'sn7t', pte: 'sn8t' };
+    const soonName = exam === 'other' ? otherText.trim() : (t[soonNames[exam]] || '');
+    const examText = exam === 'tcf' ? t.ex1t : exam === 'free' ? t.ex2t : soonName;
+    const timeText = t.perDay.replace('{n}', minutes);
+
+    // ---- actions ----
+    const focusTitle = (e) => {
+      const root = e && e.currentTarget && e.currentTarget.closest ? e.currentTarget.closest('.ob') : null;
+      setTimeout(() => { const el = root && root.querySelector('[data-ob-title]'); if (el) el.focus({ preventScroll: true }); }, 40);
+    };
+    const set = (o) => this.setState({ err: null, ...o });
+    const goStep = (n) => (e) => { set({ step: n }); focusTitle(e); };
+    const goBack = (e) => { if (step === 'soon') { set({ step: 1 }); focusTitle(e); } else if (idx > 0) { set({ step: list[idx - 1] }); focusTitle(e); } };
+    const next = (e, over) => {
+      const nl = (over && over.exam ? over.exam : exam) === 'tcf' ? [1, 2, 3, 4, 5] : [1, 4, 5];
+      const i = nl.indexOf(step);
+      set({ step: nl[Math.min(i + 1, nl.length - 1)], ...(over || {}) });
+      focusTitle(e);
+    };
+    const finish = () => {
+      this.setState({ loading: true, err: null });
+      clearTimeout(this._t);
+      this._t = setTimeout(() => this.setState({ loading: false, inTest: true }), 1100);
+    };
+    const submit = (e) => {
+      if (e && e.preventDefault) e.preventDefault();
+      if (loading) return;
+      if (step === 1) {
+        if (exam === 'other' && !otherText.trim()) return this.setState({ err: 'other' });
+        if (isSoonExam) { set({ step: 'soon' }); focusTitle(e); return; }
+        return next(e);
+      }
+      if (step === 'soon') { set({ exam: 'free', step: 4 }); focusTitle(e); return; }
+      if (step === 3) {
+        if (!noDate && !dateOk) return this.setState({ err: 'date' });
+        return next(e);
+      }
+      if (step === 5) return finish();
+      return next(e);
+    };
+    const skip = (e) => {
+      if (step === 'soon') { set({ step: 1 }); focusTitle(e); return; }
+      if (step === 3) return next(e, { noDate: true });
+      if (step === 4) return next(e, { minutes: 30 });
+      if (step === 5) return finish();
+    };
+
+    const arrows = (arr, cur, apply, digits) => (e) => {
+      const k = e && e.key; if (!k) return;
+      const i = arr.indexOf(cur); let ni = -1;
+      if (k === 'ArrowDown' || k === 'ArrowRight') ni = (i + 1) % arr.length;
+      else if (k === 'ArrowUp' || k === 'ArrowLeft') ni = (i - 1 + arr.length) % arr.length;
+      else if (digits && /^[1-9]$/.test(k) && arr[Number(k) - 1] !== undefined) ni = Number(k) - 1;
+      if (ni < 0) return;
+      if (e.target && e.target.tagName === 'INPUT') return;
+      e.preventDefault();
+      const grp = e.currentTarget;
+      apply(arr[ni]);
+      setTimeout(() => { const el = grp && grp.querySelector('[aria-checked="true"]'); if (el) el.focus(); }, 30);
+    };
+    const exKeys = ['tcf', 'free'].concat(SOON, ['other']), tgKeys = ['move', 'points', 'exact', 'unsure'], mnKeys = [15, 30, 60, 90];
+    const stepVals = {};
+    const pick = (pre, i, k) => { stepVals[pre + 'On'] = exam === k; stepVals[pre + 'Tab'] = exam === k ? 0 : -1; stepVals[pre + 'Pick'] = () => set({ exam: k }); };
+    pick('ex1', 0, 'tcf'); pick('ex2', 0, 'free');
+    SOON.forEach((k, i) => pick('sn' + (i + 1), i, k));
+    pick('ot', 0, 'other');
+    tgKeys.forEach((k, i) => { stepVals['tg' + (i + 1) + 'On'] = goal === k; stepVals['tg' + (i + 1) + 'Tab'] = goal === k ? 0 : -1; stepVals['tg' + (i + 1) + 'Pick'] = () => set({ goal: k }); });
+    mnKeys.forEach((k, i) => { stepVals['mn' + (i + 1) + 'On'] = minutes === k; stepVals['mn' + (i + 1) + 'Tab'] = minutes === k ? 0 : -1; stepVals['mn' + (i + 1) + 'Pick'] = () => set({ minutes: k }); });
+    [1, 2, 3, 4].forEach((i) => {
+      const v = skills[i - 1];
+      const chg = (d) => () => { const ns = skills.slice(); ns[i - 1] = Math.min(10, Math.max(4, v + d)); set({ skills: ns }); };
+      stepVals['sk' + i + 'Val'] = v; stepVals['sk' + i + 'DecOff'] = v <= 4; stepVals['sk' + i + 'IncOff'] = v >= 10;
+      stepVals['sk' + i + 'Dec'] = chg(-1); stepVals['sk' + i + 'Inc'] = chg(1);
+    });
+
+    // ---- plan panel (desktop) ----
+    const stp = step === 'soon' ? 1 : step;
+    const pr = (k, stepNo, val, valid) => {
+      const chosen = stp > stepNo || (stp === stepNo && valid);
+      const cur = stp === stepNo;
+      return {
+        ['pr' + k + 'Cls']: 'ob-pr' + (cur ? ' cur' : '') + (stp > stepNo || (cur && valid) ? ' done' : ''),
+        ['pr' + k + 'Val']: chosen ? val : t.notChosen,
+        ['pr' + k + 'ValCls']: 'ob-pv' + (chosen ? '' : ' none')
+      };
+    };
+    const plan = {
+      ...pr(1, 1, isSoonExam ? t.notChosen : examText, !isSoonExam),
+      ...pr(2, 2, targetText, true),
+      ...pr(3, 3, noDate || !dateOk ? t.noDateVal : dateText, noDate || dateOk),
+      ...pr(4, 4, timeText, true)
+    };
+    // a row only reads "chosen" once its step has been reached
+    if (stp < 2) { plan.pr2Val = t.notChosen; plan.pr2ValCls = 'ob-pv none'; }
+    if (stp < 3) { plan.pr3Val = t.notChosen; plan.pr3ValCls = 'ob-pv none'; }
+    if (stp < 4) { plan.pr4Val = t.notChosen; plan.pr4ValCls = 'ob-pv none'; }
+    if (stp === 1) plan.pr1Cls = 'ob-pr cur' + (isSoonExam ? '' : ' done');
+
+    const lit = step === 'soon' ? 0 : Math.round((8 * (idx + 1)) / total);
+    const pfv = {};
+    for (let i = 1; i <= 8; i++) pfv['pf' + i] = i <= lit ? 'lit' : '';
+
+    const stepLabel = step === 'soon' ? '' : t.stepOf.replace('{n}', idx + 1).replace('{t}', total);
+    const isOther = exam === 'other';
+    const titles = { 1: t.s1Title, 2: t.s2Title, 3: t.s3Title, 4: t.s4Title, 5: t.s5Title, soon: isOther ? t.soonOtherTitle : t.soonTitle.replace('{x}', soonName || t.sn7t) };
+    const subs = { 1: t.s1Sub, 2: t.s2Sub, 3: t.s3Sub, 4: t.s4Sub, 5: t.s5Sub, soon: isOther ? t.soonOtherSub : t.soonSub };
+    const showSkip = step === 3 || step === 4 || step === 5 || step === 'soon';
+    const idle = (step === 1 && exam === 'other' && !otherText.trim()) || (step === 3 && !noDate && !dateOk);
+    const otherNote = fr
+      ? 'Nous avons noté « ' + otherText.trim() + ' ». En attendant, vous suivez le parcours de français libre.'
+      : 'We have noted “' + otherText.trim() + '”. Until it is ready you follow the free French track.';
+
+    return {
+      inTest: !!s.inTest, notInTest: !s.inTest, lang: fr ? 'fr' : 'en',
+      w, h, layout, theme, t, ...stepVals, ...plan, ...pfv,
+      logo: theme === 'dark' ? '/_blob/2ba30fd54996baa317ccfa0d7811ddad' : '/_blob/19cb4670c91ff9f5f1dd92cb25c3c13b',
+      photo: PHOTO,
+      isEn: !fr, isFr: fr, langCode: fr ? 'FR' : 'EN', langOpen,
+      optEnCls: 'opt' + (fr ? '' : ' on'), optFrCls: 'opt' + (fr ? ' on' : ''),
+      toggleLang: () => this.setState({ langOpen: !langOpen }),
+      closeLang: () => this.setState({ langOpen: false }),
+      setEn: () => this.setState({ lang: 'en', langOpen: false }), setFr: () => this.setState({ lang: 'fr', langOpen: false }),
+      langKey: (e) => { if (e && e.key === 'Escape') this.setState({ langOpen: false }); },
+      stepLabel, title: titles[step], sub: subs[step],
+      isS1: step === 1, isS2: step === 2, isS3: step === 3, isS4: step === 4, isS5: step === 5,
+      showBack: idx > 0 || step === 'soon', noBack: !(idx > 0 || step === 'soon'), goBack,
+      showTcf: isTcf, showCustom: goal === 'exact',
+      explainOpen, toggleExplain: () => this.setState({ explainOpen: !explainOpen }),
+      isSoon: step === 'soon', notify, toggleNotify: () => this.setState({ notify: !notify }),
+      showProg: step !== 'soon', noProg: step === 'soon',
+      sum2bText: goalText, sum2b: isTcf,
+      showOther: exam === 'other', otherText, invOther: err === 'other',
+      setOther: (e) => set({ otherText: e.target.value }),
+      keyEx: arrows(exKeys, exam, (k) => set({ exam: k }), false),
+      keyTg: arrows(tgKeys, goal, (k) => set({ goal: k }), layout === 'l'),
+      keyMn: arrows(mnKeys, minutes, (k) => set({ minutes: k }), layout === 'l'),
+      sel1: parseInt(mm, 10) === 1, sel2: parseInt(mm, 10) === 2, sel3: parseInt(mm, 10) === 3, sel4: parseInt(mm, 10) === 4, sel5: parseInt(mm, 10) === 5, sel6: parseInt(mm, 10) === 6, sel7: parseInt(mm, 10) === 7, sel8: parseInt(mm, 10) === 8, sel9: parseInt(mm, 10) === 9, sel10: parseInt(mm, 10) === 10, sel11: parseInt(mm, 10) === 11, sel12: parseInt(mm, 10) === 12, selNone: !parseInt(mm, 10),
+      dd, mm, yy, noDate, invDate: err === 'date',
+      setDd: (e) => set({ dd: e.target.value.replace(/\D/g, '').slice(0, 2) }),
+      setMm: (e) => set({ mm: e.target.value.replace(/\D/g, '').slice(0, 2) }),
+      setYy: (e) => set({ yy: e.target.value.replace(/\D/g, '').slice(0, 4) }),
+      toggleNoDate: () => set({ noDate: !noDate }),
+      liveLine, showLate,
+      sum1: examText, sum2: targetText, sum3: hasDate ? dateText : t.noDateVal, sum4: timeText,
+      edit1: goStep(1), edit2: goStep(2), edit3: goStep(3), edit4: goStep(4),
+      showOtherNote: false, otherNote,
+      cq, cm, toggleQ: () => this.setState({ cq: !cq }), toggleM: () => this.setState({ cm: !cm }),
+      barCls: 'ob-barin' + (step === 'soon' ? ' col' : ''), showSkip, skipLabel: step === 5 ? t.later : step === 'soon' ? t.pickOther : t.skip, skip,
+      flowTag: step === 5 ? 'next' : '', primaryCls: 'btn btn-primary' + (idle ? ' idle' : ''), primaryLabel: step === 5 ? t.start : step === 'soon' ? t.tryFree : t.continue,
+      loading, notLoading: !loading, enterKey: (e) => { if (e && e.key === 'Enter' && e.target && e.target.tagName === 'INPUT' && e.target.type !== 'checkbox') submit(e); }, submit
+    };
+  }
+}
+</script>
+</body>
+</html>
