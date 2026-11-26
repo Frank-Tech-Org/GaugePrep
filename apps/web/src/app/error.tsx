@@ -1,6 +1,7 @@
 "use client";
 
 import { Msg } from "../i18n/provider";
+import { Button } from "../components/Button";
 import styles from "./status.module.css";
 
 export default function ErrorPage({ reset }: { reset: () => void }) {
@@ -12,9 +13,9 @@ export default function ErrorPage({ reset }: { reset: () => void }) {
       <p className={styles.body}>
         <Msg id="shell.errorBody" />
       </p>
-      <button type="button" className={styles.action} onClick={reset}>
+      <Button onClick={reset}>
         <Msg id="shell.errorRetry" />
-      </button>
+      </Button>
     </div>
   );
 }

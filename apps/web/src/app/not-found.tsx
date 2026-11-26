@@ -1,4 +1,5 @@
 import { Msg } from "../i18n/provider";
+import { Button } from "../components/Button";
 import styles from "./status.module.css";
 
 export default function NotFound() {
@@ -10,9 +11,9 @@ export default function NotFound() {
       <p className={styles.body}>
         <Msg id="shell.notFoundBody" />
       </p>
-      <a className={styles.action} href="/">
+      <Button href="/">
         <Msg id="shell.notFoundHome" />
-      </a>
+      </Button>
     </div>
   );
 }
