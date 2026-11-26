@@ -4,18 +4,18 @@ Exam preparation platform. This repository holds the backend, the shared exam ru
 
 ## Layout
 
-| Folder              | What it is                                                                              |
-| ------------------- | --------------------------------------------------------------------------------------- |
-| `apps/web`          | Placeholder pages for dev and staging; the Next.js app comes with the first web feature |
-| `apps/backend`      | Django application; each module is a package under `apps/backend/modules/`              |
-| `apps/voice`        | Voice examiner (not built yet)                                                          |
-| `packages/examcore` | Exam rules, rule checks and scoring maths. No Django dependency                         |
-| `tooling`           | Shared lint and type configs, our own CI checks with their tests, Semgrep rules         |
-| `infra`             | `docker` images, `kamal` deploy configs, `server` rebuild script                        |
-| `docs`              | Product, architecture, decision records, exam specs, content guide, process, runbooks   |
-| `.github`           | CI workflows, their helper scripts, issue and PR templates                              |
-| `.kamal`            | Kamal secrets files; they read values from the deploying shell, never hold them         |
-| `.claude`           | AI team tooling: agents, rules, commands. Nothing in it runs in the product             |
+| Folder              | What it is                                                                                                                                  |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/web`          | Placeholder pages for dev and staging; the Next.js app comes with the first web feature. [Photo credits](apps/web/public/photos/CREDITS.md) |
+| `apps/backend`      | Django application; each module is a package under `apps/backend/modules/`                                                                  |
+| `apps/voice`        | Voice examiner (not built yet)                                                                                                              |
+| `packages/examcore` | Exam rules, rule checks and scoring maths. No Django dependency                                                                             |
+| `tooling`           | Shared lint and type configs, our own CI checks with their tests, Semgrep rules                                                             |
+| `infra`             | `docker` images, `kamal` deploy configs, `server` rebuild script                                                                            |
+| `docs`              | Product, architecture, decision records, exam specs, content guide, process, runbooks                                                       |
+| `.github`           | CI workflows, their helper scripts, issue and PR templates                                                                                  |
+| `.kamal`            | Kamal secrets files; they read values from the deploying shell, never hold them                                                             |
+| `.claude`           | AI team tooling: agents, rules, commands. Nothing in it runs in the product                                                                 |
 
 A new top-level folder or a moved one updates this table in the same PR.
 
