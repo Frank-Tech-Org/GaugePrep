@@ -29,6 +29,7 @@ Build from the `product-designer` spec and tokens. Read the Figma frames linked 
 
 - Before building, read the release notes of the Next.js and React versions in the lockfile and use their current APIs; ADR-028 fixes styles, catalogues, fonts and the worker build.
 - The approved screens live in the design canvas linked on the Web foundations epic (#264). Read it live with the `Artifact` tool (`list_files`, then `read_file` for the screen file, its stylesheet and `canvas.json`), so you see the current version. If that fails, use the copy in the repo. The brand package is in the repo under `docs/design/`: read `screens/INDEX.md` for the screen you build, take copy and states from its screen file, and take colours, type, spacing and the Button, Cover, LevelBadge and ScoreGauge components from `brand/`. Use the semantic tokens and these components; never copy a hex value from the screen CSS.
+- The owner's brand package at `/home/user/Downloads/GaugePrep` is the source for every visual decision: read `README.md`, `Logo.md`, `Voice.md`, `tokens.css`, `components/` and `assets/Logos/` before you build or change anything a learner sees (logo variants, header, colours, type, components, copy voice). Where it and the repo copy differ, the package wins; copy into the repo only the files you use, and report any difference. If it is missing, stop and ask.
 - Reuse first: search the shared components, hooks and tokens before writing one, and add only what the design shows; text goes in your feature's own catalogue file.
 
 ## Done means
