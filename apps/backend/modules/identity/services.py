@@ -191,23 +191,34 @@ def retire_stale_accounts(batch: int = 20) -> int:
     overwritten. Runs on sign-up, verify and resend, because the worker role cannot
     read accounts.
     """
-    ids = list(
-        User.objects.filter(
-            email_verified_at__isnull=True,
-            created_at__lt=timezone.now() - UNVERIFIED_LIFETIME,
+    with transaction.atomic():
+        ids = list(
+            User.objects.select_for_update(skip_locked=True)
+            .filter(
+                email_verified_at__isnull=True,
+                created_at__lt=timezone.now() - UNVERIFIED_LIFETIME,
+            )
+            .exclude(email__endswith=RETIRED_SUFFIX)
+            .order_by("created_at")
+            .values_list("id", flat=True)[:batch]
         )
-        .exclude(email__endswith=RETIRED_SUFFIX)
-        .order_by("created_at")
-        .values_list("id", flat=True)[:batch]
-    )
+        return _retire(ids)
+
+
+# SECURITY: the unverified filter is repeated so an account verified since the pick
+# is never wiped.
+def _retire(ids: list[uuid.UUID]) -> int:
     if not ids:
         return 0
-    EmailCode.objects.filter(user_id__in=ids).delete()
-    User.objects.filter(id__in=ids).update(
+    EmailCode.objects.filter(
+        user_id__in=ids, user__email_verified_at__isnull=True
+    ).delete()
+    count = User.objects.filter(id__in=ids, email_verified_at__isnull=True).update(
         email=Concat(Value("retired-"), Cast("id", CharField()), Value(RETIRED_SUFFIX)),
         display_name="",
         date_of_birth=RETIRED_BIRTH_DATE,
         password=make_password(None),
     )
-    logger.info("event=unverified_accounts_retired count=%d", len(ids))
-    return len(ids)
+    if count:
+        logger.info("event=unverified_accounts_retired count=%d", count)
+    return count

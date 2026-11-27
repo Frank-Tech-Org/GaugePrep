@@ -8,7 +8,7 @@ from typing import Any
 import pytest
 from django.db.models import F
 
-from modules.identity import mail, services, tasks, throttle
+from modules.identity import mail, services, tasks, throttle, verification
 from modules.identity.models import Consent, EmailCode, MailOutbox, Throttle, User
 
 from .conftest import (
@@ -360,3 +360,15 @@ def test_resend_and_verify_retire_stale_accounts_for_any_address(known: bool) ->
     age_account("second@example.com", 25)
     enter(other_client(4), "000000", email)
     assert not User.objects.filter(email="second@example.com").exists()
+
+
+def test_an_account_verified_after_the_pick_is_not_wiped() -> None:
+    api = other_client(1)
+    api.sign_up(email=VICTIM, display_name="Ada")
+    age_account(VICTIM, 25)
+    stale = list(User.objects.filter(email=VICTIM).values_list("id", flat=True))
+    code = queued_code(VICTIM)
+    assert verification.verify_code(VICTIM, code, PASSWORD) is not None
+    assert services._retire(stale) == 0
+    user = User.objects.get(email=VICTIM)
+    assert (user.display_name, user.has_usable_password()) == ("Ada", True)
