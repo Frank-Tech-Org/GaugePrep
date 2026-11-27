@@ -427,3 +427,18 @@ def test_login_right_after_signup_is_refused_alike_for_new_and_known_emails(
     known = Api().post(LOGIN, {"email": "ada@example.com", "password": other})
     assert new.status_code == known.status_code == 401
     assert new.content == known.content
+
+
+def test_every_429_in_the_contract_declares_retry_after(client: Any) -> None:
+    paths = client.get("/api/v1/openapi.json").json()["paths"]
+    refusals = [
+        operation["responses"]["429"]
+        for item in paths.values()
+        for operation in item.values()
+        if "429" in operation["responses"]
+    ]
+    assert len(refusals) == 4
+    for refusal in refusals:
+        header = refusal["headers"]["Retry-After"]
+        assert header["schema"] == {"type": "integer", "minimum": 1}
+        assert header["required"] is True
