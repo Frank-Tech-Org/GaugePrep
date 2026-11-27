@@ -9,6 +9,12 @@ from ninja.errors import AuthenticationError, ValidationError
 from .health import router as health_router
 from .problems import PROBLEM_CONTENT_TYPE, FieldProblem
 
+RETRY_AFTER_HEADER = {
+    "description": "Seconds to wait before the next attempt.",
+    "required": True,
+    "schema": {"type": "integer", "minimum": 1},
+}
+
 
 class ProblemAPI(NinjaAPI):
     """Declares every error answer as problem+json, the type the server sends."""
@@ -18,6 +24,8 @@ class ProblemAPI(NinjaAPI):
         for item in schema["paths"].values():
             for operation in item.values():
                 for status, response in operation.get("responses", {}).items():
+                    if int(status) == 429:
+                        response["headers"] = {"Retry-After": RETRY_AFTER_HEADER}
                     content = response.get("content")
                     if int(status) >= 400 and content and "application/json" in content:
                         content[PROBLEM_CONTENT_TYPE] = content.pop("application/json")
