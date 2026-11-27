@@ -38,3 +38,19 @@ def test_a_value_of_another_length_is_reported() -> None:
         body={"learner_id": "b" * 30, "email": "x@y.z", "csrf_token": "t" * 64}
     )
     assert sc.differences(answer(), other) == ["body.learner_id: length differs"]
+
+
+def test_a_new_address_has_the_length_and_domain_of_the_verified_one() -> None:
+    for verified in ("a@x.io", "seeded.learner@staging.example", "x" * 60 + "@y.z"):
+        fresh = sc.address_like(verified)
+        assert len(fresh) == len(verified)
+        assert fresh.split("@")[1] == verified.split("@")[1]
+        assert fresh != verified
+
+
+def test_answers_for_emails_of_another_length_than_the_old_default_match() -> None:
+    known = answer(body={"learner_id": "a" * 36, "email": "seeded@s.example"})
+    new = answer(
+        body={"learner_id": "b" * 36, "email": sc.address_like("seeded@s.example")}
+    )
+    assert sc.differences(known, new) == []

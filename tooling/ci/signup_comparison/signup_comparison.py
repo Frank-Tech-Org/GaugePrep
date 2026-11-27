@@ -93,8 +93,11 @@ class Client:
         )
 
 
-def address() -> str:
-    return f"signup-check-{secrets.token_hex(6)}@example.invalid"
+def address_like(email: str) -> str:
+    """A random address with the same domain and length, so the requests match."""
+    local, _, domain = email.partition("@")
+    fresh = secrets.token_hex(len(local) // 2 + 1)[: len(local)]
+    return f"{fresh}@{domain}"
 
 
 def main() -> int:
@@ -103,7 +106,7 @@ def main() -> int:
     parser.add_argument("--verified-email", required=True)
     args = parser.parse_args()
     known = Client(args.base_url).sign_up(args.verified_email)
-    new = Client(args.base_url).sign_up(address())
+    new = Client(args.base_url).sign_up(address_like(args.verified_email))
     found = differences(known, new)
     for line in found:
         print(f"differs - {line}", file=sys.stderr)
