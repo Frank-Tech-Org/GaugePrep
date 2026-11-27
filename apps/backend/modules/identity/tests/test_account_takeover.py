@@ -323,3 +323,17 @@ def test_a_resent_code_keeps_the_details_of_its_signup() -> None:
     assert enter(api, queued_code(VICTIM)).status_code == 200
     user = User.objects.get(email=VICTIM)
     assert (user.display_name, user.interface_language) == ("Ada", "fr")
+
+
+def test_the_sweep_skips_accounts_it_already_retired() -> None:
+    other_client(1).sign_up(email=VICTIM)
+    age_account(VICTIM, 25)
+    assert services.retire_stale_accounts() == 1
+    assert services.retire_stale_accounts() == 0
+
+
+def test_the_unverified_index_leaves_out_the_retired_suffix() -> None:
+    index = next(
+        i for i in User._meta.indexes if i.name == "identity_user_unverified_idx"
+    )
+    assert services.RETIRED_SUFFIX in str(index.condition)

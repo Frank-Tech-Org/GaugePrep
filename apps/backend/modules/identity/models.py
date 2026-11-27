@@ -34,7 +34,8 @@ class User(AbstractBaseUser):
         indexes = [
             models.Index(
                 fields=["created_at"],
-                condition=models.Q(email_verified_at__isnull=True),
+                condition=models.Q(email_verified_at__isnull=True)
+                & ~models.Q(email__endswith="@retired.invalid"),
                 name="identity_user_unverified_idx",
             )
         ]
