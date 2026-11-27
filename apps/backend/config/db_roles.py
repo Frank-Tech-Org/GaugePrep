@@ -178,8 +178,13 @@ BEGIN
     END IF;
   END LOOP;
 END $$;
-GRANT USAGE ON SCHEMA identity TO {w};
-GRANT SELECT, DELETE ON "identity"."mail_outbox" TO {w};
+DO $$
+BEGIN
+  IF to_regclass('identity.mail_outbox') IS NOT NULL THEN
+    GRANT USAGE ON SCHEMA identity TO {w};
+    GRANT SELECT, DELETE ON "identity"."mail_outbox" TO {w};
+  END IF;
+END $$;
 """
 
 

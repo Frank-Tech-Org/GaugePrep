@@ -151,6 +151,19 @@ def test_worker_role_reaches_only_the_job_tables(roles: tuple[str, str]) -> None
     _as(serving, "INSERT INTO public.t_ordinary (body) VALUES ('a')")
 
 
+def test_worker_grants_run_on_a_database_without_the_mail_outbox(
+    roles: tuple[str, str],
+) -> None:
+    migrator, serving = roles
+    worker = f"t_worker_{uuid.uuid4().hex[:8]}"
+    with connection.cursor() as cursor:
+        cursor.execute('ALTER TABLE "identity"."mail_outbox" RENAME TO "t_unmigrated"')
+        cursor.execute(f'CREATE ROLE "{worker}"')
+        cursor.execute(role_sql(migrator, serving, worker))
+    _as(worker, "SELECT count(*) FROM public.procrastinate_jobs")
+    _refused(worker, 'SELECT * FROM "identity"."t_unmigrated"')
+
+
 def test_rerunning_the_role_sql_keeps_an_append_only_table_closed(
     roles: tuple[str, str],
 ) -> None:

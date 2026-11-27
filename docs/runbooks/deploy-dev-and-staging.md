@@ -180,7 +180,7 @@ First deploy of the worker, a worker password rotation, or a mail check after a 
 
 ### Steps
 
-1. Create or rotate the worker role: `infra/server/worker-role.sh dev` (then `stg`). Expect: `worker role ... ready`. Run it again after any deploy that adds job tables.
+1. Create or rotate the worker role: `infra/server/worker-role.sh dev` (then `stg`). Expect: `worker role ... ready`. Run it again after any deploy that adds job tables or tables the worker reads.
 2. Deploy: `kamal deploy -c infra/kamal/deploy.yml -d dev`. Expect: exit 0, a `worker` container beside `web`.
 3. First time on dev only: `kamal accessory boot mailpit -c infra/kamal/deploy.yml -d dev`. Expect: Mailpit running.
 4. Send the health job: `kamal app exec -r web -c infra/kamal/deploy.yml -d dev "python manage.py procrastinate defer mail_health"`. Expect: `Deployed 1 job`.
