@@ -15,10 +15,18 @@ def queue_mail(kind: str, recipient: str, language: str, nonce: str = "") -> Non
     send_mail_job.defer(outbox_id=str(row.id))
 
 
+class MailNotSent(Exception):
+    """Carries the class of the failure only; SMTP errors name the recipient."""
+
+
+# SECURITY: the cause is dropped, so no log or error report can hold the address.
 @app.task(name="identity_send_mail", pass_context=True, retry=RETRY)
 @observed
 async def send_mail_job(context: JobContext, outbox_id: str) -> None:
-    await sync_to_async(mail.deliver)(outbox_id)
+    try:
+        await sync_to_async(mail.deliver)(outbox_id)
+    except Exception as error:
+        raise MailNotSent(type(error).__name__) from None
 
 
 # WHY: a mail that failed every retry would keep its address in the table.
