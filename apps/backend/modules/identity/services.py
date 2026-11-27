@@ -14,10 +14,9 @@ from django.db.models.functions import Cast, Concat
 from django.utils import timezone
 
 from . import verification
-from .models import Consent, EmailCode, User
+from .models import PROCESSING_POLICY_VERSION, Consent, EmailCode, User
 
 MINIMUM_AGE = 16
-PROCESSING_POLICY_VERSION = "1"
 UNVERIFIED_LIFETIME = timedelta(hours=24)
 RETIRED_SUFFIX = "@retired.invalid"
 RETIRED_BIRTH_DATE = date(1900, 1, 1)
@@ -77,6 +76,7 @@ def create_account(
     interface_language: str,
     processing_consent: bool,
     display_name: str = "",
+    record_consent: bool = True,
 ) -> User:
     """Create an account with no usable password, plus its processing consent row.
 
@@ -95,13 +95,14 @@ def create_account(
     try:
         with transaction.atomic():
             user.save(force_insert=True)
-            Consent.objects.create(
-                user=user,
-                kind=Consent.Kind.PROCESSING,
-                granted=True,
-                policy_version=PROCESSING_POLICY_VERSION,
-                source=Consent.Source.SIGNUP,
-            )
+            if record_consent:
+                Consent.objects.create(
+                    user=user,
+                    kind=Consent.Kind.PROCESSING,
+                    granted=True,
+                    policy_version=PROCESSING_POLICY_VERSION,
+                    source=Consent.Source.SIGNUP,
+                )
     except IntegrityError:
         if User.objects.filter(email=address).exists():
             raise EmailTaken from None
@@ -140,13 +141,13 @@ def ensure_strong_password(password: str) -> None:
 def register(
     details: AccountDetails, password: str
 ) -> tuple[User | None, dict[str, Any]]:
-    """Create an account and queue its code mail; the password is set at verification.
+    """Create an account and queue its code mail; the rest is kept at verification.
 
-    The password is checked here and never stored, so who signed up first or last
-    never decides who owns the account. Returns the user and the profile to show. A
-    used email gets the "account exists" mail and a made-up profile, so the answer
-    looks the same. Raises AccountRefused or MailRateLimited before anything is kept.
-    Call inside one transaction: the account, its consent and its mail commit together.
+    The password, details and consent are checked here and applied only once the code
+    is right, so who signed up first or last never decides who owns the account.
+    Returns the user and the profile to show. A used email gets a mail and a made-up
+    profile, so the answer looks the same. Raises AccountRefused or MailRateLimited
+    before anything is kept. Call inside one transaction.
     """
     ensure_strong_password(password)
     ensure_eligible(details.date_of_birth, details.processing_consent)
@@ -155,6 +156,11 @@ def register(
     if wait is not None:
         raise MailRateLimited(wait)
     retire_stale_accounts()
+    pending = verification.Pending(
+        details.date_of_birth,
+        details.interface_language,
+        details.display_name.strip(),
+    )
     try:
         user = create_account(
             email=details.email,
@@ -162,39 +168,20 @@ def register(
             interface_language=details.interface_language,
             processing_consent=details.processing_consent,
             display_name=details.display_name,
+            record_consent=False,
         )
     except EmailTaken:
-        taken = _take_over_unverified(address, details)
-        if taken is None:
+        # SECURITY: a stranger's sign-up only sends a new code to the owner's mailbox.
+        owner = User.objects.filter(
+            email=address, email_verified_at__isnull=True
+        ).first()
+        if owner is None:
             verification.queue_exists_mail(address)
-            return None, decoy_profile(details, str(uuid.uuid4()))
-        user = taken
-    verification.queue_code_mail(user)
+        else:
+            verification.queue_code_mail(owner, pending)
+        return None, decoy_profile(details, str(uuid.uuid4()))
+    verification.queue_code_mail(user, pending)
     return user, profile_of(user)
-
-
-# SECURITY: nobody holds an unverified address, so the newest sign-up wins; else an
-# earlier stranger would keep a password on the account the real owner verifies.
-def _take_over_unverified(address: str, details: AccountDetails) -> User | None:
-    user = (
-        User.objects.select_for_update()
-        .filter(email=address, email_verified_at__isnull=True)
-        .first()
-    )
-    if user is None:
-        return None
-    user.date_of_birth = details.date_of_birth
-    user.interface_language = details.interface_language
-    user.display_name = details.display_name.strip()
-    user.save(update_fields=["date_of_birth", "interface_language", "display_name"])
-    Consent.objects.create(
-        user=user,
-        kind=Consent.Kind.PROCESSING,
-        granted=True,
-        policy_version=PROCESSING_POLICY_VERSION,
-        source=Consent.Source.SIGNUP,
-    )
-    return user
 
 
 def retire_stale_accounts(batch: int = 20) -> int:

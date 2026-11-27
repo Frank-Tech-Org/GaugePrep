@@ -60,12 +60,7 @@ def test_signup_creates_account_session_and_profile(api: Api) -> None:
     user = User.objects.get(email="ada@example.com")
     assert str(user.id) == body["learner_id"]
     assert not user.has_usable_password()
-    consent = Consent.objects.get(user=user)
-    assert (consent.kind, consent.granted, consent.source) == (
-        "processing",
-        True,
-        "signup",
-    )
+    assert Consent.objects.count() == 0
     assert not body["email_verified"]
     assert api.get(ME).status_code == 401
     code = {"email": "ada@example.com", "code": queued_code(), "password": PASSWORD}
@@ -76,6 +71,12 @@ def test_signup_creates_account_session_and_profile(api: Api) -> None:
     assert me.json()["email_verified"]
     user.refresh_from_db()
     assert user.password.startswith("argon2$")
+    consent = Consent.objects.get(user=user)
+    assert (consent.kind, consent.granted, consent.source) == (
+        "processing",
+        True,
+        "signup",
+    )
 
 
 @pytest.mark.not_found("POST /api/v1/auth/signup")
@@ -177,7 +178,7 @@ def test_idempotent_replay_returns_the_same_account(api: Api) -> None:
     assert (first.status_code, second.status_code) == (201, 201)
     assert first.json()["learner_id"] == second.json()["learner_id"]
     assert User.objects.count() == 1
-    assert Consent.objects.count() == 1
+    assert Consent.objects.count() == 0
 
 
 def test_idempotency_key_reused_with_another_body_conflicts(api: Api) -> None:

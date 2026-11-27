@@ -17,6 +17,10 @@ Settled architecture choices become ADRs in `docs/adr/`. This file is for open q
 
 ## Decided
 
+### D-39: Lock an unverified account after 10 wrong codes in a day, whoever tries them?
+
+- Decided: 2026-11-27: yes, per account across all its codes, not per client address · the CTO. A guesser behind many addresses still gets about 10 tries a day against a million codes; the cost is that a stranger can lock the owner out of verifying for 24 h, who then waits or asks for a new code after the day. Revisit if support sees owners locked out.
+
 ### D-38: Is the design canvas the approved design for the web build?
 
 - Decided: 2026-11-26: yes, the canvas is the approved design · the owner. Web tickets build from it at phone, tablet and desktop, in French and English, light and dark. No photo enters the repository without a recorded source and licence, and phones download none of the carousel photos.

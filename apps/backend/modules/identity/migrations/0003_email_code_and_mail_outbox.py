@@ -83,6 +83,17 @@ class Migration(migrations.Migration):
                 ("expires_at", models.DateTimeField()),
                 ("wrong_attempts", models.PositiveSmallIntegerField(default=0)),
                 ("closed_at", models.DateTimeField(blank=True, null=True)),
+                ("date_of_birth", models.DateField()),
+                (
+                    "interface_language",
+                    models.CharField(
+                        choices=[("fr", "French"), ("en", "English")], max_length=2
+                    ),
+                ),
+                (
+                    "display_name",
+                    models.CharField(blank=True, default="", max_length=80),
+                ),
                 (
                     "user",
                     models.ForeignKey(

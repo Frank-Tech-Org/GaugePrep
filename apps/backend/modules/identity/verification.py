@@ -2,7 +2,8 @@ import hmac
 import logging
 import secrets
 import uuid
-from datetime import datetime, timedelta
+from dataclasses import dataclass
+from datetime import date, datetime, timedelta
 
 from django.contrib.auth.hashers import make_password
 from django.db import transaction
@@ -12,7 +13,7 @@ from django.utils.crypto import salted_hmac
 
 from . import throttle
 from .mail import code_for
-from .models import EmailCode, MailOutbox, User
+from .models import PROCESSING_POLICY_VERSION, Consent, EmailCode, MailOutbox, User
 from .tasks import queue_mail
 
 logger = logging.getLogger(__name__)
@@ -22,6 +23,21 @@ MAX_WRONG_ATTEMPTS = 5
 MAX_WRONG_PER_DAY = 10
 WRONG_TRIES_WINDOW = timedelta(hours=24)
 _NO_ACCOUNT = uuid.UUID(int=0)
+
+
+@dataclass(frozen=True)
+class Pending:
+    """The details of one sign-up, kept with its code and applied only when it works."""
+
+    date_of_birth: date
+    interface_language: str
+    display_name: str
+
+
+def _pending_for(user: User) -> Pending:
+    last = EmailCode.objects.filter(user=user).order_by("-created_at").first()
+    source = last if last is not None else user
+    return Pending(source.date_of_birth, source.interface_language, source.display_name)
 
 
 def _hash(user_id: uuid.UUID, code: str) -> str:
@@ -46,7 +62,7 @@ def close_open_codes(owner: uuid.UUID) -> None:
     )
 
 
-def _new_code(user: User) -> str:
+def _new_code(user: User, pending: Pending) -> str:
     """Store a fresh code for the learner; the nonce it comes from is returned."""
     now = timezone.now()
     # WHY: the job queue holds this nonce, not the code; the code needs the server key.
@@ -56,16 +72,19 @@ def _new_code(user: User) -> str:
         code_hash=_hash(user.id, code_for(nonce)),
         created_at=now,
         expires_at=now + CODE_LIFETIME,
+        date_of_birth=pending.date_of_birth,
+        interface_language=pending.interface_language,
+        display_name=pending.display_name,
     )
     return nonce
 
 
-def queue_code_mail(user: User) -> None:
+def queue_code_mail(user: User, pending: Pending) -> None:
     """Replace the learner's open codes with a new one and queue its mail."""
     close_open_codes(user.id)
-    nonce = _new_code(user)
+    nonce = _new_code(user, pending)
     queue_mail(
-        MailOutbox.Kind.VERIFICATION_CODE, user.email, user.interface_language, nonce
+        MailOutbox.Kind.VERIFICATION_CODE, user.email, pending.interface_language, nonce
     )
     logger.info("event=verification_mail_queued learner_id=%s", user.id)
 
@@ -95,11 +114,12 @@ def queue_for_address(address: str) -> None:
         EmailCode.objects.filter(user_id=_NO_ACCOUNT).exists()
         queue_mail(MailOutbox.Kind.ACCOUNT_EXISTS, address, user.interface_language)
     else:
-        nonce = _new_code(user)
+        pending = _pending_for(user)
+        nonce = _new_code(user, pending)
         queue_mail(
             MailOutbox.Kind.VERIFICATION_CODE,
             address,
-            user.interface_language,
+            pending.interface_language,
             nonce,
         )
         logger.info("event=verification_mail_queued learner_id=%s", user.id)
@@ -149,12 +169,27 @@ def verify_code(address: str, code: str, password: str) -> User | None:
             logger.info("event=verification_failed reason=%s", reason)
             return None
         close_open_codes(user.id)
-        if user.email_verified_at is None:
-            user.email_verified_at = now
-            user.password = hashed
-            user.save(update_fields=["email_verified_at", "password"])
+        if user.email_verified_at is None and row is not None:
+            _confirm(user, row, hashed, now)
     logger.info("event=verification_succeeded learner_id=%s", user.id)
     return user
+
+
+def _confirm(user: User, row: EmailCode, hashed: str, now: datetime) -> None:
+    """Make the right code's sign-up the account: password, details and consent."""
+    user.email_verified_at = now
+    user.password = hashed
+    user.date_of_birth = row.date_of_birth
+    user.interface_language = row.interface_language
+    user.display_name = row.display_name
+    user.save()
+    Consent.objects.create(
+        user=user,
+        kind=Consent.Kind.PROCESSING,
+        granted=True,
+        policy_version=PROCESSING_POLICY_VERSION,
+        source=Consent.Source.SIGNUP,
+    )
 
 
 def _open_code(owner: uuid.UUID) -> EmailCode | None:

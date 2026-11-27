@@ -59,6 +59,9 @@ class User(AbstractBaseUser):
         return self.email_verified_at is not None
 
 
+PROCESSING_POLICY_VERSION = "1"
+
+
 class Consent(models.Model):
     """Append-only: the current consent is the latest row per kind."""
 
@@ -144,6 +147,9 @@ class EmailCode(models.Model):
     expires_at = models.DateTimeField()
     wrong_attempts = models.PositiveSmallIntegerField(default=0)
     closed_at = models.DateTimeField(null=True, blank=True)
+    date_of_birth = models.DateField()
+    interface_language = models.CharField(max_length=2, choices=Language)
+    display_name = models.CharField(max_length=80, blank=True, default="")
 
     class Meta:
         db_table = '"identity"."email_code"'

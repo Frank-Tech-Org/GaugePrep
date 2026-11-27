@@ -9,7 +9,7 @@ import pytest
 from django.db.models import F
 
 from modules.identity import mail, services, tasks, throttle
-from modules.identity.models import EmailCode, MailOutbox, Throttle, User
+from modules.identity.models import Consent, EmailCode, MailOutbox, Throttle, User
 
 from .conftest import (
     LOGIN,
@@ -289,3 +289,37 @@ def test_a_weak_password_at_verification_is_refused_before_the_code_is_used() ->
     assert weak.status_code == 422
     assert weak.json()["code"] == "weak_password"
     assert enter(api, queued_code(VICTIM)).status_code == 200
+
+
+def test_a_later_signup_changes_nothing_on_the_account_until_its_code_is_used() -> None:
+    owner, stranger = other_client(1), other_client(2)
+    owner.sign_up(email=VICTIM, display_name="Ada", interface_language="fr")
+    forget_mail_limits_for(VICTIM)
+    stranger.sign_up(email=VICTIM, display_name="Mallory", interface_language="en")
+    before = User.objects.get(email=VICTIM)
+    assert (before.display_name, before.interface_language) == ("Ada", "fr")
+    assert Consent.objects.count() == 0
+    assert enter(owner, queued_code(VICTIM)).status_code == 200
+    user = User.objects.get(email=VICTIM)
+    assert (user.display_name, user.interface_language) == ("Mallory", "en")
+    assert Consent.objects.filter(user=user).count() == 1
+
+
+def test_the_owners_own_signup_wins_when_the_owner_signs_up_last() -> None:
+    other_client(1).sign_up(email=VICTIM, display_name="Mallory")
+    forget_mail_limits_for(VICTIM)
+    owner = other_client(2)
+    owner.sign_up(email=VICTIM, display_name="Ada")
+    assert enter(owner, queued_code(VICTIM)).status_code == 200
+    assert User.objects.get(email=VICTIM).display_name == "Ada"
+    assert Consent.objects.filter(user__email=VICTIM).count() == 1
+
+
+def test_a_resent_code_keeps_the_details_of_its_signup() -> None:
+    api = other_client(1)
+    api.sign_up(email=VICTIM, display_name="Ada", interface_language="fr")
+    forget_mail_limits_for(VICTIM)
+    api.post(RESEND, {"email": VICTIM})
+    assert enter(api, queued_code(VICTIM)).status_code == 200
+    user = User.objects.get(email=VICTIM)
+    assert (user.display_name, user.interface_language) == ("Ada", "fr")
