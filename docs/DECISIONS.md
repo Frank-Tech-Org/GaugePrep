@@ -26,6 +26,10 @@ Settled architecture choices become ADRs in `docs/adr/`. This file is for open q
 
 - Decided: 2026-11-26: the page's text shows in the learner's language and theme and every control on it responds, both before hydration, under D-11 · the CTO. Measured on #243: 140 kB of gzipped JavaScript needs 2.8 s of transfer alone at 400 kbps, so hydration lands near 4.8 s with any React page (the framework floor is 135 kB). Controls work first through native elements and the inline boot script; React takes over on hydration. Ruled out: counting read-only text as usable (dead buttons for 3.5 s), trimming the shell's 5 kB (saves 0.1 s), reopening ADR-004 (a framework change for two menus). Revisit when a route needs a control that cannot work before hydration.
 
+### D-40: Lock an unverified account after 10 wrong codes in a day, whoever tries them?
+
+- Decided: 2026-11-27: yes, per account across all its codes, not per client address, under D-11 · the CTO. A guesser behind many addresses still gets about 10 tries a day against a million codes; the cost is that a stranger can lock the owner out of verifying for 24 h, who then waits or asks for a new code after the day. Revisit if support sees owners locked out.
+
 ### D-2: Do owner-run tickets (accounts, recordings, vendor requests) count against the in-flight limit?
 
 - Raised: 2026-10-26 on #9, #14, #16, #17, #18, #19

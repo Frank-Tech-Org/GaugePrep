@@ -31,6 +31,14 @@ class User(AbstractBaseUser):
 
     class Meta:
         db_table = '"identity"."user"'
+        indexes = [
+            models.Index(
+                fields=["created_at"],
+                condition=models.Q(email_verified_at__isnull=True)
+                & ~models.Q(email__endswith="@retired.invalid"),
+                name="identity_user_unverified_idx",
+            )
+        ]
         constraints = [
             models.CheckConstraint(
                 condition=models.Q(email=Lower("email")), name="identity_email_lower"
@@ -50,6 +58,9 @@ class User(AbstractBaseUser):
     @property
     def email_verified(self) -> bool:
         return self.email_verified_at is not None
+
+
+PROCESSING_POLICY_VERSION = "1"
 
 
 class Consent(models.Model):
@@ -125,4 +136,53 @@ class IdempotencyRecord(models.Model):
             models.UniqueConstraint(
                 fields=["scope", "key"], name="identity_idempotency_unique"
             )
+        ]
+
+
+class EmailCode(models.Model):
+    """A verification code, kept only as a keyed hash; the newest open row is live."""
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="email_codes")
+    code_hash = models.CharField(max_length=64)
+    created_at = models.DateTimeField(default=timezone.now)
+    expires_at = models.DateTimeField()
+    wrong_attempts = models.PositiveSmallIntegerField(default=0)
+    closed_at = models.DateTimeField(null=True, blank=True)
+    date_of_birth = models.DateField()
+    interface_language = models.CharField(max_length=2, choices=Language)
+    display_name = models.CharField(max_length=80, blank=True, default="")
+
+    class Meta:
+        db_table = '"identity"."email_code"'
+        indexes = [models.Index(fields=["user", "-created_at"])]
+
+
+class MailOutbox(models.Model):
+    """A mail waiting for the worker; the address stays here, out of the job queue."""
+
+    class Kind(models.TextChoices):
+        VERIFICATION_CODE = "verification_code"
+        ACCOUNT_EXISTS = "account_exists"
+        NO_MAIL = "no_mail"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    kind = models.CharField(max_length=24, choices=Kind)
+    recipient = models.EmailField(max_length=254)
+    language = models.CharField(max_length=2, choices=Language)
+    nonce = models.CharField(max_length=64, blank=True, default="")
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        db_table = '"identity"."mail_outbox"'
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(
+                    kind__in=["verification_code", "account_exists", "no_mail"]
+                ),
+                name="identity_mail_outbox_kind",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(language__in=["fr", "en"]),
+                name="identity_mail_outbox_language",
+            ),
         ]

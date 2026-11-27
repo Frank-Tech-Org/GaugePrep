@@ -14,6 +14,8 @@ OWN_TABLES = {
     "session",
     "throttle",
     "idempotency_record",
+    "email_code",
+    "mail_outbox",
 }
 
 

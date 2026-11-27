@@ -141,10 +141,27 @@ def test_worker_role_reaches_only_the_job_tables(roles: tuple[str, str]) -> None
     )
     for table in ("t_ordinary", "t_grades", "django_migrations"):
         _refused(worker, f"SELECT * FROM public.{table}")
+    _as(worker, 'SELECT count(*) FROM "identity"."mail_outbox"')
+    _as(worker, 'DELETE FROM "identity"."mail_outbox"')
+    _refused(worker, 'UPDATE "identity"."mail_outbox" SET nonce = \'\'')
+    _refused(worker, 'SELECT * FROM "identity"."user"')
     _refused(worker, "CREATE TABLE public.t_forbidden (id int)")
     _refused(worker, "DROP TABLE public.procrastinate_jobs")
     _refused(worker, "TRUNCATE public.procrastinate_jobs")
     _as(serving, "INSERT INTO public.t_ordinary (body) VALUES ('a')")
+
+
+def test_worker_grants_run_on_a_database_without_the_mail_outbox(
+    roles: tuple[str, str],
+) -> None:
+    migrator, serving = roles
+    worker = f"t_worker_{uuid.uuid4().hex[:8]}"
+    with connection.cursor() as cursor:
+        cursor.execute('ALTER TABLE "identity"."mail_outbox" RENAME TO "t_unmigrated"')
+        cursor.execute(f'CREATE ROLE "{worker}"')
+        cursor.execute(role_sql(migrator, serving, worker))
+    _as(worker, "SELECT count(*) FROM public.procrastinate_jobs")
+    _refused(worker, 'SELECT * FROM "identity"."t_unmigrated"')
 
 
 def test_rerunning_the_role_sql_keeps_an_append_only_table_closed(

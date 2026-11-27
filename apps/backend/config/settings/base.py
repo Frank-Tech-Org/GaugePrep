@@ -136,7 +136,7 @@ DEFAULT_FROM_EMAIL = os.environ.get("MAIL_FROM") or "GaugePrep <no-reply@localho
 MAIL_HEALTH_TO = os.environ.get("MAIL_HEALTH_TO", "")
 
 # Jobs
-PROCRASTINATE_IMPORT_PATHS = ["config.jobs"]
+PROCRASTINATE_IMPORT_PATHS = ["config.jobs", "modules.identity.tasks"]
 PROCRASTINATE_AUTODISCOVER_MODULE_NAME = ""
 PROCRASTINATE_WORKER_DEFAULTS = {
     "wait": True,

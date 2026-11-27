@@ -8,11 +8,13 @@ from django.http import HttpRequest
 from django.utils import timezone
 from django.utils.crypto import salted_hmac
 
-from .models import Throttle
-
 LOGIN = "login"
 LOGIN_EMAIL = "login_email"
 SIGNUP = "signup"
+MAIL_MINUTE = "mail_minute"
+MAIL_HOUR = "mail_hour"
+VERIFY = "verify"
+RESEND = "resend"
 
 
 @dataclass(frozen=True)
@@ -25,6 +27,10 @@ class Limit:
 LOGIN_FAILURES = Limit(LOGIN, attempts=6, window_seconds=60)
 LOGIN_EMAIL_FAILURES = Limit(LOGIN_EMAIL, attempts=10, window_seconds=3600)
 SIGNUPS = Limit(SIGNUP, attempts=20, window_seconds=3600)
+MAILS_PER_MINUTE = Limit(MAIL_MINUTE, attempts=1, window_seconds=60)
+MAILS_PER_HOUR = Limit(MAIL_HOUR, attempts=5, window_seconds=3600)
+VERIFY_TRIES = Limit(VERIFY, attempts=10, window_seconds=60)
+RESEND_REQUESTS = Limit(RESEND, attempts=10, window_seconds=60)
 
 # WHY: one statement, so two workers counting at once never lose an increment.
 _UPSERT = """
@@ -104,13 +110,3 @@ def wait_if_over(limit: Limit, tally: Tally) -> int | None:
         return None
     ends = tally.window_started_at + timedelta(seconds=limit.window_seconds)
     return max(1, int((ends - timezone.now()).total_seconds()) + 1)
-
-
-def retry_after(limit: Limit, address: str) -> int | None:
-    """Seconds until the address may try again, or None when it is not blocked."""
-    row = Throttle.objects.filter(key=key_for(limit, address)).first()
-    if row is None or row.count < limit.attempts:
-        return None
-    ends = row.window_started_at + timedelta(seconds=limit.window_seconds)
-    remaining = (ends - timezone.now()).total_seconds()
-    return max(1, int(remaining) + 1) if remaining > 0 else None

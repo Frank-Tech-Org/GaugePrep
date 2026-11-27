@@ -5,34 +5,41 @@ from config.problems import FieldProblem, Problem
 from django.contrib.auth import authenticate, login, logout
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse
-from django.middleware.csrf import get_token, rotate_token
+from django.middleware.csrf import get_token
 from ninja import Header, Router, Status
 
-from . import idempotency, throttle
+from . import idempotency, throttle, verification
 from .auth import learner_auth
 from .models import IdempotencyRecord, User
 from .problems import problem_for
 from .schemas import (
     AccountSession,
     CsrfToken,
+    EmailIn,
     LoginIn,
     Profile,
     ProfilePatch,
+    ResendAccepted,
     SignUpIn,
+    VerifyEmailIn,
 )
 from .services import (
     AccountDetails,
     AccountRefused,
+    MailRateLimited,
     decoy_profile,
+    ensure_strong_password,
     normalize_email,
     profile_of,
     register,
+    retire_stale_accounts,
 )
 
 logger = logging.getLogger(__name__)
 router = Router(tags=["account"])
 
 SIGNUP_SCOPE = "signup"
+RESEND_SCOPE = "resend"
 
 
 def _replay(
@@ -44,11 +51,16 @@ def _replay(
     return None, decoy_profile(details, saved.response["learner_id"])
 
 
-def _anonymous_session(request: HttpRequest) -> None:
-    # SECURITY: a used email gets the same cookies as a new account, but no login.
-    request.session["anonymous"] = True
-    request.session.cycle_key()
-    rotate_token(request)
+def _rate_limited(
+    request: HttpRequest, wait: int, language: str | None = None
+) -> HttpResponse:
+    return problem_for(
+        request,
+        429,
+        "rate_limited",
+        language=language,
+        headers={"Retry-After": str(wait)},
+    )
 
 
 def _user(request: HttpRequest) -> User:
@@ -80,8 +92,10 @@ def csrf(request: HttpRequest) -> CsrfToken:
     },
     summary="Sign up",
     description=(
-        "Access: public. Creates the account and signs the learner in. "
-        "An email already in use gets the same answer, without signing in. "
+        "Access: public. Creates the account and mails a six-digit code; the "
+        "learner is signed in only by entering it. An email already in use gets "
+        "the same answer and an account notice instead of a code. 20 sign-ups per "
+        "hour from one address, and the mail limits of the resend endpoint. "
         "Accepts an Idempotency-Key (UUID), kept for 24 hours."
     ),
 )
@@ -98,16 +112,12 @@ def signup(
 ) -> Status[AccountSession] | HttpResponse:
     language = payload.interface_language
     address = throttle.client_address(request)
-    wait = throttle.retry_after(throttle.SIGNUPS, address)
+    # SECURITY: count first, so the request past the limit is the one refused.
+    wait = throttle.wait_if_over(
+        throttle.SIGNUPS, throttle.record(throttle.SIGNUPS, address)
+    )
     if wait is not None:
-        return problem_for(
-            request,
-            429,
-            "rate_limited",
-            language=language,
-            headers={"Retry-After": str(wait)},
-        )
-    throttle.record(throttle.SIGNUPS, address)
+        return _rate_limited(request, wait, language)
     logger.info("event=signup_submitted")
 
     key = None
@@ -173,14 +183,132 @@ def signup(
             "event=signup_refused reason=%s", reason.get(refused.code, "invalid")
         )
         return problem_for(request, 422, refused.code, language=language)
+    except MailRateLimited as limited:
+        logger.info("event=signup_throttled reason=mail")
+        return _rate_limited(request, limited.wait, language)
 
-    if user is not None:
-        login(request, user)
-    else:
-        _anonymous_session(request)
     return Status(
         201,
         AccountSession.model_validate(dict(profile, csrf_token=get_token(request))),
+    )
+
+
+@router.post(
+    "/auth/verify-email",
+    auth=None,
+    response={200: AccountSession, 403: Problem, 422: Problem, 429: Problem},
+    summary="Verify the email with a code",
+    description=(
+        "Access: public. A right code, within 10 minutes and before 5 wrong tries, "
+        "verifies the address, sets the password sent with it and signs the learner "
+        "in. A weak password is a 422 weak_password before the code is checked. At "
+        "most 10 wrong tries a day per account and 10 tries a minute from one client "
+        "address. Every other refusal gets the same 422 invalid_code answer; request "
+        "a new code after one."
+    ),
+)
+def verify_email(
+    request: HttpRequest, payload: VerifyEmailIn
+) -> Status[AccountSession] | HttpResponse:
+    # SECURITY: count first, so a guess past the limit is refused before it is checked.
+    wait = throttle.wait_if_over(
+        throttle.VERIFY_TRIES,
+        throttle.record(throttle.VERIFY_TRIES, throttle.client_address(request)),
+    )
+    if wait is not None:
+        logger.info("event=verification_throttled")
+        return _rate_limited(request, wait)
+    retire_stale_accounts()
+    try:
+        ensure_strong_password(payload.password)
+    except AccountRefused as refused:
+        return problem_for(request, 422, refused.code)
+    user = verification.verify_code(
+        normalize_email(payload.email), payload.code, payload.password
+    )
+    if user is None:
+        return problem_for(request, 422, "invalid_code")
+    login(request, user)
+    return Status(
+        200,
+        AccountSession.model_validate(
+            dict(profile_of(user), csrf_token=get_token(request))
+        ),
+    )
+
+
+@router.post(
+    "/auth/verify-email/resend",
+    auth=None,
+    response={
+        202: ResendAccepted,
+        403: Problem,
+        409: Problem,
+        422: Problem,
+        429: Problem,
+    },
+    summary="Send a new verification code",
+    description=(
+        "Access: public. Always answers 202 the same way; a new code is mailed only "
+        "when an unverified account exists, and the old one stops working. At most "
+        "1 mail a minute and 5 an hour per address, shared with sign-up, and 10 "
+        "requests a minute from one client address; over that the answer is 429 "
+        "with Retry-After. Accepts an Idempotency-Key (UUID)."
+    ),
+)
+def resend_code(
+    request: HttpRequest,
+    payload: EmailIn,
+    idempotency_key: Annotated[
+        str | None,
+        Header(
+            alias="Idempotency-Key",
+            description="UUID. Retrying with the same key and body replays the answer.",
+        ),
+    ] = None,
+) -> Status[ResendAccepted] | HttpResponse:
+    address = normalize_email(payload.email)
+    wait = throttle.wait_if_over(
+        throttle.RESEND_REQUESTS,
+        throttle.record(throttle.RESEND_REQUESTS, throttle.client_address(request)),
+    )
+    if wait is not None:
+        logger.info("event=verification_throttled")
+        return _rate_limited(request, wait)
+    retire_stale_accounts()
+    key = None
+    if idempotency_key is not None:
+        key = idempotency.parse_key(idempotency_key)
+        if key is None:
+            return problem_for(
+                request,
+                422,
+                "validation_error",
+                errors=[FieldProblem(field="Idempotency-Key", code="invalid")],
+            )
+    fingerprint = idempotency.fingerprint(dict(email=address))
+    try:
+        with transaction.atomic():
+            saved = None
+            if key is not None:
+                idempotency.lock(RESEND_SCOPE, key)
+                saved = idempotency.find(RESEND_SCOPE, key)
+                if saved is not None and not idempotency.matches(saved, fingerprint):
+                    return problem_for(request, 409, "idempotency_conflict")
+            if saved is None:
+                wait = verification.reserve_mail(address)
+                if wait is not None:
+                    raise MailRateLimited(wait)
+                verification.queue_for_address(address)
+                if key is not None:
+                    idempotency.store(RESEND_SCOPE, key, fingerprint, None, 202, {})
+    except MailRateLimited as limited:
+        logger.info("event=resend_throttled")
+        return _rate_limited(request, limited.wait)
+    logger.info("event=verification_resent")
+    return Status(
+        202,
+        ResendAccepted(resend_available_in=throttle.MAILS_PER_MINUTE.window_seconds),
     )
 
 

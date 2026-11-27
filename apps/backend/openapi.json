@@ -25,7 +25,7 @@
           "503": {
             "description": "Service Unavailable",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -99,7 +99,7 @@
           "403": {
             "description": "Forbidden",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -109,7 +109,7 @@
           "409": {
             "description": "Conflict",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -119,7 +119,7 @@
           "422": {
             "description": "Unprocessable Content",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -129,7 +129,7 @@
           "429": {
             "description": "Too Many Requests",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -137,7 +137,7 @@
             }
           }
         },
-        "description": "Access: public. Creates the account and signs the learner in. An email already in use gets the same answer, without signing in. Accepts an Idempotency-Key (UUID), kept for 24 hours.",
+        "description": "Access: public. Creates the account and mails a six-digit code; the learner is signed in only by entering it. An email already in use gets the same answer and an account notice instead of a code. 20 sign-ups per hour from one address, and the mail limits of the resend endpoint. Accepts an Idempotency-Key (UUID), kept for 24 hours.",
         "tags": [
           "account"
         ],
@@ -146,6 +146,161 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/SignUpIn"
+              }
+            }
+          },
+          "required": true
+        }
+      }
+    },
+    "/api/v1/auth/verify-email": {
+      "post": {
+        "operationId": "modules_identity_api_verify_email",
+        "summary": "Verify the email with a code",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountSession"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "description": "Access: public. A right code, within 10 minutes and before 5 wrong tries, verifies the address, sets the password sent with it and signs the learner in. A weak password is a 422 weak_password before the code is checked. At most 10 wrong tries a day per account and 10 tries a minute from one client address. Every other refusal gets the same 422 invalid_code answer; request a new code after one.",
+        "tags": [
+          "account"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyEmailIn"
+              }
+            }
+          },
+          "required": true
+        }
+      }
+    },
+    "/api/v1/auth/verify-email/resend": {
+      "post": {
+        "operationId": "modules_identity_api_resend_code",
+        "summary": "Send a new verification code",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "UUID. Retrying with the same key and body replays the answer.",
+              "title": "Idempotency-Key"
+            },
+            "required": false,
+            "description": "UUID. Retrying with the same key and body replays the answer."
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResendAccepted"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Content",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        },
+        "description": "Access: public. Always answers 202 the same way; a new code is mailed only when an unverified account exists, and the old one stops working. At most 1 mail a minute and 5 an hour per address, shared with sign-up, and 10 requests a minute from one client address; over that the answer is 429 with Retry-After. Accepts an Idempotency-Key (UUID).",
+        "tags": [
+          "account"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmailIn"
               }
             }
           },
@@ -172,7 +327,7 @@
           "401": {
             "description": "Unauthorized",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -182,7 +337,7 @@
           "403": {
             "description": "Forbidden",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -192,7 +347,7 @@
           "422": {
             "description": "Unprocessable Content",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -202,7 +357,7 @@
           "429": {
             "description": "Too Many Requests",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -238,7 +393,7 @@
           "401": {
             "description": "Unauthorized",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -248,7 +403,7 @@
           "403": {
             "description": "Forbidden",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -286,7 +441,7 @@
           "401": {
             "description": "Unauthorized",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -322,7 +477,7 @@
           "401": {
             "description": "Unauthorized",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -332,7 +487,7 @@
           "403": {
             "description": "Forbidden",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -342,7 +497,7 @@
           "422": {
             "description": "Unprocessable Content",
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
                   "$ref": "#/components/schemas/Problem"
                 }
@@ -537,7 +692,7 @@
             "type": "string"
           },
           "password": {
-            "description": "Password; the server applies the strength rules.",
+            "description": "Password, checked now and set when the email is verified.",
             "maxLength": 128,
             "minLength": 1,
             "title": "Password",
@@ -579,6 +734,65 @@
           "interface_language"
         ],
         "title": "SignUpIn",
+        "type": "object"
+      },
+      "VerifyEmailIn": {
+        "properties": {
+          "email": {
+            "description": "Email address; compared without case.",
+            "maxLength": 254,
+            "title": "Email",
+            "type": "string"
+          },
+          "code": {
+            "description": "The six digits from the verification mail.",
+            "pattern": "^\\d{6}$",
+            "title": "Code",
+            "type": "string"
+          },
+          "password": {
+            "description": "The password for the account. It is set only when the code is right, so whoever owns the mailbox owns the password.",
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Password",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "code",
+          "password"
+        ],
+        "title": "VerifyEmailIn",
+        "type": "object"
+      },
+      "ResendAccepted": {
+        "properties": {
+          "resend_available_in": {
+            "description": "Seconds before another code can be requested.",
+            "title": "Resend Available In",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "resend_available_in"
+        ],
+        "title": "ResendAccepted",
+        "type": "object"
+      },
+      "EmailIn": {
+        "properties": {
+          "email": {
+            "description": "Email address; compared without case.",
+            "maxLength": 254,
+            "title": "Email",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "title": "EmailIn",
         "type": "object"
       },
       "LoginIn": {

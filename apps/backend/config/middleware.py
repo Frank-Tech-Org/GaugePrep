@@ -52,6 +52,7 @@ class CorsMiddleware:
         if allowed and origin is not None:
             response["Access-Control-Allow-Origin"] = origin
             response["Access-Control-Allow-Credentials"] = "true"
+            response["Access-Control-Expose-Headers"] = "Retry-After"
         return response
 
 

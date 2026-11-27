@@ -14,7 +14,10 @@ from .conftest import (
     ME,
     PASSWORD,
     SIGNUP,
+    VERIFY,
     Api,
+    forget_mail_limits,
+    queued_code,
     signup_body,
     too_young,
 )
@@ -56,6 +59,17 @@ def test_signup_creates_account_session_and_profile(api: Api) -> None:
     assert body["csrf_token"]
     user = User.objects.get(email="ada@example.com")
     assert str(user.id) == body["learner_id"]
+    assert not user.has_usable_password()
+    assert Consent.objects.count() == 0
+    assert not body["email_verified"]
+    assert api.get(ME).status_code == 401
+    code = {"email": "ada@example.com", "code": queued_code(), "password": PASSWORD}
+    assert api.post(VERIFY, code).status_code == 200
+    me = api.get(ME)
+    assert me.status_code == 200
+    assert me.json()["interface_language"] == "fr"
+    assert me.json()["email_verified"]
+    user.refresh_from_db()
     assert user.password.startswith("argon2$")
     consent = Consent.objects.get(user=user)
     assert (consent.kind, consent.granted, consent.source) == (
@@ -63,9 +77,6 @@ def test_signup_creates_account_session_and_profile(api: Api) -> None:
         True,
         "signup",
     )
-    me = api.get(ME)
-    assert me.status_code == 200
-    assert me.json()["interface_language"] == "fr"
 
 
 @pytest.mark.not_found("POST /api/v1/auth/signup")
@@ -123,9 +134,9 @@ def test_duplicate_email_in_any_case_looks_like_a_new_signup(learner: Api) -> No
 
 def test_duplicate_and_new_signups_set_the_same_cookies(api: Api, learner: Api) -> None:
     fresh = Api().sign_up(email="grace@example.com")
+    forget_mail_limits()
     duplicate = Api().sign_up(email="ada@example.com", password="Another-Pass-9921")
     assert fresh.cookies.keys() == duplicate.cookies.keys()
-    assert "gp_session" in duplicate.cookies
 
 
 def test_idempotent_replay_stores_no_name_or_email(api: Api) -> None:
@@ -144,7 +155,6 @@ def test_idempotent_replay_of_a_duplicate_email_matches_the_first_answer(
     second = Api().post(SIGNUP, body, HTTP_IDEMPOTENCY_KEY=key)
     assert first.json()["learner_id"] == second.json()["learner_id"]
     assert second.json()["display_name"] == "Eve"
-    assert "gp_session" in second.cookies
 
 
 def test_write_without_csrf_token_is_refused(api: Api) -> None:
@@ -168,7 +178,7 @@ def test_idempotent_replay_returns_the_same_account(api: Api) -> None:
     assert (first.status_code, second.status_code) == (201, 201)
     assert first.json()["learner_id"] == second.json()["learner_id"]
     assert User.objects.count() == 1
-    assert Consent.objects.count() == 1
+    assert Consent.objects.count() == 0
 
 
 def test_idempotency_key_reused_with_another_body_conflicts(api: Api) -> None:
@@ -372,10 +382,9 @@ def test_preflight_lists_methods_headers_and_max_age(api: Api) -> None:
     assert "Access-Control-Allow-Origin" not in foreign
 
 
-def test_session_and_csrf_cookie_attributes(api: Api) -> None:
-    api.sign_up()
-    session = api.client.cookies[settings.SESSION_COOKIE_NAME]
-    csrf = api.client.cookies[settings.CSRF_COOKIE_NAME]
+def test_session_and_csrf_cookie_attributes(learner: Api) -> None:
+    session = learner.client.cookies[settings.SESSION_COOKIE_NAME]
+    csrf = learner.client.cookies[settings.CSRF_COOKIE_NAME]
     assert session["httponly"]
     assert session["samesite"] == "Lax"
     assert session["path"] == "/"
@@ -398,3 +407,23 @@ def test_logs_hold_the_learner_id_and_no_personal_data(
     assert f"learner_id={response.json()['learner_id']}" in text
     for secret in ("private.person", "Zorba", "1990-01-02", "2001-02-03", PASSWORD):
         assert secret not in text
+
+
+def test_retry_after_is_readable_from_the_app_origin(api: Api) -> None:
+    for n in range(21):
+        response = api.sign_up(email=f"user{n}@example.com")
+    assert response.status_code == 429
+    assert response["Access-Control-Expose-Headers"] == "Retry-After"
+
+
+def test_login_right_after_signup_is_refused_alike_for_new_and_known_emails(
+    learner: Api,
+) -> None:
+    forget_mail_limits()
+    other = "Another-Pass-9921"
+    Api().sign_up(email="grace@example.com", password=other)
+    assert Api().sign_up(email="ada@example.com", password=other).status_code == 201
+    new = Api().post(LOGIN, {"email": "grace@example.com", "password": other})
+    known = Api().post(LOGIN, {"email": "ada@example.com", "password": other})
+    assert new.status_code == known.status_code == 401
+    assert new.content == known.content
