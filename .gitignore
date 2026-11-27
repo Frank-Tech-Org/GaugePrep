@@ -9,6 +9,8 @@ __pycache__/
 node_modules/
 .next/
 out/
+test-results/
+playwright-report/
 apps/web/dist/
 
 # Local configuration and secrets
@@ -39,3 +41,4 @@ graphify-out/
 .schemathesis/
 
 dns-snapshots/
+apps/web/next-env.d.ts
