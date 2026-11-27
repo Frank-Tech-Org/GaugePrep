@@ -1,13 +1,10 @@
 import statistics
 import time
-from datetime import date
 from typing import Any
 
 import pytest
 
-from modules.identity.services import create_account
-
-from .conftest import RESEND, VERIFY, Api, signup_body
+from .conftest import RESEND, VERIFY, Api, signup_body, verified_account
 
 pytestmark = pytest.mark.django_db
 
@@ -15,12 +12,7 @@ SKIPPED_HEADERS = {"date", "set-cookie"}
 
 
 def known_account(email: str, language: str = "en") -> None:
-    create_account(
-        email=email,
-        date_of_birth=date(1990, 1, 2),
-        interface_language=language,
-        processing_consent=True,
-    )
+    verified_account(email, language)
 
 
 def shape(response: Any) -> dict[str, Any]:
@@ -85,18 +77,22 @@ def test_resend_and_verify_answer_alike_for_known_and_unknown() -> None:
 
 
 def median_gap(call_known: Any, call_unknown: Any) -> float:
-    known: list[float] = []
-    unknown: list[float] = []
+    """Median of paired differences, each pair run back to back in alternating order."""
+    gaps: list[float] = []
     for n in range(200):
-        for calls, sink in ((call_known, known), (call_unknown, unknown)):
+        timed: dict[str, float] = {}
+        order = (("known", call_known), ("unknown", call_unknown))
+        for label, call in order if n % 2 == 0 else order[::-1]:
             started = time.perf_counter()
-            calls(n)
-            sink.append(time.perf_counter() - started)
-    return float(abs(statistics.median(known) - statistics.median(unknown)))
+            call(n)
+            timed[label] = time.perf_counter() - started
+        gaps.append(timed["known"] - timed["unknown"])
+    print(f"paired median gap {statistics.median(gaps) * 1000:.3f} ms")
+    return abs(statistics.median(gaps))
 
 
 @pytest.mark.timeout(600)
-def test_signup_timing_gap_is_under_50_ms() -> None:
+def test_signup_timing_gap_is_under_5_ms() -> None:
     for n in range(200):
         known_account(f"known{n}@example.com")
 
@@ -108,11 +104,11 @@ def test_signup_timing_gap_is_under_50_ms() -> None:
         lambda n: signup(f"known{n}@example.com", n),
         lambda n: signup(f"fresh{n}@example.com", n + 100),
     )
-    assert gap < 0.05
+    assert gap < 0.005
 
 
 @pytest.mark.timeout(600)
-def test_resend_and_verify_timing_gaps_are_under_50_ms() -> None:
+def test_resend_and_verify_timing_gaps_are_under_1_ms() -> None:
     known_account("known@example.com")
     from modules.identity import throttle
     from modules.identity.models import Throttle
@@ -133,7 +129,7 @@ def test_resend_and_verify_timing_gaps_are_under_50_ms() -> None:
         median_gap(
             lambda n: resend("known@example.com"), lambda n: resend("ghost@example.com")
         )
-        < 0.05
+        < 0.001
     )
 
     def verify(email: str) -> None:
@@ -143,5 +139,5 @@ def test_resend_and_verify_timing_gaps_are_under_50_ms() -> None:
         median_gap(
             lambda n: verify("known@example.com"), lambda n: verify("ghost@example.com")
         )
-        < 0.05
+        < 0.001
     )

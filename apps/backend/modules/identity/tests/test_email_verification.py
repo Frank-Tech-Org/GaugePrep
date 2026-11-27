@@ -1,7 +1,7 @@
 import hmac
 import logging
 import uuid
-from datetime import date, timedelta
+from datetime import timedelta
 from typing import Any
 
 import pytest
@@ -12,7 +12,6 @@ from django.utils import timezone
 from modules.identity import throttle, verification
 from modules.identity.mail import code_for
 from modules.identity.models import EmailCode, MailOutbox, Throttle, User
-from modules.identity.services import create_account
 
 from .conftest import (
     RESEND,
@@ -22,6 +21,7 @@ from .conftest import (
     forget_mail_limits,
     queued_code,
     signup_body,
+    verified_account,
 )
 
 pytestmark = pytest.mark.django_db
@@ -244,7 +244,8 @@ def test_resend_for_an_unknown_email_answers_alike_and_sends_nothing(
     known = pending.post(RESEND, {"email": EMAIL})
     unknown = Api().post(RESEND, {"email": "ghost@example.com"})
     assert (known.status_code, known.json()) == (unknown.status_code, unknown.json())
-    assert MailOutbox.objects.filter(recipient="ghost@example.com").count() == 0
+    unsent = MailOutbox.objects.filter(recipient="ghost@example.com")
+    assert [row.kind for row in unsent] == ["no_mail"]
     bad = pending.post(RESEND, {"email": "not-an-email"})
     assert bad.status_code == 422
 
@@ -358,7 +359,7 @@ def test_a_signup_refused_for_its_mail_limit_creates_nothing(db: None) -> None:
     refused = Api().sign_up(email="grace@example.com")
     assert refused.status_code == 429
     assert User.objects.count() == 0
-    assert MailOutbox.objects.count() == 0
+    assert MailOutbox.objects.exclude(kind="no_mail").count() == 0
 
 
 def test_the_twentieth_signup_in_an_hour_passes_and_the_twenty_first_is_refused(
@@ -393,12 +394,7 @@ def test_signup_limit_counts_a_request_that_fails_validation(db: None) -> None:
 def test_the_account_exists_mail_goes_to_a_known_address_and_has_no_code(
     db: None,
 ) -> None:
-    create_account(
-        email="known@example.com",
-        date_of_birth=date(1990, 1, 2),
-        interface_language="fr",
-        processing_consent=True,
-    )
+    verified_account("known@example.com", "fr")
     assert Api().sign_up(email="known@example.com").status_code == 201
     row = MailOutbox.objects.get()
     assert (row.kind, row.language, row.nonce) == ("account_exists", "fr", "")

@@ -32,6 +32,7 @@ class Migration(migrations.Migration):
                         choices=[
                             ("verification_code", "Verification Code"),
                             ("account_exists", "Account Exists"),
+                            ("no_mail", "No Mail"),
                         ],
                         max_length=24,
                     ),
@@ -51,7 +52,10 @@ class Migration(migrations.Migration):
                 "constraints": [
                     models.CheckConstraint(
                         condition=models.Q(
-                            ("kind__in", ["verification_code", "account_exists"])
+                            (
+                                "kind__in",
+                                ["verification_code", "account_exists", "no_mail"],
+                            )
                         ),
                         name="identity_mail_outbox_kind",
                     ),

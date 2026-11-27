@@ -1,15 +1,12 @@
-from datetime import date
-
 import pytest
 from django.core import mail
 from django.db import connection, transaction
 
 from modules.identity.mail import code_for, deliver, purge_unsent
 from modules.identity.models import MailOutbox
-from modules.identity.services import create_account
 from modules.identity.tasks import queue_mail
 
-from .conftest import Api
+from .conftest import Api, verified_account
 
 pytestmark = pytest.mark.django_db
 
@@ -57,12 +54,7 @@ def test_delivery_sends_the_code_in_the_learners_language(
 
 
 def test_a_known_address_gets_the_notice_without_a_code() -> None:
-    create_account(
-        email="ada@example.com",
-        date_of_birth=date(1990, 1, 2),
-        interface_language="fr",
-        processing_consent=True,
-    )
+    verified_account("ada@example.com", "fr")
     Api().sign_up()
     deliver(str(MailOutbox.objects.get().id))
     assert "déjà" in mail.outbox[0].subject

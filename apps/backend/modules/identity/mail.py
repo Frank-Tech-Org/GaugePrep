@@ -62,9 +62,15 @@ def render(row: MailOutbox) -> tuple[str, str]:
 
 
 def deliver(outbox_id: str) -> None:
-    """Send one queued mail and drop its row; a row already gone was sent."""
+    """Send one queued mail and drop its row; a row already gone was sent.
+
+    A no_mail row stands for an address with no account: it is dropped unsent.
+    """
     row = MailOutbox.objects.filter(id=outbox_id).first()
     if row is None:
+        return
+    if row.kind == MailOutbox.Kind.NO_MAIL:
+        row.delete()
         return
     subject, body = render(row)
     send_mail(subject, body, None, [row.recipient])

@@ -5,6 +5,7 @@ import uuid
 from datetime import datetime, timedelta
 
 from django.db import transaction
+from django.db.models import F, Sum
 from django.utils import timezone
 from django.utils.crypto import salted_hmac
 
@@ -17,6 +18,8 @@ logger = logging.getLogger(__name__)
 
 CODE_LIFETIME = timedelta(minutes=10)
 MAX_WRONG_ATTEMPTS = 5
+MAX_WRONG_PER_DAY = 10
+WRONG_TRIES_WINDOW = timedelta(hours=24)
 _NO_ACCOUNT = uuid.UUID(int=0)
 
 
@@ -36,10 +39,15 @@ def reserve_mail(address: str) -> int | None:
     return None
 
 
-def queue_code_mail(user: User) -> None:
-    """Replace the learner's open codes with a new one and queue its mail."""
+def close_open_codes(owner: uuid.UUID) -> None:
+    EmailCode.objects.filter(user_id=owner, closed_at__isnull=True).update(
+        closed_at=timezone.now()
+    )
+
+
+def _new_code(user: User) -> str:
+    """Store a fresh code for the learner; the nonce it comes from is returned."""
     now = timezone.now()
-    EmailCode.objects.filter(user=user, closed_at__isnull=True).update(closed_at=now)
     # WHY: the job queue holds this nonce, not the code; the code needs the server key.
     nonce = secrets.token_urlsafe(16)
     EmailCode.objects.create(
@@ -48,10 +56,17 @@ def queue_code_mail(user: User) -> None:
         created_at=now,
         expires_at=now + CODE_LIFETIME,
     )
+    return nonce
+
+
+def queue_code_mail(user: User) -> None:
+    """Replace the learner's open codes with a new one and queue its mail."""
+    close_open_codes(user.id)
+    nonce = _new_code(user)
     queue_mail(
         MailOutbox.Kind.VERIFICATION_CODE, user.email, user.interface_language, nonce
     )
-    logger.info("event=email_code_queued learner_id=%s", user.id)
+    logger.info("event=verification_mail_queued learner_id=%s", user.id)
 
 
 def queue_exists_mail(address: str) -> None:
@@ -66,63 +81,83 @@ def queue_exists_mail(address: str) -> None:
 
 
 def queue_for_address(address: str) -> None:
-    """Resend: a code for an unverified account, the notice for a verified one."""
+    """Resend. Every address runs the same statements and queues one outbox row.
+
+    The row's kind says what the worker does: a code, the account notice, or nothing.
+    """
     user = User.objects.filter(email=address).first()
+    close_open_codes(user.id if user is not None else _NO_ACCOUNT)
     if user is None:
-        return
-    if user.email_verified:
-        queue_exists_mail(address)
+        EmailCode.objects.filter(user_id=_NO_ACCOUNT).exists()
+        queue_mail(MailOutbox.Kind.NO_MAIL, address, "en")
+    elif user.email_verified:
+        EmailCode.objects.filter(user_id=_NO_ACCOUNT).exists()
+        queue_mail(MailOutbox.Kind.ACCOUNT_EXISTS, address, user.interface_language)
     else:
-        queue_code_mail(user)
+        nonce = _new_code(user)
+        queue_mail(
+            MailOutbox.Kind.VERIFICATION_CODE,
+            address,
+            user.interface_language,
+            nonce,
+        )
+        logger.info("event=verification_mail_queued learner_id=%s", user.id)
 
 
-def _unusable(row: EmailCode | None, now: datetime) -> str | None:
+def _unusable(row: EmailCode | None, wrong_today: int, now: datetime) -> str | None:
     if row is None:
         return "none"
+    if wrong_today >= MAX_WRONG_PER_DAY:
+        return "locked"
     if row.wrong_attempts >= MAX_WRONG_ATTEMPTS:
         return "exhausted"
     return "expired" if now >= row.expires_at else None
+
+
+def _wrong_tries_today(owner: uuid.UUID, now: datetime) -> int:
+    total = EmailCode.objects.filter(
+        user_id=owner, created_at__gt=now - WRONG_TRIES_WINDOW
+    ).aggregate(total=Sum("wrong_attempts"))["total"]
+    return int(total or 0)
 
 
 def verify_code(address: str, code: str) -> User | None:
     """Verify the address with the code; None for every kind of refusal.
 
     One answer for a wrong, expired, used, exhausted or unknown code, so the
-    caller learns nothing about the account.
+    caller learns nothing about the account. Known and unknown addresses run the
+    same statements.
     """
     now = timezone.now()
     user = User.objects.filter(email=address).first()
+    owner = user.id if user is not None else _NO_ACCOUNT
     with transaction.atomic():
-        row = _open_code(user)
+        row = _open_code(owner)
+        wrong_today = _wrong_tries_today(owner, now)
         # WHY: hash and compare even with no code on file, so the time is the same.
-        owner = user.id if user is not None else _NO_ACCOUNT
         expected = row.code_hash if row is not None else _hash(_NO_ACCOUNT, "")
         matches = hmac.compare_digest(expected, _hash(owner, code))
-        reason = _unusable(row, now)
+        reason = _unusable(row, wrong_today, now)
         if reason is None and not matches:
             reason = "wrong"
-            assert row is not None
-            row.wrong_attempts += 1
-            row.save(update_fields=["wrong_attempts"])
-        if reason is not None or user is None:
-            logger.info("event=email_code_refused reason=%s", reason)
-            return None
-        EmailCode.objects.filter(user=user, closed_at__isnull=True).update(
-            closed_at=now
+        EmailCode.objects.filter(user_id=owner, closed_at__isnull=True).update(
+            wrong_attempts=F("wrong_attempts") + (1 if reason == "wrong" else 0)
         )
+        if reason is not None or user is None:
+            logger.info("event=verification_failed reason=%s", reason)
+            return None
+        close_open_codes(user.id)
         if user.email_verified_at is None:
             user.email_verified_at = now
             user.save(update_fields=["email_verified_at"])
-    logger.info("event=email_verified learner_id=%s", user.id)
+    logger.info("event=verification_succeeded learner_id=%s", user.id)
     return user
 
 
-def _open_code(user: User | None) -> EmailCode | None:
-    if user is None:
-        return None
+def _open_code(owner: uuid.UUID) -> EmailCode | None:
     return (
         EmailCode.objects.select_for_update()
-        .filter(user=user, closed_at__isnull=True)
+        .filter(user_id=owner, closed_at__isnull=True)
         .order_by("-created_at")
         .first()
     )

@@ -149,6 +149,7 @@ class MailOutbox(models.Model):
     class Kind(models.TextChoices):
         VERIFICATION_CODE = "verification_code"
         ACCOUNT_EXISTS = "account_exists"
+        NO_MAIL = "no_mail"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     kind = models.CharField(max_length=24, choices=Kind)
@@ -161,7 +162,9 @@ class MailOutbox(models.Model):
         db_table = '"identity"."mail_outbox"'
         constraints = [
             models.CheckConstraint(
-                condition=models.Q(kind__in=["verification_code", "account_exists"]),
+                condition=models.Q(
+                    kind__in=["verification_code", "account_exists", "no_mail"]
+                ),
                 name="identity_mail_outbox_kind",
             ),
             models.CheckConstraint(

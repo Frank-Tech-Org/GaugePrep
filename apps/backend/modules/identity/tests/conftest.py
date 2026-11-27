@@ -5,10 +5,12 @@ from typing import Any
 import pytest
 from django.conf import settings
 from django.test import Client
+from django.utils import timezone
 
 from modules.identity import throttle
 from modules.identity.mail import code_for
-from modules.identity.models import MailOutbox, Throttle
+from modules.identity.models import MailOutbox, Throttle, User
+from modules.identity.services import create_account
 
 PASSWORD = "Sturdy-Pelican-4821"
 ADULT = "1990-01-02"
@@ -96,6 +98,19 @@ def queued_code(email: str = "ada@example.com") -> str:
     )
     assert row is not None, "no verification mail is waiting"
     return code_for(row.nonce)
+
+
+def verified_account(email: str = "known@example.com", language: str = "en") -> User:
+    """An account whose address is confirmed, so a sign-up with it is a known email."""
+    user = create_account(
+        email=email,
+        date_of_birth=date(1990, 1, 2),
+        interface_language=language,
+        processing_consent=True,
+    )
+    user.email_verified_at = timezone.now()
+    user.save(update_fields=["email_verified_at"])
+    return user
 
 
 def forget_mail_limits() -> None:

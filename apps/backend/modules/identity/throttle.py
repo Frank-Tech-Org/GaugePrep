@@ -13,6 +13,8 @@ LOGIN_EMAIL = "login_email"
 SIGNUP = "signup"
 MAIL_MINUTE = "mail_minute"
 MAIL_HOUR = "mail_hour"
+VERIFY = "verify"
+RESEND = "resend"
 
 
 @dataclass(frozen=True)
@@ -27,6 +29,8 @@ LOGIN_EMAIL_FAILURES = Limit(LOGIN_EMAIL, attempts=10, window_seconds=3600)
 SIGNUPS = Limit(SIGNUP, attempts=20, window_seconds=3600)
 MAILS_PER_MINUTE = Limit(MAIL_MINUTE, attempts=1, window_seconds=60)
 MAILS_PER_HOUR = Limit(MAIL_HOUR, attempts=5, window_seconds=3600)
+VERIFY_TRIES = Limit(VERIFY, attempts=10, window_seconds=60)
+RESEND_REQUESTS = Limit(RESEND, attempts=10, window_seconds=60)
 
 # WHY: one statement, so two workers counting at once never lose an increment.
 _UPSERT = """

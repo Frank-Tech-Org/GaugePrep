@@ -198,13 +198,22 @@ def signup(
     summary="Verify the email with a code",
     description=(
         "Access: public. A right code, within 10 minutes and before 5 wrong tries, "
-        "verifies the address and signs the learner in. Every refusal gets the same "
-        "422 invalid_code answer; request a new code after one."
+        "verifies the address and signs the learner in. At most 10 wrong tries a day "
+        "per account and 10 tries a minute from one client address. Every refusal "
+        "gets the same 422 invalid_code answer; request a new code after one."
     ),
 )
 def verify_email(
     request: HttpRequest, payload: VerifyEmailIn
 ) -> Status[AccountSession] | HttpResponse:
+    # SECURITY: count first, so a guess past the limit is refused before it is checked.
+    wait = throttle.wait_if_over(
+        throttle.VERIFY_TRIES,
+        throttle.record(throttle.VERIFY_TRIES, throttle.client_address(request)),
+    )
+    if wait is not None:
+        logger.info("event=verification_throttled")
+        return _rate_limited(request, wait)
     user = verification.verify_code(normalize_email(payload.email), payload.code)
     if user is None:
         return problem_for(request, 422, "invalid_code")
@@ -231,8 +240,9 @@ def verify_email(
     description=(
         "Access: public. Always answers 202 the same way; a new code is mailed only "
         "when an unverified account exists, and the old one stops working. At most "
-        "1 mail a minute and 5 an hour per address, shared with sign-up; over that "
-        "the answer is 429 with Retry-After. Accepts an Idempotency-Key (UUID)."
+        "1 mail a minute and 5 an hour per address, shared with sign-up, and 10 "
+        "requests a minute from one client address; over that the answer is 429 "
+        "with Retry-After. Accepts an Idempotency-Key (UUID)."
     ),
 )
 def resend_code(
@@ -247,6 +257,13 @@ def resend_code(
     ] = None,
 ) -> Status[ResendAccepted] | HttpResponse:
     address = normalize_email(payload.email)
+    wait = throttle.wait_if_over(
+        throttle.RESEND_REQUESTS,
+        throttle.record(throttle.RESEND_REQUESTS, throttle.client_address(request)),
+    )
+    if wait is not None:
+        logger.info("event=verification_throttled")
+        return _rate_limited(request, wait)
     key = None
     if idempotency_key is not None:
         key = idempotency.parse_key(idempotency_key)
@@ -276,6 +293,7 @@ def resend_code(
     except MailRateLimited as limited:
         logger.info("event=resend_throttled")
         return _rate_limited(request, limited.wait)
+    logger.info("event=verification_resent")
     return Status(
         202,
         ResendAccepted(resend_available_in=throttle.MAILS_PER_MINUTE.window_seconds),
