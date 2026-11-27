@@ -187,9 +187,9 @@ def register(
 def retire_stale_accounts(batch: int = 20) -> int:
     """Erase accounts still unverified after a day and free their address.
 
-    The consent rows are append-only, so the row stays under its learner ID with its
-    personal fields overwritten. Runs at sign-up, because the worker role cannot read
-    accounts.
+    The row stays under its learner ID with its email, name, birth date and password
+    overwritten. Runs on sign-up, verify and resend, because the worker role cannot
+    read accounts.
     """
     ids = list(
         User.objects.filter(

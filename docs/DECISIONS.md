@@ -28,7 +28,7 @@ Settled architecture choices become ADRs in `docs/adr/`. This file is for open q
 
 ### D-40: Lock an unverified account after 10 wrong codes in a day, whoever tries them?
 
-- Decided: 2026-11-27: yes, per account across all its codes, not per client address under D-11 · the CTO. A guesser behind many addresses still gets about 10 tries a day against a million codes; the cost is that a stranger can lock the owner out of verifying for 24 h, who then waits or asks for a new code after the day. Revisit if support sees owners locked out.
+- Decided: 2026-11-27: yes, per account across all its codes, not per client address, under D-11 · the CTO. A guesser behind many addresses still gets about 10 tries a day against a million codes; the cost is that a stranger can lock the owner out of verifying for 24 h, who then waits or asks for a new code after the day. Revisit if support sees owners locked out.
 
 ### D-2: Do owner-run tickets (accounts, recordings, vendor requests) count against the in-flight limit?
 

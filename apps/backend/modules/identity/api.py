@@ -32,6 +32,7 @@ from .services import (
     normalize_email,
     profile_of,
     register,
+    retire_stale_accounts,
 )
 
 logger = logging.getLogger(__name__)
@@ -217,6 +218,7 @@ def verify_email(
     if wait is not None:
         logger.info("event=verification_throttled")
         return _rate_limited(request, wait)
+    retire_stale_accounts()
     try:
         ensure_strong_password(payload.password)
     except AccountRefused as refused:
@@ -273,6 +275,7 @@ def resend_code(
     if wait is not None:
         logger.info("event=verification_throttled")
         return _rate_limited(request, wait)
+    retire_stale_accounts()
     key = None
     if idempotency_key is not None:
         key = idempotency.parse_key(idempotency_key)

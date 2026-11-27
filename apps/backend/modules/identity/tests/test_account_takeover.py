@@ -337,3 +337,26 @@ def test_the_unverified_index_leaves_out_the_retired_suffix() -> None:
         i for i in User._meta.indexes if i.name == "identity_user_unverified_idx"
     )
     assert services.RETIRED_SUFFIX in str(index.condition)
+
+
+def test_after_a_right_code_no_code_row_or_detail_is_left_for_the_account() -> None:
+    owner = other_client(1)
+    owner.sign_up(email=VICTIM, display_name="Ada")
+    forget_mail_limits_for(VICTIM)
+    other_client(2).sign_up(email=VICTIM, display_name="Mallory")
+    assert enter(owner, queued_code(VICTIM)).status_code == 200
+    assert EmailCode.objects.filter(user__email=VICTIM).count() == 0
+
+
+@pytest.mark.parametrize("known", [True, False])
+def test_resend_and_verify_retire_stale_accounts_for_any_address(known: bool) -> None:
+    other_client(1).sign_up(email=VICTIM)
+    age_account(VICTIM, 25)
+    email = VICTIM if known else "ghost@example.com"
+    forget_mail_limits_for(email)
+    assert other_client(2).post(RESEND, {"email": email}).status_code == 202
+    assert not User.objects.filter(email=VICTIM).exists()
+    other_client(3).sign_up(email="second@example.com")
+    age_account("second@example.com", 25)
+    enter(other_client(4), "000000", email)
+    assert not User.objects.filter(email="second@example.com").exists()

@@ -176,7 +176,7 @@ def verify_code(address: str, code: str, password: str) -> User | None:
 
 
 def _confirm(user: User, row: EmailCode, hashed: str, now: datetime) -> None:
-    """Make the right code's sign-up the account: password, details and consent."""
+    """Apply the right code's sign-up, then erase every code and its details."""
     user.email_verified_at = now
     user.password = hashed
     user.date_of_birth = row.date_of_birth
@@ -190,6 +190,7 @@ def _confirm(user: User, row: EmailCode, hashed: str, now: datetime) -> None:
         policy_version=PROCESSING_POLICY_VERSION,
         source=Consent.Source.SIGNUP,
     )
+    EmailCode.objects.filter(user=user).delete()
 
 
 def _open_code(owner: uuid.UUID) -> EmailCode | None:
