@@ -1,6 +1,9 @@
 """Fail when sign-up answers differently for a known and a new email.
 
-Usage: python signup_comparison.py --base-url https://staging.gaugeprep.com
+Usage: python signup_comparison.py --base-url <url> --verified-email <address>
+
+The address must belong to a verified account on that server and not have been
+signed up with in the last hour, or the mail limits answer 429 for it.
 """
 
 import argparse
@@ -97,12 +100,11 @@ def address() -> str:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--base-url", required=True)
+    parser.add_argument("--verified-email", required=True)
     args = parser.parse_args()
-    known = address()
-    Client(args.base_url).sign_up(known)
-    known_again = Client(args.base_url).sign_up(known)
+    known = Client(args.base_url).sign_up(args.verified_email)
     new = Client(args.base_url).sign_up(address())
-    found = differences(known_again, new)
+    found = differences(known, new)
     for line in found:
         print(f"differs - {line}", file=sys.stderr)
     print("sign-up answers identically" if not found else "sign-up answers differ")
