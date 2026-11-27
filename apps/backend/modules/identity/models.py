@@ -31,6 +31,13 @@ class User(AbstractBaseUser):
 
     class Meta:
         db_table = '"identity"."user"'
+        indexes = [
+            models.Index(
+                fields=["created_at"],
+                condition=models.Q(email_verified_at__isnull=True),
+                name="identity_user_unverified_idx",
+            )
+        ]
         constraints = [
             models.CheckConstraint(
                 condition=models.Q(email=Lower("email")), name="identity_email_lower"

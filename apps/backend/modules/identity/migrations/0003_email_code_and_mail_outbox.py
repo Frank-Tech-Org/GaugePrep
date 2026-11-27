@@ -102,4 +102,12 @@ class Migration(migrations.Migration):
                 ],
             },
         ),
+        migrations.AddIndex(
+            model_name="user",
+            index=models.Index(
+                condition=models.Q(("email_verified_at__isnull", True)),
+                fields=["created_at"],
+                name="identity_user_unverified_idx",
+            ),
+        ),
     ]
