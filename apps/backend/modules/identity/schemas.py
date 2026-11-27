@@ -29,7 +29,7 @@ class SignUpIn(EmailIn):
     password: str = Field(
         min_length=1,
         max_length=128,
-        description="Password; the server applies the strength rules.",
+        description="Password, checked now and set when the email is verified.",
     )
     date_of_birth: date = Field(
         ge=date(1900, 1, 1),
@@ -51,6 +51,14 @@ class SignUpIn(EmailIn):
 class VerifyEmailIn(EmailIn):
     code: str = Field(
         pattern=r"^\d{6}$", description="The six digits from the verification mail."
+    )
+    password: str = Field(
+        min_length=1,
+        max_length=128,
+        description=(
+            "The password for the account. It is set only when the code is right, "
+            "so whoever owns the mailbox owns the password."
+        ),
     )
 
 

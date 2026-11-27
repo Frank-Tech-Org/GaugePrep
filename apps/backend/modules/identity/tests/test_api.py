@@ -59,7 +59,7 @@ def test_signup_creates_account_session_and_profile(api: Api) -> None:
     assert body["csrf_token"]
     user = User.objects.get(email="ada@example.com")
     assert str(user.id) == body["learner_id"]
-    assert user.password.startswith("argon2$")
+    assert not user.has_usable_password()
     consent = Consent.objects.get(user=user)
     assert (consent.kind, consent.granted, consent.source) == (
         "processing",
@@ -68,12 +68,14 @@ def test_signup_creates_account_session_and_profile(api: Api) -> None:
     )
     assert not body["email_verified"]
     assert api.get(ME).status_code == 401
-    code = {"email": "ada@example.com", "code": queued_code()}
+    code = {"email": "ada@example.com", "code": queued_code(), "password": PASSWORD}
     assert api.post(VERIFY, code).status_code == 200
     me = api.get(ME)
     assert me.status_code == 200
     assert me.json()["interface_language"] == "fr"
     assert me.json()["email_verified"]
+    user.refresh_from_db()
+    assert user.password.startswith("argon2$")
 
 
 @pytest.mark.not_found("POST /api/v1/auth/signup")

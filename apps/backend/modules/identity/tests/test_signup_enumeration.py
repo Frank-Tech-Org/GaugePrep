@@ -4,7 +4,7 @@ from typing import Any
 
 import pytest
 
-from .conftest import RESEND, VERIFY, Api, signup_body, verified_account
+from .conftest import PASSWORD, RESEND, VERIFY, Api, signup_body, verified_account
 
 pytestmark = pytest.mark.django_db
 
@@ -71,8 +71,12 @@ def test_resend_and_verify_answer_alike_for_known_and_unknown() -> None:
     a = api.post(RESEND, {"email": "known@example.com"})
     b = Api().post(RESEND, {"email": "ghost@example.com"})
     assert shape(a) == shape(b)
-    c = api.post(VERIFY, {"email": "known@example.com", "code": "123456"})
-    d = Api().post(VERIFY, {"email": "ghost@example.com", "code": "123456"})
+    c = api.post(
+        VERIFY, {"email": "known@example.com", "code": "123456", "password": PASSWORD}
+    )
+    d = Api().post(
+        VERIFY, {"email": "ghost@example.com", "code": "123456", "password": PASSWORD}
+    )
     assert shape(c) == shape(d)
 
 
@@ -133,7 +137,7 @@ def test_resend_and_verify_timing_gaps_are_under_1_ms() -> None:
     )
 
     def verify(email: str) -> None:
-        Api().post(VERIFY, {"email": email, "code": "123456"})
+        Api().post(VERIFY, {"email": email, "code": "123456", "password": PASSWORD})
 
     assert (
         median_gap(

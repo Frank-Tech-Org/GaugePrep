@@ -200,7 +200,7 @@
             }
           }
         },
-        "description": "Access: public. A right code, within 10 minutes and before 5 wrong tries, verifies the address and signs the learner in. At most 10 wrong tries a day per account and 10 tries a minute from one client address. Every refusal gets the same 422 invalid_code answer; request a new code after one.",
+        "description": "Access: public. A right code, within 10 minutes and before 5 wrong tries, verifies the address, sets the password sent with it and signs the learner in. A weak password is a 422 weak_password before the code is checked. At most 10 wrong tries a day per account and 10 tries a minute from one client address. Every other refusal gets the same 422 invalid_code answer; request a new code after one.",
         "tags": [
           "account"
         ],
@@ -692,7 +692,7 @@
             "type": "string"
           },
           "password": {
-            "description": "Password; the server applies the strength rules.",
+            "description": "Password, checked now and set when the email is verified.",
             "maxLength": 128,
             "minLength": 1,
             "title": "Password",
@@ -749,11 +749,19 @@
             "pattern": "^\\d{6}$",
             "title": "Code",
             "type": "string"
+          },
+          "password": {
+            "description": "The password for the account. It is set only when the code is right, so whoever owns the mailbox owns the password.",
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Password",
+            "type": "string"
           }
         },
         "required": [
           "email",
-          "code"
+          "code",
+          "password"
         ],
         "title": "VerifyEmailIn",
         "type": "object"

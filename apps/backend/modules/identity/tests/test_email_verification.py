@@ -14,6 +14,7 @@ from modules.identity.mail import code_for
 from modules.identity.models import EmailCode, MailOutbox, Throttle, User
 
 from .conftest import (
+    PASSWORD,
     RESEND,
     SIGNUP,
     VERIFY,
@@ -36,7 +37,7 @@ def problem(response: Any) -> dict[str, Any]:
 
 
 def enter(api: Api, code: str, email: str = EMAIL) -> Any:
-    return api.post(VERIFY, {"email": email, "code": code})
+    return api.post(VERIFY, {"email": email, "code": code, "password": PASSWORD})
 
 
 def wrong_code() -> str:

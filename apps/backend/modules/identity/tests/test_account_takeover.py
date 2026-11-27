@@ -27,7 +27,7 @@ ATTACKER_PASSWORD = "Attacker-Pelican-9911"
 
 
 def enter(api: Api, code: str, email: str = VICTIM) -> Any:
-    return api.post(VERIFY, {"email": email, "code": code})
+    return api.post(VERIFY, {"email": email, "code": code, "password": PASSWORD})
 
 
 def other_client(n: int) -> Api:
@@ -159,7 +159,7 @@ def test_the_cap_resets_after_a_day() -> None:
 @pytest.mark.parametrize("path", [VERIFY, RESEND])
 def test_one_client_address_gets_429_after_ten_requests_a_minute(path: str) -> None:
     api = other_client(7)
-    body = {"email": "ghost@example.com", "code": "123456"}
+    body = {"email": "ghost@example.com", "code": "123456", "password": PASSWORD}
     if path == RESEND:
         body = {"email": "ghost@example.com"}
     statuses = []
@@ -174,10 +174,15 @@ def test_the_limit_counts_a_known_and_an_unknown_email_alike() -> None:
     other_client(1).sign_up(email=VICTIM)
     known, unknown = other_client(8), other_client(9)
     for _ in range(10):
-        known.post(VERIFY, {"email": VICTIM, "code": "123456"})
-        unknown.post(VERIFY, {"email": "ghost@example.com", "code": "123456"})
-    a = known.post(VERIFY, {"email": VICTIM, "code": "123456"})
-    b = unknown.post(VERIFY, {"email": "ghost@example.com", "code": "123456"})
+        known.post(VERIFY, {"email": VICTIM, "code": "123456", "password": PASSWORD})
+        unknown.post(
+            VERIFY,
+            {"email": "ghost@example.com", "code": "123456", "password": PASSWORD},
+        )
+    a = known.post(VERIFY, {"email": VICTIM, "code": "123456", "password": PASSWORD})
+    b = unknown.post(
+        VERIFY, {"email": "ghost@example.com", "code": "123456", "password": PASSWORD}
+    )
     assert a.status_code == b.status_code == 429
 
 
@@ -248,3 +253,39 @@ def test_a_closed_code_with_the_right_digits_is_still_refused() -> None:
     forget_mail_limits_for(VICTIM)
     api.post(RESEND, {"email": VICTIM})
     assert enter(other_client(2), first).status_code == 422
+
+
+def test_a_later_stranger_does_not_decide_the_password_of_the_owner() -> None:
+    owner, stranger = other_client(1), other_client(2)
+    owner.sign_up(email=VICTIM, password=PASSWORD)
+    forget_mail_limits_for(VICTIM)
+    stranger.sign_up(email=VICTIM, password=ATTACKER_PASSWORD)
+    assert enter(owner, queued_code(VICTIM)).status_code == 200
+    stolen = other_client(3).post(
+        LOGIN, {"email": VICTIM, "password": ATTACKER_PASSWORD}
+    )
+    assert stolen.status_code == 401
+    assert (
+        other_client(4).post(LOGIN, {"email": VICTIM, "password": PASSWORD}).status_code
+        == 200
+    )
+
+
+def test_the_password_sent_with_a_wrong_code_is_not_kept() -> None:
+    other_client(1).sign_up(email=VICTIM)
+    refused = other_client(2).post(
+        VERIFY, {"email": VICTIM, "code": "000000", "password": ATTACKER_PASSWORD}
+    )
+    assert refused.status_code == 422
+    assert not User.objects.get(email=VICTIM).has_usable_password()
+
+
+def test_a_weak_password_at_verification_is_refused_before_the_code_is_used() -> None:
+    api = other_client(1)
+    api.sign_up(email=VICTIM)
+    weak = api.post(
+        VERIFY, {"email": VICTIM, "code": queued_code(VICTIM), "password": "123"}
+    )
+    assert weak.status_code == 422
+    assert weak.json()["code"] == "weak_password"
+    assert enter(api, queued_code(VICTIM)).status_code == 200

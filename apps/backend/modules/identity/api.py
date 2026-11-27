@@ -28,6 +28,7 @@ from .services import (
     AccountRefused,
     MailRateLimited,
     decoy_profile,
+    ensure_strong_password,
     normalize_email,
     profile_of,
     register,
@@ -198,9 +199,11 @@ def signup(
     summary="Verify the email with a code",
     description=(
         "Access: public. A right code, within 10 minutes and before 5 wrong tries, "
-        "verifies the address and signs the learner in. At most 10 wrong tries a day "
-        "per account and 10 tries a minute from one client address. Every refusal "
-        "gets the same 422 invalid_code answer; request a new code after one."
+        "verifies the address, sets the password sent with it and signs the learner "
+        "in. A weak password is a 422 weak_password before the code is checked. At "
+        "most 10 wrong tries a day per account and 10 tries a minute from one client "
+        "address. Every other refusal gets the same 422 invalid_code answer; request "
+        "a new code after one."
     ),
 )
 def verify_email(
@@ -214,7 +217,13 @@ def verify_email(
     if wait is not None:
         logger.info("event=verification_throttled")
         return _rate_limited(request, wait)
-    user = verification.verify_code(normalize_email(payload.email), payload.code)
+    try:
+        ensure_strong_password(payload.password)
+    except AccountRefused as refused:
+        return problem_for(request, 422, refused.code)
+    user = verification.verify_code(
+        normalize_email(payload.email), payload.code, payload.password
+    )
     if user is None:
         return problem_for(request, 422, "invalid_code")
     login(request, user)

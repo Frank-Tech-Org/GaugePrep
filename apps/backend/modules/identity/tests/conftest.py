@@ -132,7 +132,8 @@ def learner(api: Api, db: None) -> Api:
     assert api.sign_up().status_code == 201
     assert (
         api.post(
-            VERIFY, {"email": "ada@example.com", "code": queued_code()}
+            VERIFY,
+            {"email": "ada@example.com", "code": queued_code(), "password": PASSWORD},
         ).status_code
         == 200
     )

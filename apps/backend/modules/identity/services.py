@@ -130,23 +130,26 @@ def decoy_profile(details: AccountDetails, learner_id: str) -> dict[str, Any]:
     return profile_of(decoy)
 
 
-def register(
-    details: AccountDetails, password: str
-) -> tuple[User | None, dict[str, Any]]:
-    """Create an account with a password and queue its code mail.
-
-    Returns the user and the profile to show. A used email gets the "account exists"
-    mail and a made-up profile, so the answer looks the same. Raises AccountRefused or
-    MailRateLimited before anything is kept. Call inside one transaction: the account,
-    its consent, its hash and its mail commit together.
-    """
+def ensure_strong_password(password: str) -> None:
     try:
         validate_password(password)
     except ValidationError:
         raise AccountRefused("weak_password") from None
+
+
+def register(
+    details: AccountDetails, password: str
+) -> tuple[User | None, dict[str, Any]]:
+    """Create an account and queue its code mail; the password is set at verification.
+
+    The password is checked here and never stored, so who signed up first or last
+    never decides who owns the account. Returns the user and the profile to show. A
+    used email gets the "account exists" mail and a made-up profile, so the answer
+    looks the same. Raises AccountRefused or MailRateLimited before anything is kept.
+    Call inside one transaction: the account, its consent and its mail commit together.
+    """
+    ensure_strong_password(password)
     ensure_eligible(details.date_of_birth, details.processing_consent)
-    # WHY: hash first so a used email takes the same time
-    hashed = make_password(password)
     address = normalize_email(details.email)
     wait = verification.reserve_mail(address)
     if wait is not None:
@@ -166,8 +169,6 @@ def register(
             verification.queue_exists_mail(address)
             return None, decoy_profile(details, str(uuid.uuid4()))
         user = taken
-    user.password = hashed
-    user.save(update_fields=["password"])
     verification.queue_code_mail(user)
     return user, profile_of(user)
 

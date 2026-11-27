@@ -4,6 +4,7 @@ import secrets
 import uuid
 from datetime import datetime, timedelta
 
+from django.contrib.auth.hashers import make_password
 from django.db import transaction
 from django.db.models import F, Sum
 from django.utils import timezone
@@ -106,11 +107,9 @@ def queue_for_address(address: str) -> None:
 
 def _unusable(row: EmailCode | None, wrong_today: int, now: datetime) -> str | None:
     if row is None:
-        return "none"
-    if wrong_today >= MAX_WRONG_PER_DAY:
+        return "wrong"
+    if wrong_today >= MAX_WRONG_PER_DAY or row.wrong_attempts >= MAX_WRONG_ATTEMPTS:
         return "locked"
-    if row.wrong_attempts >= MAX_WRONG_ATTEMPTS:
-        return "exhausted"
     return "expired" if now >= row.expires_at else None
 
 
@@ -121,14 +120,17 @@ def _wrong_tries_today(owner: uuid.UUID, now: datetime) -> int:
     return int(total or 0)
 
 
-def verify_code(address: str, code: str) -> User | None:
-    """Verify the address with the code; None for every kind of refusal.
+def verify_code(address: str, code: str, password: str) -> User | None:
+    """Verify the address with the code and set the password; None for a refusal.
+
+    The password is hashed for every address and stored only on a right code.
 
     One answer for a wrong, expired, used, exhausted or unknown code, so the
     caller learns nothing about the account. Known and unknown addresses run the
     same statements.
     """
     now = timezone.now()
+    hashed = make_password(password)
     user = User.objects.filter(email=address).first()
     owner = user.id if user is not None else _NO_ACCOUNT
     with transaction.atomic():
@@ -149,7 +151,8 @@ def verify_code(address: str, code: str) -> User | None:
         close_open_codes(user.id)
         if user.email_verified_at is None:
             user.email_verified_at = now
-            user.save(update_fields=["email_verified_at"])
+            user.password = hashed
+            user.save(update_fields=["email_verified_at", "password"])
     logger.info("event=verification_succeeded learner_id=%s", user.id)
     return user
 
