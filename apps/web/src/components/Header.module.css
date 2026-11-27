@@ -1,0 +1,69 @@
+.header {
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  max-width: var(--content-max);
+  margin-inline: auto;
+  padding: var(--space-3) var(--space-4);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  flex: none;
+  width: 120px;
+  min-height: var(--tap-min);
+}
+
+.logo img {
+  width: 100%;
+  height: auto;
+}
+
+.logo .logoDark {
+  display: none;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.code {
+  letter-spacing: 0.05em;
+}
+
+:global(:root[data-theme="dark"]) .logo .logoLight {
+  display: none;
+}
+
+:global(:root[data-theme="dark"]) .logo .logoDark {
+  display: block;
+}
+
+@media (prefers-color-scheme: dark) {
+  :global(:root:not([data-theme="light"])) .logo .logoLight {
+    display: none;
+  }
+
+  :global(:root:not([data-theme="light"])) .logo .logoDark {
+    display: block;
+  }
+}
+
+@media (min-width: 768px) {
+  .inner {
+    padding-inline: var(--space-6);
+  }
+
+  .logo {
+    width: 128px;
+  }
+}

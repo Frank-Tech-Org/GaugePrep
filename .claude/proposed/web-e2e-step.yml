@@ -1,0 +1,5 @@
+      # WHY: browser tests that run with framework scripts blocked, plus the slow-3G check.
+      - name: Web browser tests
+        run: |
+          pnpm --filter @gaugeprep/web exec playwright install --with-deps chromium
+          pnpm --filter @gaugeprep/web test:e2e

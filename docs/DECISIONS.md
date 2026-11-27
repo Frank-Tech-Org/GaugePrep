@@ -26,6 +26,10 @@ Settled architecture choices become ADRs in `docs/adr/`. This file is for open q
 - Decided: 2026-11-26: yes, the canvas is the approved design · the owner. Web tickets build from it at phone, tablet and desktop, in French and English, light and dark. No photo enters the repository without a recorded source and licence, and phones download none of the carousel photos.
 - Effect: #267 closed; the web build is planned in tickets and does not start until the owner has reviewed them. Route JavaScript cannot stay under 100 kB (the framework alone is 135 kB gzipped, ADR-028), so each route's limit is set from the shell's measured number, under D-11 · the product manager.
 
+### D-39: What does "usable in under 3 s on slow 3G" mean when React cannot hydrate in time?
+
+- Decided: 2026-11-26: the page's text shows in the learner's language and theme and every control on it responds, both before hydration, under D-11 · the CTO. Measured on #243: 140 kB of gzipped JavaScript needs 2.8 s of transfer alone at 400 kbps, so hydration lands near 4.8 s with any React page (the framework floor is 135 kB). Controls work first through native elements and the inline boot script; React takes over on hydration. Ruled out: counting read-only text as usable (dead buttons for 3.5 s), trimming the shell's 5 kB (saves 0.1 s), reopening ADR-004 (a framework change for two menus). Revisit when a route needs a control that cannot work before hydration.
+
 ### D-2: Do owner-run tickets (accounts, recordings, vendor requests) count against the in-flight limit?
 
 - Raised: 2026-10-26 on #9, #14, #16, #17, #18, #19

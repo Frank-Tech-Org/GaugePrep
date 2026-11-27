@@ -1,0 +1,18 @@
+{
+  "skipToContent": "Skip to content",
+  "language": "Language",
+  "languageCurrent": "EN",
+  "languageFr": "Français",
+  "languageEn": "English",
+  "theme": "Theme",
+  "themeSystem": "Same as my device",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "loading": "Loading",
+  "errorTitle": "Something went wrong",
+  "errorBody": "We couldn’t show this page. Try again.",
+  "errorRetry": "Try again",
+  "notFoundTitle": "Page not found",
+  "notFoundBody": "This page doesn’t exist or has moved.",
+  "notFoundHome": "Go to the home page"
+}

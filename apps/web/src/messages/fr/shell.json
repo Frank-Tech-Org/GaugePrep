@@ -1,0 +1,18 @@
+{
+  "skipToContent": "Aller au contenu",
+  "language": "Langue",
+  "languageCurrent": "FR",
+  "languageFr": "Français",
+  "languageEn": "English",
+  "theme": "Thème",
+  "themeSystem": "Comme mon appareil",
+  "themeLight": "Clair",
+  "themeDark": "Sombre",
+  "loading": "Chargement en cours",
+  "errorTitle": "Un problème est survenu",
+  "errorBody": "Nous n’avons pas pu afficher cette page. Réessayez.",
+  "errorRetry": "Réessayer",
+  "notFoundTitle": "Page introuvable",
+  "notFoundBody": "Cette page n’existe pas ou a changé d’adresse.",
+  "notFoundHome": "Aller à l’accueil"
+}
