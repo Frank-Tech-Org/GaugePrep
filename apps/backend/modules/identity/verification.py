@@ -151,9 +151,10 @@ def verify_code(address: str, code: str, password: str) -> User | None:
     """
     now = timezone.now()
     hashed = make_password(password)
-    user = User.objects.filter(email=address).first()
-    owner = user.id if user is not None else _NO_ACCOUNT
     with transaction.atomic():
+        # WHY: lock the user before its codes, as the sweep does, to avoid a deadlock.
+        user = User.objects.select_for_update().filter(email=address).first()
+        owner = user.id if user is not None else _NO_ACCOUNT
         row = _open_code(owner)
         wrong_today = _wrong_tries_today(owner, now)
         # WHY: hash and compare even with no code on file, so the time is the same.

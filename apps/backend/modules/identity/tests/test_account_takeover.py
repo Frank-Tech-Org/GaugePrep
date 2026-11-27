@@ -372,3 +372,16 @@ def test_an_account_verified_after_the_pick_is_not_wiped() -> None:
     assert services._retire(stale) == 0
     user = User.objects.get(email=VICTIM)
     assert (user.display_name, user.has_usable_password()) == ("Ada", True)
+
+
+def test_verify_locks_the_user_row_before_its_code_rows() -> None:
+    from django.db import connection
+    from django.test.utils import CaptureQueriesContext
+
+    other_client(1).sign_up(email=VICTIM)
+    code = queued_code(VICTIM)
+    with CaptureQueriesContext(connection) as queries:
+        verification.verify_code(VICTIM, code, PASSWORD)
+    locks = [q["sql"] for q in queries if "FOR UPDATE" in q["sql"]]
+    assert '"identity"."user"' in locks[0]
+    assert '"identity"."email_code"' in locks[1]
